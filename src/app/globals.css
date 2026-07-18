@@ -46,6 +46,8 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-timer-hold: var(--timer-hold);
+  --color-timer-ready: var(--timer-ready);
 }
 
 :root {
@@ -81,6 +83,9 @@
   --sidebar-ring: oklch(0.708 0 0);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+  /* Timer hold/ready states — aliases so they track the theme (see docs/roadmap.md Phase 1) */
+  --timer-hold: var(--destructive);
+  --timer-ready: var(--primary);
 }
 
 .dark {
