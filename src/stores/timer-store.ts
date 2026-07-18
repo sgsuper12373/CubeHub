@@ -51,10 +51,20 @@ interface TimerStore {
   stop(now: number): void;
   startInspection(now: number): void;
   markInspectionPenalty(p: Penalty): void;
+  /**
+   * Edit the displayed result's penalty while `stopped` (the +2/DNF toggles).
+   * Unlike markInspectionPenalty this may downgrade — the recorded solve row
+   * is updated separately by the session store.
+   */
+  setResultPenalty(p: Penalty): void;
+  /** Blank the last-result display (after deleting the solve it showed). */
+  clearResult(): void;
   cancel(): void;
   advanceScramble(): void;
 
   receiveScramble(alg: string): void;
+  /** Discard the current scramble ("new scramble" button); idle only. */
+  skipScramble(): void;
   setScrambleGenerating(generating: boolean): void;
   setPuzzle(p: TimerPuzzle): void;
   applySettings(s: Partial<TimerSettings>): void;
@@ -166,6 +176,15 @@ export const useTimerStore = create<TimerStore>()((set, get) => ({
     else if (p === "dnf" && current !== "dnf") set({ inspectionPenalty: p });
   },
 
+  setResultPenalty: (p) => {
+    if (get().phase !== "stopped") return;
+    set({ inspectionPenalty: p });
+  },
+
+  clearResult: () => {
+    set({ finalElapsedMs: null, inspectionPenalty: "none" });
+  },
+
   cancel: () => {
     set({
       phase: "idle",
@@ -199,6 +218,18 @@ export const useTimerStore = create<TimerStore>()((set, get) => ({
     } else {
       set({ scramble: { ...scramble, next: alg, generating: false } });
     }
+  },
+
+  skipScramble: () => {
+    const s = get();
+    if (s.phase !== "idle") return;
+    set({
+      scramble: {
+        alg: s.scramble.next,
+        next: null,
+        generating: s.scramble.next === null,
+      },
+    });
   },
 
   setScrambleGenerating: (generating) => {
