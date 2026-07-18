@@ -1,16 +1,27 @@
 import type { Metadata } from "next";
 
+import { TimerScreen } from "@/components/timer/timer-screen";
+import { getUser } from "@/lib/auth/dal";
+
 export const metadata: Metadata = {
   title: "Timer — CubeHub",
 };
 
-export default function TimerPage() {
+/**
+ * Server shell only — renders instantly, no data fetch on the interaction
+ * path. `getUser()` is cache()d and already resolved by the (app) layout in
+ * the same render pass. Timer settings from user_settings arrive with the
+ * cloud-sync step (getTimerSettings DAL helper); until then the client
+ * defaults apply.
+ */
+export default async function TimerPage() {
+  const user = await getUser();
+
   return (
-    <div className="flex flex-1 flex-col items-center justify-center">
-      <h1 className="text-3xl font-semibold tracking-tight">Timer</h1>
-      <p className="mt-2 text-muted-foreground">
-        The solve timer arrives in Phase 1.
-      </p>
-    </div>
+    <TimerScreen
+      isAuthed={user !== null}
+      userId={user?.id ?? null}
+      initialSettings={null}
+    />
   );
 }

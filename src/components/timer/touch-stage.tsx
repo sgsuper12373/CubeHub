@@ -1,0 +1,106 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+
+import { cn } from "@/lib/utils";
+import { useTimerStore } from "@/stores/timer-store";
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return (
+    target.isContentEditable ||
+    target.tagName === "INPUT" ||
+    target.tagName === "TEXTAREA" ||
+    target.tagName === "SELECT"
+  );
+}
+
+/**
+ * The interaction surface: owns both input engines and forwards them to the
+ * timer store's press/release, where the transition table lives.
+ *
+ * Desktop — window-level key events so focus never matters:
+ *   Space down = press, Space up = release, Esc = cancel,
+ *   and while running *any* key stops (panic-stop muscle memory; the stop
+ *   happens on keydown, and the matching keyup is a no-op in `stopped`).
+ *
+ * Mobile — Pointer Events on the full-bleed stage itself:
+ *   pointerdown = press, pointerup/cancel = release, with pointer capture so
+ *   a finger dragged off the stage still releases. `touch-action: none`
+ *   prevents scroll/zoom during a hold; the store's stop-debounce keeps the
+ *   stopping tap from instantly re-arming.
+ */
+export function TouchStage({
+  disabled = false,
+  children,
+}: {
+  disabled?: boolean;
+  children: React.ReactNode;
+}) {
+  const disabledRef = useRef(disabled);
+
+  useEffect(() => {
+    disabledRef.current = disabled;
+  }, [disabled]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (disabledRef.current || e.repeat || isEditableTarget(e.target)) return;
+      const store = useTimerStore.getState();
+
+      if (e.key === "Escape") {
+        store.cancel();
+        return;
+      }
+      if (e.code === "Space") {
+        e.preventDefault(); // page scroll
+        store.press(performance.now());
+        return;
+      }
+      if (store.phase === "running") store.stop(performance.now());
+    };
+
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (disabledRef.current || isEditableTarget(e.target)) return;
+      if (e.code === "Space") {
+        e.preventDefault();
+        useTimerStore.getState().release(performance.now());
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
+  }, []);
+
+  return (
+    <div
+      role="button"
+      aria-label="Timer — hold, then release to start; tap to stop"
+      className={cn(
+        "flex flex-1 cursor-pointer flex-col items-center justify-center",
+        "touch-none select-none",
+      )}
+      onPointerDown={(e) => {
+        if (disabled || !e.isPrimary) return;
+        e.preventDefault();
+        e.currentTarget.setPointerCapture(e.pointerId);
+        useTimerStore.getState().press(performance.now());
+      }}
+      onPointerUp={(e) => {
+        if (disabled || !e.isPrimary) return;
+        useTimerStore.getState().release(performance.now());
+      }}
+      onPointerCancel={() => {
+        if (disabled) return;
+        useTimerStore.getState().release(performance.now());
+      }}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      {children}
+    </div>
+  );
+}
