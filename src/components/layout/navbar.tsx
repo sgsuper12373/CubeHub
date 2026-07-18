@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { UserMenu } from "@/components/layout/user-menu";
 import { Button } from "@/components/ui/button";
+import type { CurrentProfile } from "@/lib/auth/dal";
 import { navItems } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
-export function Navbar() {
+export function Navbar({ profile }: { profile: CurrentProfile | null }) {
   const pathname = usePathname();
 
   return (
@@ -41,7 +43,17 @@ export function Navbar() {
           })}
         </div>
         <div className="ml-auto">
-          <Button size="sm">Sign In</Button>
+          {profile ? (
+            <UserMenu profile={profile} />
+          ) : (
+            <Button
+              size="sm"
+              nativeButton={false}
+              render={<Link href="/login" />}
+            >
+              Sign In
+            </Button>
+          )}
         </div>
       </nav>
     </header>
