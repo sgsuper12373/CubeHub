@@ -36,8 +36,11 @@ export async function updateSession(request: NextRequest) {
   // expired; skipping it can cause sessions to be dropped at random.
   await supabase.auth.getUser();
 
-  // Route protection will live here once auth pages exist (Step 4).
-  // For now every route stays public — we only refresh the session.
+  // This file refreshes the session and nothing else — no route protection
+  // here, deliberately. Access is enforced in two other places:
+  //   - routes that need an account: src/app/(app)/(protected)/layout.tsx
+  //   - content that needs an account or a subscription: RLS in Postgres
+  // See `docs/access-control.md`.
 
   // IMPORTANT: return `supabaseResponse` untouched so the refreshed
   // cookies survive. If you build your own response, copy over
