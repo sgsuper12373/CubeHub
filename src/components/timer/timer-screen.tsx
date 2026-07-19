@@ -7,10 +7,14 @@ import { ScrambleBar } from "@/components/timer/scramble-bar";
 import { SessionSwitcher } from "@/components/timer/session-switcher";
 import { TimeDisplay } from "@/components/timer/time-display";
 import { TouchStage } from "@/components/timer/touch-stage";
+import { StatsPanel } from "@/components/stats/stats-panel";
 import { generateScramble } from "@/lib/timer/scrambler";
+import { bestSingle } from "@/lib/timer/stats";
 import type { Penalty, TimerSettings } from "@/lib/timer/types";
 import { useSessionStore } from "@/stores/session-store";
 import { useTimerStore } from "@/stores/timer-store";
+import { toast } from "@/stores/toast-store";
+import { formatMs } from "@/lib/timer/format";
 
 /**
  * Client container for /timer: wires the stores to the presentational
@@ -30,6 +34,7 @@ export function TimerScreen(props: {
 
   const sessions = useSessionStore((s) => s.sessions);
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
+  const solves = useSessionStore((s) => s.solves);
 
   const lastRecordedStopRef = useRef<number | null>(null);
 
@@ -65,6 +70,7 @@ export function TimerScreen(props: {
 
   // Record the solve exactly once per stop. `stoppedAt` is unique per solve,
   // which makes this idempotent across re-renders and dev double-effects.
+  // Also handles PB detection.
   useEffect(() => {
     if (phase !== "stopped") return;
     const t = useTimerStore.getState();
@@ -75,6 +81,11 @@ export function TimerScreen(props: {
     )
       return;
     lastRecordedStopRef.current = t.stoppedAt;
+
+    // Snapshot the current best BEFORE adding the new solve
+    const currentSolves = useSessionStore.getState().solves;
+    const previousBest = bestSingle(currentSolves);
+
     void useSessionStore.getState().addSolve({
       id: crypto.randomUUID(),
       puzzle: t.puzzle,
@@ -82,6 +93,24 @@ export function TimerScreen(props: {
       penalty: t.inspectionPenalty,
       scramble: t.scramble.alg ?? "",
       createdAt: new Date().toISOString(),
+    });
+
+    // PB detection — compare after the store updates (next microtask)
+    queueMicrotask(() => {
+      const newSolves = useSessionStore.getState().solves;
+      const newBest = bestSingle(newSolves);
+      // Fire PB toast only if we have at least 2 solves and the best improved
+      if (
+        newBest !== null &&
+        newSolves.length >= 2 &&
+        (previousBest === null || newBest < previousBest)
+      ) {
+        toast({
+          kind: "pb",
+          message: `New PB! ${formatMs(newBest)}`,
+          durationMs: 4000,
+        });
+      }
     });
   }, [phase]);
 
@@ -96,7 +125,10 @@ export function TimerScreen(props: {
   const deleteLast = () => {
     const timer = useTimerStore.getState();
     const last = useSessionStore.getState().solves[0];
-    if (last) void useSessionStore.getState().deleteSolve(last.id);
+    if (last) {
+      void useSessionStore.getState().deleteSolve(last.id);
+      toast({ kind: "info", message: "Solve deleted", durationMs: 2000 });
+    }
     timer.advanceScramble(); // a deleted scramble is spent — fresh one next
     timer.clearResult();
   };
@@ -106,75 +138,111 @@ export function TimerScreen(props: {
     void useSessionStore.getState().setPuzzle(p);
   };
 
+  const handlePenalty = (id: string, p: Penalty) => {
+    void useSessionStore.getState().setPenalty(id, p);
+    // If this is the most recent solve and we're still stopped, sync the display
+    const latest = useSessionStore.getState().solves[0];
+    if (latest && latest.id === id && phase === "stopped") {
+      useTimerStore.getState().setResultPenalty(p);
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    void useSessionStore.getState().deleteSolve(id);
+    toast({ kind: "info", message: "Solve deleted", durationMs: 2000 });
+    // If the deleted solve was the one on display, clear the result
+    const timer = useTimerStore.getState();
+    if (phase === "stopped") {
+      const remaining = useSessionStore.getState().solves;
+      if (remaining.length === 0 || remaining[0].id !== id) {
+        timer.clearResult();
+      }
+    }
+  };
+
   const solving =
     phase === "holding" || phase === "ready" || phase === "running";
 
   return (
-    <div className="flex flex-1 flex-col">
-      <div
-        className={
-          "transition-opacity duration-150 " +
-          (solving ? "pointer-events-none opacity-0" : "opacity-100")
-        }
-      >
-        <ScrambleBar
-          alg={scramble.alg}
-          generating={scramble.generating}
-          puzzle={puzzle}
-          onNext={() => useTimerStore.getState().skipScramble()}
-          onCopy={() => {
-            const { alg } = useTimerStore.getState().scramble;
-            if (alg) void navigator.clipboard.writeText(alg);
-          }}
-          onTogglePreview={() =>
-            applySettings({ showScramblePreview: !settings.showScramblePreview })
-          }
-          previewOn={settings.showScramblePreview}
-        />
-        <SessionSwitcher
-          sessions={sessions}
-          activeId={activeSessionId}
-          puzzle={puzzle}
-          onSelect={(id) => void useSessionStore.getState().switchSession(id)}
-          onCreate={(name) => void useSessionStore.getState().createSession(name)}
-          onRename={(id, name) =>
-            void useSessionStore.getState().renameSession(id, name)
-          }
-          onReset={() => {
-            // The undo handle feeds the toast system in the stats step;
-            // until then a confirm guards the destructive action.
-            if (window.confirm("Clear all solves in this session?")) {
-              void useSessionStore.getState().resetSession();
-            }
-          }}
-          onPuzzleChange={changePuzzle}
-        />
-      </div>
-
-      <TouchStage>
-        <TimeDisplay hideWhileSolving={settings.hideTimeWhileSolving} />
-        <p
+    <div className="flex flex-1 flex-col md:flex-row">
+      {/* ── Timer column ── */}
+      <div className="flex flex-1 flex-col">
+        <div
           className={
-            "h-5 text-sm text-muted-foreground transition-opacity duration-150 " +
-            (phase === "idle" || phase === "stopped"
-              ? "opacity-100"
-              : "opacity-0")
+            "transition-opacity duration-150 " +
+            (solving ? "pointer-events-none opacity-0" : "opacity-100")
           }
         >
-          {phase === "stopped"
-            ? "tap or press space for the next scramble"
-            : "hold, then release to start"}
-        </p>
-      </TouchStage>
+          <ScrambleBar
+            alg={scramble.alg}
+            generating={scramble.generating}
+            puzzle={puzzle}
+            onNext={() => useTimerStore.getState().skipScramble()}
+            onCopy={() => {
+              const { alg } = useTimerStore.getState().scramble;
+              if (alg) void navigator.clipboard.writeText(alg);
+            }}
+            onTogglePreview={() =>
+              applySettings({ showScramblePreview: !settings.showScramblePreview })
+            }
+            previewOn={settings.showScramblePreview}
+          />
+          <SessionSwitcher
+            sessions={sessions}
+            activeId={activeSessionId}
+            puzzle={puzzle}
+            onSelect={(id) => void useSessionStore.getState().switchSession(id)}
+            onCreate={(name) => void useSessionStore.getState().createSession(name)}
+            onRename={(id, name) =>
+              void useSessionStore.getState().renameSession(id, name)
+            }
+            onReset={() => {
+              void (async () => {
+                const { undo } = await useSessionStore.getState().resetSession();
+                toast({
+                  kind: "undo",
+                  message: "Session cleared",
+                  durationMs: 5000,
+                  action: { label: "Undo", onAction: undo },
+                });
+              })();
+            }}
+            onPuzzleChange={changePuzzle}
+          />
+        </div>
 
-      {phase === "stopped" && (
-        <PenaltyBar
-          penalty={resultPenalty}
-          onPlus2={() => togglePenalty("plus2")}
-          onDnf={() => togglePenalty("dnf")}
-          onDelete={deleteLast}
-        />
-      )}
+        <TouchStage>
+          <TimeDisplay hideWhileSolving={settings.hideTimeWhileSolving} />
+          <p
+            className={
+              "h-5 text-sm text-muted-foreground transition-opacity duration-150 " +
+              (phase === "idle" || phase === "stopped"
+                ? "opacity-100"
+                : "opacity-0")
+            }
+          >
+            {phase === "stopped"
+              ? "tap or press space for the next scramble"
+              : "hold, then release to start"}
+          </p>
+        </TouchStage>
+
+        {phase === "stopped" && (
+          <PenaltyBar
+            penalty={resultPenalty}
+            onPlus2={() => togglePenalty("plus2")}
+            onDnf={() => togglePenalty("dnf")}
+            onDelete={deleteLast}
+          />
+        )}
+      </div>
+
+      {/* ── Stats panel (drawer mobile / rail desktop) ── */}
+      <StatsPanel
+        solves={solves}
+        onPenalty={handlePenalty}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }

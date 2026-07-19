@@ -2,8 +2,12 @@
 
 import { useEffect, useRef } from "react";
 
+import { formatResult } from "@/lib/timer/format";
+import type { Penalty } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
+import { useSessionStore } from "@/stores/session-store";
 import { useTimerStore } from "@/stores/timer-store";
+import { toast } from "@/stores/toast-store";
 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -57,7 +61,42 @@ export function TouchStage({
         store.press(performance.now());
         return;
       }
-      if (store.phase === "running") store.stop(performance.now());
+      if (store.phase === "running") {
+        store.stop(performance.now());
+        return;
+      }
+
+      // Shortcuts: idle/stopped only (csTimer muscle memory)
+      if (store.phase === "idle" || store.phase === "stopped") {
+        const key = e.key.toLowerCase();
+
+        if (key === "d") {
+          const last = useSessionStore.getState().solves[0];
+          if (last) {
+            void useSessionStore.getState().deleteSolve(last.id);
+            store.clearResult();
+            toast({ kind: "info", message: "Solve deleted", durationMs: 2000 });
+          }
+          return;
+        }
+
+        if (key === "1" || key === "2") {
+          const last = useSessionStore.getState().solves[0];
+          if (!last) return;
+          const penaltyType: Exclude<Penalty, "none"> = key === "1" ? "plus2" : "dnf";
+          const next: Penalty = last.penalty === penaltyType ? "none" : penaltyType;
+          void useSessionStore.getState().setPenalty(last.id, next);
+          if (store.phase === "stopped") store.setResultPenalty(next);
+          toast({
+            kind: "info",
+            message: next === "none"
+              ? `Penalty removed — ${formatResult(last.timeMs, "none")}`
+              : `${next === "plus2" ? "+2" : "DNF"} — ${formatResult(last.timeMs, next)}`,
+            durationMs: 2000,
+          });
+          return;
+        }
+      }
     };
 
     const onKeyUp = (e: KeyboardEvent) => {
