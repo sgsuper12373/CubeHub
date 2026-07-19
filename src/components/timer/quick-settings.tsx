@@ -153,6 +153,23 @@ export function QuickSettings({
               />
             </SettingRow>
 
+            {/* Where the cube sits and how big it is are handled by the
+                layout grid, so only the render mode is a setting. */}
+            {settings.showScramblePreview && (
+              <SettingRow label="Cube view">
+                <SegmentedControl
+                  options={[
+                    { value: "2D", label: "2D" },
+                    { value: "3D", label: "3D" },
+                  ]}
+                  value={settings.previewDimension}
+                  onChange={(v) =>
+                    onChange({ previewDimension: v as "2D" | "3D" })
+                  }
+                />
+              </SettingRow>
+            )}
+
             {/* Voice callouts (only relevant when inspection is on) */}
             {settings.inspectionMode !== "off" && (
               <SettingRow label="Voice">

@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -134,12 +134,77 @@
   }
 }
 
+/* ── /timer panel layout ───────────────────────────────────────────────────
+   One DOM tree, two layouts. Below `md` this is a plain flex stack in reading
+   order; from `md` up it becomes the stored 12-column grid, with each panel
+   reading its placement from the --gc/--gr custom properties set inline. Doing
+   it this way (rather than branching in JS) keeps <TouchStage/> mounted
+   exactly once — it registers window-level key listeners, so a second mount
+   would fire every press twice. */
+.layout-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap, 8px);
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.layout-grid > [data-panel="timer"] {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+@media (min-width: 768px) {
+  .layout-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-auto-rows: var(--layout-row-h, 48px);
+  }
+
+  .layout-grid > [data-panel] {
+    flex: none;
+    grid-column: var(--gc);
+    grid-row: var(--gr);
+  }
+}
+
+/* The armed-timer nudge. A named class rather than an arbitrary Tailwind
+   value so the reduced-motion rule below has something stable to target. */
+.timer-ready-pulse {
+  transform: scale(1.02);
+}
+
+/* Personal-best celebration: one short bloom of the primary colour behind the
+   digits, then back to rest. Driven by a `celebrate` prop, not by phase. */
+@keyframes timer-pb-glow {
+  0% {
+    filter: drop-shadow(0 0 0 transparent);
+    transform: scale(1);
+  }
+  35% {
+    filter: drop-shadow(0 0 1.5rem var(--timer-ready));
+    transform: scale(1.06);
+  }
+  100% {
+    filter: drop-shadow(0 0 0 transparent);
+    transform: scale(1);
+  }
+}
+
+.timer-pb-glow {
+  animation: timer-pb-glow 1.2s ease-out;
+}
+
 /* Reduced motion: disable timer scale pulse and shimmer animations */
 @media (prefers-reduced-motion: reduce) {
-  .scale-\[1\.02\] {
+  .timer-ready-pulse {
     transform: none !important;
   }
   .animate-pulse {
+    animation: none !important;
+  }
+  /* Keep the PB glow legible as a colour change, drop the movement. */
+  .timer-pb-glow {
     animation: none !important;
   }
 }

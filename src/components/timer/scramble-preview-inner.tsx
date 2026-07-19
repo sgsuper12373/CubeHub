@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { PuzzleID } from "cubing/twisty";
 
 import type { TimerPuzzle } from "@/lib/timer/types";
 
@@ -8,7 +9,7 @@ import type { TimerPuzzle } from "@/lib/timer/types";
  * The actual twisty-player element. Split into its own file so next/dynamic
  * can tree-shake it. cubing/twisty is imported here and nowhere else.
  */
-function mapPuzzleToTwisty(puzzle: string): string {
+function mapPuzzleToTwisty(puzzle: string): PuzzleID {
   switch (puzzle) {
     case "333":
     case "333bf":
@@ -45,9 +46,13 @@ function mapPuzzleToTwisty(puzzle: string): string {
 export function ScramblePreviewInner({
   alg,
   puzzle,
+  size = 120,
+  visualization = "2D",
 }: {
   alg: string;
   puzzle: TimerPuzzle;
+  size?: number;
+  visualization?: "2D" | "3D";
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<HTMLElement | null>(null);
@@ -69,7 +74,7 @@ export function ScramblePreviewInner({
       const player = new TwistyPlayer({
         puzzle: mapPuzzleToTwisty(puzzle),
         alg: alg,
-        visualization: "2D",
+        visualization,
         background: "none",
         controlPanel: "none",
         hintFacelets: "none",
@@ -77,8 +82,8 @@ export function ScramblePreviewInner({
       });
 
       // Style the element
-      player.style.width = "120px";
-      player.style.height = "120px";
+      player.style.width = `${size}px`;
+      player.style.height = `${size}px`;
 
       containerRef.current.appendChild(player);
       playerRef.current = player;
@@ -91,7 +96,10 @@ export function ScramblePreviewInner({
         playerRef.current = null;
       }
     };
-  }, [alg, puzzle]);
+    // `visualization` and `size` must stay in the deps — the player is
+    // constructed once per change, so omitting them makes a 2D↔3D switch
+    // silently do nothing.
+  }, [alg, puzzle, size, visualization]);
 
   return <div ref={containerRef} className="flex items-center justify-center" />;
 }

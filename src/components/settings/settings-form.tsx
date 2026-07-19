@@ -1,36 +1,60 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useSyncExternalStore, useTransition } from "react";
 import { LogOut } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { type Theme, setTheme, getThemeFromCookie } from "@/lib/theme";
-import type { TimerSettings } from "@/lib/timer/types";
-import { saveSettings } from "@/lib/timer/settings-persistence";
+import {
+  type Theme,
+  setTheme,
+  subscribeTheme,
+  getThemeSnapshot,
+  getThemeServerSnapshot,
+} from "@/lib/theme";
+import type { ServerTimerSettings } from "@/lib/auth/dal";
+import {
+  DEFAULT_TIMER_SETTINGS,
+  type InspectionMode,
+  type TimerSettings,
+} from "@/lib/timer/types";
+import { loadClientSettings, saveSettings } from "@/lib/timer/settings-persistence";
 import { cn } from "@/lib/utils";
-import { useSessionStore } from "@/stores/session-store";
+import { useTimerStore } from "@/stores/timer-store";
 import { createClient } from "@/lib/supabase/client";
 
 export function SettingsForm({
   initialSettings,
-  userId,
 }: {
-  initialSettings: TimerSettings;
-  userId: string;
+  initialSettings: ServerTimerSettings | null;
 }) {
-  const [settings, setLocalSettings] = useState<TimerSettings>(initialSettings);
-  const [theme, setLocalTheme] = useState<Theme>("dark");
-  const [isPending, startTransition] = useTransition();
+  // Settings live in the timer store rather than a second local copy, so this
+  // page and /timer can't drift — change precision here and the timer already
+  // has it. Hydration goes through `applySettings`, a store action, which is
+  // also why it doesn't cascade a render the way a setState in an effect would.
+  const settings = useTimerStore((s) => s.settings);
+
+  // Cookie-backed and client-only, so it is read as an external store with a
+  // server snapshot matching what the root layout rendered.
+  const theme = useSyncExternalStore(
+    subscribeTheme,
+    getThemeSnapshot,
+    getThemeServerSnapshot,
+  );
+
+  const [, startTransition] = useTransition();
 
   useEffect(() => {
-    // Read theme from cookie on mount
-    setLocalTheme(getThemeFromCookie(document.cookie));
-  }, []);
+    // The server stores four of these fields; the rest come from localStorage.
+    useTimerStore.getState().applySettings({
+      ...DEFAULT_TIMER_SETTINGS,
+      ...initialSettings,
+      ...loadClientSettings(),
+    });
+  }, [initialSettings]);
 
   const handleChange = (partial: Partial<TimerSettings>) => {
-    const next = { ...settings, ...partial };
-    setLocalSettings(next);
-    
+    useTimerStore.getState().applySettings(partial);
+
     // Fire the save action in the background
     startTransition(() => {
       saveSettings(partial, true);
@@ -38,8 +62,7 @@ export function SettingsForm({
   };
 
   const handleThemeChange = (t: Theme) => {
-    setLocalTheme(t);
-    setTheme(t);
+    setTheme(t); // notifies subscribers, so `theme` above updates
   };
 
   const handleSignOut = async () => {
@@ -91,7 +114,9 @@ export function SettingsForm({
                 { value: "15s", label: "15s" },
               ]}
               value={settings.inspectionMode}
-              onChange={(v) => handleChange({ inspectionMode: v as any })}
+              onChange={(v) =>
+                handleChange({ inspectionMode: v as InspectionMode })
+              }
             />
           </SettingRow>
 
@@ -135,7 +160,9 @@ export function SettingsForm({
                 { value: "3", label: ".XXX" },
               ]}
               value={String(settings.precision)}
-              onChange={(v) => handleChange({ precision: parseInt(v) as any })}
+              onChange={(v) =>
+                handleChange({ precision: parseInt(v) as 2 | 3 })
+              }
             />
           </SettingRow>
         </div>

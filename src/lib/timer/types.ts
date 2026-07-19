@@ -37,6 +37,12 @@ export interface TimerSettings {
   precision: 2 | 3;
   /** Whether inspection voice callouts are enabled. Client-only (localStorage). */
   voiceEnabled: boolean;
+  /**
+   * 2D net or a 3D cube. 3D costs a WebGL context, so 2D is the default.
+   * Placement and size are not settings — the preview is a panel in the
+   * layout grid, so it is positioned and resized there.
+   */
+  previewDimension: "2D" | "3D";
 }
 
 export const DEFAULT_TIMER_SETTINGS: TimerSettings = {
@@ -47,6 +53,7 @@ export const DEFAULT_TIMER_SETTINGS: TimerSettings = {
   holdMs: 300,
   precision: 2,
   voiceEnabled: true,
+  previewDimension: "2D",
 };
 
 export interface Solve {

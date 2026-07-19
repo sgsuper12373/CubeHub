@@ -175,7 +175,11 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
   deleteSession: async (sessionId) => {
     const s = get();
     if (s.sessions.length <= 1) {
-      toast({ kind: "error", message: "Can't delete the only session" });
+      toast({
+        kind: "error",
+        message: "Can't delete the only session",
+        durationMs: 3000,
+      });
       return;
     }
     

@@ -23,6 +23,32 @@ export function getThemeFromCookie(cookieHeader?: string): Theme {
   return "dark"; // default
 }
 
+/**
+ * Subscription plumbing so components can read the current theme through
+ * `useSyncExternalStore` instead of copying it into state inside an effect.
+ * The cookie is the source of truth; this just announces when it changes.
+ */
+const listeners = new Set<() => void>();
+
+export function subscribeTheme(onChange: () => void): () => void {
+  listeners.add(onChange);
+  return () => {
+    listeners.delete(onChange);
+  };
+}
+
+/** Client snapshot. Returns a string, so it is stable between reads. */
+export function getThemeSnapshot(): Theme {
+  return getThemeFromCookie(
+    typeof document === "undefined" ? undefined : document.cookie,
+  );
+}
+
+/** Server snapshot — matches the default the root layout renders. */
+export function getThemeServerSnapshot(): Theme {
+  return "dark";
+}
+
 /** Set theme — updates the <html> class and cookie. Client-only. */
 export function setTheme(theme: Theme): void {
   if (typeof document === "undefined") return;
@@ -40,6 +66,8 @@ export function setTheme(theme: Theme): void {
 
   // Persist in cookie
   document.cookie = `${COOKIE_NAME}=${theme}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+
+  for (const listener of listeners) listener();
 }
 
 /**

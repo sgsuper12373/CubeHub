@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertTriangle, Trophy, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { cn } from "@/lib/utils";
@@ -46,12 +47,15 @@ function ToastItem({ toast: t }: { toast: Toast }) {
       className={cn(
         "pointer-events-auto flex max-w-sm items-center gap-3 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-sm",
         "animate-in slide-in-from-bottom-4 fade-in duration-200",
-        t.kind === "pb"
-          ? "border-timer-ready/30 bg-timer-ready/10 text-timer-ready"
-          : "border-border bg-card/90 text-foreground",
+        t.kind === "pb" && "border-timer-ready/30 bg-timer-ready/10 text-timer-ready",
+        t.kind === "error" && "border-destructive/30 bg-destructive/10 text-destructive",
+        t.kind !== "pb" &&
+          t.kind !== "error" &&
+          "border-border bg-card/90 text-foreground",
       )}
     >
-      {t.kind === "pb" && <span className="text-lg">🏆</span>}
+      {t.kind === "pb" && <Trophy className="size-4 shrink-0" />}
+      {t.kind === "error" && <AlertTriangle className="size-4 shrink-0" />}
       <span className="text-sm font-medium">{t.message}</span>
       {t.action && (
         <button
@@ -71,7 +75,7 @@ function ToastItem({ toast: t }: { toast: Toast }) {
         className="ml-1 rounded-md p-1 text-muted-foreground hover:text-foreground transition-colors"
         onClick={() => dismiss(t.id)}
       >
-        ✕
+        <X className="size-3.5" />
       </button>
     </div>
   );

@@ -21,18 +21,47 @@ No test tooling and no Supabase CLI are installed yet.
 ```
 src/
   app/            routes (see below)
+    icon.tsx            favicon, generated via next/og
+    opengraph-image.tsx OG card, generated via next/og
   components/
-    ui/           shadcn primitives — button, card, input, label
+    ui/           shadcn primitives — button, card, input, label, toast
     auth/         auth-listener, google-button
     layout/       navbar, bottom-nav, user-menu
+    marketing/    demo-timer, feature-grid, cta-band  (landing page only)
+    timer/        timer-screen (container) + presentational parts
+    stats/        stats-panel, stat-tiles, session-trend, sparkline, solve-*
+    settings/     settings-form
   lib/
     auth/         dal.ts (reads), actions.ts (writes)
     supabase/     client.ts (browser), server.ts (RSC), proxy.ts (session refresh)
+    timer/        stores-free logic — stats, format, scrambler, repos, settings
     navigation.ts single source of nav items
     utils.ts      cn()
+  stores/         zustand — timer, session, toast, overlay
 proxy.ts          root — Next 16's middleware
 docs/
 ```
+
+### Two rules the timer depends on
+
+**Nothing under `components/marketing/` may import `useTimerStore` or
+`useSessionStore`.** Both are module singletons that survive client-side
+navigation, so a landing-page demo sharing them could leave a visitor's real
+solves unrecorded if any "demo mode" flag failed to reset. `demo-timer.tsx`
+keeps its own local state and reuses only pure helpers (`formatMs`,
+`generateScramble`). Guard with:
+
+```
+grep -r "useTimerStore\|useSessionStore" src/app/\(marketing\) src/components/marketing
+```
+
+**Anything overlaying the timer must be a sibling of `<TouchStage/>`, never a
+child.** Its pointer handlers are React props, so events bubble through the
+React tree — a child (or a portal, which preserves React-tree bubbling) starts
+the timer on every tap. `penalty-bar.tsx` and `floating-preview.tsx` both
+follow this. Modals additionally take `useOverlayLock()` from
+`stores/overlay-store.ts`, which gates the window-level key listener so Space
+can't reach the timer from behind an open dialog.
 
 `@/*` maps to `./src/*`. It's the only path alias.
 

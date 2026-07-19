@@ -30,13 +30,25 @@ const TwistyPlayer = dynamic(
 export function ScramblePreview({
   alg,
   puzzle,
+  size,
+  visualization,
+  className,
 }: {
   alg: string;
   puzzle: TimerPuzzle;
+  size?: number;
+  visualization?: "2D" | "3D";
+  /** Overrides the default inline spacing so a floating shell can own layout. */
+  className?: string;
 }) {
   return (
-    <div className="flex justify-center py-2">
-      <TwistyPlayer alg={alg} puzzle={puzzle} />
+    <div className={className ?? "flex justify-center py-2"}>
+      <TwistyPlayer
+        alg={alg}
+        puzzle={puzzle}
+        size={size}
+        visualization={visualization}
+      />
     </div>
   );
 }

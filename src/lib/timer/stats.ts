@@ -84,3 +84,29 @@ export function wcaAverage(
   const mean = counting.reduce((sum, t) => sum + t, 0) / counting.length;
   return Math.round(mean / 10) * 10;
 }
+
+/**
+ * The current Ao5 alongside the Ao5 as it stood one solve ago, so the UI can
+ * show which way the average is trending.
+ *
+ * `previous` drops the newest solve and recomputes, which needs at least six
+ * solves. `deltaMs` is only produced when both ends are finite — a "DNF"
+ * average has no numeric distance from anything.
+ *
+ * Sign convention: positive means the average got *slower* (the time went up).
+ * Note `wcaAverage` rounds to the nearest 10 ms, so deltas are quantised to
+ * 10 ms and an unchanged average yields exactly 0.
+ */
+export function ao5Delta(solves: SolveTimes[]): {
+  current: number | "DNF" | null;
+  previous: number | "DNF" | null;
+  deltaMs: number | null;
+} {
+  const current = wcaAverage(solves, 5);
+  const previous = wcaAverage(solves.slice(1), 5);
+  const deltaMs =
+    typeof current === "number" && typeof previous === "number"
+      ? current - previous
+      : null;
+  return { current, previous, deltaMs };
+}

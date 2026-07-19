@@ -17,6 +17,7 @@ export function SolveRow({
   index,
   onPenalty,
   onDelete,
+  onNotes,
 }: {
   solve: Solve;
   index: number;

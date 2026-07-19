@@ -40,7 +40,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
       const { data, error } = await getClient()
         .from("solves")
         .select(
-          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, created_at",
+          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at",
         )
         .eq("session_id", sessionId)
         .eq("user_id", userId)
