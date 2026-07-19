@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Pencil, Plus, RotateCcw } from "lucide-react";
+import { Check, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ export function SessionSwitcher({
   onCreate,
   onRename,
   onReset,
+  onDelete,
   onPuzzleChange,
 }: {
   sessions: Session[];
@@ -34,6 +35,7 @@ export function SessionSwitcher({
   onCreate: (name: string) => void;
   onRename: (id: string, name: string) => void;
   onReset: () => void;
+  onDelete: (id: string) => void;
   onPuzzleChange: (p: TimerPuzzle) => void;
 }) {
   const [draft, setDraft] = useState<string | null>(null);
@@ -132,6 +134,15 @@ export function SessionSwitcher({
         onClick={onReset}
       >
         <RotateCcw />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        aria-label="Delete session"
+        disabled={!active || sessions.length <= 1}
+        onClick={() => { if (activeId) onDelete(activeId); }}
+      >
+        <Trash2 />
       </Button>
     </div>
   );

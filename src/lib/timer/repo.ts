@@ -16,7 +16,9 @@ export interface SolveRepository {
   loadSolves(sessionId: string, limit?: number): Promise<Solve[]>;
   saveSolve(s: Solve, userId?: string): Promise<void>;
   updatePenalty(id: string, p: Penalty): Promise<void>;
+  updateNotes(id: string, notes: string): Promise<void>;
   deleteSolve(id: string): Promise<void>;
   upsertSession(s: Session, userId?: string): Promise<void>;
+  deleteSession(id: string): Promise<void>;
   deleteSolvesInSession(sessionId: string): Promise<void>;
 }

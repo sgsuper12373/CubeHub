@@ -18,16 +18,12 @@ export function ScrambleBar({
   puzzle,
   onNext,
   onCopy,
-  onTogglePreview,
-  previewOn,
 }: {
   alg: string | null;
   generating: boolean;
   puzzle: TimerPuzzle;
   onNext: () => void;
   onCopy: () => void;
-  onTogglePreview: () => void;
-  previewOn: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   const copyResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -73,16 +69,6 @@ export function ScrambleBar({
           }}
         >
           {copied ? <Check className="text-timer-ready" /> : <Copy />}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label={previewOn ? "Hide scramble preview" : "Show scramble preview"}
-          aria-pressed={previewOn}
-          onClick={onTogglePreview}
-          className={cn(previewOn && "text-timer-ready")}
-        >
-          {previewOn ? <Eye /> : <EyeOff />}
         </Button>
       </div>
     </div>

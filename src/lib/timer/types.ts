@@ -31,6 +31,12 @@ export interface TimerSettings {
   showScramblePreview: boolean;
   /** Informational (mirrors user_settings.timer_trigger); both input engines are always active. */
   trigger: "spacebar" | "touch";
+  /** Hold-to-start threshold in ms. Client-only (localStorage). */
+  holdMs: number;
+  /** Decimal places in time display. Client-only (localStorage). */
+  precision: 2 | 3;
+  /** Whether inspection voice callouts are enabled. Client-only (localStorage). */
+  voiceEnabled: boolean;
 }
 
 export const DEFAULT_TIMER_SETTINGS: TimerSettings = {
@@ -38,6 +44,9 @@ export const DEFAULT_TIMER_SETTINGS: TimerSettings = {
   hideTimeWhileSolving: false,
   showScramblePreview: true,
   trigger: "spacebar",
+  holdMs: 300,
+  precision: 2,
+  voiceEnabled: true,
 };
 
 export interface Solve {
@@ -55,6 +64,7 @@ export interface Solve {
    */
   effectiveTimeMs: number | null;
   scramble: string;
+  notes: string | null;
   /** ISO timestamp. Wall-clock is fine for metadata; never used for timing math. */
   createdAt: string;
 }

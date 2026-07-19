@@ -10,10 +10,12 @@ export function SolveList({
   solves,
   onPenalty,
   onDelete,
+  onNotes,
 }: {
   solves: Solve[];
   onPenalty: (id: string, p: Penalty) => void;
   onDelete: (id: string) => void;
+  onNotes: (id: string, notes: string) => void;
 }) {
   if (solves.length === 0) {
     return (
@@ -32,6 +34,7 @@ export function SolveList({
           index={solves.length - i}
           onPenalty={onPenalty}
           onDelete={onDelete}
+          onNotes={onNotes}
         />
       ))}
     </div>

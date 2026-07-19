@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import { formatResult } from "@/lib/timer/format";
 import type { Penalty, Solve } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
+import { SolveDetailModal } from "@/components/stats/solve-detail";
 
 /**
  * A single solve in the list. Desktop: hover reveals actions. Mobile:
@@ -21,8 +22,10 @@ export function SolveRow({
   index: number;
   onPenalty: (id: string, p: Penalty) => void;
   onDelete: (id: string) => void;
+  onNotes: (id: string, notes: string) => void;
 }) {
   const [swiped, setSwiped] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const startXRef = useRef(0);
   const rowRef = useRef<HTMLDivElement>(null);
 
@@ -37,7 +40,8 @@ export function SolveRow({
         <button
           type="button"
           className="flex w-14 items-center justify-center bg-amber-600/80 text-xs font-bold text-white"
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             togglePenalty("plus2");
             setSwiped(false);
           }}
@@ -47,7 +51,8 @@ export function SolveRow({
         <button
           type="button"
           className="flex w-14 items-center justify-center bg-orange-600/80 text-xs font-bold text-white"
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             togglePenalty("dnf");
             setSwiped(false);
           }}
@@ -57,7 +62,10 @@ export function SolveRow({
         <button
           type="button"
           className="flex w-14 items-center justify-center bg-destructive/80 text-white"
-          onClick={() => onDelete(solve.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(solve.id);
+          }}
           aria-label="Delete solve"
         >
           <Trash2 className="size-4" />
@@ -68,9 +76,10 @@ export function SolveRow({
       <div
         ref={rowRef}
         className={cn(
-          "relative flex min-h-11 items-center gap-3 bg-background px-3 py-1.5 transition-transform duration-200 group",
+          "relative flex min-h-11 items-center gap-3 bg-background px-3 py-1.5 transition-transform duration-200 group cursor-pointer hover:bg-muted/50",
           swiped ? "-translate-x-[10.5rem]" : "translate-x-0",
         )}
+        onClick={() => setDetailOpen(true)}
         onTouchStart={(e) => {
           startXRef.current = e.touches[0].clientX;
         }}
@@ -109,7 +118,10 @@ export function SolveRow({
                 ? "bg-amber-600/20 text-amber-400"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted",
             )}
-            onClick={() => togglePenalty("plus2")}
+            onClick={(e) => {
+              e.stopPropagation();
+              togglePenalty("plus2");
+            }}
           >
             +2
           </button>
@@ -121,7 +133,10 @@ export function SolveRow({
                 ? "bg-destructive/20 text-destructive"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted",
             )}
-            onClick={() => togglePenalty("dnf")}
+            onClick={(e) => {
+              e.stopPropagation();
+              togglePenalty("dnf");
+            }}
           >
             DNF
           </button>
@@ -129,12 +144,25 @@ export function SolveRow({
             type="button"
             aria-label="Delete"
             className="rounded p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-            onClick={() => onDelete(solve.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(solve.id);
+            }}
           >
             <Trash2 className="size-3.5" />
           </button>
         </div>
       </div>
+      {detailOpen && (
+        <SolveDetailModal
+          solve={solve}
+          puzzle={solve.puzzle}
+          onClose={() => setDetailOpen(false)}
+          onPenalty={(p) => onPenalty(solve.id, p)}
+          onDelete={() => onDelete(solve.id)}
+          onNotes={(notes) => onNotes(solve.id, notes)}
+        />
+      )}
     </div>
   );
 }

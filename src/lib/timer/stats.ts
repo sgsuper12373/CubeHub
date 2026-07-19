@@ -26,6 +26,16 @@ export function bestSingle(solves: SolveTimes[]): number | null {
   return best;
 }
 
+/** Worst non-DNF single, or null with no counting solves. */
+export function worstSingle(solves: SolveTimes[]): number | null {
+  let worst: number | null = null;
+  for (const s of solves) {
+    const t = effectiveMs(s);
+    if (t !== null && (worst === null || t > worst)) worst = t;
+  }
+  return worst;
+}
+
 /** Plain mean of all non-DNF solves (informal session stat, not a WCA mean). */
 export function sessionMean(solves: SolveTimes[]): number | null {
   let sum = 0;

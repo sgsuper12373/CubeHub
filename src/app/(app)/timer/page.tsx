@@ -1,27 +1,27 @@
 import type { Metadata } from "next";
 
 import { TimerScreen } from "@/components/timer/timer-screen";
-import { getUser } from "@/lib/auth/dal";
+import { getUser, getTimerSettings } from "@/lib/auth/dal";
 
 export const metadata: Metadata = {
   title: "Timer — CubeHub",
 };
 
 /**
- * Server shell only — renders instantly, no data fetch on the interaction
- * path. `getUser()` is cache()d and already resolved by the (app) layout in
- * the same render pass. Timer settings from user_settings arrive with the
- * cloud-sync step (getTimerSettings DAL helper); until then the client
- * defaults apply.
+ * Server shell only — renders instantly. `getUser()` and `getTimerSettings()`
+ * are cache()d and share the same Supabase client within the render pass,
+ * so the auth check is free. Timer settings hydrate from user_settings when
+ * logged in; otherwise the client defaults apply (no login friction).
  */
 export default async function TimerPage() {
   const user = await getUser();
+  const settings = await getTimerSettings();
 
   return (
     <TimerScreen
       isAuthed={user !== null}
       userId={user?.id ?? null}
-      initialSettings={null}
+      initialSettings={settings}
     />
   );
 }

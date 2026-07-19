@@ -6,10 +6,11 @@ import { formatMs, formatResult } from "@/lib/timer/format";
 import { cn } from "@/lib/utils";
 import {
   DNF_OVERRUN_MS,
-  HOLD_MS,
+  getHoldMs,
   inspectionDurationMs,
   useTimerStore,
 } from "@/stores/timer-store";
+import { announce, cancelAnnounce } from "@/lib/timer/voice";
 
 /**
  * The big digits. All time-varying content is written imperatively into a
@@ -19,7 +20,7 @@ import {
  * the color classes swap.
  *
  * The same rAF loop drives the two time-based transitions:
- * holding ≥ HOLD_MS → ready, and inspection overrun → +2 / DNF.
+ * holding ≥ holdMs → ready, and inspection overrun → +2 / DNF.
  */
 export function TimeDisplay({
   hideWhileSolving,
@@ -30,6 +31,17 @@ export function TimeDisplay({
 }) {
   const phase = useTimerStore((s) => s.phase);
   const digitsRef = useRef<HTMLSpanElement>(null);
+  const announcedMarksRef = useRef<Set<number>>(new Set());
+
+  // Reset announced marks and cancel speech when phase resets
+  useEffect(() => {
+    if (phase === "idle") {
+      announcedMarksRef.current.clear();
+      cancelAnnounce();
+    } else if (phase === "running" || phase === "stopped") {
+      cancelAnnounce();
+    }
+  }, [phase]);
 
   useEffect(() => {
     const el = digitsRef.current;
@@ -61,16 +73,25 @@ export function TimeDisplay({
             el.textContent = "+2";
             el.style.color = "var(--timer-hold)";
           } else {
-            el.textContent = String(Math.ceil((duration - elapsed) / 1000));
-            if (duration - elapsed <= 3_000)
-              el.style.color = "var(--timer-hold)";
+            const remaining = Math.ceil((duration - elapsed) / 1000);
+            el.textContent = String(remaining);
+            if (remaining <= 3) el.style.color = "var(--timer-hold)";
+
+            if (s.settings.voiceEnabled) {
+              const mark = duration === 15_000 ? (remaining === 7 ? 8 : remaining === 3 ? 12 : null) : (remaining === 4 ? 4 : remaining === 2 ? 6 : null);
+              if (mark && !announcedMarksRef.current.has(mark)) {
+                announcedMarksRef.current.add(mark);
+                announce(`${mark} seconds`);
+              }
+            }
           }
           break;
         }
         case "running":
+          const ms = now - (s.solveStartedAt ?? now);
           el.textContent = hideWhileSolving
             ? "solve"
-            : formatMs(now - (s.solveStartedAt ?? now));
+            : formatMs(ms, s.settings.precision ?? 2);
           break;
         case "stopped":
           el.textContent = formatResult(
@@ -97,7 +118,7 @@ export function TimeDisplay({
       if (
         s.phase === "holding" &&
         s.holdStartedAt !== null &&
-        now - s.holdStartedAt >= HOLD_MS
+        now - s.holdStartedAt >= getHoldMs()
       ) {
         s.ready(); // phase change re-runs this effect; loop restarts cleanly
       }

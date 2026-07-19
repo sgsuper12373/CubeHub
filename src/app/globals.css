@@ -133,3 +133,13 @@
     @apply font-sans;
   }
 }
+
+/* Reduced motion: disable timer scale pulse and shimmer animations */
+@media (prefers-reduced-motion: reduce) {
+  .scale-\[1\.02\] {
+    transform: none !important;
+  }
+  .animate-pulse {
+    animation: none !important;
+  }
+}

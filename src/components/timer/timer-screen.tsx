@@ -1,15 +1,20 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { PenaltyBar } from "@/components/timer/penalty-bar";
 import { ScrambleBar } from "@/components/timer/scramble-bar";
 import { SessionSwitcher } from "@/components/timer/session-switcher";
 import { TimeDisplay } from "@/components/timer/time-display";
 import { TouchStage } from "@/components/timer/touch-stage";
+import { SignInNudge } from "@/components/timer/sign-in-nudge";
+import { ShortcutHint } from "@/components/timer/shortcut-hint";
+import { ScramblePreview } from "@/components/timer/scramble-preview";
+import { QuickSettings } from "@/components/timer/quick-settings";
 import { StatsPanel } from "@/components/stats/stats-panel";
 import { generateScramble } from "@/lib/timer/scrambler";
 import { bestSingle } from "@/lib/timer/stats";
+import { loadClientSettings, saveSettings } from "@/lib/timer/settings-persistence";
 import type { Penalty, TimerSettings } from "@/lib/timer/types";
 import { useSessionStore } from "@/stores/session-store";
 import { useTimerStore } from "@/stores/timer-store";
@@ -35,12 +40,24 @@ export function TimerScreen(props: {
   const sessions = useSessionStore((s) => s.sessions);
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
   const solves = useSessionStore((s) => s.solves);
+  const backend = useSessionStore((s) => s.backend);
 
   const lastRecordedStopRef = useRef<number | null>(null);
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
 
   useEffect(() => {
-    if (props.initialSettings) applySettings(props.initialSettings);
+    const clientSettings = loadClientSettings();
+    if (props.initialSettings) {
+      applySettings({ ...props.initialSettings, ...clientSettings });
+    } else {
+      applySettings(clientSettings);
+    }
   }, [props.initialSettings, applySettings]);
+
+  const handleSettingsChange = (partial: Partial<TimerSettings>) => {
+    applySettings(partial);
+    saveSettings(partial, props.isAuthed);
+  };
 
   useEffect(() => {
     void useSessionStore.getState().hydrate(props.userId);
@@ -182,33 +199,42 @@ export function TimerScreen(props: {
               const { alg } = useTimerStore.getState().scramble;
               if (alg) void navigator.clipboard.writeText(alg);
             }}
-            onTogglePreview={() =>
-              applySettings({ showScramblePreview: !settings.showScramblePreview })
-            }
-            previewOn={settings.showScramblePreview}
           />
-          <SessionSwitcher
-            sessions={sessions}
-            activeId={activeSessionId}
-            puzzle={puzzle}
-            onSelect={(id) => void useSessionStore.getState().switchSession(id)}
-            onCreate={(name) => void useSessionStore.getState().createSession(name)}
-            onRename={(id, name) =>
-              void useSessionStore.getState().renameSession(id, name)
-            }
-            onReset={() => {
-              void (async () => {
-                const { undo } = await useSessionStore.getState().resetSession();
-                toast({
-                  kind: "undo",
-                  message: "Session cleared",
-                  durationMs: 5000,
-                  action: { label: "Undo", onAction: undo },
-                });
-              })();
-            }}
-            onPuzzleChange={changePuzzle}
-          />
+          {settings.showScramblePreview && scramble.alg && (
+            <ScramblePreview alg={scramble.alg} puzzle={puzzle} />
+          )}
+          <div className="flex items-center justify-between px-4 pb-2 relative z-20">
+            <SessionSwitcher
+              sessions={sessions}
+              activeId={activeSessionId}
+              puzzle={puzzle}
+              onSelect={(id) => void useSessionStore.getState().switchSession(id)}
+              onCreate={(name) => void useSessionStore.getState().createSession(name)}
+              onRename={(id, name) =>
+                void useSessionStore.getState().renameSession(id, name)
+              }
+              onReset={() => {
+                void (async () => {
+                  const { undo } = await useSessionStore.getState().resetSession();
+                  toast({
+                    kind: "undo",
+                    message: "Session cleared",
+                    durationMs: 5000,
+                    action: { label: "Undo", onAction: undo },
+                  });
+                })();
+              }}
+              onDelete={(id) => void useSessionStore.getState().deleteSession(id)}
+              onPuzzleChange={changePuzzle}
+            />
+            {phase === "idle" || phase === "stopped" ? (
+              <QuickSettings
+                settings={settings}
+                onChange={handleSettingsChange}
+                isAuthed={props.isAuthed}
+              />
+            ) : null}
+          </div>
         </div>
 
         <TouchStage>
@@ -235,6 +261,18 @@ export function TimerScreen(props: {
             onDelete={deleteLast}
           />
         )}
+
+        {/* Sign-in nudge for logged-out users */}
+        {!props.isAuthed && backend === "local" && !nudgeDismissed && !solving && (
+          <div className="px-4 py-2">
+            <SignInNudge
+              solveCount={solves.length}
+              onDismiss={() => setNudgeDismissed(true)}
+            />
+          </div>
+        )}
+
+        {phase === "stopped" && solves.length > 0 && <ShortcutHint />}
       </div>
 
       {/* ── Stats panel (drawer mobile / rail desktop) ── */}

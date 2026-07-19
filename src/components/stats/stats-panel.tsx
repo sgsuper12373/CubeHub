@@ -20,16 +20,20 @@ export function StatsPanel({
   solves,
   onPenalty,
   onDelete,
+  onNotes,
 }: {
   solves: Solve[];
   onPenalty: (id: string, p: Penalty) => void;
   onDelete: (id: string) => void;
+  onNotes: (id: string, notes: string) => void;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const best = bestSingle(solves);
   const ao5 = wcaAverage(solves, 5);
   const ao12 = wcaAverage(solves, 12);
+  const ao50 = wcaAverage(solves, 50);
+  const ao100 = wcaAverage(solves, 100);
   const mean = sessionMean(solves);
 
   const content = (
@@ -38,10 +42,17 @@ export function StatsPanel({
         best={best}
         ao5={ao5}
         ao12={ao12}
+        ao50={ao50}
+        ao100={ao100}
         mean={mean}
         count={solves.length}
       />
-      <SolveList solves={solves} onPenalty={onPenalty} onDelete={onDelete} />
+      <SolveList 
+        solves={solves} 
+        onPenalty={onPenalty} 
+        onDelete={onDelete} 
+        onNotes={onNotes} 
+      />
     </>
   );
 

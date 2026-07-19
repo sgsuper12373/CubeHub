@@ -9,8 +9,10 @@ import {
   type TimerSettings,
 } from "@/lib/timer/types";
 
-/** Hold this long before a press becomes "ready" (csTimer default). */
-export const HOLD_MS = 300;
+/** Hold this long before a press becomes "ready". Reads from settings so users can customize. */
+export function getHoldMs(): number {
+  return useTimerStore.getState().settings.holdMs;
+}
 /** Ignore presses this soon after a stop so the stopping tap can't re-arm. */
 export const STOP_DEBOUNCE_MS = 200;
 /** Inspection overrun beyond the +2 window becomes a DNF (WCA: 15s → +2, 17s → DNF). */

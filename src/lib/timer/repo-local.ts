@@ -79,6 +79,14 @@ export const localRepo: SolveRepository = {
     }
   },
 
+  async updateNotes(id, notes) {
+    const solve = read().solves.find((s) => s.id === id);
+    if (solve) {
+      solve.notes = notes;
+      scheduleFlush();
+    }
+  },
+
   async deleteSolve(id) {
     const data = read();
     data.solves = data.solves.filter((s) => s.id !== id);
@@ -90,6 +98,13 @@ export const localRepo: SolveRepository = {
     const i = data.sessions.findIndex((s) => s.id === session.id);
     if (i === -1) data.sessions.push(session);
     else data.sessions[i] = session;
+    scheduleFlush();
+  },
+
+  async deleteSession(id) {
+    const data = read();
+    data.sessions = data.sessions.filter((s) => s.id !== id);
+    data.solves = data.solves.filter((s) => s.sessionId !== id);
     scheduleFlush();
   },
 
