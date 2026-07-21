@@ -5,6 +5,7 @@ import "./globals.css";
 import { cookies } from "next/headers";
 
 import { AuthListener } from "@/components/auth/auth-listener";
+import { ConfirmHost } from "@/components/ui/confirm-dialog";
 import { Toaster } from "@/components/ui/toast";
 
 const geistSans = Geist({
@@ -66,6 +67,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <AuthListener />
         <Toaster />
+        <ConfirmHost />
         {children}
       </body>
     </html>

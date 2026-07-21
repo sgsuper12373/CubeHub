@@ -36,6 +36,8 @@ interface SessionStore {
   renameSession(id: string, name: string): Promise<void>;
   /** Clears the active session's solves; the returned undo restores them. */
   resetSession(): Promise<{ undo: () => void }>;
+  /** Un-delete solves by id and refresh the active list. Safe to call from an undo toast. */
+  restoreSolves(ids: string[]): Promise<void>;
   setPuzzle(p: TimerPuzzle): Promise<void>;
 
   /** Trigger local → cloud sync. Called from AuthListener on SIGNED_IN. */
@@ -230,21 +232,36 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
   resetSession: async () => {
     const s = get();
     const sessionId = s.activeSessionId;
-    const cleared = s.solves;
-    if (!sessionId || cleared.length === 0) return { undo: () => {} };
+    const clearedIds = s.solves.map((x) => x.id);
+    if (!sessionId || clearedIds.length === 0) return { undo: () => {} };
 
+    // Soft delete: the rows survive with deleted_at set, so undo is a single
+    // atomic restore (no re-insert loop) and the data is recoverable even if
+    // the toast is missed. The DB trigger recomputes the PB off the survivors.
     set({ solves: [] });
     await repo.deleteSolvesInSession(sessionId);
 
-    return {
-      undo: () => {
-        void (async () => {
-          for (const solve of cleared)
-            await repo.saveSolve(solve, activeUserId ?? undefined);
-          if (get().activeSessionId === sessionId) set({ solves: cleared });
-        })();
-      },
-    };
+    return { undo: () => void get().restoreSolves(clearedIds) };
+  },
+
+  restoreSolves: async (ids) => {
+    if (ids.length === 0) return;
+    try {
+      await repo.restoreSolves(ids);
+    } catch (err) {
+      console.error("restore failed", err);
+      toast({
+        kind: "error",
+        message: "Couldn't undo — please try again",
+        durationMs: 4000,
+      });
+      return;
+    }
+    // Reload the active session so restored solves reappear in order.
+    const sessionId = get().activeSessionId;
+    if (!sessionId) return;
+    const solves = await repo.loadSolves(sessionId, SOLVE_LIMIT);
+    if (get().activeSessionId === sessionId) set({ solves });
   },
 
   setPuzzle: async (p) => {

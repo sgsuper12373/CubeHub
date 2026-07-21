@@ -74,6 +74,13 @@ export interface Solve {
   notes: string | null;
   /** ISO timestamp. Wall-clock is fine for metadata; never used for timing math. */
   createdAt: string;
+  /**
+   * Soft-delete marker. `null`/absent = live. Reset and delete set it instead
+   * of removing the row, so undo is durable (survives reload) and a future
+   * "Recently deleted" view / retention policy has data to work with. Reads
+   * filter it out; the DB PB-recompute trigger treats a set value as gone.
+   */
+  deletedAt?: string | null;
 }
 
 export interface Session {

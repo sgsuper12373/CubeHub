@@ -44,6 +44,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
         )
         .eq("session_id", sessionId)
         .eq("user_id", userId)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(limit);
 
@@ -88,11 +89,13 @@ export function createSupabaseRepo(userId: string): SolveRepository {
     },
 
     async deleteSolve(id) {
+      // Soft delete — the AFTER UPDATE OF deleted_at trigger recomputes the PB.
       const { error } = await getClient()
         .from("solves")
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .eq("id", id)
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .is("deleted_at", null);
       if (error) throw error;
     },
 
@@ -133,10 +136,23 @@ export function createSupabaseRepo(userId: string): SolveRepository {
     },
 
     async deleteSolvesInSession(sessionId) {
+      // Soft delete the whole session's live solves in one statement; the
+      // statement-level trigger recomputes the PB once.
       const { error } = await getClient()
         .from("solves")
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .eq("session_id", sessionId)
+        .eq("user_id", userId)
+        .is("deleted_at", null);
+      if (error) throw error;
+    },
+
+    async restoreSolves(ids) {
+      if (ids.length === 0) return;
+      const { error } = await getClient()
+        .from("solves")
+        .update({ deleted_at: null })
+        .in("id", ids)
         .eq("user_id", userId);
       if (error) throw error;
     },

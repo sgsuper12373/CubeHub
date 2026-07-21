@@ -12,13 +12,18 @@ import type { Penalty, Session, Solve, TimerPuzzle } from "./types";
  */
 export interface SolveRepository {
   loadSessions(puzzle: TimerPuzzle): Promise<Session[]>;
-  /** Newest first. */
+  /** Newest first. Excludes soft-deleted solves. */
   loadSolves(sessionId: string, limit?: number): Promise<Solve[]>;
   saveSolve(s: Solve, userId?: string): Promise<void>;
   updatePenalty(id: string, p: Penalty): Promise<void>;
   updateNotes(id: string, notes: string): Promise<void>;
+  /** Soft delete — sets deleted_at. Reversible via restoreSolves. */
   deleteSolve(id: string): Promise<void>;
   upsertSession(s: Session, userId?: string): Promise<void>;
+  /** Hard delete — removes the session; its solves cascade away for good. */
   deleteSession(id: string): Promise<void>;
+  /** Soft delete every live solve in the session. Reversible via restoreSolves. */
   deleteSolvesInSession(sessionId: string): Promise<void>;
+  /** Clear the soft-delete marker, bringing the solves back. */
+  restoreSolves(ids: string[]): Promise<void>;
 }

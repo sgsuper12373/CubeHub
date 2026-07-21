@@ -27,6 +27,7 @@ import type { Penalty, TimerSettings } from "@/lib/timer/types";
 import { useSessionStore } from "@/stores/session-store";
 import { useTimerStore } from "@/stores/timer-store";
 import { toast } from "@/stores/toast-store";
+import { confirm } from "@/stores/confirm-store";
 import { formatMs } from "@/lib/timer/format";
 import { cn } from "@/lib/utils";
 
@@ -168,14 +169,30 @@ export function TimerScreen(props: {
   };
 
   const deleteLast = () => {
-    const timer = useTimerStore.getState();
     const last = useSessionStore.getState().solves[0];
-    if (last) {
-      void useSessionStore.getState().deleteSolve(last.id);
-      toast({ kind: "info", message: "Solve deleted", durationMs: 2000 });
-    }
-    timer.advanceScramble(); // a deleted scramble is spent — fresh one next
-    timer.clearResult();
+    if (!last) return;
+    void (async () => {
+      const ok = await confirm({
+        title: "Delete this solve?",
+        confirmLabel: "Delete",
+        destructive: true,
+      });
+      if (!ok) return;
+      const timer = useTimerStore.getState();
+      await useSessionStore.getState().deleteSolve(last.id);
+      toast({
+        kind: "undo",
+        message: "Solve deleted",
+        durationMs: 5000,
+        action: {
+          label: "Undo",
+          onAction: () =>
+            void useSessionStore.getState().restoreSolves([last.id]),
+        },
+      });
+      timer.advanceScramble(); // a deleted scramble is spent — fresh one next
+      timer.clearResult();
+    })();
   };
 
   const changePuzzle = (p: typeof puzzle) => {
@@ -197,16 +214,32 @@ export function TimerScreen(props: {
   };
 
   const handleDelete = (id: string) => {
-    void useSessionStore.getState().deleteSolve(id);
-    toast({ kind: "info", message: "Solve deleted", durationMs: 2000 });
-    // If the deleted solve was the one on display, clear the result
-    const timer = useTimerStore.getState();
-    if (phase === "stopped") {
-      const remaining = useSessionStore.getState().solves;
-      if (remaining.length === 0 || remaining[0].id !== id) {
-        timer.clearResult();
+    void (async () => {
+      const ok = await confirm({
+        title: "Delete this solve?",
+        confirmLabel: "Delete",
+        destructive: true,
+      });
+      if (!ok) return;
+      await useSessionStore.getState().deleteSolve(id);
+      toast({
+        kind: "undo",
+        message: "Solve deleted",
+        durationMs: 5000,
+        action: {
+          label: "Undo",
+          onAction: () => void useSessionStore.getState().restoreSolves([id]),
+        },
+      });
+      // If the deleted solve was the one on display, clear the result
+      const timer = useTimerStore.getState();
+      if (phase === "stopped") {
+        const remaining = useSessionStore.getState().solves;
+        if (remaining.length === 0 || remaining[0].id !== id) {
+          timer.clearResult();
+        }
       }
-    }
+    })();
   };
 
   const solving =
@@ -342,6 +375,18 @@ export function TimerScreen(props: {
               }
               onReset={() => {
                 void (async () => {
+                  const count = useSessionStore.getState().solves.length;
+                  if (count === 0) return;
+                  const name =
+                    sessions.find((x) => x.id === activeSessionId)?.name ??
+                    "this session";
+                  const ok = await confirm({
+                    title: "Clear this session?",
+                    body: `Removes all ${count} solve${count === 1 ? "" : "s"} from "${name}". You can undo right after.`,
+                    confirmLabel: "Clear session",
+                    destructive: true,
+                  });
+                  if (!ok) return;
                   const { undo } = await useSessionStore.getState().resetSession();
                   toast({
                     kind: "undo",
@@ -351,7 +396,23 @@ export function TimerScreen(props: {
                   });
                 })();
               }}
-              onDelete={(id) => void useSessionStore.getState().deleteSession(id)}
+              onDelete={(id) => {
+                void (async () => {
+                  const target = sessions.find((x) => x.id === id);
+                  const count = useSessionStore.getState().solves.length;
+                  const ok = await confirm({
+                    title: `Delete "${target?.name ?? "session"}"?`,
+                    body:
+                      count > 0
+                        ? `Permanently deletes the session and its ${count} solve${count === 1 ? "" : "s"}. This can't be undone.`
+                        : "Permanently deletes the session. This can't be undone.",
+                    confirmLabel: "Delete session",
+                    destructive: true,
+                  });
+                  if (!ok) return;
+                  await useSessionStore.getState().deleteSession(id);
+                })();
+              }}
               onPuzzleChange={changePuzzle}
             />
             {phase === "idle" || phase === "stopped" ? (
