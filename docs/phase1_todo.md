@@ -19,9 +19,17 @@ The Session Reset findings below (all four points) are addressed in code. Approa
 - **#4 No confirmation** → reusable `confirm()` store + `<ConfirmHost/>` (Base UI AlertDialog);
   all three destructive actions (reset, delete-session, single-solve delete) now confirm.
 
-**Still pending:** apply the migration to the live DB, then the manual browser pass below.
-A "Recently deleted" view + a purge job for old soft-deleted rows are the natural follow-ups
-this migration enables.
+**Verified 2026-07-21:** migration applied to the live DB; schema objects confirmed via
+read-only MCP; scripted PB-recompute test passed all five phases (insert→1200, soft-delete
+PB→1500, DNF best→1800, restore→1200, delete-all→no row) — no phantom PBs. Static checks
+green (`tsc`, `eslint`, `next build --webpack`).
+
+**Manual in-browser pass done 2026-07-21** — confirm/undo flows and the previously
+never-exercised interactive items (panel drag/resize, landing demo timer, preview
+auto-sizing, settings-form store state) all verified working. **Phase 1 fully closed.**
+
+A "Recently deleted" view + a purge job for old soft-deleted rows are the natural
+follow-ups this migration enables (see cubing-website-plan.md §11.3).
 
 ---
 
