@@ -23,7 +23,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="flex flex-1 flex-col items-center p-6 md:p-12">
-      <SettingsForm initialSettings={initialSettings} userId={user.id} />
+      <SettingsForm initialSettings={initialSettings} />
     </div>
   );
 }

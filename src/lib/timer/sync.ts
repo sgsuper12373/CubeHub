@@ -77,9 +77,11 @@ export async function syncLocalToCloud(userId: string): Promise<number> {
   }
 
   // ── 2. Upsert solves in chunks ──
+  // Soft-deleted solves are local trash — don't migrate them to the cloud.
+  const liveSolves = local.solves.filter((s) => !s.deletedAt);
   let synced = 0;
-  for (let i = 0; i < local.solves.length; i += CHUNK_SIZE) {
-    const chunk = local.solves.slice(i, i + CHUNK_SIZE);
+  for (let i = 0; i < liveSolves.length; i += CHUNK_SIZE) {
+    const chunk = liveSolves.slice(i, i + CHUNK_SIZE);
     const solveRows = chunk.map((s) => ({
       id: s.id,
       user_id: userId,

@@ -3,6 +3,7 @@
 import { BarChart3, X } from "lucide-react";
 import { useState } from "react";
 
+import { SessionTrend } from "@/components/stats/session-trend";
 import { SolveList } from "@/components/stats/solve-list";
 import { StatTiles } from "@/components/stats/stat-tiles";
 import { Button } from "@/components/ui/button";
@@ -11,10 +12,12 @@ import type { Penalty, Solve } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
 
 /**
- * Stats panel with two layouts:
- * - Mobile (< md): toggle-able slide-up drawer over the timer, triggered
- *   by a floating button. Cubers on small phones prefer maximum timer space.
- * - Desktop (≥ md): persistent right rail alongside the timer.
+ * Mobile stats drawer: a floating button that opens a slide-up sheet over the
+ * timer, so a small phone keeps maximum timer space.
+ *
+ * Mobile only. At md+ the same three views (tiles, trend, solve list) are
+ * independent panels in the rearrangeable grid — see `layout-shell.tsx` — so
+ * rendering a rail here as well would duplicate them.
  */
 export function StatsPanel({
   solves,
@@ -47,7 +50,8 @@ export function StatsPanel({
         mean={mean}
         count={solves.length}
       />
-      <SolveList 
+      <SessionTrend solves={solves} />
+      <SolveList
         solves={solves} 
         onPenalty={onPenalty} 
         onDelete={onDelete} 
@@ -114,13 +118,6 @@ export function StatsPanel({
         </>
       )}
 
-      {/* ── Desktop: right rail ── */}
-      <aside className="hidden md:flex md:w-72 lg:w-80 md:flex-col md:gap-3 md:border-l md:border-border/50 md:py-4">
-        <h2 className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Session Stats
-        </h2>
-        {content}
-      </aside>
     </>
   );
 }

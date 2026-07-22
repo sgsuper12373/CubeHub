@@ -18,29 +18,29 @@ Design principles: the timer loads in under a second and works before anything e
 | 4 | Auth UI — email/password + Google, confirmation, `/login` `/signup`, navbar wired, manually verified end to end | 2026-07-18 |
 | 5 | Route groups for chrome; `/settings` gated; access-control model designed | 2026-07-18 |
 
-Everything under `/timer`, `/learn`, `/compete`, `/shop`, `/settings` and `/` is still a **stub page**.
+**Phase 1 — Core timer: complete.**
 
-## Next: Phase 1 — Core timer
+| Delivered | Date |
+|---|---|
+| `performance.now()` timer, spacebar + tap-hold-release, phase machine | 2026-07-18 |
+| WCA random-state scrambles (3x3, 2x2) with a prefetched next slot | 2026-07-18 |
+| Inspection 8s/15s/off with voice callouts; auto +2 / DNF on overrun | 2026-07-18 |
+| Named sessions per puzzle, localStorage → Supabase sync on sign-in | 2026-07-18 |
+| Solve list with swipe actions, notes, penalties, undo | 2026-07-19 |
+| Ao5/12/50/100, best, mean; 12-solve trend sparkline with Ao5 delta | 2026-07-19 |
+| Scramble move tokens, `?` shortcut overlay, PB glow | 2026-07-19 |
+| Floating draggable scramble preview (2D/3D, desktop) | 2026-07-19 |
+| Landing page at `/` with a live demo timer, OG image, favicon | 2026-07-19 |
 
-The timer is the heart of the product and the highest-value thing to build now that auth exists.
-
-- Millisecond timer using `performance.now()`, not `Date.now()`
-- Spacebar (desktop) and tap-hold-release (mobile), matching csTimer muscle memory
-- WCA-compliant random-state scrambles, 3x3 and 2x2 first
-- Inspection: 8s / 15s / off, with voice callouts
-- Penalties: +2 and DNF, auto-applied when inspection is exceeded
-- Named sessions per puzzle type
-- Shortcuts: `Space` start/stop, `D` delete last, `1` +2, `2` DNF
-- localStorage for logged-out users, with a "sign in to save" prompt
-- Cloud sync to Supabase once signed in
+`/learn`, `/compete` and `/shop` remain **stub pages**.
 
 Note `solves.effective_time_ms` is a generated column that already applies +2/DNF. Never compute penalties in application code.
 
-*Deliverable: a fully usable timer, ready to share with the cubing community for beta feedback.*
+*Deliverable met: a usable timer plus a front door, ready to share with the cubing community for beta feedback.*
 
 ## Phase 2 — Analytics
 
-Ao5 / Ao12 / Ao50 / Ao100, session mean, best single; all-time PBs; trend chart with Ao5/Ao12 overlay; time-distribution histogram; practice heatmap; consistency score (standard deviation over the last 50 solves). Recharts.
+Session averages and the 12-solve sparkline shipped in Phase 1 (`components/stats/`, dependency-free inline SVG). Still to build: all-time PBs; a full trend chart with Ao5/Ao12 overlay; time-distribution histogram; practice heatmap; consistency score (standard deviation over the last 50 solves). Recharts — worth confirming it earns its bundle cost before adding, given the sparkline needed none.
 
 Data portability: CSV and JSON export, plus **csTimer JSON import** — critical for user migration. `solves.source` already accepts `'import'`.
 
@@ -94,7 +94,8 @@ The database already supports premium: `subscriptions`, `profiles.premium_until`
 
 - **Migrations baseline** — no migrations are checked in. Needed before the access-tier work, which changes policies that decide who reads paid content.
 - **Username onboarding** — the trigger assigns `user_<12 hex>`; users can't pick one.
-- **Deploy** — no Vercel project or CI/CD. Supabase Site URL is still `http://localhost:3000` and must be updated at deploy.
+- **Deploy** — no Vercel project or CI/CD. Supabase Site URL is still `http://localhost:3000` and must be updated at deploy. `NEXT_PUBLIC_SITE_URL` now feeds `metadataBase` and must be set, or Open Graph URLs resolve against localhost.
+- **The Turbopack build hangs — build with `--webpack`.** `next build` (Turbopack, the Next 16 default) never finishes: observed 30+ minutes with the process idle in `ep_poll` and no writes to `.next`, reproduced in a clean directory with no dev server running. `next build --webpack` compiles the same tree in **~18s** and emits all 17 routes. Prime suspect is cubing.js worker bundling — the dev log carries matching `Module worker instantiation using import.meta.resolve(…) failed` warnings. Worth reporting upstream; until then `--webpack` is the build command.
 - **`?next=` after login** — `/settings` redirects to `/login` but doesn't return you afterwards.
 - **GitHub OAuth** — planned, not built.
 - **`cubing.js` render test** — never done; it's a Phase 0 leftover that Phase 3 depends on.

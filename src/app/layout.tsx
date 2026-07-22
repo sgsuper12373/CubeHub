@@ -5,8 +5,8 @@ import "./globals.css";
 import { cookies } from "next/headers";
 
 import { AuthListener } from "@/components/auth/auth-listener";
+import { ConfirmHost } from "@/components/ui/confirm-dialog";
 import { Toaster } from "@/components/ui/toast";
-import { getThemeFromCookie, resolveTheme } from "@/lib/theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,10 +18,25 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
+  // Required, or Next warns at build and Open Graph URLs resolve relative.
+  metadataBase: new URL(SITE_URL),
   title: "CubeHub — Speedcubing Timer, Tutorials & Competitions",
   description:
     "The all-in-one speedcubing platform for the Indian cubing community — timer, tutorials, ranked matches, and cube recommendations.",
+  openGraph: {
+    type: "website",
+    siteName: "CubeHub",
+    title: "CubeHub — Speedcubing Timer, Tutorials & Competitions",
+    description:
+      "The all-in-one speedcubing platform for the Indian cubing community — timer, tutorials, ranked matches, and cube recommendations.",
+    url: SITE_URL,
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 /**
@@ -52,6 +67,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <AuthListener />
         <Toaster />
+        <ConfirmHost />
         {children}
       </body>
     </html>

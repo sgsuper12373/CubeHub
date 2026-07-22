@@ -24,9 +24,12 @@ import { announce, cancelAnnounce } from "@/lib/timer/voice";
  */
 export function TimeDisplay({
   hideWhileSolving,
+  celebrate = false,
   className,
 }: {
   hideWhileSolving: boolean;
+  /** Briefly true right after a personal best — drives the glow. */
+  celebrate?: boolean;
   className?: string;
 }) {
   const phase = useTimerStore((s) => s.phase);
@@ -141,8 +144,9 @@ export function TimeDisplay({
         className={cn(
           "font-mono text-7xl font-semibold tabular-nums transition-[color,transform] duration-150 md:text-8xl",
           phase === "holding" && "text-timer-hold",
-          phase === "ready" && "scale-[1.02] text-timer-ready",
+          phase === "ready" && "timer-ready-pulse text-timer-ready",
           phase === "stopped" && "text-timer-ready",
+          celebrate && "timer-pb-glow",
         )}
       />
     </div>

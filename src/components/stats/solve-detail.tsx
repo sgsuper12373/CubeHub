@@ -13,13 +13,14 @@ function formatRelative(date: Date): string {
   if (days < 30) return `${days}d ago`;
   return date.toLocaleDateString();
 }
-import { Copy, Trash2, X } from "lucide-react";
+import { Check, Copy, Trash2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ScramblePreview } from "@/components/timer/scramble-preview";
 import { formatMs } from "@/lib/timer/format";
 import type { Penalty, Solve, TimerPuzzle } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
+import { useOverlayLock } from "@/stores/overlay-store";
 
 export function SolveDetailModal({
   solve,
@@ -38,6 +39,8 @@ export function SolveDetailModal({
 }) {
   const [copied, setCopied] = useState(false);
   const [notes, setLocalNotes] = useState(solve.notes ?? "");
+  // Only mounted while open, so the lock spans exactly the modal's lifetime.
+  useOverlayLock(true);
 
   const handleCopy = () => {
     void navigator.clipboard.writeText(solve.scramble);
@@ -118,8 +121,13 @@ export function SolveDetailModal({
                 onClick={handleCopy}
                 className="text-muted-foreground hover:text-foreground transition-colors p-1"
                 title="Copy scramble"
+                aria-label={copied ? "Scramble copied" : "Copy scramble"}
               >
-                <Copy className="size-3.5" />
+                {copied ? (
+                  <Check className="size-3.5 text-timer-ready" />
+                ) : (
+                  <Copy className="size-3.5" />
+                )}
               </button>
             </div>
             <p className="font-mono text-sm leading-relaxed text-foreground">

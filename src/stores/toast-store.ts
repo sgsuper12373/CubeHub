@@ -6,7 +6,7 @@ import { create } from "zustand";
  * handles auto-dismiss; actions (e.g. "Undo") are optional callbacks.
  */
 
-export type ToastKind = "info" | "pb" | "undo";
+export type ToastKind = "info" | "pb" | "undo" | "error";
 
 export interface Toast {
   id: string;

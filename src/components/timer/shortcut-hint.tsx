@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { Keyboard, X } from "lucide-react";
 
 /**
- * A one-time banner shown after the user's first solve to introduce
- * the keyboard shortcuts (Space, D, 1, 2).
+ * A one-time banner shown after the user's first solve. It only teaches Space
+ * and `?` — the full list lives behind `?` in <ShortcutsOverlay/>, so this
+ * stays a pill rather than growing into a legend.
  */
 export function ShortcutHint() {
   const [visible, setVisible] = useState(false);
@@ -13,13 +14,15 @@ export function ShortcutHint() {
 
   useEffect(() => {
     const key = "cubehub.shortcutHintSeen";
-    const seen = localStorage.getItem(key);
-    if (!seen) {
+    if (localStorage.getItem(key)) return; // already seen — stays dismissed
+    // Wait a moment after mount so it doesn't pop immediately while they're
+    // looking at the time. Both state writes happen in the timeout rather
+    // than synchronously in the effect body, which would cascade a render.
+    const timer = setTimeout(() => {
       setDismissed(false);
-      // Wait a moment after mount so it doesn't pop immediately while they're looking at the time
-      const timer = setTimeout(() => setVisible(true), 1500);
-      return () => clearTimeout(timer);
-    }
+      setVisible(true);
+    }, 1500);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleDismiss = () => {
@@ -38,21 +41,13 @@ export function ShortcutHint() {
     >
       <div className="flex items-center gap-4 rounded-full border border-border bg-card/95 px-4 py-2 text-sm text-foreground shadow-lg backdrop-blur-sm sm:px-6">
         <div className="flex items-center gap-3">
-          <span className="hidden sm:inline">⌨️</span>
+          <Keyboard className="hidden size-4 text-muted-foreground sm:inline" />
           <span>
             <kbd className="rounded border border-border bg-muted px-1.5 font-mono text-[11px]">Space</kbd> start/stop
           </span>
           <span className="text-muted-foreground">·</span>
           <span>
-            <kbd className="rounded border border-border bg-muted px-1.5 font-mono text-[11px]">D</kbd> delete
-          </span>
-          <span className="text-muted-foreground">·</span>
-          <span>
-            <kbd className="rounded border border-border bg-muted px-1.5 font-mono text-[11px]">1</kbd> +2
-          </span>
-          <span className="text-muted-foreground">·</span>
-          <span>
-            <kbd className="rounded border border-border bg-muted px-1.5 font-mono text-[11px]">2</kbd> DNF
+            <kbd className="rounded border border-border bg-muted px-1.5 font-mono text-[11px]">?</kbd> all shortcuts
           </span>
         </div>
         <button

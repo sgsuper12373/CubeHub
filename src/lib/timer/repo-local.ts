@@ -59,7 +59,7 @@ export const localRepo: SolveRepository = {
 
   async loadSolves(sessionId, limit = 500) {
     return read()
-      .solves.filter((s) => s.sessionId === sessionId)
+      .solves.filter((s) => s.sessionId === sessionId && !s.deletedAt)
       .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
       .slice(0, limit);
   },
@@ -88,9 +88,12 @@ export const localRepo: SolveRepository = {
   },
 
   async deleteSolve(id) {
-    const data = read();
-    data.solves = data.solves.filter((s) => s.id !== id);
-    scheduleFlush();
+    // Soft delete, mirroring the cloud repo — keeps undo durable across reloads.
+    const solve = read().solves.find((s) => s.id === id);
+    if (solve) {
+      solve.deletedAt = new Date().toISOString();
+      scheduleFlush();
+    }
   },
 
   async upsertSession(session) {
@@ -109,8 +112,16 @@ export const localRepo: SolveRepository = {
   },
 
   async deleteSolvesInSession(sessionId) {
-    const data = read();
-    data.solves = data.solves.filter((s) => s.sessionId !== sessionId);
+    const now = new Date().toISOString();
+    for (const s of read().solves)
+      if (s.sessionId === sessionId && !s.deletedAt) s.deletedAt = now;
+    scheduleFlush();
+  },
+
+  async restoreSolves(ids) {
+    if (ids.length === 0) return;
+    const set = new Set(ids);
+    for (const s of read().solves) if (set.has(s.id)) s.deletedAt = null;
     scheduleFlush();
   },
 };

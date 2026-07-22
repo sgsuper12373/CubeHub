@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { createClient } from "@/lib/supabase/server";
+import type { TimerSettings } from "@/lib/timer/types";
 
 /**
  * The authenticated user, or null. Memoized per render pass so multiple
@@ -45,6 +46,18 @@ export const getProfile = cache(async (): Promise<CurrentProfile | null> => {
 });
 
 /**
+ * The subset of TimerSettings that is actually persisted server-side.
+ * `holdMs`, `precision` and `voiceEnabled` are deliberately client-only
+ * (localStorage) — see `lib/timer/settings-persistence.ts`. Keeping this a
+ * Pick<> rather than the full TimerSettings is what stops the server from
+ * having to invent values it doesn't store.
+ */
+export type ServerTimerSettings = Pick<
+  TimerSettings,
+  "inspectionMode" | "hideTimeWhileSolving" | "showScramblePreview" | "trigger"
+>;
+
+/**
  * Timer settings from user_settings, mapped to the client-side TimerSettings
  * shape. Returns null when logged out. Used by /timer's server shell to
  * pass initialSettings to <TimerScreen/> — avoids a client roundtrip.
@@ -53,7 +66,7 @@ export const getProfile = cache(async (): Promise<CurrentProfile | null> => {
  * - inspection_type 'none' → off, 'wca_15s' → 15s, 'custom' → use custom_inspection_secs
  * - timer_trigger is passed through (DB: 'spacebar'|'stackmat'|'touch')
  */
-export const getTimerSettings = cache(async () => {
+export const getTimerSettings = cache(async (): Promise<ServerTimerSettings | null> => {
   const user = await getUser();
   if (!user) return null;
 

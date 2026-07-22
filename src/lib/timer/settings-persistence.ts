@@ -9,8 +9,12 @@ import { DEFAULT_TIMER_SETTINGS } from "./types";
  *   → saved via server action, loaded via getTimerSettings() in dal.ts
  *
  * Client-only fields (localStorage for everyone):
- *   holdMs, precision, voiceEnabled
+ *   holdMs, precision, voiceEnabled, previewDimension
  *   → never synced to the cloud; these are per-device preferences
+ *
+ * `previewDimension` is deliberately client-only. `show_scramble_preview`
+ * stays the DB-backed master switch; a column for 2D-vs-3D would mean a
+ * migration for a per-device display choice.
  */
 
 const CLIENT_SETTINGS_KEY = "cubehub.settings.v1";
@@ -19,12 +23,14 @@ interface ClientOnlySettings {
   holdMs: number;
   precision: 2 | 3;
   voiceEnabled: boolean;
+  previewDimension: "2D" | "3D";
 }
 
 const CLIENT_DEFAULTS: ClientOnlySettings = {
   holdMs: DEFAULT_TIMER_SETTINGS.holdMs,
   precision: DEFAULT_TIMER_SETTINGS.precision,
   voiceEnabled: DEFAULT_TIMER_SETTINGS.voiceEnabled,
+  previewDimension: DEFAULT_TIMER_SETTINGS.previewDimension,
 };
 
 /** Read client-only settings from localStorage. */
@@ -49,6 +55,10 @@ export function loadClientSettings(): ClientOnlySettings {
         typeof parsed.voiceEnabled === "boolean"
           ? parsed.voiceEnabled
           : CLIENT_DEFAULTS.voiceEnabled,
+      previewDimension:
+        parsed.previewDimension === "2D" || parsed.previewDimension === "3D"
+          ? parsed.previewDimension
+          : CLIENT_DEFAULTS.previewDimension,
     };
   } catch {
     return CLIENT_DEFAULTS;
@@ -100,6 +110,8 @@ export function saveSettings(
   if (partial.precision !== undefined) clientFields.precision = partial.precision;
   if (partial.voiceEnabled !== undefined)
     clientFields.voiceEnabled = partial.voiceEnabled;
+  if (partial.previewDimension !== undefined)
+    clientFields.previewDimension = partial.previewDimension;
   if (Object.keys(clientFields).length > 0) saveClientSettings(clientFields);
 
   // DB-backed fields → server action (authed only)

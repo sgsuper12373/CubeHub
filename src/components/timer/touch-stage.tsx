@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { formatResult } from "@/lib/timer/format";
 import type { Penalty } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
+import { isOverlayOpen } from "@/stores/overlay-store";
 import { useSessionStore } from "@/stores/session-store";
 import { useTimerStore } from "@/stores/timer-store";
 import { toast } from "@/stores/toast-store";
@@ -36,20 +37,35 @@ function isEditableTarget(target: EventTarget | null): boolean {
  */
 export function TouchStage({
   disabled = false,
+  onShowShortcuts,
   children,
 }: {
   disabled?: boolean;
+  onShowShortcuts?: () => void;
   children: React.ReactNode;
 }) {
   const disabledRef = useRef(disabled);
+  // The key listener mounts once, so the callback is reached through a ref
+  // rather than being closed over.
+  const shortcutsRef = useRef(onShowShortcuts);
 
   useEffect(() => {
     disabledRef.current = disabled;
   }, [disabled]);
 
   useEffect(() => {
+    shortcutsRef.current = onShowShortcuts;
+  }, [onShowShortcuts]);
+
+  useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (disabledRef.current || e.repeat || isEditableTarget(e.target)) return;
+      if (
+        disabledRef.current ||
+        isOverlayOpen() ||
+        e.repeat ||
+        isEditableTarget(e.target)
+      )
+        return;
       const store = useTimerStore.getState();
 
       if (e.key === "Escape") {
@@ -69,6 +85,12 @@ export function TouchStage({
       // Shortcuts: idle/stopped only (csTimer muscle memory)
       if (store.phase === "idle" || store.phase === "stopped") {
         const key = e.key.toLowerCase();
+
+        if (e.key === "?") {
+          e.preventDefault();
+          shortcutsRef.current?.();
+          return;
+        }
 
         if (key === "d") {
           const last = useSessionStore.getState().solves[0];
@@ -100,7 +122,8 @@ export function TouchStage({
     };
 
     const onKeyUp = (e: KeyboardEvent) => {
-      if (disabledRef.current || isEditableTarget(e.target)) return;
+      if (disabledRef.current || isOverlayOpen() || isEditableTarget(e.target))
+        return;
       if (e.code === "Space") {
         e.preventDefault();
         useTimerStore.getState().release(performance.now());
