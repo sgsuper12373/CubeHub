@@ -143,9 +143,14 @@ export function TimeDisplay({
         ref={digitsRef}
         className={cn(
           "font-mono text-7xl font-semibold tabular-nums transition-[color,transform] duration-150 md:text-8xl",
-          phase === "holding" && "text-timer-hold",
-          phase === "ready" && "timer-ready-pulse text-timer-ready",
+          // Solve-state palette (design brief §4): arming → orange,
+          // armed + running → green (go), result → teal.
+          phase === "holding" && "text-timer-holding",
+          phase === "ready" && "timer-ready-pulse text-timer-running",
+          phase === "running" && "text-timer-running",
           phase === "stopped" && "text-timer-ready",
+          // One-shot flash the instant a solve lands; the grander PB glow wins.
+          phase === "stopped" && !celebrate && "timer-stop-flash",
           celebrate && "timer-pb-glow",
         )}
       />

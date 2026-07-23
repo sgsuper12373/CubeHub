@@ -245,10 +245,15 @@ export function TimerScreen(props: {
   const solving =
     phase === "holding" || phase === "ready" || phase === "running";
 
-  // Everything except the digits recedes once an attempt is under way.
-  const fadeWhileSolving =
-    "transition-opacity duration-150 " +
-    (solving ? "pointer-events-none opacity-0" : "opacity-100");
+  // Zen mode (design brief §4): everything except the digits dims to ~10% once
+  // an attempt is under way — dimmed, not gone. It leaves fast (150ms) and
+  // returns gracefully (300ms ease-out) when the solve lands.
+  const fadeWhileSolving = cn(
+    "transition-opacity",
+    solving
+      ? "pointer-events-none opacity-[0.1] duration-150"
+      : "opacity-100 duration-300 ease-out",
+  );
 
   /**
    * Panel bodies for <LayoutShell/>. Each case is self-contained so it can be
@@ -296,18 +301,33 @@ export function TimerScreen(props: {
                 celebrate={celebrating}
               />
               <p
-                className={
-                  "h-5 text-sm text-muted-foreground transition-opacity duration-150 " +
-                  (phase === "idle" || phase === "stopped"
-                    ? "opacity-100"
-                    : "opacity-0")
-                }
+                className={cn(
+                  "h-5 text-sm transition-opacity duration-150",
+                  phase === "holding"
+                    ? "text-timer-holding opacity-100"
+                    : phase === "ready"
+                      ? "text-timer-running opacity-100"
+                      : phase === "idle" || phase === "stopped"
+                        ? "text-muted-foreground opacity-100"
+                        : "opacity-0",
+                )}
               >
-                {phase === "stopped"
-                  ? "tap or press space for the next scramble"
-                  : "hold, then release to start"}
+                {phase === "holding"
+                  ? "keep holding…"
+                  : phase === "ready"
+                    ? "release to start"
+                    : phase === "stopped"
+                      ? "tap or press space for the next scramble"
+                      : "hold, then release to start"}
               </p>
             </TouchStage>
+
+            {/* Mobile touch-safety (design brief §5): a mandatory ~60px dead
+                band between the bottom of the tap/hold surface and the bottom
+                nav, so a rapid solving tap near the edge can't switch tabs.
+                TouchStage is flex-1, so this spacer simply shrinks it. The
+                fixed penalty bar reclaims the band only while stopped. */}
+            <div className="h-[3.75rem] shrink-0 md:hidden" aria-hidden />
 
             {/* Sibling of <TouchStage/>, never a child — taps here must not
                 reach the timer surface. */}

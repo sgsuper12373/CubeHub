@@ -9,7 +9,7 @@ import { navItems } from "@/lib/navigation";
 
 const BLURBS: Record<string, { heading: string; body: string }> = {
   "/timer": {
-    heading: "Timer",
+    heading: "Timer & Stats",
     body: "WCA random-state scrambles, inspection with voice callouts, +2 and DNF, named sessions. Works offline and syncs when you sign in.",
   },
   "/learn": {
@@ -17,11 +17,11 @@ const BLURBS: Record<string, { heading: string; body: string }> = {
     body: "Beginner method through full CFOP — every OLL and PLL case with a 3D viewer, multiple algorithms, and drills that put your weakest cases first.",
   },
   "/compete": {
-    heading: "Compete",
+    heading: "Competitive Racing",
     body: "Race the clock against other cubers, climb the India leaderboard, and link your WCA ID. Always free.",
   },
   "/shop": {
-    heading: "Shop",
+    heading: "Buy Cubes",
     body: "Tell us your level and budget in ₹, get three cubes that actually suit you — with a plain-English reason for each.",
   },
 };
@@ -39,16 +39,18 @@ export function FeatureGrid() {
         forum thread to work out which cube to buy.
       </p>
 
-      <ul className="mt-10 grid gap-4 sm:grid-cols-2">
+      <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {items.map(({ href, icon: Icon }) => {
           const { heading, body } = BLURBS[href];
           return (
             <li key={href}>
               <Link
                 href={href}
-                className="flex h-full flex-col gap-3 rounded-2xl border border-border bg-card/50 p-6 transition-colors hover:border-primary/40 hover:bg-card"
+                className="group flex h-full flex-col gap-3 rounded-xl border border-border bg-card/50 p-6 transition-colors hover:border-primary/40 hover:bg-card"
               >
-                <Icon className="size-5 text-primary" aria-hidden />
+                <span className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary/15">
+                  <Icon className="size-5" aria-hidden />
+                </span>
                 <h3 className="font-semibold">{heading}</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {body}

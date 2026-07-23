@@ -48,6 +48,8 @@
   --radius-4xl: calc(var(--radius) * 2.6);
   --color-timer-hold: var(--timer-hold);
   --color-timer-ready: var(--timer-ready);
+  --color-timer-holding: var(--timer-holding);
+  --color-timer-running: var(--timer-running);
 }
 
 :root {
@@ -72,7 +74,8 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  /* Subtle 8px corners — a sharp, fast aesthetic (see design brief). */
+  --radius: 0.5rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -83,43 +86,54 @@
   --sidebar-ring: oklch(0.708 0 0);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
-  /* Timer hold/ready states — aliases so they track the theme (see docs/roadmap.md Phase 1) */
+  /* Timer state palette (see docs/roadmap.md Phase 1 + the design brief).
+     `--timer-hold` (red) and `--timer-ready` (teal) are theme-tracking aliases;
+     `--timer-hold` stays the destructive/penalty red (inspection overrun, +2/DNF),
+     `--timer-ready` is the teal "result/accent" colour (stopped digits, Best tile).
+     The two solve-in-progress colours are fixed hues that read well on any bg:
+       holding → warm orange (arming), running/armed → bright green (go). */
   --timer-hold: var(--destructive);
   --timer-ready: var(--primary);
+  --timer-holding: oklch(0.76 0.165 58);
+  --timer-running: oklch(0.82 0.19 152);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.79 0.15 174);
-  --primary-foreground: oklch(0.145 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  /* Deep slate canvas + electric-teal accent (design brief §1).
+     Hex anchors: bg slate-900 #0F172A · surface slate-800 #1E293B ·
+     text slate-50 #F8FAFC · muted slate-400 #94A3B8 · accent #00D4AA. */
+  --background: oklch(0.208 0.04 265.8);
+  --foreground: oklch(0.984 0.003 247.9);
+  --card: oklch(0.279 0.037 260);
+  --card-foreground: oklch(0.984 0.003 247.9);
+  --popover: oklch(0.279 0.037 260);
+  --popover-foreground: oklch(0.984 0.003 247.9);
+  --primary: oklch(0.775 0.151 171.7);
+  /* Dark text on the bright teal — ~8:1 contrast (white would be ~1.7:1). */
+  --primary-foreground: oklch(0.208 0.04 265.8);
+  --secondary: oklch(0.32 0.036 259);
+  --secondary-foreground: oklch(0.984 0.003 247.9);
+  --muted: oklch(0.32 0.036 259);
+  --muted-foreground: oklch(0.711 0.035 256.8);
+  --accent: oklch(0.32 0.036 259);
+  --accent-foreground: oklch(0.984 0.003 247.9);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.79 0.15 174);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --border: oklch(0.98 0.01 250 / 10%);
+  --input: oklch(0.98 0.01 250 / 15%);
+  --ring: oklch(0.775 0.151 171.7);
+  --chart-1: oklch(0.775 0.151 171.7);
+  --chart-2: oklch(0.711 0.035 256.8);
+  --chart-3: oklch(0.554 0.041 257.4);
+  --chart-4: oklch(0.446 0.043 257.3);
+  --chart-5: oklch(0.372 0.039 257.3);
+  --sidebar: oklch(0.279 0.037 260);
+  --sidebar-foreground: oklch(0.984 0.003 247.9);
+  --sidebar-primary: oklch(0.775 0.151 171.7);
+  --sidebar-primary-foreground: oklch(0.208 0.04 265.8);
+  --sidebar-accent: oklch(0.32 0.036 259);
+  --sidebar-accent-foreground: oklch(0.984 0.003 247.9);
+  --sidebar-border: oklch(0.98 0.01 250 / 10%);
+  --sidebar-ring: oklch(0.775 0.151 171.7);
 }
 
 @layer base {
@@ -168,6 +182,15 @@
   }
 }
 
+/* Hide the scrollbar on the horizontally-scrolling stat strip while keeping it
+   scrollable (referenced by <StatTiles/>). */
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* The armed-timer nudge. A named class rather than an arbitrary Tailwind
    value so the reduced-motion rule below has something stable to target. */
 .timer-ready-pulse {
@@ -195,6 +218,45 @@
   animation: timer-pb-glow 1.2s ease-out;
 }
 
+/* Stop flash: one brief bloom the instant a solve ends, then the digits
+   settle to static teal. Re-keyed on each stop by the phase→class toggle. */
+@keyframes timer-stop-flash {
+  0% {
+    transform: scale(1.05);
+    filter: brightness(1.5);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.timer-stop-flash {
+  animation: timer-stop-flash 320ms ease-out;
+}
+
+/* ── Branded loader (design brief C2) ──────────────────────────────────────
+   A wireframe cube tumbling on multiple axes, its edges cycling white↔teal.
+   Pure CSS, no JS RAF — the geometry is built by <CubeLoader/>. */
+@keyframes cube-loader-tumble {
+  0% {
+    transform: rotateX(-24deg) rotateY(0deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(-24deg) rotateY(360deg) rotateZ(360deg);
+  }
+}
+
+@keyframes cube-loader-facepulse {
+  0%,
+  100% {
+    border-color: var(--timer-ready);
+  }
+  50% {
+    border-color: var(--foreground);
+  }
+}
+
 /* Reduced motion: disable timer scale pulse and shimmer animations */
 @media (prefers-reduced-motion: reduce) {
   .timer-ready-pulse {
@@ -206,5 +268,16 @@
   /* Keep the PB glow legible as a colour change, drop the movement. */
   .timer-pb-glow {
     animation: none !important;
+  }
+  /* Keep the stop result legible; drop the flash movement. */
+  .timer-stop-flash {
+    animation: none !important;
+  }
+  .cube-loader__cube {
+    animation-duration: 6s !important;
+  }
+  .cube-loader__face {
+    animation: none !important;
+    border-color: var(--timer-ready) !important;
   }
 }
