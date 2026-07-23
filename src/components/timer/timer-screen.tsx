@@ -13,14 +13,14 @@ import { ShortcutsOverlay } from "@/components/timer/shortcuts-overlay";
 import { PreviewPanel } from "@/components/timer/preview-panel";
 import { QuickSettings } from "@/components/timer/quick-settings";
 import { StatsPanel } from "@/components/stats/stats-panel";
-import { StatTiles } from "@/components/stats/stat-tiles";
+import { SessionStats } from "@/components/stats/session-stats";
 import { SolveList } from "@/components/stats/solve-list";
 import { SessionTrend } from "@/components/stats/session-trend";
 import { LayoutShell } from "@/components/timer/layout-shell";
 import type { PanelId } from "@/lib/timer/layout";
 import { useLayoutStore } from "@/stores/layout-store";
 import { generateScramble } from "@/lib/timer/scrambler";
-import { bestSingle, sessionMean, wcaAverage } from "@/lib/timer/stats";
+import { bestSingle } from "@/lib/timer/stats";
 import { loadClientSettings, saveSettings } from "@/lib/timer/settings-persistence";
 import type { ServerTimerSettings } from "@/lib/auth/dal";
 import type { Penalty, TimerSettings } from "@/lib/timer/types";
@@ -343,19 +343,7 @@ export function TimerScreen(props: {
         );
 
       case "stats":
-        return (
-          <div className="min-h-0 overflow-auto">
-            <StatTiles
-              best={bestSingle(solves)}
-              ao5={wcaAverage(solves, 5)}
-              ao12={wcaAverage(solves, 12)}
-              ao50={wcaAverage(solves, 50)}
-              ao100={wcaAverage(solves, 100)}
-              mean={sessionMean(solves)}
-              count={solves.length}
-            />
-          </div>
-        );
+        return <SessionStats solves={solves} />;
 
       case "trend":
         return (

@@ -64,7 +64,11 @@ export default async function RootLayout({
       lang="en"
       className={`${resolvedClass} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla's
+          `cz-shortcut-listen`, Grammarly's `data-gr-*`) inject attributes onto
+          <body> before React hydrates. This suppresses the one-level attribute
+          diff for <body> only — child mismatches are still reported. */}
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <AuthListener />
         <Toaster />
         <ConfirmHost />

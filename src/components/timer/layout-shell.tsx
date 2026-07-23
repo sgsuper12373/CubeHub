@@ -11,6 +11,7 @@ import {
   GRID_ROW_HEIGHT,
   inReadingOrder,
   MOBILE_PANELS,
+  PANEL_LABELS,
   type PanelId,
 } from "@/lib/timer/layout";
 import { cn } from "@/lib/utils";
@@ -128,8 +129,19 @@ export function LayoutShell({
                   // Stats panels live in the mobile drawer instead, so showing
                   // them in the stack too would duplicate them.
                   !MOBILE_PANELS.includes(cell.i) && "hidden md:flex",
+                  // Titled card chrome from md up; mobile stays full-bleed so
+                  // its flex layout is untouched.
+                  "md:rounded-xl md:border md:border-border md:bg-card/40",
                 )}
               >
+                {/* The scramble reads for itself; every other panel is titled. */}
+                {cell.i !== "scramble" && (
+                  <div className="hidden shrink-0 items-center px-3 pt-2.5 pb-1 md:flex">
+                    <span className="text-xs font-semibold text-foreground">
+                      {PANEL_LABELS[cell.i]}
+                    </span>
+                  </div>
+                )}
                 {renderPanel(cell.i)}
               </div>
             ))}
