@@ -32,6 +32,8 @@ These hold regardless of the details below and are the parts worth internalising
 
 Views: `v_session_solves`, `v_user_puzzle_summary` — both `security_invoker='on'`, so they respect the caller's RLS rather than the definer's. Keep new views that way unless you specifically need to bypass RLS.
 
+**A view over `solves` must filter `deleted_at`.** `v_user_puzzle_summary` did not, so soft-deleted solves kept inflating `total_solves` and could hold `best_single_ms` at a time the user had thrown away. Fixed in `20260726000000_average_pbs.sql`; `v_session_solves` is worth checking before anything reads it.
+
 ### Enum types
 
 | Type | Values |
@@ -68,6 +70,12 @@ This is the pattern the access tiers extend — the flag check gains an `AND can
 |---|---|---|
 | `handle_new_user()` | `AFTER INSERT ON auth.users` | Creates the `profiles` row (username `user_<12 hex>`, display name from OAuth `full_name`/`name` falling back to the email local-part, avatar from OAuth metadata) **and** the `user_settings` row. `SECURITY DEFINER`, `search_path = ''`. |
 | `maintain_single_pb()` | `AFTER INSERT ON solves` | Upserts the `single` personal best when the new solve beats it. Skips DNFs. |
+| `recompute_single_pb(user, puzzle)` | delete / update triggers | Authoritative single PB from the surviving solves; deletes the row when none remain. |
+| `best_average_of_n(user, puzzle, n)` | `recompute_average_pbs` | Best AoN and the solve that completed it. Four window aggregates over `rows between n-1 preceding`, partitioned **by session**. |
+| `recompute_average_pbs(user, puzzle)` | delete / update triggers | Authoritative `ao5`/`ao12`/`ao50`/`ao100`; deletes a row when no full window survives. |
+| `recompute_all_pbs(user, puzzle)` | delete / update triggers | Single + averages. What the healing paths call. |
+| `ratchet_average_pbs_for_solve(solve)` | `AFTER INSERT` (≤ 20 rows) | Insert fast path — only the windows *ending at* the new solve can set a PB, so it reads ~100 rows. |
+| `maintain_average_pbs_on_insert()` | `AFTER INSERT ON solves`, statement-level | Ratchets each new solve, or falls back to one authoritative recompute past 20 rows — a bulk import can arrive out of chronological order, which the ratchet does not cover. |
 | `set_updated_at()` | `BEFORE UPDATE`, 9 tables | Timestamp maintenance on `profiles`, `user_settings`, `subscriptions`, `sessions`, `solves`, `personal_bests`, `tutorial_series`, `tutorial_steps`, `clubs`. |
 | `update_club_member_count()` | `AFTER INSERT/DELETE ON club_members` | Maintains the denormalised counter. |
 | `is_premium(profiles)` | — | `premium_until IS NOT NULL AND premium_until > now()`. The entitlement source of truth. |
@@ -83,7 +91,7 @@ Three partial/expression **unique** indexes encode invariants: `uq_profiles_user
 
 Things the schema does not yet support, each blocking specific roadmap work.
 
-**Only `single` personal bests are maintained.** `personal_bests.category` permits `ao5` `ao12` `ao50` `ao100` `mean3`, but `maintain_single_pb()` writes only `single`. Nothing computes the averages. *Blocks Phase 2.*
+**`mean3` personal bests are not maintained.** `single`, `ao5`, `ao12`, `ao50` and `ao100` are all written as of `20260726000000_average_pbs.sql`. `mean3` is the remaining category the constraint permits and nothing writes — it is a big-cube and blindfolded convention, so it is unused until those puzzles exist.
 
 **No spaced-repetition storage.** `user_algorithm_bookmarks` has only `learned boolean` — no attempt counts, success counts, or next-review scheduling. *Blocks drill mode in Phase 3.*
 

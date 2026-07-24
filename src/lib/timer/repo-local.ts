@@ -1,5 +1,6 @@
 import type { SolveRepository } from "./repo";
-import type { Session, Solve } from "./types";
+import { bestAverageOfN, effectiveMs } from "./stats";
+import type { PersonalBest, Session, Solve, SolveMetric } from "./types";
 
 /**
  * localStorage-backed repository for logged-out users.
@@ -124,4 +125,124 @@ export const localRepo: SolveRepository = {
     for (const s of read().solves) if (set.has(s.id)) s.deletedAt = null;
     scheduleFlush();
   },
+
+  async loadSolveMetrics(puzzle, { since, limit = 5000 } = {}) {
+    return read()
+      .solves.filter(
+        (s) =>
+          s.puzzle === puzzle &&
+          !s.deletedAt &&
+          (since === undefined || s.createdAt >= since),
+      )
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+      .slice(0, limit)
+      .map(toMetric);
+  },
+
+  async loadPersonalBests(puzzle) {
+    const metrics = await localRepo.loadSolveMetrics(puzzle);
+    return computePersonalBests(metrics);
+  },
+
+  async loadSolvesForExport(puzzle) {
+    // Oldest first — an export reads as a history, not a feed.
+    return read()
+      .solves.filter((s) => s.puzzle === puzzle && !s.deletedAt)
+      .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
+  },
+
+  async importData(sessions, solves) {
+    const data = read();
+
+    for (const session of sessions) {
+      const i = data.sessions.findIndex((s) => s.id === session.id);
+      // Never take the active flag from the session being timed in.
+      if (i === -1) data.sessions.push({ ...session, isActive: false });
+      else data.sessions[i] = { ...session, isActive: data.sessions[i].isActive };
+    }
+
+    // Deterministic ids make this idempotent: a second import of the same file
+    // matches every existing id and writes nothing.
+    const known = new Set(data.solves.map((s) => s.id));
+    let written = 0;
+    for (const solve of solves) {
+      if (known.has(solve.id)) continue;
+      data.solves.push(solve);
+      known.add(solve.id);
+      written += 1;
+    }
+
+    scheduleFlush();
+    return written;
+  },
 };
+
+function toMetric(s: Solve): SolveMetric {
+  return {
+    id: s.id,
+    sessionId: s.sessionId,
+    timeMs: s.timeMs,
+    penalty: s.penalty,
+    effectiveTimeMs: s.effectiveTimeMs,
+    createdAt: s.createdAt,
+  };
+}
+
+/**
+ * The local stand-in for the database's PB triggers.
+ *
+ * Cloud users get `personal_bests` rows maintained by `recompute_all_pbs`;
+ * logged-out users have no triggers, so the same values are derived here from
+ * whatever localStorage holds. Both sides use the identical window rules —
+ * per-session, WCA trim, ties to the earliest — so a cuber's numbers do not
+ * change under them when they sign in and their solves sync.
+ *
+ * `metrics` arrives newest-first, which is the ordering the helpers expect.
+ */
+function computePersonalBests(metrics: SolveMetric[]): PersonalBest[] {
+  const bests: PersonalBest[] = [];
+
+  let bestSingle: SolveMetric | null = null;
+  let bestSingleMs: number | null = null;
+  for (const s of metrics) {
+    const t = effectiveMs(s);
+    if (t === null) continue;
+    // Strictly less, then earlier on a tie — matching recompute_single_pb's
+    // `order by effective_time_ms asc, created_at asc`.
+    if (
+      bestSingleMs === null ||
+      t < bestSingleMs ||
+      (t === bestSingleMs && bestSingle !== null && s.createdAt < bestSingle.createdAt)
+    ) {
+      bestSingleMs = t;
+      bestSingle = s;
+    }
+  }
+  if (bestSingle !== null && bestSingleMs !== null) {
+    bests.push({
+      category: "single",
+      timeMs: bestSingleMs,
+      solveId: bestSingle.id,
+      achievedAt: bestSingle.createdAt,
+    });
+  }
+
+  for (const [category, n] of [
+    ["ao5", 5],
+    ["ao12", 12],
+    ["ao50", 50],
+    ["ao100", 100],
+  ] as const) {
+    const best = bestAverageOfN(metrics, n);
+    if (best) {
+      bests.push({
+        category,
+        timeMs: best.timeMs,
+        solveId: best.solveId,
+        achievedAt: best.achievedAt,
+      });
+    }
+  }
+
+  return bests;
+}
