@@ -210,7 +210,7 @@ export function DemoTimer({ className }: { className?: string }) {
       tabIndex={0}
       aria-label="Demo timer — hold, then release to start; press to stop"
       className={cn(
-        "flex w-full cursor-pointer touch-none select-none flex-col items-center gap-3 rounded-2xl border border-border bg-card/60 p-6 backdrop-blur-sm",
+        "flex w-full cursor-pointer touch-none select-none flex-col items-center gap-3 rounded-xl border border-border bg-card p-6 shadow-lg shadow-black/20",
         "focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
         className,
       )}
@@ -235,9 +235,10 @@ export function DemoTimer({ className }: { className?: string }) {
         ref={digitsRef}
         className={cn(
           "font-mono text-6xl font-semibold tabular-nums transition-[color,transform] duration-150 md:text-7xl",
-          phase === "holding" && "text-timer-hold",
-          phase === "ready" && "timer-ready-pulse text-timer-ready",
-          phase === "stopped" && "text-timer-ready",
+          phase === "holding" && "text-timer-holding",
+          phase === "ready" && "timer-ready-pulse text-timer-running",
+          phase === "running" && "text-timer-running",
+          phase === "stopped" && "text-timer-ready timer-stop-flash",
         )}
       />
 

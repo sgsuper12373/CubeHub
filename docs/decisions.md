@@ -46,6 +46,10 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.
 
+**ELO starts at 1000** (decided 2026-07-25). The live database already defaults both `elo_ratings.rating` and `peak_rating` to **1000**, so the database is authoritative and no migration is needed. The earlier planning documents said 800; they were wrong and have been corrected.
+
+*Consequence, still to settle when the competitive tab is built:* the planned tier bands (Scrambled <900, Beginner 900–1100, Intermediate 1100–1300, …) were drawn around a start of 800, so a new user now opens mid-**Beginner** rather than at the bottom of the ladder. Either shift the bands up so 1000 is the floor of the entry tier, or accept that "Scrambled" is a demotion tier you fall into rather than start in. Cosmetic — it changes labels, not ratings.
+
 ## Open
 
-**ELO starting rating: 1000 or 800?** The live database defaults `elo_ratings.rating` to **1000**. The planned tier bands (Scrambled <900, Beginner 900–1100, Intermediate 1100–1300, …) are anchored to a start of **800**, which would place every new user in the middle of "Beginner" instead of at the bottom. One of the two has to move before the competitive tab ships. Not resolved.
+Nothing blocking. Product-level unknowns (domain, algorithm sourcing, csTimer import format) live in `roadmap.md` → Open questions.

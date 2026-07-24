@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 
+import { CubeLoader } from "@/components/ui/cube-loader";
 import type { TimerPuzzle } from "@/lib/timer/types";
 
 /**
@@ -21,7 +22,7 @@ const TwistyPlayer = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex h-32 w-32 items-center justify-center">
-        <div className="h-20 w-20 animate-pulse rounded-lg bg-muted" />
+        <CubeLoader size={40} label="Loading cube preview" />
       </div>
     ),
   },

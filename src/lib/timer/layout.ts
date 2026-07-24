@@ -36,14 +36,14 @@ export const GRID_COLS = 12;
 export const GRID_ROW_HEIGHT = 48;
 export const GRID_GAP = 8;
 
-/** Human labels for the editor's panel headers. */
+/** Human labels for panel headers (editor + the resting titled cards). */
 export const PANEL_LABELS: Record<PanelId, string> = {
   scramble: "Scramble",
   timer: "Timer",
   preview: "Cube preview",
-  stats: "Averages",
+  stats: "Session Stats",
   trend: "Trend",
-  solves: "Solves",
+  solves: "Recent Solves",
 };
 
 /** Floors, so a panel can't be dragged down to an unreadable sliver. */
@@ -56,17 +56,23 @@ export const PANEL_MIN: Record<PanelId, { w: number; h: number }> = {
   solves: { w: 2, h: 3 },
 };
 
-/** Mirrors the pre-grid arrangement, so nothing moves for existing users. */
+/**
+ * The default dashboard: a full-width scramble band on top, then three columns
+ * — Session Stats + Trend on the left, the timer in the centre, Cube preview
+ * over Recent Solves on the right. Cubers can rearrange and resize from here.
+ */
 export const DEFAULT_LAYOUT: PanelCell[] = [
-  { i: "scramble", x: 0, y: 0, w: 8, h: 2 },
-  { i: "timer", x: 0, y: 2, w: 8, h: 7 },
-  { i: "preview", x: 8, y: 0, w: 4, h: 4 },
-  { i: "stats", x: 8, y: 4, w: 4, h: 2 },
-  { i: "trend", x: 8, y: 6, w: 4, h: 2 },
-  { i: "solves", x: 8, y: 8, w: 4, h: 5 },
+  { i: "scramble", x: 0, y: 0, w: 12, h: 3 },
+  { i: "stats", x: 0, y: 3, w: 3, h: 8 },
+  { i: "trend", x: 0, y: 11, w: 3, h: 3 },
+  { i: "timer", x: 3, y: 3, w: 6, h: 11 },
+  { i: "preview", x: 9, y: 3, w: 3, h: 4 },
+  { i: "solves", x: 9, y: 7, w: 3, h: 7 },
 ];
 
-const STORAGE_KEY = "cubehub.layout.v1";
+// Bumped to v2 with the new default arrangement; a stored v1 layout is ignored
+// so everyone lands on the new dashboard (then may re-customise from there).
+const STORAGE_KEY = "cubehub.layout.v2";
 
 function isPanelId(v: unknown): v is PanelId {
   return typeof v === "string" && (PANEL_IDS as readonly string[]).includes(v);
@@ -164,7 +170,21 @@ export function cellStyle(cell: PanelCell): React.CSSProperties {
   } as React.CSSProperties;
 }
 
-/** DOM order drives the mobile stack, so sort by reading order. */
+/**
+ * DOM order drives the mobile stack (desktop is grid-positioned, so DOM order
+ * there only affects tab/reading order). Mobile panels come first in
+ * `MOBILE_PANELS` order — which keeps the flex-grow timer last so it fills the
+ * screen — and the rest follow in top-to-bottom reading order.
+ */
 export function inReadingOrder(cells: PanelCell[]): PanelCell[] {
-  return [...cells].sort((a, b) => a.y - b.y || a.x - b.x);
+  const rank = (id: PanelId) => {
+    const i = MOBILE_PANELS.indexOf(id);
+    return i === -1 ? Infinity : i;
+  };
+  return [...cells].sort((a, b) => {
+    const ra = rank(a.i);
+    const rb = rank(b.i);
+    if (ra !== rb) return ra - rb;
+    return a.y - b.y || a.x - b.x;
+  });
 }

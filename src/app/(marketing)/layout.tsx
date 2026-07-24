@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Logo } from "@/components/layout/logo";
 import { Navbar } from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
 import { getProfile } from "@/lib/auth/dal";
@@ -23,9 +24,9 @@ export default async function MarketingLayout({
     <>
       <Navbar profile={profile} />
 
-      <header className="sticky top-0 z-40 flex h-14 items-center border-b border-border bg-background px-4 md:hidden">
-        <Link href="/" className="text-lg font-semibold tracking-tight">
-          CubeHub
+      <header className="sticky top-0 z-40 flex h-14 items-center border-b border-border bg-background/80 px-4 backdrop-blur-sm md:hidden">
+        <Link href="/" aria-label="CubeHub home">
+          <Logo />
         </Link>
         <div className="ml-auto">
           {profile ? (
