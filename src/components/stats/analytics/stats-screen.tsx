@@ -62,7 +62,8 @@ export function StatsScreen({ userId }: { userId: string | null }) {
    * of the effect would set state synchronously during render, which cascades;
    * comparing keys gets the same behaviour with one render.
    */
-  const queryKey = `${userId ?? "local"}|${puzzle}|${range}`;
+  const [reloads, setReloads] = useState(0);
+  const queryKey = `${userId ?? "local"}|${puzzle}|${range}|${reloads}`;
 
   const [result, setResult] = useState<{
     key: string;
@@ -217,7 +218,11 @@ export function StatsScreen({ userId }: { userId: string | null }) {
             <Heatmap metrics={filtered} />
           </ChartFrame>
 
-          <DataSection repo={repo} puzzle={puzzle} />
+          <DataSection
+            repo={repo}
+            puzzle={puzzle}
+            onImported={() => setReloads((n) => n + 1)}
+          />
         </>
       )}
     </div>

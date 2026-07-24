@@ -212,8 +212,57 @@ export function createSupabaseRepo(userId: string): SolveRepository {
       if (error) throw error;
       return (data ?? []).map(mapSolve);
     },
+
+    async importData(sessions, solves) {
+      const client = getClient();
+
+      if (sessions.length > 0) {
+        const { error } = await client.from("sessions").upsert(
+          sessions.map((s) => ({
+            id: s.id,
+            user_id: userId,
+            puzzle_type: s.puzzle,
+            name: s.name,
+            // Never steal the active slot from the session the user is timing
+            // in — uq_one_active_session would reject it anyway.
+            is_active: false,
+            order_index: s.orderIndex,
+          })),
+          { onConflict: "id" },
+        );
+        if (error) throw error;
+      }
+
+      // Chunked like sync.ts: one statement per chunk, which the statement-level
+      // PB trigger handles with a single authoritative recompute rather than a
+      // per-row ratchet.
+      let written = 0;
+      for (let i = 0; i < solves.length; i += IMPORT_CHUNK) {
+        const chunk = solves.slice(i, i + IMPORT_CHUNK);
+        const { error } = await client.from("solves").upsert(
+          chunk.map((s) => ({
+            id: s.id,
+            user_id: userId,
+            session_id: s.sessionId,
+            puzzle_type: s.puzzle,
+            time_ms: s.timeMs,
+            penalty: s.penalty,
+            scramble: s.scramble,
+            notes: s.notes,
+            source: "import",
+            created_at: s.createdAt,
+          })),
+          { onConflict: "id", ignoreDuplicates: true },
+        );
+        if (error) throw error;
+        written += chunk.length;
+      }
+      return written;
+    },
   };
 }
+
+const IMPORT_CHUNK = 500;
 
 const CATEGORIES: PbCategory[] = ["single", "ao5", "ao12", "ao50", "ao100"];
 

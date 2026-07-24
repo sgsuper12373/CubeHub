@@ -150,6 +150,31 @@ export const localRepo: SolveRepository = {
       .solves.filter((s) => s.puzzle === puzzle && !s.deletedAt)
       .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
   },
+
+  async importData(sessions, solves) {
+    const data = read();
+
+    for (const session of sessions) {
+      const i = data.sessions.findIndex((s) => s.id === session.id);
+      // Never take the active flag from the session being timed in.
+      if (i === -1) data.sessions.push({ ...session, isActive: false });
+      else data.sessions[i] = { ...session, isActive: data.sessions[i].isActive };
+    }
+
+    // Deterministic ids make this idempotent: a second import of the same file
+    // matches every existing id and writes nothing.
+    const known = new Set(data.solves.map((s) => s.id));
+    let written = 0;
+    for (const solve of solves) {
+      if (known.has(solve.id)) continue;
+      data.solves.push(solve);
+      known.add(solve.id);
+      written += 1;
+    }
+
+    scheduleFlush();
+    return written;
+  },
 };
 
 function toMetric(s: Solve): SolveMetric {

@@ -40,11 +40,21 @@ Note `solves.effective_time_ms` is a generated column that already applies +2/DN
 
 ## Phase 2 — Analytics
 
-Session averages and the 12-solve sparkline shipped in Phase 1 (`components/stats/`, dependency-free inline SVG). Still to build: all-time PBs; a full trend chart with Ao5/Ao12 overlay; time-distribution histogram; practice heatmap; consistency score (standard deviation over the last 50 solves). Recharts — worth confirming it earns its bundle cost before adding, given the sparkline needed none.
+**Built, pending a browser pass** (branch `phase2-analytics`).
 
-Data portability: CSV and JSON export, plus **csTimer JSON import** — critical for user migration. `solves.source` already accepts `'import'`.
+| Delivered | Notes |
+|---|---|
+| All-time `ao5`/`ao12`/`ao50`/`ao100` PBs | `20260726000000_average_pbs.sql` — ratchet on insert, authoritative recompute on every mutation |
+| `/stats` page | Navbar gains a sixth link; the bottom bar stays at five and reaches it from the timer's stats drawer |
+| Trend chart with Ao5/Ao12 overlay | Emphasis, not three equal series; singles collapse to a per-column density band past ~220 solves |
+| Distribution histogram | Bucket widths off a fixed ladder so the axis reads in round numbers |
+| Practice heatmap | Local-timezone days; empty days keep a visible square |
+| Consistency | σ over the last 50, banded by coefficient of variation so it compares across skill levels |
+| CSV + JSON export, csTimer import | Lossless both ways; import ids are derived from the source, so a repeat import is a no-op |
 
-Requires a migration: `maintain_single_pb()` only writes the `single` category today. See `database.md` → Known gaps.
+**Recharts was not adopted** — the charts are hand-rolled SVG, extending what the Phase 1 sparkline proved. See `decisions.md`.
+
+Works logged out over localStorage, exactly as it works signed in.
 
 ## Phase 3 — Learn
 

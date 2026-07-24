@@ -62,4 +62,14 @@ export interface SolveRepository {
    * opposite requirement to analytics: losslessness over payload size.
    */
   loadSolvesForExport(puzzle: TimerPuzzle): Promise<Solve[]>;
+
+  /**
+   * Bulk-write imported sessions and solves, returning how many solves landed.
+   *
+   * Separate from `saveSolve` because an import is thousands of rows: one call
+   * each would be thousands of round trips. Ids are caller-supplied and
+   * deterministic, so this is idempotent — importing the same file twice adds
+   * nothing the second time.
+   */
+  importData(sessions: Session[], solves: Solve[]): Promise<number>;
 }

@@ -42,6 +42,18 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **Progress rows survive a lapsed subscription.** Downgrading revokes read access to content, not the user's history. Don't delete progress on expiry.
 
+## Analytics
+
+**No chart library.** The charts are hand-rolled inline SVG, extending what `sparkline.tsx` proved in Phase 1. Recharts would have been faster to a first chart but costs ~100 KB gzipped plus d3 sub-packages, needs wrapper work to obey a CSS-variable theme, and fights the token system on dark mode — against a roadmap principle that the timer loads in under a second. Cost paid instead: about 400 lines of reusable axis, crosshair, tooltip, legend and table primitives in `components/stats/chart/`.
+
+**Rolling averages never span a session boundary.** A rolling Ao12 across two sittings is meaningless to a cuber, and per-session is what csTimer does — which is what these numbers get compared against. Both implementations (SQL `best_average_of_n`, TypeScript `bestAverageOfN`) partition by session.
+
+**The WCA average is implemented twice, and held to agreeing.** The database needs it for PB triggers; the client needs it for the live session and the logged-out path. They are verified against each other over adversarial sequences rather than assumed equal — if they ever diverge, the page and the PB badge contradict each other and the user trusts neither.
+
+**Chart colours are their own steps, not the UI accent reused.** The brand teal sits at OKLCH L 0.775, above the band a dark-mode chart mark may occupy, so `--chart-*` takes a deeper step from the same ramp. Both themes are validated on lightness, chroma, CVD separation, normal-vision floor and surface contrast — computed, not eyeballed.
+
+**Personal bests ignore the filter bar.** A PB is all-time by definition; showing a "best of the last 30 days" under the same word would quietly redefine the number cubers care most about.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.
