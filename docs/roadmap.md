@@ -152,20 +152,49 @@ That is not hypothetical. It has already cost:
 Both trace to one root: cubing.js ships a chunk that carries its own webpack runtime, and the
 two bundlers disagree about what to do with it.
 
+### Attempted and rejected: upgrading cubing (2026-07-25)
+
+`cubing@0.63.3` was tried on branch `try-cubing-upgrade`. **It does not fix this.** Do not
+retry it expecting a different result; the branch is kept as the record.
+
+What it did fix: the Turbopack **build** completes in ~9s where it previously never
+completed, with no warnings, and no source changes were needed — `tsc` and `eslint` passed
+untouched.
+
+What it did not fix, and why it was abandoned:
+
+- **Turbopack's output cannot run cubing's search worker.** Scramble generation dies at
+  runtime with `Module worker instantiation failed. There are no more fallbacks available.`
+  Cubing tries three strategies in order — `import.meta.resolve(…)`, an esbuild workaround,
+  then `new URL("./search-worker-entry.js", import.meta.url)` — and Turbopack satisfies none
+  of them. Webpack rewrites the third, which is why the webpack build works. A timer that
+  cannot produce a scramble is worse than one with a build workaround.
+- **The webpack chunk-name mismatch survives in 0.63.3.** Rebuilt without the
+  `next.config.ts` override, the same two chunks 404 again, `9301` included. The workaround
+  is still load-bearing either way.
+
+So the upgrade buys a working Turbopack build whose output is broken, at the cost of seven
+minors of churn. Net: nothing. `main` stays on 0.56.0.
+
+There is no public API for pointing cubing at a worker URL of our choosing — that was checked
+too, and would have made this trivial.
+
 ### The real fix
 
-Get dev and production onto the same bundler. In rough order of preference:
+Get dev and production onto the same bundler. Re-ranked after the attempt above:
 
-1. **Unblock the Turbopack build.** Reduce the hang to a minimal repro (a bare Next app plus
-   a `cubing/twisty` dynamic import) and report it upstream. If Turbopack builds, both pins
-   come off and the whole class of divergence disappears.
-2. **Upgrade cubing** — 0.56.0 is installed, 0.63.3 is published, and the dev warning already
-   says *"cubing.js may not support this fallback in the future"*, so the loading strategy has
-   likely changed. Cheapest to try; needs a full browser pass after, since it is seven minors
-   on a 0.x line.
-3. **Take cubing out of the bundle** — serve `cubing/dist` from `public/` and load it at
-   runtime. Most predictable, most plumbing, and it makes the app's bundling independent of
-   whatever cubing does next.
+1. **Take cubing out of the bundle** — serve `cubing/dist` from `public/` and load it at
+   runtime. Now the strongest option, because the failures in both bundlers are failures to
+   *locate a worker file*, and this removes the bundler from that question entirely. Also
+   immunises the app against whatever cubing does next, which on a 0.x line matters. Most
+   plumbing; you would keep the loading lazy by hand.
+2. **Report the worker instantiation failure upstream** — to Next (Turbopack not honouring
+   `new URL(…, import.meta.url)` for workers inside a dependency) and/or to cubing. A minimal
+   repro is a bare Next app plus one `randomScrambleForEvent` call. Cheap to file, uncertain
+   timeline, and it would fix this properly for everyone.
+3. **Wait.** Only defensible while the workarounds hold and nothing new depends on them. They
+   are documented and verified, so this is survivable — but it is what let a broken 3D cube
+   sit on the live site for weeks, so it is a choice, not a default.
 
 ### Definition of done
 
