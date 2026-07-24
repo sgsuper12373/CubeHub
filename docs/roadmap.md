@@ -40,7 +40,14 @@ Note `solves.effective_time_ms` is a generated column that already applies +2/DN
 
 ## Phase 2 — Analytics
 
-**Built, pending a browser pass** (branch `phase2-analytics`).
+**Complete and verified** (branch `phase2-analytics`, not yet merged).
+
+Verified 2026-07-25: browser pass done; the PB trigger lifecycle test passes every
+assertion (`supabase/tests/pb_lifecycle_test.sql`); every stored personal best matches an
+independent recomputation on live data; and a real csTimer file imported to an exact match
+against its own embedded per-session counts and means. Both insert paths are exercised —
+the ≤20 ratchet by the lifecycle test, the bulk recompute by the 46-solve import, which
+correctly moved that account's single/Ao5/Ao12.
 
 | Delivered | Notes |
 |---|---|
@@ -55,6 +62,10 @@ Note `solves.effective_time_ms` is a generated column that already applies +2/DN
 **Recharts was not adopted** — the charts are hand-rolled SVG, extending what the Phase 1 sparkline proved. See `decisions.md`.
 
 Works logged out over localStorage, exactly as it works signed in.
+
+**Still open:** the JSON export cannot be re-imported. Import accepts csTimer only, so
+CubeHub's own versioned envelope is currently a backup with no restore path. `toSolves()`
+in `import-cstimer.ts` is the piece to reuse.
 
 ## Phase 3 — Learn
 
