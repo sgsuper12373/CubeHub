@@ -40,7 +40,7 @@ Note `solves.effective_time_ms` is a generated column that already applies +2/DN
 
 ## Phase 2 — Analytics
 
-**Complete and verified** (branch `phase2-analytics`, not yet merged).
+**Complete, verified and merged to `main`.**
 
 Verified 2026-07-25: browser pass done; the PB trigger lifecycle test passes every
 assertion (`supabase/tests/pb_lifecycle_test.sql`); every stored personal best matches an
@@ -114,73 +114,56 @@ The database already supports premium: `subscriptions`, `profiles.premium_until`
 ## Carried-over technical work
 
 - **Username onboarding** — the trigger assigns `user_<12 hex>`; users can't pick one.
-- **Deploy** — live on Vercel as of 2026-07-25, building with `next build --webpack`. Two things to verify against the deployed origin: the Supabase **Site URL** and redirect allow-list (they were `http://localhost:3000`, and auth confirmation links break if they still are), and `NEXT_PUBLIC_SITE_URL` in the Vercel environment — it feeds `metadataBase`, so Open Graph URLs resolve against localhost without it. No CI/CD beyond Vercel's own git integration.
+- **Deploy** — live on Vercel as of 2026-07-25, building with `next build` (Turbopack). Two things to verify against the deployed origin: the Supabase **Site URL** and redirect allow-list (they were `http://localhost:3000`, and auth confirmation links break if they still are), and `NEXT_PUBLIC_SITE_URL` in the Vercel environment — it feeds `metadataBase`, so Open Graph URLs resolve against localhost without it. No CI/CD beyond Vercel's own git integration.
 - **`?next=` after login** — `/settings` redirects to `/login` but doesn't return you afterwards.
 - **GitHub OAuth** — planned, not built.
 - **`cubing.js` render test** — never done; it's a Phase 0 leftover that Phase 3 depends on.
 - **No test tooling.** `docs/architecture.md` carries a manual auth smoke checklist in the meantime.
 
-## Planned: one bundler for dev and production
+## Resolved: one bundler for dev and production
 
-**Priority: do this before Phase 3.** Not a nice-to-have — it is the thing that made two
-production bugs invisible, and Phase 3 adds the 3D case viewer, which leans on exactly the
-dependency that breaks.
+**Done 2026-07-25 by upgrading cubing.js 0.56.0 → 0.63.3.** Route 2 of the three that were
+on the table; it turned out to be both the cheapest and the complete fix.
 
-### The problem
+### What was wrong
 
-`next dev` runs Turbopack. `npm run build` is pinned to `next build --webpack`, because the
-Turbopack build hangs: `next build` never finishes — 30+ minutes idle in `ep_poll` with no
-writes to `.next`, reproduced in a clean directory with no dev server running — while
-`--webpack` compiles the same tree in ~18s. Prime suspect is cubing.js worker bundling; the
-dev log carries matching `Module worker instantiation using import.meta.resolve(…) failed`
-warnings.
+`next dev` ran Turbopack while `npm run build` was pinned to `next build --webpack`, because
+the Turbopack build hung — 30+ minutes idle in `ep_poll` with no writes to `.next`,
+reproduced in a clean directory. So **the code that shipped had never run in development**,
+and bugs living in only one bundler stayed invisible until someone loaded the deployed site.
 
-So **the code that ships has never run in development.** Everything anyone checks locally is
-Turbopack output; everything a user touches is webpack output. Bugs that exist only in one of
-them are invisible until someone loads the deployed site and notices.
+That cost two production bugs, both tracing to one root — cubing.js 0.56 shipping a chunk
+that carried its own webpack runtime:
 
-That is not hypothetical. It has already cost:
-
-1. **The Turbopack build hang** itself (Phase 1) — worked around with the `--webpack` pin.
+1. **The Turbopack build hang** (Phase 1), worked around with the `--webpack` pin.
 2. **The 3D cube never loading in production** (2026-07-25). The webpack runtime requested
    lazy chunks by numeric id while the files were emitted under their chunk name, so
    `cubing/twisty` 404'd and `next/dynamic` sat on its loading state forever. The landing
-   hero and the scramble preview spun indefinitely in **every** production build, local
-   included, for as long as the site had been deployed. Fixed in `next.config.ts` by
-   templating `output.chunkFilename` on `[id]` — a second workaround stacked on the first.
+   hero and the scramble preview spun indefinitely in *every* production build, local
+   included, for as long as the site had been deployed. Worked around in `next.config.ts` —
+   a second workaround stacked on the first.
 
-Both trace to one root: cubing.js ships a chunk that carries its own webpack runtime, and the
-two bundlers disagree about what to do with it.
+### What fixed it
 
-### The real fix
+`npm install cubing@latest`. No API changes were needed: `tsc` and `eslint` passed untouched
+against 0.63.3, on a surface covering `TwistyPlayer`, `randomScrambleForEvent`, `Alg`,
+`PuzzleID` and the player config options.
 
-Get dev and production onto the same bundler. In rough order of preference:
+With that in place both workarounds were deleted — `next.config.ts` is empty again and
+`package.json` builds with plain `next build`. **The Turbopack build completes in ~9s** (it
+formerly never completed), emits all 18 routes, and produces zero warnings where the webpack
+build produced two circular-runtime ones. Every asset the build references resolves: 0
+missing of 48.
 
-1. **Unblock the Turbopack build.** Reduce the hang to a minimal repro (a bare Next app plus
-   a `cubing/twisty` dynamic import) and report it upstream. If Turbopack builds, both pins
-   come off and the whole class of divergence disappears.
-2. **Upgrade cubing** — 0.56.0 is installed, 0.63.3 is published, and the dev warning already
-   says *"cubing.js may not support this fallback in the future"*, so the loading strategy has
-   likely changed. Cheapest to try; needs a full browser pass after, since it is seven minors
-   on a 0.x line.
-3. **Take cubing out of the bundle** — serve `cubing/dist` from `public/` and load it at
-   runtime. Most predictable, most plumbing, and it makes the app's bundling independent of
-   whatever cubing does next.
+### The lesson worth keeping
 
-### Definition of done
+A build workaround that splits dev from production does not cost you one bug — it costs you
+the ability to *see* bugs. The `--webpack` pin looked free for weeks and was hiding a
+completely broken 3D cube on the live site.
 
-`next build` and `next dev` use the same bundler, both `next.config.ts` workarounds are gone,
-and the landing hero plus the scramble preview render in a local production build.
-
-### Until then
-
-Never sign off a change involving cubing.js, workers, or dynamic imports on `npm run dev`
-alone — check `npm run build && npx next start` too.
-
-A cheap guard that would have caught the 3D bug in seconds, and is worth a script: fetch
-`/_next/static/chunks/webpack-*.js`, extract its `id:"hash"` map, and request every entry.
-Any 404 is a dynamic import that will hang forever. It works against a local server or a
-deployed URL.
+Guard that would have caught it in seconds, still worth scripting: fetch the built page and
+its chunks, extract every `/_next/static/**` reference, and request each one. Any 404 is a
+dynamic import that will hang forever. Works against a local server or a deployed URL.
 
 ## Open questions
 
