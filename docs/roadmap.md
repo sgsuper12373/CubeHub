@@ -40,7 +40,7 @@ Note `solves.effective_time_ms` is a generated column that already applies +2/DN
 
 ## Phase 2 — Analytics
 
-**Complete and verified** (branch `phase2-analytics`, not yet merged).
+**Complete, verified and merged to `main`.**
 
 Verified 2026-07-25: browser pass done; the PB trigger lifecycle test passes every
 assertion (`supabase/tests/pb_lifecycle_test.sql`); every stored personal best matches an
@@ -114,102 +114,73 @@ The database already supports premium: `subscriptions`, `profiles.premium_until`
 ## Carried-over technical work
 
 - **Username onboarding** — the trigger assigns `user_<12 hex>`; users can't pick one.
-- **Deploy** — live on Vercel as of 2026-07-25, building with `next build --webpack`. Two things to verify against the deployed origin: the Supabase **Site URL** and redirect allow-list (they were `http://localhost:3000`, and auth confirmation links break if they still are), and `NEXT_PUBLIC_SITE_URL` in the Vercel environment — it feeds `metadataBase`, so Open Graph URLs resolve against localhost without it. No CI/CD beyond Vercel's own git integration.
+- **Deploy** — live on Vercel as of 2026-07-25, building with `next build` (Turbopack). Two things to verify against the deployed origin: the Supabase **Site URL** and redirect allow-list (they were `http://localhost:3000`, and auth confirmation links break if they still are), and `NEXT_PUBLIC_SITE_URL` in the Vercel environment — it feeds `metadataBase`, so Open Graph URLs resolve against localhost without it. No CI/CD beyond Vercel's own git integration.
 - **`?next=` after login** — `/settings` redirects to `/login` but doesn't return you afterwards.
 - **GitHub OAuth** — planned, not built.
 - **`cubing.js` render test** — never done; it's a Phase 0 leftover that Phase 3 depends on.
 - **No test tooling.** `docs/architecture.md` carries a manual auth smoke checklist in the meantime.
 
-## Planned: one bundler for dev and production
+## Resolved: one bundler for dev and production
 
-**Priority: do this before Phase 3.** Not a nice-to-have — it is the thing that made two
-production bugs invisible, and Phase 3 adds the 3D case viewer, which leans on exactly the
-dependency that breaks.
+**Done 2026-07-25 by taking cubing.js out of the bundle** (Route 3). `next dev` and
+`npm run build` both run Turbopack again, and `next.config.ts` carries no bundler
+workarounds.
 
-### The problem
+### What was wrong
 
-`next dev` runs Turbopack. `npm run build` is pinned to `next build --webpack`, because the
-Turbopack build hangs: `next build` never finishes — 30+ minutes idle in `ep_poll` with no
-writes to `.next`, reproduced in a clean directory with no dev server running — while
-`--webpack` compiles the same tree in ~18s. Prime suspect is cubing.js worker bundling; the
-dev log carries matching `Module worker instantiation using import.meta.resolve(…) failed`
-warnings.
+`next dev` ran Turbopack while `npm run build` was pinned to `--webpack`, because the
+Turbopack build hung. So **the code that shipped had never run in development**, and bugs
+living in only one bundler stayed invisible until someone loaded the deployed site. That
+cost two production bugs — the build hang itself, and a chunk id/name mismatch that 404'd
+`cubing/twisty` and left the landing hero and scramble preview spinning forever on the live
+site for weeks.
 
-So **the code that ships has never run in development.** Everything anyone checks locally is
-Turbopack output; everything a user touches is webpack output. Bugs that exist only in one of
-them are invisible until someone loads the deployed site and notices.
+An attempt to fix it by upgrading cubing (0.63.3) was **rejected** — see the note below; it
+fixed the build and broke scramble generation.
 
-That is not hypothetical. It has already cost:
+### What fixed it
 
-1. **The Turbopack build hang** itself (Phase 1) — worked around with the `--webpack` pin.
-2. **The 3D cube never loading in production** (2026-07-25). The webpack runtime requested
-   lazy chunks by numeric id while the files were emitted under their chunk name, so
-   `cubing/twisty` 404'd and `next/dynamic` sat on its loading state forever. The landing
-   hero and the scramble preview spun indefinitely in **every** production build, local
-   included, for as long as the site had been deployed. Fixed in `next.config.ts` by
-   templating `output.chunkFilename` on `[id]` — a second workaround stacked on the first.
+cubing's built ESM is copied into `public/cubing/<version>/` by `scripts/copy-cubing.mjs`
+(wired to `predev` and `prebuild`) and imported at runtime through
+`src/lib/cubing/runtime.ts`. No bundler resolves it at all.
 
-Both trace to one root: cubing.js ships a chunk that carries its own webpack runtime, and the
-two bundlers disagree about what to do with it.
+The insight is that neither bundler was really failing to *bundle code* — both were failing
+to **locate a worker file**. Cubing's last-resort strategy is
+`new URL("./search-worker-entry.js", import.meta.url)`. Served as real files with their
+directory structure intact, that resolves against `/cubing/<version>/chunks/`, where the file
+actually is, with nobody's help.
 
-### Attempted and rejected: upgrading cubing (2026-07-25)
+Verified: the Turbopack build completes in ~8s; all 126 relative imports inside the served
+tree resolve with 0 dangling, including the four worker siblings webpack used to drop; 0 of
+25 app assets missing; and the bundle contains no cubing internals at all (`twsearch`,
+`KPuzzle`, `Comlink`, `puzzle-geometry` — zero hits).
 
-`cubing@0.63.3` was tried on branch `try-cubing-upgrade`. **It does not fix this.** Do not
-retry it expecting a different result; the branch is kept as the record.
+Costs, accepted deliberately: ~2 MB of static files in `public/` (gitignored, regenerated at
+build), and cubing is no longer code-split by the bundler — the loader keeps it lazy by hand,
+which it already was. In exchange the app is immune to whatever cubing changes next, which on
+a 0.x line is worth more than the code splitting.
 
-What it did fix: the Turbopack **build** completes in ~9s where it previously never
-completed, with no warnings, and no source changes were needed — `tsc` and `eslint` passed
-untouched.
+### Rejected: upgrading cubing (2026-07-25)
 
-What it did not fix, and why it was abandoned:
+`cubing@0.63.3` was tried on branch `try-cubing-upgrade` and abandoned. It fixes the
+Turbopack *build* (~9s, no warnings, no source changes) but Turbopack's **output** cannot
+instantiate cubing's search worker — scrambles die with `Module worker instantiation failed.
+There are no more fallbacks available.` The webpack chunk-name mismatch also survives in
+0.63.3. So it bought a working build whose output was broken. The branch is kept as the
+record; do not retry it expecting a different result.
 
-- **Turbopack's output cannot run cubing's search worker.** Scramble generation dies at
-  runtime with `Module worker instantiation failed. There are no more fallbacks available.`
-  Cubing tries three strategies in order — `import.meta.resolve(…)`, an esbuild workaround,
-  then `new URL("./search-worker-entry.js", import.meta.url)` — and Turbopack satisfies none
-  of them. Webpack rewrites the third, which is why the webpack build works. A timer that
-  cannot produce a scramble is worse than one with a build workaround.
-- **The webpack chunk-name mismatch survives in 0.63.3.** Rebuilt without the
-  `next.config.ts` override, the same two chunks 404 again, `9301` included. The workaround
-  is still load-bearing either way.
+An upgrade is now low-risk and orthogonal — cubing is a served asset, not a bundled
+dependency — but it should still be driven by wanting newer cubing, not by build problems.
 
-So the upgrade buys a working Turbopack build whose output is broken, at the cost of seven
-minors of churn. Net: nothing. `main` stays on 0.56.0.
+### The lesson worth keeping
 
-There is no public API for pointing cubing at a worker URL of our choosing — that was checked
-too, and would have made this trivial.
+A build workaround that splits dev from production does not cost you one bug — it costs you
+the ability to *see* bugs. The `--webpack` pin looked free for weeks while a completely
+broken 3D cube sat on the live site.
 
-### The real fix
-
-Get dev and production onto the same bundler. Re-ranked after the attempt above:
-
-1. **Take cubing out of the bundle** — serve `cubing/dist` from `public/` and load it at
-   runtime. Now the strongest option, because the failures in both bundlers are failures to
-   *locate a worker file*, and this removes the bundler from that question entirely. Also
-   immunises the app against whatever cubing does next, which on a 0.x line matters. Most
-   plumbing; you would keep the loading lazy by hand.
-2. **Report the worker instantiation failure upstream** — to Next (Turbopack not honouring
-   `new URL(…, import.meta.url)` for workers inside a dependency) and/or to cubing. A minimal
-   repro is a bare Next app plus one `randomScrambleForEvent` call. Cheap to file, uncertain
-   timeline, and it would fix this properly for everyone.
-3. **Wait.** Only defensible while the workarounds hold and nothing new depends on them. They
-   are documented and verified, so this is survivable — but it is what let a broken 3D cube
-   sit on the live site for weeks, so it is a choice, not a default.
-
-### Definition of done
-
-`next build` and `next dev` use the same bundler, both `next.config.ts` workarounds are gone,
-and the landing hero plus the scramble preview render in a local production build.
-
-### Until then
-
-Never sign off a change involving cubing.js, workers, or dynamic imports on `npm run dev`
-alone — check `npm run build && npx next start` too.
-
-A cheap guard that would have caught the 3D bug in seconds, and is worth a script: fetch
-`/_next/static/chunks/webpack-*.js`, extract its `id:"hash"` map, and request every entry.
-Any 404 is a dynamic import that will hang forever. It works against a local server or a
-deployed URL.
+Guard that would have caught it in seconds, still worth scripting: fetch the built page and
+its chunks, extract every `/_next/static/**` reference, and request each one. Any 404 is a
+dynamic import that will hang forever. Works against a local server or a deployed URL.
 
 ## Open questions
 

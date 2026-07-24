@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/copy-cubing.mjs",
     "dev": "next dev",
-    "build": "next build --webpack",
+    "prebuild": "node scripts/copy-cubing.mjs",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },

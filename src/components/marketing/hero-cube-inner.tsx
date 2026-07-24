@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import type { TwistyPlayerConfig } from "cubing/twisty";
 
+import { loadAlg, loadTwisty } from "@/lib/cubing/runtime";
+
 /**
  * The hero's live <twisty-player>. Split out so next/dynamic can keep
  * cubing/twisty (a heavy WebGL chunk) out of everything but this lazy import —
@@ -52,8 +54,8 @@ export function HeroCubeInner({
 
     (async () => {
       const [{ TwistyPlayer }, { Alg }] = await Promise.all([
-        import("cubing/twisty"),
-        import("cubing/alg"),
+        loadTwisty(),
+        loadAlg(),
       ]);
       if (cancelled || !containerRef.current) return;
 

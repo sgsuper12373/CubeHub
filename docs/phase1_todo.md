@@ -101,6 +101,6 @@ Cheapest meaningful improvement here and needs no schema change — worth doing 
 
 ## Carried over from the Phase 1 build
 
-- **Turbopack production build hangs.** `next build` never finishes (30+ min, process idle in `ep_poll`, reproduced in a clean dir with no dev server). `next build --webpack` compiles in ~18s. Suspect cubing.js worker bundling; dev log shows matching `import.meta.resolve(…) failed` warnings. Blocks deploy until resolved or accepted. Also noted in `roadmap.md`.
+- ~~**Turbopack production build hangs.**~~ **Resolved 2026-07-25.** The suspicion recorded here — cubing.js worker bundling — was right. Fixed by taking cubing out of the bundle entirely and serving it from `public/`; `next build` now runs Turbopack in ~8s and the `--webpack` pin is gone. Full write-up in `roadmap.md` → "Resolved: one bundler for dev and production".
 - **Interactive behaviour is unverified.** The panel grid drag/resize, the landing-page demo timer, and the preview auto-sizing all typecheck and build clean but have never been exercised in a browser. Needs a manual pass.
 - **`settings-form.tsx` state refactor unverified.** Settings now read from `useTimerStore` rather than a local copy, and theme via `useSyncExternalStore`. Typechecks, but the form has not been driven while signed in.

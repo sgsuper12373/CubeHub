@@ -48,3 +48,6 @@ next-env.d.ts
 
 # project plan
 /project_plan/
+
+# cubing.js dist, copied in by scripts/copy-cubing.mjs
+/public/cubing

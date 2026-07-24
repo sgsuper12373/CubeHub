@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { PuzzleID } from "cubing/twisty";
 
+import { loadTwisty } from "@/lib/cubing/runtime";
 import type { TimerPuzzle } from "@/lib/timer/types";
 
 /**
@@ -61,8 +62,8 @@ export function ScramblePreviewInner({
     let cancelled = false;
 
     (async () => {
-      // Dynamic import so cubing/twisty only loads when preview is shown
-      const { TwistyPlayer } = await import("cubing/twisty");
+      // Loaded on demand, so cubing only downloads when the preview is shown.
+      const { TwistyPlayer } = await loadTwisty();
       if (cancelled || !containerRef.current) return;
 
       // Clean up any previous player
