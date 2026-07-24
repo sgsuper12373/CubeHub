@@ -51,6 +51,14 @@ const PUZZLES: { key: TimerPuzzle; label: string }[] = [
   { key: "222", label: "2x2" },
 ];
 
+/**
+ * Ceiling on one page load. Generous — a cuber doing 100 solves a day reaches
+ * it in about seven weeks of "all time" — but it is a ceiling, and a chart
+ * drawn from a truncated history while claiming to be all-time would be a lie.
+ * When it bites, the page says so.
+ */
+const METRIC_LIMIT = 5000;
+
 export function StatsScreen({ userId }: { userId: string | null }) {
   const [puzzle, setPuzzle] = useState<TimerPuzzle>("333");
   const [range, setRange] = useState<RangeKey>("12m");
@@ -90,7 +98,7 @@ export function StatsScreen({ userId }: { userId: string | null }) {
     (async () => {
       try {
         const [metrics, bests, sessions] = await Promise.all([
-          repo.loadSolveMetrics(puzzle, { since }),
+          repo.loadSolveMetrics(puzzle, { since, limit: METRIC_LIMIT }),
           repo.loadPersonalBests(puzzle),
           repo.loadSessions(puzzle),
         ]);
@@ -169,6 +177,14 @@ export function StatsScreen({ userId }: { userId: string | null }) {
           </label>
         )}
       </div>
+
+      {metrics !== null && metrics.length === METRIC_LIMIT && (
+        <p className="rounded-lg border border-border bg-card px-4 py-2.5 text-xs text-muted-foreground">
+          Showing your most recent {METRIC_LIMIT.toLocaleString()} solves. Older
+          ones are safe — they are just not in these charts. Personal bests below
+          still cover everything.
+        </p>
+      )}
 
       {error && (
         <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-foreground">
