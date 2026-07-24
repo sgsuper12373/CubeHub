@@ -72,7 +72,7 @@ Bot mode first — solve against a bot at a target time, with ELO applied. Works
 
 Then: ELO matchmaking queue, race rooms over Supabase Realtime, spectating, private friend rooms, leaderboards (global / India / state), WCA ID linking. Anti-cheat by flagging solves that are statistically impossible against a user's history. 30-second reconnect grace period.
 
-Blocked on a migration: `profiles` has no `state` column, so state-level leaderboards can't be built yet. And the ELO start value is unresolved — see `decisions.md`.
+ELO starts at **1000**, matching the live `elo_ratings` default — settled, see `decisions.md`. Blocked on a migration: `profiles` has no `state` column, so state-level leaderboards can't be built yet.
 
 ## Phase 6 — Polish & scale
 
@@ -94,8 +94,8 @@ The database already supports premium: `subscriptions`, `profiles.premium_until`
 
 - **Migrations baseline** — no migrations are checked in. Needed before the access-tier work, which changes policies that decide who reads paid content.
 - **Username onboarding** — the trigger assigns `user_<12 hex>`; users can't pick one.
-- **Deploy** — no Vercel project or CI/CD. Supabase Site URL is still `http://localhost:3000` and must be updated at deploy. `NEXT_PUBLIC_SITE_URL` now feeds `metadataBase` and must be set, or Open Graph URLs resolve against localhost.
-- **The Turbopack build hangs — build with `--webpack`.** `next build` (Turbopack, the Next 16 default) never finishes: observed 30+ minutes with the process idle in `ep_poll` and no writes to `.next`, reproduced in a clean directory with no dev server running. `next build --webpack` compiles the same tree in **~18s** and emits all 17 routes. Prime suspect is cubing.js worker bundling — the dev log carries matching `Module worker instantiation using import.meta.resolve(…) failed` warnings. Worth reporting upstream; until then `--webpack` is the build command.
+- **Deploy** — live on Vercel as of 2026-07-25. Confirm at the dashboard that the Supabase **Site URL** and redirect allow-list point at the deployed origin (they were `http://localhost:3000`) and that `NEXT_PUBLIC_SITE_URL` is set in the Vercel environment — it feeds `metadataBase`, so Open Graph URLs resolve against localhost without it.
+- **The Turbopack build hangs — build with `--webpack`.** `next build` (Turbopack, the Next 16 default) never finishes: observed 30+ minutes with the process idle in `ep_poll` and no writes to `.next`, reproduced in a clean directory with no dev server running. `next build --webpack` compiles the same tree in **~18s** and emits all 17 routes. Prime suspect is cubing.js worker bundling — the dev log carries matching `Module worker instantiation using import.meta.resolve(…) failed` warnings. Worth reporting upstream; until then `--webpack` is the local build command. **Open:** the Vercel deploy succeeded while `package.json`'s `build` script is still plain `next build`, so either Vercel is overriding the command in project settings or the hang is local-only. Worth confirming from the Vercel build log before pinning `--webpack` in `package.json`.
 - **`?next=` after login** — `/settings` redirects to `/login` but doesn't return you afterwards.
 - **GitHub OAuth** — planned, not built.
 - **`cubing.js` render test** — never done; it's a Phase 0 leftover that Phase 3 depends on.
