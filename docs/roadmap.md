@@ -179,6 +179,30 @@ minors of churn. Net: nothing. `main` stays on 0.56.0.
 There is no public API for pointing cubing at a worker URL of our choosing — that was checked
 too, and would have made this trivial.
 
+### Attempted and rejected: serving cubing from public/ (2026-07-25)
+
+Route 3 was built on branch `route3-unbundle-cubing` and **failed in the browser**. Both the
+3D cube and scramble generation broke.
+
+Why: **cubing's `dist/lib` is not self-contained.** It is unbundled ESM that expects a
+bundler to resolve bare specifiers — `three/src/**` (dozens of them) and self-references like
+`cubing/alg` and `cubing/puzzles`. Served as static files, the browser cannot resolve any of
+them and the module graph fails to evaluate. cubing ships no bundled variant in the npm
+package; `three` is a real dependency.
+
+Every headless check passed — the build worked, the files served, 126 relative imports
+resolved — because none of them evaluate the module. **A first-party grep for bare imports
+returned zero and was simply wrong** (the pattern required no space after `from`). The lesson
+is not about regexes: nothing short of loading the page in a browser can verify that a module
+graph runs.
+
+**But the approach is sound if pointed at the right artifact.** `cdn.cubing.net/js/cubing/twisty`
+serves a genuinely self-contained build — relative imports only, dependencies resolved. Route
+3 done properly means mirroring *that* into `public/` at build time (crawl the chunk graph
+from the entry; imports are relative, so it mirrors cleanly), not copying `dist/lib`. Loading
+it from the CDN directly also works, at the cost of a runtime third-party dependency and the
+landing page's "Works offline" claim.
+
 ### The real fix
 
 Get dev and production onto the same bundler. Re-ranked after the attempt above:
