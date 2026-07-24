@@ -143,6 +143,13 @@ export const localRepo: SolveRepository = {
     const metrics = await localRepo.loadSolveMetrics(puzzle);
     return computePersonalBests(metrics);
   },
+
+  async loadSolvesForExport(puzzle) {
+    // Oldest first — an export reads as a history, not a feed.
+    return read()
+      .solves.filter((s) => s.puzzle === puzzle && !s.deletedAt)
+      .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
+  },
 };
 
 function toMetric(s: Solve): SolveMetric {

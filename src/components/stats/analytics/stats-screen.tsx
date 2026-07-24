@@ -8,6 +8,7 @@ import { Histogram } from "@/components/stats/chart/histogram";
 import { formatDayLabel } from "@/components/stats/chart/scale";
 import { TrendChart } from "@/components/stats/chart/trend-chart";
 import { ConsistencyCard } from "@/components/stats/analytics/consistency-card";
+import { DataSection } from "@/components/stats/analytics/data-section";
 import { PbRow } from "@/components/stats/analytics/pb-row";
 import { CubeLoader } from "@/components/ui/cube-loader";
 import { formatMs } from "@/lib/timer/format";
@@ -215,6 +216,8 @@ export function StatsScreen({ userId }: { userId: string | null }) {
           >
             <Heatmap metrics={filtered} />
           </ChartFrame>
+
+          <DataSection repo={repo} puzzle={puzzle} />
         </>
       )}
     </div>

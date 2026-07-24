@@ -197,6 +197,21 @@ export function createSupabaseRepo(userId: string): SolveRepository {
         .filter((row) => CATEGORIES.includes(row.category as PbCategory))
         .map(mapPersonalBest);
     },
+
+    async loadSolvesForExport(puzzle) {
+      const { data, error } = await getClient()
+        .from("solves")
+        .select(
+          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at",
+        )
+        .eq("user_id", userId)
+        .eq("puzzle_type", puzzle)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+      return (data ?? []).map(mapSolve);
+    },
   };
 }
 

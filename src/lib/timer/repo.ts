@@ -55,4 +55,11 @@ export interface SolveRepository {
    * so it computes the same values from the solves it holds.
    */
   loadPersonalBests(puzzle: TimerPuzzle): Promise<PersonalBest[]>;
+
+  /**
+   * Every surviving solve for a puzzle with nothing dropped — scramble and
+   * notes included. Separate from `loadSolveMetrics` because export has the
+   * opposite requirement to analytics: losslessness over payload size.
+   */
+  loadSolvesForExport(puzzle: TimerPuzzle): Promise<Solve[]>;
 }
