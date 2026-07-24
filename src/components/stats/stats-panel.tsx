@@ -1,6 +1,7 @@
 "use client";
 
 import { BarChart3, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 import { SessionTrend } from "@/components/stats/session-trend";
@@ -102,14 +103,25 @@ export function StatsPanel({
               <h2 className="text-sm font-semibold text-foreground">
                 Session Stats
               </h2>
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                aria-label="Close stats"
-                onClick={() => setDrawerOpen(false)}
-              >
-                <X />
-              </Button>
+              <div className="flex items-center gap-1">
+                {/* The bottom bar only fits five tabs, so this is how /stats is
+                    reached on a phone — from the place a cuber is already
+                    looking at their numbers. */}
+                <Link
+                  href="/stats"
+                  className="rounded px-2 py-1 text-xs font-medium text-primary transition-colors hover:underline"
+                >
+                  All-time stats
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label="Close stats"
+                  onClick={() => setDrawerOpen(false)}
+                >
+                  <X />
+                </Button>
+              </div>
             </div>
             <div className="flex flex-1 flex-col gap-3 overflow-hidden py-3">
               {content}
