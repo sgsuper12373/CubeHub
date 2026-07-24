@@ -83,6 +83,41 @@ export interface Solve {
   deletedAt?: string | null;
 }
 
+/**
+ * A solve stripped to what analytics actually plot. `Solve` minus `puzzle`,
+ * `scramble`, `notes` and `deletedAt` — the scramble alone is ~60 bytes a row,
+ * which is nothing over one session and a lot over a year of them.
+ *
+ * The field names deliberately match `Solve`, so a `SolveMetric` satisfies the
+ * `SolveTimes` shape every helper in `stats.ts` already takes and none of them
+ * needed changing. `timeMs` is kept for exactly that reason: local rows have no
+ * database to generate `effectiveTimeMs`, so `effectiveMs()` derives it.
+ */
+export interface SolveMetric {
+  id: string;
+  sessionId: string;
+  timeMs: number;
+  penalty: Penalty;
+  effectiveTimeMs: number | null;
+  createdAt: string;
+}
+
+/** Categories `personal_bests.category` accepts that the timer produces. */
+export type PbCategory = "single" | "ao5" | "ao12" | "ao50" | "ao100";
+
+/**
+ * An all-time personal best. Cloud users read these from `personal_bests`,
+ * maintained by database triggers; logged-out users get the same shape computed
+ * from local storage. `solveId` is null when the solve behind it was deleted —
+ * the row itself is authoritative either way.
+ */
+export interface PersonalBest {
+  category: PbCategory;
+  timeMs: number;
+  solveId: string | null;
+  achievedAt: string;
+}
+
 export interface Session {
   /** Client-generated UUID, same rationale as Solve.id. */
   id: string;

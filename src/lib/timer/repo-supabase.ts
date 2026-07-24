@@ -1,6 +1,14 @@
 import { createClient } from "@/lib/supabase/client";
 import type { SolveRepository } from "./repo";
-import type { Penalty, Session, Solve, TimerPuzzle } from "./types";
+import type {
+  PbCategory,
+  Penalty,
+  PersonalBest,
+  Session,
+  Solve,
+  SolveMetric,
+  TimerPuzzle,
+} from "./types";
 
 /**
  * Supabase-backed repository for authenticated users.
@@ -156,8 +164,43 @@ export function createSupabaseRepo(userId: string): SolveRepository {
         .eq("user_id", userId);
       if (error) throw error;
     },
+
+    async loadSolveMetrics(puzzle, { since, limit = 5000 } = {}) {
+      // Served by idx_solves_user_puzzle (user_id, puzzle_type, created_at desc).
+      // The select is deliberately narrow — no scramble, no notes.
+      let query = getClient()
+        .from("solves")
+        .select("id, session_id, time_ms, penalty, effective_time_ms, created_at")
+        .eq("user_id", userId)
+        .eq("puzzle_type", puzzle)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (since) query = query.gte("created_at", since);
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data ?? []).map(mapMetric);
+    },
+
+    async loadPersonalBests(puzzle) {
+      const { data, error } = await getClient()
+        .from("personal_bests")
+        .select("category, time_ms, solve_id, achieved_at")
+        .eq("user_id", userId)
+        .eq("puzzle_type", puzzle);
+
+      if (error) throw error;
+      // `category` also permits 'mean3', which the timer never produces.
+      return (data ?? [])
+        .filter((row) => CATEGORIES.includes(row.category as PbCategory))
+        .map(mapPersonalBest);
+    },
   };
 }
+
+const CATEGORIES: PbCategory[] = ["single", "ao5", "ao12", "ao50", "ao100"];
 
 // ── Row → domain mappers ──
 
@@ -174,6 +217,38 @@ function mapSession(row: {
     name: row.name,
     isActive: row.is_active,
     orderIndex: row.order_index,
+  };
+}
+
+function mapMetric(row: {
+  id: string;
+  session_id: string;
+  time_ms: number;
+  penalty: string;
+  effective_time_ms: number | null;
+  created_at: string;
+}): SolveMetric {
+  return {
+    id: row.id,
+    sessionId: row.session_id,
+    timeMs: row.time_ms,
+    penalty: row.penalty as Penalty,
+    effectiveTimeMs: row.effective_time_ms,
+    createdAt: row.created_at,
+  };
+}
+
+function mapPersonalBest(row: {
+  category: string;
+  time_ms: number;
+  solve_id: string | null;
+  achieved_at: string;
+}): PersonalBest {
+  return {
+    category: row.category as PbCategory,
+    timeMs: row.time_ms,
+    solveId: row.solve_id,
+    achievedAt: row.achieved_at,
   };
 }
 

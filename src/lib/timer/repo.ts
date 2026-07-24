@@ -1,4 +1,11 @@
-import type { Penalty, Session, Solve, TimerPuzzle } from "./types";
+import type {
+  Penalty,
+  PersonalBest,
+  Session,
+  Solve,
+  SolveMetric,
+  TimerPuzzle,
+} from "./types";
 
 /**
  * Persistence boundary for the timer. Two implementations:
@@ -26,4 +33,26 @@ export interface SolveRepository {
   deleteSolvesInSession(sessionId: string): Promise<void>;
   /** Clear the soft-delete marker, bringing the solves back. */
   restoreSolves(ids: string[]): Promise<void>;
+
+  // ── Analytics reads (Phase 2) ──
+  // Deliberately separate from loadSolves: these cross session boundaries and
+  // can return thousands of rows, so they drop the scramble and notes that the
+  // solve list needs and analytics never look at.
+
+  /**
+   * Every surviving solve for a puzzle, across all its sessions, newest first —
+   * the same ordering as `loadSolves`, which is what the `stats.ts` helpers
+   * expect. `since` is an ISO timestamp.
+   */
+  loadSolveMetrics(
+    puzzle: TimerPuzzle,
+    opts?: { since?: string; limit?: number },
+  ): Promise<SolveMetric[]>;
+
+  /**
+   * All-time personal bests for a puzzle. The cloud reads the authoritative
+   * `personal_bests` rows the database maintains; local storage has no triggers,
+   * so it computes the same values from the solves it holds.
+   */
+  loadPersonalBests(puzzle: TimerPuzzle): Promise<PersonalBest[]>;
 }
