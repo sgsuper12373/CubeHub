@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Turbopack needs no custom configuration; this empty object is here to say
+  // so deliberately. Next 16 errors on startup when it finds a `webpack` config
+  // and no `turbopack` one, on the assumption the webpack config was meant to
+  // be migrated. It wasn't: the two bundlers are doing different jobs here —
+  // `next dev` runs Turbopack, `npm run build` is pinned to `--webpack` because
+  // the Turbopack build hangs, and the override below applies only to the
+  // latter. Removing this line brings the startup error back; removing the
+  // whole split is tracked in docs/roadmap.md → "One bundler for dev and
+  // production".
+  turbopack: {},
+
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // Align lazy-chunk filenames with the ids the runtime actually requests.
