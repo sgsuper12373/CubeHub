@@ -21,20 +21,22 @@ const WCA_TOKENS = [
 
 interface Token {
   text: string;
-  x: number;
-  y: number;
   originX: number;
   originY: number;
-  vx: number;
-  vy: number;
-  size: number;
+  phaseX: number;
+  phaseY: number;
+  freqX: number;
+  freqY: number;
+  ampX: number;
+  ampY: number;
+  currentOffsetX: number;
+  currentOffsetY: number;
+  baseSize: number;
+  currentSize: number;
   angle: number;
   dAngle: number;
   baseAlpha: number;
   currentAlpha: number;
-  colorR: number;
-  colorG: number;
-  colorB: number;
 }
 
 interface Shockwave {
@@ -68,47 +70,50 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
     let height = 0;
     const tokens: Token[] = [];
 
-    // Helper to pick random WCA token
+    // Helper to pick a random WCA notation move
     const getRandomToken = () =>
       WCA_TOKENS[Math.floor(Math.random() * WCA_TOKENS.length)];
 
-    // Initialize tokens distributed across grid cells for well-balanced density
+    // Initialize tokens across grid cells with generous spacing for light green bordered keycaps
     const initTokens = () => {
       tokens.length = 0;
-      const cols = Math.floor(width / 90) || 1;
-      const rows = Math.floor(height / 75) || 1;
-      const cellW = width / cols;
-      const cellH = height / rows;
+      const cellW = 115;
+      const cellH = 90;
+      const cols = Math.floor(width / cellW) || 1;
+      const rows = Math.floor(height / cellH) || 1;
+      const actualCellW = width / cols;
+      const actualCellH = height / rows;
 
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          // Add organic jitter within each cell
-          const jitterX = (Math.random() - 0.5) * (cellW * 0.7);
-          const jitterY = (Math.random() - 0.5) * (cellH * 0.7);
-          const x = c * cellW + cellW / 2 + jitterX;
-          const y = r * cellH + cellH / 2 + jitterY;
+          // Organic placement jitter within each cell
+          const jitterX = (Math.random() - 0.5) * (actualCellW * 0.6);
+          const jitterY = (Math.random() - 0.5) * (actualCellH * 0.6);
+          const originX = c * actualCellW + actualCellW / 2 + jitterX;
+          const originY = r * actualCellH + actualCellH / 2 + jitterY;
 
-          // Vary typography size and subtle ambient opacity
-          const size = Math.floor(Math.random() * 10) + 15; // 15px to 24px
-          const baseAlpha = 0.14 + Math.random() * 0.16; // 0.14 to 0.30 at rest
+          const baseSize = Math.floor(Math.random() * 6) + 15; // 15px to 20px resting font size
+          const baseAlpha = 0.22 + Math.random() * 0.18; // 0.22 to 0.40 resting opacity
 
           tokens.push({
             text: getRandomToken(),
-            x,
-            y,
-            originX: x,
-            originY: y,
-            vx: (Math.random() - 0.5) * 0.35,
-            vy: (Math.random() - 0.5) * 0.35,
-            size,
-            angle: (Math.random() - 0.5) * 0.3,
-            dAngle: (Math.random() - 0.5) * 0.005,
+            originX,
+            originY,
+            // Smooth trigonometric phase oscillations (prevents edge jumping & erratic flicker!)
+            phaseX: Math.random() * Math.PI * 2,
+            phaseY: Math.random() * Math.PI * 2,
+            freqX: 0.01 + Math.random() * 0.01,
+            freqY: 0.01 + Math.random() * 0.01,
+            ampX: 10 + Math.random() * 14,
+            ampY: 10 + Math.random() * 14,
+            currentOffsetX: 0,
+            currentOffsetY: 0,
+            baseSize,
+            currentSize: baseSize,
+            angle: (Math.random() - 0.5) * 0.25,
+            dAngle: (Math.random() - 0.5) * 0.003,
             baseAlpha,
             currentAlpha: baseAlpha,
-            // Rest color: cool subtle slate (148, 163, 184)
-            colorR: 148,
-            colorG: 163,
-            colorB: 184,
           });
         }
       }
@@ -129,16 +134,17 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
     handleResize();
     window.addEventListener("resize", handleResize);
 
-    // Global Window Pointer tracking so interactivity functions smoothly even when hovering over text or demo timer cards!
+    // Global Window Pointer tracking across foreground components
     const onPointerMove = (e: PointerEvent | MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
+      // Smoothly deactivate pointer when leaving window bounds
       if (
         rect.bottom < 0 ||
         rect.top > window.innerHeight ||
-        e.clientX < rect.left - 40 ||
-        e.clientX > rect.right + 40 ||
-        e.clientY < rect.top - 40 ||
-        e.clientY > rect.bottom + 40
+        e.clientX < 5 ||
+        e.clientX > window.innerWidth - 5 ||
+        e.clientY < 5 ||
+        e.clientY > window.innerHeight - 5
       ) {
         pointerRef.current.active = false;
         return;
@@ -151,7 +157,7 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
       if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current);
       idleTimeoutRef.current = setTimeout(() => {
         pointerRef.current.active = false;
-      }, 4000);
+      }, 3500);
     };
 
     const onTouchMove = (e: TouchEvent) => {
@@ -189,14 +195,14 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
 
-      // Spawn radial interactive shockwave on click
+      // Spawn radial shockwave on click
       shockwavesRef.current.push({
         x: clickX,
         y: clickY,
         radius: 0,
-        maxRadius: Math.max(width, height) * 0.8,
-        speed: 16,
-        alpha: 0.8,
+        maxRadius: Math.max(width, height) * 0.9,
+        speed: 18,
+        alpha: 0.9,
       });
     };
 
@@ -209,7 +215,7 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
       ctx.clearRect(0, 0, width, height);
 
       const pointer = pointerRef.current;
-      const hoverRadius = 180;
+      const interactionRadius = 250; // Increased radius for stronger cursor reactivity
 
       // Process shockwaves
       const activeShockwaves: Shockwave[] = [];
@@ -219,131 +225,151 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
 
         if (wave.alpha > 0.05) {
           activeShockwaves.push(wave);
-          // Draw thin glowing expanding shockwave ring
+          // Draw expanding glowing emerald ring
           ctx.beginPath();
           ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(20, 184, 166, ${wave.alpha * 0.35})`; // Brand teal ring
-          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = `rgba(20, 184, 166, ${wave.alpha * 0.45})`;
+          ctx.lineWidth = 2.0;
           ctx.stroke();
         }
       }
       shockwavesRef.current = activeShockwaves;
 
-      // Render tokens
+      // Render tokens with light green bordered keycap aesthetics
       for (let i = 0; i < tokens.length; i++) {
         const t = tokens[i];
 
+        // 1. Calculate ambient position via smooth harmonic trigonometry (eliminates edge jumps!)
         if (!prefersReduced) {
-          // Drift slightly around origin
-          t.x += t.vx;
-          t.y += t.vy;
+          t.phaseX += t.freqX;
+          t.phaseY += t.freqY;
           t.angle += t.dAngle;
-
-          // Keep within gentle bounds of origin
-          const distOrigin = Math.hypot(t.x - t.originX, t.y - t.originY);
-          if (distOrigin > 25) {
-            t.vx += (t.originX - t.x) * 0.005;
-            t.vy += (t.originY - t.y) * 0.005;
-          }
-
-          // Screen wrapping if needed
-          if (t.x < 0) t.x = width;
-          if (t.x > width) t.x = 0;
-          if (t.y < 0) t.y = height;
-          if (t.y > height) t.y = 0;
         }
+        const baseX = t.originX + Math.sin(t.phaseX) * t.ampX;
+        const baseY = t.originY + Math.cos(t.phaseY) * t.ampY;
 
-        // Calculate cursor reactivity (Magnetic repel & color illumination)
+        // 2. Compute enhanced cursor reactivity (repel displacement, font zoom & intense glow)
+        let targetOffsetX = 0;
+        let targetOffsetY = 0;
         let targetAlpha = t.baseAlpha;
-        let targetR = 148;
-        let targetG = 163;
-        let targetB = 184;
-        let offsetX = 0;
-        let offsetY = 0;
+        let targetSize = t.baseSize;
 
         if (pointer.active && pointer.x !== null && pointer.y !== null) {
-          const dx = t.x - pointer.x;
-          const dy = t.y - pointer.y;
+          const dx = baseX - pointer.x;
+          const dy = baseY - pointer.y;
           const dist = Math.hypot(dx, dy);
 
-          if (dist < hoverRadius) {
-            const intensity = Math.pow(1 - dist / hoverRadius, 1.5);
-            // Repel smoothly out from cursor
+          if (dist < interactionRadius) {
+            const intensity = Math.pow(1 - dist / interactionRadius, 1.4);
+            // Strong elastic displacement push outward
             const angle = Math.atan2(dy, dx);
-            const force = intensity * 28;
-            offsetX = Math.cos(angle) * force;
-            offsetY = Math.sin(angle) * force;
+            const force = intensity * 55;
+            targetOffsetX = Math.cos(angle) * force;
+            targetOffsetY = Math.sin(angle) * force;
 
-            // Illuminate to Brand Primary Emerald Green (#14b8a6 -> rgb(20, 184, 166))
-            targetAlpha = Math.min(0.95, t.baseAlpha + intensity * 0.8);
-            targetR = Math.round(148 + (20 - 148) * intensity);
-            targetG = Math.round(163 + (184 - 163) * intensity);
-            targetB = Math.round(184 + (166 - 184) * intensity);
+            // Highly reactive opacity and scaling boost under cursor
+            targetAlpha = Math.min(1.0, t.baseAlpha + intensity * 0.9);
+            targetSize = t.baseSize + intensity * 12; // Grow font by up to +12px!
           }
         }
 
-        // Check interaction with active shockwaves
+        // 3. Shockwave interactions
         for (const wave of shockwavesRef.current) {
-          const distToWave = Math.hypot(t.x - wave.x, t.y - wave.y);
-          if (Math.abs(distToWave - wave.radius) < 35) {
+          const distToWave = Math.hypot(baseX - wave.x, baseY - wave.y);
+          if (Math.abs(distToWave - wave.radius) < 40) {
             targetAlpha = 1.0;
-            targetR = 20;
-            targetG = 240; // Intense bright green flash
-            targetB = 175;
-            // Randomly transform WCA notation as wave passes over token!
+            targetSize = Math.max(targetSize, t.baseSize + 8);
+            // Randomly transform WCA notation as wave crest passes!
             if (Math.random() < 0.08) {
               t.text = getRandomToken();
             }
           }
         }
 
-        // Smoothly lerp towards target properties
-        t.currentAlpha += (targetAlpha - t.currentAlpha) * 0.1;
-        t.colorR += (targetR - t.colorR) * 0.1;
-        t.colorG += (targetG - t.colorG) * 0.1;
-        t.colorB += (targetB - t.colorB) * 0.1;
+        // 4. Smoothly lerp towards targets for zero-flicker transitions
+        t.currentOffsetX += (targetOffsetX - t.currentOffsetX) * 0.12;
+        t.currentOffsetY += (targetOffsetY - t.currentOffsetY) * 0.12;
+        t.currentAlpha += (targetAlpha - t.currentAlpha) * 0.12;
+        t.currentSize += (targetSize - t.currentSize) * 0.12;
 
-        const drawX = t.x + offsetX;
-        const drawY = t.y + offsetY;
+        const drawX = baseX + t.currentOffsetX;
+        const drawY = baseY + t.currentOffsetY;
 
-        // Draw connecting tension lines between energized neighbor tokens under cursor
-        if (t.currentAlpha > 0.45 && !prefersReduced) {
+        // 5. Draw connecting tension lines between highly illuminated neighbor tokens under cursor
+        if (t.currentAlpha > 0.55 && !prefersReduced) {
           for (let j = i + 1; j < Math.min(tokens.length, i + 6); j++) {
             const neighbor = tokens[j];
-            const ndx = neighbor.x - drawX;
-            const ndy = neighbor.y - drawY;
+            const ndx = (neighbor.originX + neighbor.currentOffsetX) - drawX;
+            const ndy = (neighbor.originY + neighbor.currentOffsetY) - drawY;
             const ndist = Math.hypot(ndx, ndy);
-            if (ndist < 100 && neighbor.currentAlpha > 0.45) {
+            if (ndist < 140 && neighbor.currentAlpha > 0.55) {
               const lineAlpha = Math.min(
-                0.25,
-                ((100 - ndist) / 100) * (t.currentAlpha - 0.45)
+                0.35,
+                ((140 - ndist) / 140) * (t.currentAlpha - 0.5)
               );
               ctx.beginPath();
               ctx.moveTo(drawX, drawY);
-              ctx.lineTo(neighbor.x, neighbor.y);
+              ctx.lineTo(drawX + ndx, drawY + ndy);
               ctx.strokeStyle = `rgba(20, 184, 166, ${lineAlpha})`;
-              ctx.lineWidth = 1;
+              ctx.lineWidth = 1.2;
               ctx.stroke();
             }
           }
         }
 
-        // Draw Token text
+        // 6. Draw Light Green Bordered Keycap Badge & Letter
+        const boxW = Math.max(t.currentSize * 1.7, 44);
+        const boxH = t.currentSize * 1.55;
+        const cornerRadius = 8;
+
         ctx.save();
         ctx.translate(drawX, drawY);
         ctx.rotate(t.angle);
-        ctx.font = `600 ${t.size}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = `rgba(${Math.round(t.colorR)}, ${Math.round(t.colorG)}, ${Math.round(t.colorB)}, ${t.currentAlpha})`;
 
-        // Glow effect when highly illuminated
-        if (t.currentAlpha > 0.6) {
-          ctx.shadowColor = "rgba(20, 184, 166, 0.6)";
-          ctx.shadowBlur = 12;
+        // Draw badge container
+        ctx.beginPath();
+        if (typeof ctx.roundRect === "function") {
+          ctx.roundRect(-boxW / 2, -boxH / 2, boxW, boxH, cornerRadius);
+        } else {
+          ctx.rect(-boxW / 2, -boxH / 2, boxW, boxH);
         }
 
-        ctx.fillText(t.text, 0, 0);
+        // Deep glassmorphic fill behind letter
+        ctx.fillStyle = `rgba(15, 23, 42, ${Math.min(0.85, t.currentAlpha * 1.1)})`;
+        ctx.fill();
+
+        // Brand signature light green border (rgba(20, 184, 166) / rgba(45, 212, 191))
+        const isHovered = t.currentAlpha > 0.45;
+        const borderAlpha = Math.min(1.0, t.currentAlpha * 1.4);
+        ctx.strokeStyle = isHovered
+          ? `rgba(45, 212, 191, ${borderAlpha})` // Bright mint green when reactive
+          : `rgba(20, 184, 166, ${borderAlpha * 0.75})`; // Signature emerald teal at rest
+        ctx.lineWidth = isHovered ? 1.8 : 1.2;
+
+        if (isHovered) {
+          ctx.shadowColor = "rgba(20, 184, 166, 0.7)";
+          ctx.shadowBlur = 14;
+        } else {
+          ctx.shadowBlur = 0;
+        }
+
+        ctx.stroke();
+        ctx.shadowBlur = 0; // Reset shadow before rendering text
+
+        // Render letter inside keycap badge
+        ctx.font = `600 ${Math.round(t.currentSize)}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        if (isHovered) {
+          ctx.fillStyle = `rgba(240, 253, 250, ${t.currentAlpha})`; // Luminous bright mint white
+          ctx.shadowColor = "rgba(45, 212, 191, 0.6)";
+          ctx.shadowBlur = 6;
+        } else {
+          ctx.fillStyle = `rgba(45, 212, 191, ${t.currentAlpha * 0.9})`; // Soft brand teal at rest
+        }
+
+        ctx.fillText(t.text, 0, 1); // 1px vertical optical alignment
         ctx.restore();
       }
 
@@ -351,7 +377,6 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
     };
 
     if (prefersReduced) {
-      // Render once statically if reduced motion is requested
       render();
       if (animId) cancelAnimationFrame(animId);
     } else {
