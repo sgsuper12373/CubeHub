@@ -204,62 +204,104 @@ export function DemoTimer({ className }: { className?: string }) {
   }, [phase, go]);
 
   return (
-    <div
-      ref={rootRef}
-      role="button"
-      tabIndex={0}
-      aria-label="Demo timer — hold, then release to start; press to stop"
-      className={cn(
-        "flex w-full cursor-pointer touch-none select-none flex-col items-center gap-3 rounded-xl border border-border bg-card p-6 shadow-lg shadow-black/20",
-        "focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-        className,
-      )}
-      onPointerDown={(e) => {
-        if (!e.isPrimary) return;
-        e.preventDefault();
-        e.currentTarget.setPointerCapture(e.pointerId);
-        press();
-      }}
-      onPointerUp={(e) => {
-        if (!e.isPrimary) return;
-        release();
-      }}
-      onPointerCancel={release}
-      onContextMenu={(e) => e.preventDefault()}
-    >
-      <p className="min-h-5 max-w-md text-center font-mono text-xs text-muted-foreground md:text-sm">
-        {scramble ?? " "}
-      </p>
-
-      <span
-        ref={digitsRef}
+    <div className={cn("group relative w-full", className)}>
+      {/* Dynamic Ambient Card Glow */}
+      <div
         className={cn(
-          "font-mono text-6xl font-semibold tabular-nums transition-[color,transform] duration-150 md:text-7xl",
-          phase === "holding" && "text-timer-holding",
-          phase === "ready" && "timer-ready-pulse text-timer-running",
-          phase === "running" && "text-timer-running",
-          phase === "stopped" && "text-timer-ready timer-stop-flash",
+          "pointer-events-none absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-primary/30 via-teal-500/20 to-cyan-500/30 opacity-60 blur-xl transition-all duration-500 group-hover:opacity-100",
+          phase === "holding" && "from-amber-500/50 via-amber-500/30 to-amber-500/50 opacity-90 blur-2xl",
+          phase === "ready" && "from-emerald-500/60 via-emerald-500/40 to-emerald-500/60 opacity-100 blur-2xl animate-pulse",
+          phase === "running" && "from-primary/50 via-emerald-500/40 to-cyan-500/50 opacity-80 blur-2xl",
         )}
       />
 
-      <p className="text-xs text-muted-foreground">
-        <span className="hidden md:inline">
-          Hold{" "}
-          <kbd className="rounded border border-border bg-muted px-1.5 font-mono text-[11px]">
-            Space
-          </kbd>{" "}
-          — release to start
-        </span>
-        <span className="md:hidden">Hold anywhere on this card to start</span>
-      </p>
+      <div
+        ref={rootRef}
+        role="button"
+        tabIndex={0}
+        aria-label="Demo timer — hold, then release to start; press to stop"
+        className={cn(
+          "relative flex w-full cursor-pointer touch-none select-none flex-col items-center gap-4 rounded-2xl border border-white/15 bg-card/85 p-8 shadow-[0_12px_45px_rgba(0,0,0,0.5)] backdrop-blur-2xl ring-1 ring-white/10 transition-all duration-300 group-hover:border-primary/40 dark:bg-zinc-900/80",
+          "focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+        )}
+        onPointerDown={(e) => {
+          if (!e.isPrimary) return;
+          e.preventDefault();
+          e.currentTarget.setPointerCapture(e.pointerId);
+          press();
+        }}
+        onPointerUp={(e) => {
+          if (!e.isPrimary) return;
+          release();
+        }}
+        onPointerCancel={release}
+        onContextMenu={(e) => e.preventDefault()}
+      >
+        <div className="flex w-full items-center justify-between px-2 text-[11px] font-mono font-medium tracking-wider uppercase text-muted-foreground/70">
+          <span className="flex items-center gap-1.5">
+            <span
+              className={cn(
+                "size-2 rounded-full transition-colors duration-200",
+                phase === "idle" && "bg-muted-foreground/40",
+                phase === "holding" && "bg-amber-400",
+                phase === "ready" && "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]",
+                phase === "running" && "bg-cyan-400 animate-ping",
+                phase === "stopped" && "bg-primary",
+              )}
+            />
+            {phase.toUpperCase()}
+          </span>
+          <span className="text-right text-[11px]">3×3 RANDOM STATE</span>
+        </div>
 
-      {times.length > 0 && (
-        <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-mono text-xs text-muted-foreground tabular-nums">
-          {times.map((t, i) => (
-            <li key={`${i}-${t}`}>{formatMs(t)}</li>
-          ))}
-        </ul>
-      )}
+        <p className="min-h-7 max-w-md rounded-lg border border-border/50 bg-muted/40 px-3 py-1 text-center font-mono text-xs font-medium tracking-wide text-foreground/90 md:text-sm">
+          {scramble ?? " "}
+        </p>
+
+        <span
+          ref={digitsRef}
+          className={cn(
+            "my-2 inline-flex min-h-[80px] w-full items-center justify-center font-mono text-7xl font-bold tabular-nums tracking-tighter transition-[color,transform,text-shadow] duration-150 sm:min-h-[100px] md:min-h-[130px] md:text-8xl",
+            phase === "idle" && "text-foreground drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]",
+            phase === "holding" && "text-amber-400 scale-95",
+            phase === "ready" && "timer-ready-pulse text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.4)] scale-105",
+            phase === "running" && "text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.3)]",
+            phase === "stopped" && "text-timer-ready timer-stop-flash text-primary drop-shadow-[0_0_20px_rgba(20,184,166,0.4)]",
+          )}
+        >
+          0.00
+        </span>
+
+        <p className="text-xs font-medium text-muted-foreground">
+          <span className="hidden md:inline-flex items-center gap-1.5">
+            Hold{" "}
+            <kbd className="inline-flex h-5 items-center rounded border border-white/20 bg-muted px-1.5 font-mono text-[11px] font-semibold text-foreground shadow-xs">
+              Space
+            </kbd>{" "}
+            — release to start, hit any key to stop
+          </span>
+          <span className="md:hidden">Hold anywhere on this card — release to start</span>
+        </p>
+
+        {times.length > 0 && (
+          <div className="w-full border-t border-border/60 pt-3">
+            <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 font-mono text-xs text-muted-foreground tabular-nums">
+              <li className="text-[11px] uppercase tracking-wider text-muted-foreground/70 font-semibold">Recent Solves:</li>
+              {times.map((t, i) => (
+                <li
+                  key={`${i}-${t}`}
+                  className={cn(
+                    "rounded bg-muted/50 px-2 py-0.5 font-medium text-foreground border border-border/40",
+                    i === 0 && "border-primary/50 text-primary font-bold bg-primary/10 shadow-[0_0_10px_rgba(20,184,166,0.15)]",
+                  )}
+                >
+                  {formatMs(t)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

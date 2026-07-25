@@ -87,6 +87,7 @@ export function ScrambleBar({
     <div className="flex min-h-20 flex-col items-center justify-center gap-2 px-4 pt-6">
       {alg === null ? (
         <div
+          role="status"
           className="h-6 w-64 max-w-full animate-pulse rounded-md bg-muted"
           aria-label="generating scramble"
         />
