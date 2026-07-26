@@ -83,9 +83,9 @@ export function DataSection({
   /** Read and parse only — nothing is written until the user confirms. */
   const pickFile = async (file: File) => {
     try {
-      setPreview(parseCsTimer(await file.text()));
+      setPreview(parseCsTimer(await file.text(), puzzle));
     } catch (err) {
-      console.error("csTimer read failed", err);
+      console.error("import read failed", err);
       toast({
         kind: "error",
         message: "Couldn't read that file",
@@ -130,7 +130,7 @@ export function DataSection({
       <h2 className="text-sm font-semibold text-foreground">Your data</h2>
       <p className="mt-0.5 text-xs text-muted-foreground">
         Every solve for this puzzle, scrambles and notes included. Nothing is
-        left behind.
+        left behind. You can also restore from your exported backups or csTimer.
       </p>
 
       <div className="mt-3 flex flex-wrap gap-2">
@@ -160,7 +160,7 @@ export function DataSection({
           onClick={() => fileInput.current?.click()}
         >
           <Upload className="size-3.5" />
-          Import from csTimer
+          Import JSON (CubeHub / csTimer)
         </Button>
         <input
           ref={fileInput}
@@ -185,7 +185,7 @@ export function DataSection({
             <>
               <p className="text-sm font-medium text-foreground">
                 Ready to import {preview.totalSolves} solve
-                {preview.totalSolves === 1 ? "" : "s"} into{" "}
+                {preview.totalSolves === 1 ? "" : "s"} ({preview.source === "cubehub" ? "CubeHub backup" : "csTimer export"}) into{" "}
                 {puzzle === "333" ? "3x3" : "2x2"}
               </p>
               <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">

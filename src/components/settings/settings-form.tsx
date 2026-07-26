@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useSyncExternalStore, useTransition } from "react";
-import { LogOut } from "lucide-react";
+import { useActionState, useEffect, useSyncExternalStore, useTransition, useState } from "react";
+import { LogOut, Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   type Theme,
   setTheme,
@@ -11,7 +13,9 @@ import {
   getThemeSnapshot,
   getThemeServerSnapshot,
 } from "@/lib/theme";
-import type { ServerTimerSettings } from "@/lib/auth/dal";
+import type { CurrentProfile, ServerTimerSettings } from "@/lib/auth/dal";
+import { updateProfile, type ProfileState } from "@/lib/auth/actions";
+import { toast } from "@/stores/toast-store";
 import {
   DEFAULT_TIMER_SETTINGS,
   type InspectionMode,
@@ -24,8 +28,10 @@ import { createClient } from "@/lib/supabase/client";
 
 export function SettingsForm({
   initialSettings,
+  profile,
 }: {
   initialSettings: ServerTimerSettings | null;
+  profile: CurrentProfile | null;
 }) {
   // Settings live in the timer store rather than a second local copy, so this
   // page and /timer can't drift — change precision here and the timer already
@@ -74,30 +80,7 @@ export function SettingsForm({
   return (
     <div className="w-full max-w-2xl space-y-12 pb-24">
       {/* ── Profile / Account ── */}
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold tracking-tight">Account</h2>
-        <div className="rounded-xl border border-border bg-card p-4 sm:p-6 space-y-6">
-          <div className="grid gap-2">
-            <label className="text-sm font-medium">Display Name</label>
-            <input
-              type="text"
-              className="h-9 w-full max-w-sm rounded-md border border-border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              defaultValue="SpeedCuber" // TODO: Wire to profiles table
-              disabled
-            />
-            <p className="text-xs text-muted-foreground">
-              Display names will be wired up in a future update.
-            </p>
-          </div>
-
-          <div className="pt-4 border-t border-border">
-            <Button variant="outline" onClick={handleSignOut} className="text-destructive hover:bg-destructive/10 hover:text-destructive">
-              <LogOut className="mr-2 size-4" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </section>
+      <ProfileForm profile={profile} onSignOut={handleSignOut} />
 
       {/* ── Timer ── */}
       <section className="space-y-4">
@@ -284,5 +267,144 @@ function ToggleSwitch({
         )}
       />
     </button>
+  );
+}
+
+function ProfileForm({
+  profile,
+  onSignOut,
+}: {
+  profile: CurrentProfile | null;
+  onSignOut: () => void;
+}) {
+  const [state, formAction, pending] = useActionState<ProfileState, FormData>(
+    updateProfile,
+    undefined,
+  );
+  const [username, setUsername] = useState(profile?.username ?? "");
+  const [displayName, setDisplayName] = useState(profile?.display_name ?? "");
+
+  const isDefaultHandle = profile
+    ? /^user_[0-9a-f]{12}$/i.test(profile.username)
+    : false;
+  const isDirty = profile
+    ? username !== profile.username ||
+      displayName !== (profile.display_name ?? "")
+    : false;
+
+  useEffect(() => {
+    if (state?.success) {
+      toast({
+        kind: "info",
+        message: "Profile updated successfully!",
+        durationMs: 3500,
+      });
+    } else if (state?.error) {
+      toast({
+        kind: "error",
+        message: state.error,
+        durationMs: 5000,
+      });
+    }
+  }, [state]);
+
+  return (
+    <section className="space-y-4">
+      <h2 className="text-xl font-semibold tracking-tight">Account & Profile</h2>
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6 space-y-6">
+        {isDefaultHandle && (
+          <div className="rounded-lg bg-primary/10 border border-primary/20 p-4 text-sm text-primary flex items-center justify-between">
+            <span>
+              You currently have an auto-generated handle. Choose your permanent
+              username below!
+            </span>
+          </div>
+        )}
+
+        <form action={formAction} className="space-y-5">
+          <div className="grid gap-2 max-w-sm">
+            <Label htmlFor="settings-username">Username</Label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground text-sm font-mono">
+                @
+              </span>
+              <Input
+                id="settings-username"
+                name="username"
+                type="text"
+                required
+                minLength={3}
+                maxLength={24}
+                pattern="^[A-Za-z0-9_]+$"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="pl-7 font-mono text-sm"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              3–24 characters. Letters, numbers, and underscores only.
+            </p>
+          </div>
+
+          <div className="grid gap-2 max-w-sm">
+            <Label htmlFor="settings-display-name">Display Name</Label>
+            <Input
+              id="settings-display-name"
+              name="display_name"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Optional nickname"
+              maxLength={50}
+              className="text-sm"
+            />
+            <p className="text-xs text-muted-foreground">
+              Shown on profile cards and navigation menus.
+            </p>
+          </div>
+
+          {state?.error ? (
+            <p role="alert" className="text-sm text-destructive font-medium">
+              {state.error}
+            </p>
+          ) : null}
+
+          <div className="flex items-center gap-3 pt-2">
+            <Button
+              type="submit"
+              disabled={pending || !isDirty}
+              className="min-w-28"
+            >
+              {pending ? (
+                "Saving…"
+              ) : state?.success && !isDirty ? (
+                <span className="flex items-center gap-1.5">
+                  <Check className="size-4" /> Saved
+                </span>
+              ) : (
+                "Save Profile"
+              )}
+            </Button>
+          </div>
+        </form>
+
+        <div className="pt-4 border-t border-border flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">Sign out</p>
+            <p className="text-xs text-muted-foreground">
+              Log out of your CubeHub account on this device.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={onSignOut}
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive shrink-0"
+          >
+            <LogOut className="mr-2 size-4" />
+            Sign Out
+          </Button>
+        </div>
+      </div>
+    </section>
   );
 }
