@@ -1,0 +1,72 @@
+name: CI & Automated Testing
+
+on:
+  push:
+    branches: [main, test-suite-ci]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Lint, Typecheck & Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Run Type Check & Linting
+        run: npx tsc --noEmit && npm run lint
+
+      - name: Run Unit Tests (Vitest)
+        run: npm run test
+
+  e2e-smoke:
+    name: Playwright Browser Smoke Tests
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies & Playwright Browsers
+        run: |
+          npm install --legacy-peer-deps
+          npx playwright install chromium --with-deps
+
+      - name: Build Application for E2E
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: "https://bmgupzbyzuxrdsqtiwli.supabase.co"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "ey00000000000000000000000000000000000000000000000000000000000000000000000000000000"
+          SUPABASE_SERVICE_ROLE_KEY: "ey00000000000000000000000000000000000000000000000000000000000000000000000000000000"
+
+      - name: Run Playwright Smoke Tests
+        run: npm run test:e2e
+        env:
+          CI: true
+          NEXT_PUBLIC_SUPABASE_URL: "https://bmgupzbyzuxrdsqtiwli.supabase.co"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "ey00000000000000000000000000000000000000000000000000000000000000000000000000000000"
+          SUPABASE_SERVICE_ROLE_KEY: "ey00000000000000000000000000000000000000000000000000000000000000000000000000000000"
+
+      - name: Upload Playwright Report on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
