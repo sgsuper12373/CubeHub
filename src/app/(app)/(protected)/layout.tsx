@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 import { getUser } from "@/lib/auth/dal";
 
@@ -15,7 +16,9 @@ export default async function ProtectedLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   if (!(await getUser())) {
-    redirect("/login");
+    const headersList = await headers();
+    const target = headersList.get("x-pathname") || "/settings";
+    redirect(`/login?next=${encodeURIComponent(target)}`);
   }
 
   return <>{children}</>;

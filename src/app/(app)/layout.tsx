@@ -1,5 +1,6 @@
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Navbar } from "@/components/layout/navbar";
+import { UsernameOnboarding } from "@/components/auth/username-onboarding";
 import { getProfile } from "@/lib/auth/dal";
 
 /**
@@ -21,6 +22,7 @@ export default async function AppLayout({
       <Navbar profile={profile} />
       <main className="flex flex-1 flex-col pb-16 md:pb-0">{children}</main>
       <BottomNav />
+      <UsernameOnboarding profile={profile} />
     </>
   );
 }

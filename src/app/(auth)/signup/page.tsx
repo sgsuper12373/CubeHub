@@ -15,7 +15,14 @@ export const metadata: Metadata = {
   title: "Sign up — CubeHub",
 };
 
-export default function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
+  const nextParam = next ? `?next=${encodeURIComponent(next)}` : "";
+
   return (
     <Card>
       <CardHeader>
@@ -25,7 +32,7 @@ export default function SignupPage() {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <GoogleButton />
+        <GoogleButton next={next} />
 
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span className="h-px flex-1 bg-border" />
@@ -33,11 +40,11 @@ export default function SignupPage() {
           <span className="h-px flex-1 bg-border" />
         </div>
 
-        <SignupForm />
+        <SignupForm next={next} />
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/login" className="text-primary hover:underline">
+          <Link href={`/login${nextParam}`} className="text-primary hover:underline">
             Sign in
           </Link>
         </p>

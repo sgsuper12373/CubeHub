@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signUp, type AuthState } from "@/lib/auth/actions";
 
-export function SignupForm() {
+export function SignupForm({ next }: { next?: string } = {}) {
   const [state, formAction, pending] = useActionState<AuthState, FormData>(
     signUp,
     undefined,
@@ -15,6 +15,7 @@ export function SignupForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
+      <input type="hidden" name="next" value={next || ""} />
       <div className="flex flex-col gap-2">
         <Label htmlFor="email">Email</Label>
         <Input
