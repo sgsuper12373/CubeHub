@@ -51,6 +51,9 @@
   --color-timer-ready: var(--timer-ready);
   --color-timer-holding: var(--timer-holding);
   --color-timer-running: var(--timer-running);
+  --color-learn-bg: var(--learn-bg);
+  --color-learn-teal: var(--learn-teal);
+  --color-learn-purple: var(--learn-purple);
 }
 
 :root {
@@ -158,6 +161,9 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.9);
   --sidebar-border: oklch(0.98 0.01 250 / 10%);
   --sidebar-ring: oklch(0.775 0.151 171.7);
+  --learn-bg: #070B17;
+  --learn-teal: #00E5C4;
+  --learn-purple: #7C5CFF;
 }
 
 @layer base {

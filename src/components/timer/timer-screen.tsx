@@ -31,6 +31,9 @@ import { confirm } from "@/stores/confirm-store";
 import { formatMs } from "@/lib/timer/format";
 import { cn } from "@/lib/utils";
 
+import { AlgorithmCase } from "@/lib/learn/dal";
+import { CaseViewer } from "@/components/learn/case-viewer";
+
 /**
  * Client container for /timer: wires the stores to the presentational
  * components. The only stateful component in the tree.
@@ -39,6 +42,7 @@ export function TimerScreen(props: {
   isAuthed: boolean;
   userId: string | null;
   initialSettings: ServerTimerSettings | null;
+  trainCase?: AlgorithmCase | null;
 }) {
   const phase = useTimerStore((s) => s.phase);
   const scramble = useTimerStore((s) => s.scramble);
@@ -94,8 +98,15 @@ export function TimerScreen(props: {
     let cancelled = false;
     (async () => {
       try {
-        const alg = await generateScramble(puzzle);
         const store = useTimerStore.getState();
+        // Skip random generation if we are training a specific case
+        let alg = "";
+        if (props.trainCase) {
+          alg = props.trainCase.cube_state;
+        } else {
+          alg = await generateScramble(puzzle);
+        }
+
         if (!cancelled && store.puzzle === puzzle) store.receiveScramble(alg);
       } catch (err) {
         console.error("scramble generation failed", err);
@@ -105,7 +116,7 @@ export function TimerScreen(props: {
     return () => {
       cancelled = true;
     };
-  }, [scramble.alg, scramble.next, puzzle]);
+  }, [scramble.alg, scramble.next, puzzle, props.trainCase]);
 
   // Record the solve exactly once per stop. `stoppedAt` is unique per solve,
   // which makes this idempotent across re-renders and dev double-effects.
@@ -263,7 +274,24 @@ export function TimerScreen(props: {
     switch (id) {
       case "scramble":
         return (
-          <div className={fadeWhileSolving}>
+          <div className={cn("flex flex-col items-center", fadeWhileSolving)}>
+            {props.trainCase && (
+              <div className="mt-4 flex flex-col items-center justify-center gap-2">
+                <div className="text-sm font-semibold text-primary px-3 py-1 bg-primary/10 rounded-full">
+                  Training: {props.trainCase.name}
+                </div>
+                {scramble.alg && (
+                  <div className="bg-black/20 p-2 rounded-md border border-white/5 shadow-inner">
+                    <CaseViewer
+                      cubeState={scramble.alg}
+                      puzzle={puzzle}
+                      size={100}
+                      visualization="experimental-2D-LL"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
             <ScrambleBar
               alg={scramble.alg}
               generating={scramble.generating}

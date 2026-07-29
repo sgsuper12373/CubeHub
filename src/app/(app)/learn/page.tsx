@@ -1,5 +1,7 @@
-import { MOCK_LEARN_DATA } from "@/lib/learn/mock-data";
+import { getPuzzles } from "@/lib/learn/dal";
 import { PuzzleCard } from "@/components/learn/puzzle-card";
+import { HeroSection } from "@/components/learn/hero-section";
+import { FeatureSection } from "@/components/learn/feature-section";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,20 +9,29 @@ export const metadata: Metadata = {
   description: "Learn how to solve Rubik's Cubes of all types with our free tutorials.",
 };
 
-export default function LearnPage() {
+export default async function LearnPage() {
+  const puzzles = await getPuzzles();
+
   return (
-    <div className="container max-w-6xl py-8 space-y-8">
-      <div className="space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight">Learn</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl">
-          Master the cube. Choose a puzzle below to explore our step-by-step tutorials and algorithm sets.
-        </p>
+    <div className="relative min-h-screen bg-learn-bg selection:bg-learn-teal/30">
+      {/* Global Background Effects */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(124,92,255,0.05),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(0,229,196,0.05),transparent_50%)]" />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {MOCK_LEARN_DATA.map((puzzle) => (
-          <PuzzleCard key={puzzle.id} puzzle={puzzle} />
-        ))}
+      <div className="container relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-24">
+        <HeroSection />
+
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {puzzles.map((puzzle, index) => (
+              <PuzzleCard key={puzzle.id} puzzle={puzzle as any} index={index} />
+            ))}
+          </div>
+        </div>
+
+        <FeatureSection />
       </div>
     </div>
   );
