@@ -40,7 +40,7 @@ Note `solves.effective_time_ms` is a generated column that already applies +2/DN
 
 ## Phase 2 — Analytics
 
-**Complete and verified** (branch `phase2-analytics`, not yet merged).
+**Complete and verified** (merged into `main`).
 
 Verified 2026-07-25: browser pass done; the PB trigger lifecycle test passes every
 assertion (`supabase/tests/pb_lifecycle_test.sql`); every stored personal best matches an
@@ -113,12 +113,9 @@ The database already supports premium: `subscriptions`, `profiles.premium_until`
 
 ## Carried-over technical work
 
-- **Username onboarding** — the trigger assigns `user_<12 hex>`; users can't pick one.
 - **Deploy** — live on Vercel as of 2026-07-25, building with `next build --webpack`. Two things to verify against the deployed origin: the Supabase **Site URL** and redirect allow-list (they were `http://localhost:3000`, and auth confirmation links break if they still are), and `NEXT_PUBLIC_SITE_URL` in the Vercel environment — it feeds `metadataBase`, so Open Graph URLs resolve against localhost without it. No CI/CD beyond Vercel's own git integration.
-- **`?next=` after login** — `/settings` redirects to `/login` but doesn't return you afterwards.
 - **GitHub OAuth** — planned, not built.
 - **`cubing.js` render test** — never done; it's a Phase 0 leftover that Phase 3 depends on.
-- **No test tooling.** `docs/architecture.md` carries a manual auth smoke checklist in the meantime.
 
 ## Planned: one bundler for dev and production
 
