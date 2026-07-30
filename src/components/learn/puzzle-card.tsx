@@ -132,8 +132,8 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
               <BookOpen className="w-5 h-5 text-learn-teal hidden sm:block" />
               <div>
-                <div className="text-sm font-bold text-white leading-tight">{tutorialsCount} <span className="hidden sm:inline">Steps</span></div>
-                <div className="text-xs text-muted-foreground leading-none mt-1">Tutorial</div>
+                <div className="text-sm font-bold text-white leading-tight"><span className="hidden sm:inline">Step By Step</span></div>
+                <div className="text-sm font-bold text-white leading-tight">Tutorial</div>
               </div>
             </div>
             
@@ -142,8 +142,8 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
               <Code2 className="w-5 h-5 text-learn-purple hidden sm:block" />
               <div>
-                <div className="text-sm font-bold text-white leading-tight">{algsCount}</div>
-                <div className="text-xs text-muted-foreground leading-none mt-1">Algorithms</div>
+                <div className="text-sm font-bold text-white leading-tight">Multiple </div>
+                <div className="text-sm font-bold text-white leading-tight">Algorithms</div>
               </div>
             </div>
 
@@ -153,20 +153,11 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
               <BarChart2 className="w-5 h-5 text-blue-400 hidden sm:block" />
               <div>
                 <div className="text-sm font-bold text-white leading-tight">{difficulty}</div>
-                <div className="text-xs text-muted-foreground leading-none mt-1">Difficulty</div>
+                <div className="text-sm font-bold text-white leading-tight">Difficulty</div>
               </div>
             </div>
           </div>
 
-          <Button 
-            className={cn(
-              "w-full 2xl:w-auto pointer-events-auto text-black font-semibold shadow-lg group-hover:translate-x-1 transition-all duration-300 rounded-full px-5 py-5",
-              isPopular ? "bg-learn-teal hover:bg-learn-teal/90" : "bg-learn-purple hover:bg-learn-purple/90 text-white"
-            )}
-          >
-            Start Learning
-            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-          </Button>
         </div>
         
       </div>

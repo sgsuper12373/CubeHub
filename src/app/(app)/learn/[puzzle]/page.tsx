@@ -1,10 +1,11 @@
 import { getPuzzle } from "@/lib/learn/dal";
 import { SeriesCard } from "@/components/learn/series-card";
+import { PuzzleHero } from "@/components/learn/puzzle-hero";
+import { FilterBar } from "@/components/learn/filter-bar";
+import { CTASection } from "@/components/learn/cta-section";
+import { StaggeredGrid } from "@/components/learn/staggered-grid";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface Props {
   params: Promise<{
@@ -35,31 +36,38 @@ export default async function PuzzleSeriesPage({ params }: Props) {
   }
 
   return (
-    <div className="container max-w-6xl py-8 space-y-8">
-      <div className="space-y-4">
-        <Button variant="ghost" size="sm" render={<Link href="/learn" />} nativeButton={false} className="-ml-3 text-muted-foreground">
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Back to Puzzles
-        </Button>
-        <h1 className="text-4xl font-bold tracking-tight">{puzzleData.name}</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl">
-          {puzzleData.description}
-        </p>
-      </div>
+    <div className="min-h-screen relative overflow-hidden bg-learn-bg pb-24">
+      {/* Global Background Effects */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none z-0 opacity-50" />
+      <div className="absolute top-0 left-1/4 w-[1000px] h-[1000px] bg-learn-purple/10 blur-[150px] rounded-full pointer-events-none opacity-20 z-0 mix-blend-screen" />
+      
+      <div className="container relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
+        
+        {/* Top Hero Section */}
+        <PuzzleHero puzzle={puzzleData as any} />
 
-      {puzzleData.series.length > 0 ? (
-        <div className="flex flex-wrap justify-center gap-6">
-          {puzzleData.series.map((series) => (
-            <div key={series.id} className="w-full sm:w-[calc(50%-1.5rem)] lg:w-[340px]">
-              <SeriesCard series={series as any} puzzleId={puzzleData.id} />
+        {/* Filter and Search Bar */}
+        <FilterBar />
+
+        {/* Series Cards Grid */}
+        <div className="mt-8">
+          {puzzleData.series.length > 0 ? (
+            <StaggeredGrid>
+              {puzzleData.series.map((series) => (
+                <SeriesCard key={series.id} series={series as any} puzzleId={puzzleData.id} />
+              ))}
+            </StaggeredGrid>
+          ) : (
+            <div className="text-center py-24 border border-white/5 rounded-3xl bg-white/[0.02] backdrop-blur-md">
+              <p className="text-lg text-muted-foreground">No tutorials or algorithms available yet.</p>
             </div>
-          ))}
+          )}
         </div>
-      ) : (
-        <div className="text-center py-16 border-2 border-dashed border-border/50 rounded-lg text-muted-foreground">
-          <p>No tutorials or algorithms available for this puzzle yet.</p>
-        </div>
-      )}
+
+        {/* Bottom CTA */}
+        <CTASection puzzleId={puzzleData.id} />
+        
+      </div>
     </div>
   );
 }

@@ -60,7 +60,7 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-lg md:text-xl text-muted-foreground max-w-lg leading-relaxed"
           >
-            Master the cube with interactive tutorials, algorithm libraries and guided lessons.
+            Master the Puzzles with interactive tutorials, algorithm libraries and guided lessons.
           </motion.p>
         </div>
 
@@ -69,7 +69,7 @@ export function HeroSection() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="relative h-[400px] flex items-center justify-center lg:justify-end perspective-[1000px]"
+          className="relative h-[400px] flex items-center justify-center lg:justify-end perspective-[3000px]"
         >
           {/* Animated floating container */}
           <motion.div
@@ -89,9 +89,6 @@ export function HeroSection() {
                priority
              />
           </motion.div>
-
-          {/* Glowing floor ring */}
-          <div className="absolute bottom-4 w-64 h-16 rounded-full border border-learn-teal/20 bg-learn-teal/5 blur-[4px] shadow-[0_0_40px_rgba(0,229,196,0.2)] transform rotate-x-75 pointer-events-none group-hover/hero:shadow-[0_0_60px_rgba(0,229,196,0.4)] group-hover/hero:bg-learn-teal/10 transition-all duration-700" />
         </motion.div>
       </div>
     </section>
