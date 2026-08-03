@@ -143,7 +143,7 @@ export function TouchStage({
       role="button"
       aria-label="Timer — hold, then release to start; tap to stop"
       className={cn(
-        "flex flex-1 cursor-pointer flex-col items-center justify-center",
+        "relative flex flex-1 cursor-pointer flex-col items-center justify-center",
         "touch-none select-none",
       )}
       onPointerDown={(e) => {

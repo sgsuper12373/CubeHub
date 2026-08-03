@@ -330,7 +330,7 @@ export function TimerScreen(props: {
               />
               <p
                 className={cn(
-                  "h-5 text-sm transition-opacity duration-150",
+                  "absolute bottom-[15%] w-full text-center h-5 text-sm transition-opacity duration-150",
                   phase === "holding"
                     ? "text-timer-holding opacity-100"
                     : phase === "ready"

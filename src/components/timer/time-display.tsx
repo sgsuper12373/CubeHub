@@ -33,6 +33,7 @@ export function TimeDisplay({
   className?: string;
 }) {
   const phase = useTimerStore((s) => s.phase);
+  const timerFontSize = useTimerStore((s) => s.settings.timerFontSize ?? 100);
   const digitsRef = useRef<HTMLSpanElement>(null);
   const announcedMarksRef = useRef<Set<number>>(new Set());
 
@@ -135,14 +136,15 @@ export function TimeDisplay({
   return (
     <div
       className={cn(
-        "grid h-28 place-items-center md:h-36",
+        "flex items-center justify-center",
         className,
       )}
+      style={{ fontSize: `${timerFontSize}%` }}
     >
       <span
         ref={digitsRef}
         className={cn(
-          "font-mono text-7xl font-semibold tabular-nums transition-[color,transform] duration-150 md:text-8xl",
+          "font-mono text-[4.5em] md:text-[6em] leading-none font-semibold tabular-nums transition-[color,transform] duration-150",
           // Solve-state palette (design brief §4): arming → orange,
           // armed + running → green (go), result → teal.
           phase === "holding" && "text-timer-holding",

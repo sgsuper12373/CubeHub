@@ -41,7 +41,13 @@ Views: `v_session_solves`, `v_user_puzzle_summary` — both `security_invoker='o
 | `puzzle_type` | `333` `222` `444` `555` `666` `777` `mega` `pyra` `sq1` `clock` `skewb` `333bf` `333oh` `444bf` `555bf` `333mbf` |
 | `penalty_type` | `none` `plus2` `dnf` |
 | `scramble_type` | `random_state` `random_moves` `custom` `imported` |
-| `inspection_type` | `none` `wca_15s` `custom` |
+| `inspection_type` | `text` | `"wca_15s"`, `"none"`, `"custom"` (default: `"wca_15s"`) |
+| `custom_inspection_secs` | `smallint` | 8 (default: `null`) |
+| `hide_time_while_solving` | `boolean` | default: `false` |
+| `show_scramble_preview` | `boolean` | default: `true` |
+| `timer_trigger` | `text` | `"spacebar"`, `"stackmat"`, `"touch"` (default: `"spacebar"`) |
+| `timer_font_size` | `smallint` | default: `100` (represents scaling percentage) |
+| `created_at` | `timestamptz` | default: `now()` |
 | `difficulty_level` | `beginner` `intermediate` `advanced` `expert` |
 | `match_format` | `bo1` `bo3` `bo5` |
 | `match_outcome` | `win` `loss` `draw` `abandoned` |

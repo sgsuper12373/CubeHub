@@ -144,6 +144,27 @@ export function QuickSettings({
               />
             </SettingRow>
 
+            {/* Timer Font Size */}
+            <SettingRow label="Timer Size">
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  min={50}
+                  max={250}
+                  step={10}
+                  value={settings.timerFontSize ?? 100}
+                  onChange={(e) =>
+                    onChange({ timerFontSize: parseInt(e.target.value) })
+                  }
+                  className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary"
+                  aria-label="Timer font size"
+                />
+                <span className="w-12 text-right font-mono text-xs text-muted-foreground tabular-nums">
+                  {settings.timerFontSize ?? 100}%
+                </span>
+              </div>
+            </SettingRow>
+
             {/* Scramble preview */}
             <SettingRow label="Preview">
               <ToggleSwitch

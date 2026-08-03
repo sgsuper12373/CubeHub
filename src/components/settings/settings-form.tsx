@@ -148,6 +148,26 @@ export function SettingsForm({
               }
             />
           </SettingRow>
+
+          <SettingRow
+            label="Timer Size"
+            description="Adjust the size of the running timer digits."
+          >
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min={50}
+                max={250}
+                step={10}
+                value={settings.timerFontSize ?? 100}
+                onChange={(e) => handleChange({ timerFontSize: parseInt(e.target.value) })}
+                className="h-1.5 w-32 cursor-pointer appearance-none rounded-full bg-muted accent-primary"
+              />
+              <span className="w-12 text-right font-mono text-sm tabular-nums text-muted-foreground">
+                {settings.timerFontSize ?? 100}%
+              </span>
+            </div>
+          </SettingRow>
         </div>
       </section>
 

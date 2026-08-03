@@ -89,6 +89,7 @@ export async function saveServerSettings(
       | "hideTimeWhileSolving"
       | "showScramblePreview"
       | "trigger"
+      | "timerFontSize"
     >
   >,
 ): Promise<void> {
@@ -123,6 +124,7 @@ export function saveSettings(
       | "hideTimeWhileSolving"
       | "showScramblePreview"
       | "trigger"
+      | "timerFontSize"
     >
   > = {};
   if (partial.inspectionMode !== undefined)
@@ -132,6 +134,7 @@ export function saveSettings(
   if (partial.showScramblePreview !== undefined)
     serverFields.showScramblePreview = partial.showScramblePreview;
   if (partial.trigger !== undefined) serverFields.trigger = partial.trigger;
+  if (partial.timerFontSize !== undefined) serverFields.timerFontSize = partial.timerFontSize;
   if (Object.keys(serverFields).length > 0)
     void saveServerSettings(serverFields);
 }

@@ -43,6 +43,8 @@ export interface TimerSettings {
    * layout grid, so it is positioned and resized there.
    */
   previewDimension: "2D" | "3D";
+  /** Font size percentage for the main timer digits. 100 = default size. */
+  timerFontSize: number;
 }
 
 export const DEFAULT_TIMER_SETTINGS: TimerSettings = {
@@ -54,6 +56,7 @@ export const DEFAULT_TIMER_SETTINGS: TimerSettings = {
   precision: 2,
   voiceEnabled: true,
   previewDimension: "2D",
+  timerFontSize: 100,
 };
 
 export interface Solve {

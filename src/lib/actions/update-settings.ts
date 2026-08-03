@@ -25,6 +25,7 @@ export async function updateTimerSettings(
       | "hideTimeWhileSolving"
       | "showScramblePreview"
       | "trigger"
+      | "timerFontSize"
     >
   >,
 ): Promise<{ error?: string }> {
@@ -61,6 +62,12 @@ export async function updateTimerSettings(
     if (!["spacebar", "touch"].includes(partial.trigger))
       return { error: "Invalid trigger" };
     update.timer_trigger = partial.trigger;
+  }
+
+  if (partial.timerFontSize !== undefined) {
+    if (typeof partial.timerFontSize !== "number" || partial.timerFontSize < 20 || partial.timerFontSize > 300)
+      return { error: "Invalid timer_font_size" };
+    update.timer_font_size = partial.timerFontSize;
   }
 
   if (Object.keys(update).length === 0) return {};
