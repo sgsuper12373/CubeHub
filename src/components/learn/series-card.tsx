@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import Link from "next/link";
-import { Bookmark, FileCode2, BookOpen } from "lucide-react";
+import { FileCode2, BookOpen } from "lucide-react";
 import { LearnSeries } from "@/lib/learn/dal";
 import { useMousePosition } from "@/hooks/use-mouse-position";
 import { cn } from "@/lib/utils";

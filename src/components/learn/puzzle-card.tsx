@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Info, BookOpen, Code2, BarChart2, Star, ArrowRight } from "lucide-react";
+import { Info, BookOpen, Code2, BarChart2, Star } from "lucide-react";
 import { LearnPuzzle } from "@/lib/learn/dal";
 import {
   Popover,
@@ -13,15 +13,12 @@ import { useRef } from "react";
 import { useMousePosition } from "@/hooks/use-mouse-position";
 import Image from "next/image";
 import { motion } from "motion/react";
-import { cn } from "@/lib/utils";
+
 
 export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const mousePosition = useMousePosition(cardRef);
   
-  // Calculate stats from series (mock stats if missing)
-  const tutorialsCount = puzzle.series.find(s => s.type === "tutorial") ? 7 : 4;
-  const algsCount = puzzle.series.find(s => s.type === "algorithms") ? 57 : 23;
   const difficulty = puzzle.id === "333" ? "Beginner to Adv." : "Beginner Friendly";
   
   const isPopular = puzzle.id === "333";

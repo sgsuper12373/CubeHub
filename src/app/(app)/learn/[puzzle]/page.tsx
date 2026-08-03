@@ -44,7 +44,7 @@ export default async function PuzzleSeriesPage({ params }: Props) {
       <div className="container relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
         
         {/* Top Hero Section */}
-        <PuzzleHero puzzle={puzzleData as any} />
+        <PuzzleHero puzzle={puzzleData} />
 
         {/* Filter and Search Bar */}
         <FilterBar />
@@ -54,7 +54,7 @@ export default async function PuzzleSeriesPage({ params }: Props) {
           {puzzleData.series.length > 0 ? (
             <StaggeredGrid>
               {puzzleData.series.map((series) => (
-                <SeriesCard key={series.id} series={series as any} puzzleId={puzzleData.id} />
+                <SeriesCard key={series.id} series={series} puzzleId={puzzleData.id} />
               ))}
             </StaggeredGrid>
           ) : (

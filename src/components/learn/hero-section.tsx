@@ -1,9 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, GraduationCap } from "lucide-react";
-import Link from "next/link";
+import { GraduationCap } from "lucide-react";
 import { useMousePosition } from "@/hooks/use-mouse-position";
 import { useRef } from "react";
 

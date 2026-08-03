@@ -26,7 +26,7 @@ export default async function LearnPage() {
         <div className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {puzzles.map((puzzle, index) => (
-              <PuzzleCard key={puzzle.id} puzzle={puzzle as any} index={index} />
+              <PuzzleCard key={puzzle.id} puzzle={puzzle} index={index} />
             ))}
           </div>
         </div>

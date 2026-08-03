@@ -68,7 +68,6 @@ function getPuzzleDescription(id: string) {
  */
 export const getPuzzles = cache(async (): Promise<LearnPuzzle[]> => {
   const supabase = await createClient();
-  const user = await getUser();
 
   // 1. Fetch published tutorial series
   const { data: tutorialSeries } = await supabase
@@ -175,7 +174,7 @@ export const getSeries = cache(async (puzzleId: string, seriesSlug: string): Pro
     
     // Filter to approved main algorithms
     const cases = casesData.map(c => {
-       const algs = c.algorithms.filter((a: any) => a.is_approved && a.is_main);
+       const algs = c.algorithms.filter((a: { is_approved: boolean; is_main: boolean }) => a.is_approved && a.is_main);
        return { ...c, algorithms: algs, learned: false, starred: false };
     }) as AlgorithmCase[];
 
@@ -259,7 +258,7 @@ export const getAlgorithmCaseById = cache(async (id: string): Promise<AlgorithmC
   if (!caseData) return null;
 
   const algCase = { ...caseData, learned: false, starred: false } as AlgorithmCase;
-  algCase.algorithms = algCase.algorithms.filter((a: any) => a.is_approved && a.is_main);
+  algCase.algorithms = algCase.algorithms.filter((a: { is_approved: boolean; is_main: boolean }) => a.is_approved && a.is_main);
 
   if (user && algCase.algorithms.length > 0) {
     const mainAlgIds = algCase.algorithms.map(a => a.id);

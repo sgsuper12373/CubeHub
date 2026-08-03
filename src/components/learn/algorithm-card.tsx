@@ -3,7 +3,7 @@
 import { AlgorithmCase } from "@/lib/learn/dal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Star, CheckCircle2, Play, Check } from "lucide-react";
+import { Play, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CaseViewer } from "@/components/learn/case-viewer";
 import { useTransition } from "react";
@@ -13,9 +13,7 @@ import Link from "next/link";
 export function AlgorithmCard({ algCase, puzzle = "333" }: { algCase: AlgorithmCase; puzzle?: string }) {
   const [isPending, startTransition] = useTransition();
 
-  // Find the main algorithm
   const mainAlg = algCase.algorithms.find(a => a.is_main) || algCase.algorithms[0];
-  const moves = mainAlg?.moves || "No algorithm available";
 
   const handleToggleLearned = () => {
     if (!mainAlg) return;
