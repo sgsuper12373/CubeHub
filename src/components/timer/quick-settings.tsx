@@ -165,6 +165,15 @@ export function QuickSettings({
               </div>
             </SettingRow>
 
+            {/* Disable mouse click */}
+            <SettingRow label="Disable mouse click">
+              <ToggleSwitch
+                checked={settings.disableMouseClick}
+                onChange={(v) => onChange({ disableMouseClick: v })}
+                label="Disable mouse click"
+              />
+            </SettingRow>
+
             {/* Scramble preview */}
             <SettingRow label="Preview">
               <ToggleSwitch

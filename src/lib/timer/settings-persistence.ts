@@ -90,6 +90,7 @@ export async function saveServerSettings(
       | "showScramblePreview"
       | "trigger"
       | "timerFontSize"
+      | "disableMouseClick"
     >
   >,
 ): Promise<void> {
@@ -125,6 +126,7 @@ export function saveSettings(
       | "showScramblePreview"
       | "trigger"
       | "timerFontSize"
+      | "disableMouseClick"
     >
   > = {};
   if (partial.inspectionMode !== undefined)
@@ -135,6 +137,7 @@ export function saveSettings(
     serverFields.showScramblePreview = partial.showScramblePreview;
   if (partial.trigger !== undefined) serverFields.trigger = partial.trigger;
   if (partial.timerFontSize !== undefined) serverFields.timerFontSize = partial.timerFontSize;
+  if (partial.disableMouseClick !== undefined) serverFields.disableMouseClick = partial.disableMouseClick;
   if (Object.keys(serverFields).length > 0)
     void saveServerSettings(serverFields);
 }

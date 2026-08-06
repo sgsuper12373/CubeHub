@@ -148,17 +148,23 @@ export function TouchStage({
       )}
       onPointerDown={(e) => {
         if (disabled || !e.isPrimary) return;
+        const state = useTimerStore.getState();
+        if (e.pointerType === "mouse" && state.settings.disableMouseClick) return;
         e.preventDefault();
         e.currentTarget.setPointerCapture(e.pointerId);
-        useTimerStore.getState().press(performance.now());
+        state.press(performance.now());
       }}
       onPointerUp={(e) => {
         if (disabled || !e.isPrimary) return;
-        useTimerStore.getState().release(performance.now());
+        const state = useTimerStore.getState();
+        if (e.pointerType === "mouse" && state.settings.disableMouseClick) return;
+        state.release(performance.now());
       }}
-      onPointerCancel={() => {
+      onPointerCancel={(e) => {
         if (disabled) return;
-        useTimerStore.getState().release(performance.now());
+        const state = useTimerStore.getState();
+        if (e.pointerType === "mouse" && state.settings.disableMouseClick) return;
+        state.release(performance.now());
       }}
       onContextMenu={(e) => e.preventDefault()}
     >

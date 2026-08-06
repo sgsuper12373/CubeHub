@@ -26,6 +26,7 @@ export async function updateTimerSettings(
       | "showScramblePreview"
       | "trigger"
       | "timerFontSize"
+      | "disableMouseClick"
     >
   >,
 ): Promise<{ error?: string }> {
@@ -68,6 +69,12 @@ export async function updateTimerSettings(
     if (typeof partial.timerFontSize !== "number" || partial.timerFontSize < 20 || partial.timerFontSize > 300)
       return { error: "Invalid timer_font_size" };
     update.timer_font_size = partial.timerFontSize;
+  }
+
+  if (partial.disableMouseClick !== undefined) {
+    if (typeof partial.disableMouseClick !== "boolean")
+      return { error: "Invalid disableMouseClick" };
+    update.disable_mouse_click = partial.disableMouseClick;
   }
 
   if (Object.keys(update).length === 0) return {};

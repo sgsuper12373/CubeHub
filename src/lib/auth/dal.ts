@@ -54,7 +54,7 @@ export const getProfile = cache(async (): Promise<CurrentProfile | null> => {
  */
 export type ServerTimerSettings = Pick<
   TimerSettings,
-  "inspectionMode" | "hideTimeWhileSolving" | "showScramblePreview" | "trigger" | "timerFontSize"
+  "inspectionMode" | "hideTimeWhileSolving" | "showScramblePreview" | "trigger" | "timerFontSize" | "disableMouseClick"
 >;
 
 /**
@@ -74,7 +74,7 @@ export const getTimerSettings = cache(async (): Promise<ServerTimerSettings | nu
   const { data } = await supabase
     .from("user_settings")
     .select(
-      "inspection_type, custom_inspection_secs, hide_time_while_solving, show_scramble_preview, timer_trigger, timer_font_size",
+      "inspection_type, custom_inspection_secs, hide_time_while_solving, show_scramble_preview, timer_trigger, timer_font_size, disable_mouse_click",
     )
     .eq("user_id", user.id)
     .single();
@@ -96,5 +96,6 @@ export const getTimerSettings = cache(async (): Promise<ServerTimerSettings | nu
     showScramblePreview: data.show_scramble_preview,
     trigger: data.timer_trigger === "touch" ? "touch" as const : "spacebar" as const,
     timerFontSize: data.timer_font_size ?? 100,
+    disableMouseClick: data.disable_mouse_click ?? false,
   };
 });

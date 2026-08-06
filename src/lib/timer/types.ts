@@ -45,6 +45,8 @@ export interface TimerSettings {
   previewDimension: "2D" | "3D";
   /** Font size percentage for the main timer digits. 100 = default size. */
   timerFontSize: number;
+  /** Disable starting the timer by clicking with a mouse (touch is still allowed) */
+  disableMouseClick: boolean;
 }
 
 export const DEFAULT_TIMER_SETTINGS: TimerSettings = {
@@ -57,6 +59,7 @@ export const DEFAULT_TIMER_SETTINGS: TimerSettings = {
   voiceEnabled: true,
   previewDimension: "2D",
   timerFontSize: 100,
+  disableMouseClick: false,
 };
 
 export interface Solve {

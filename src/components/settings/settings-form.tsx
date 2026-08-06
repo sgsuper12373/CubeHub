@@ -168,6 +168,16 @@ export function SettingsForm({
               </span>
             </div>
           </SettingRow>
+
+          <SettingRow
+            label="Disable Mouse Click"
+            description="Disable starting the timer by clicking with a mouse."
+          >
+            <ToggleSwitch
+              checked={settings.disableMouseClick}
+              onChange={(v) => handleChange({ disableMouseClick: v })}
+            />
+          </SettingRow>
         </div>
       </section>
 
