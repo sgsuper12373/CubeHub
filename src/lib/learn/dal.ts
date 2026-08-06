@@ -40,6 +40,7 @@ export type Algorithm = {
   move_count: number;
   is_main: boolean;
   label: string | null;
+  is_approved: boolean;
 };
 
 export type TutorialStep = {
@@ -258,7 +259,7 @@ export const getAlgorithmCaseById = cache(async (id: string): Promise<AlgorithmC
   if (!caseData) return null;
 
   const algCase = { ...caseData, learned: false, starred: false } as AlgorithmCase;
-  algCase.algorithms = algCase.algorithms.filter((a: { is_approved: boolean; is_main: boolean }) => a.is_approved && a.is_main);
+  algCase.algorithms = algCase.algorithms.filter(a => a.is_approved && a.is_main);
 
   if (user && algCase.algorithms.length > 0) {
     const mainAlgIds = algCase.algorithms.map(a => a.id);
