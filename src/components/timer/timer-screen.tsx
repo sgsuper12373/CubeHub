@@ -30,6 +30,7 @@ import { toast } from "@/stores/toast-store";
 import { confirm } from "@/stores/confirm-store";
 import { formatMs } from "@/lib/timer/format";
 import { cn } from "@/lib/utils";
+import { Expand } from "lucide-react";
 
 import { AlgorithmCase } from "@/lib/learn/dal";
 import { CaseViewer } from "@/components/learn/case-viewer";
@@ -60,10 +61,20 @@ export function TimerScreen(props: {
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
-  // While the layout editor is open, dragging a panel must not also start a
-  // solve — so the stage's key and pointer engines both go quiet.
   const editingLayout = useLayoutStore((s) => s.editing);
+  const isZenMode = useLayoutStore((s) => s.isZenMode);
+  const setZenMode = useLayoutStore((s) => s.setZenMode);
   const celebrateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setZenMode(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [setZenMode]);
 
   useEffect(() => {
     return () => {
@@ -365,6 +376,7 @@ export function TimerScreen(props: {
                 onPlus2={() => togglePenalty("plus2")}
                 onDnf={() => togglePenalty("dnf")}
                 onDelete={deleteLast}
+                hideDelete={settings.inspectionMode === "15s"}
               />
             )}
           </>
@@ -450,6 +462,7 @@ export function TimerScreen(props: {
                 })();
               }}
               onPuzzleChange={changePuzzle}
+              isAuthed={props.isAuthed}
             />
             {phase === "idle" || phase === "stopped" ? (
               <QuickSettings
@@ -488,6 +501,20 @@ export function TimerScreen(props: {
         onDelete={handleDelete}
         onNotes={handleNotes}
       />
+
+      {/* Zen Mode Exit Button */}
+      {isZenMode && !solving && (
+        <div className="fixed top-2 left-1/2 -translate-x-1/2 z-50">
+          <button
+            type="button"
+            onClick={() => setZenMode(false)}
+            className="flex items-center gap-2 rounded-full bg-background/50 border border-border/50 px-4 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-md transition-all duration-300 opacity-0 hover:opacity-100 hover:text-foreground hover:bg-background/80"
+          >
+            <Expand className="size-3" />
+            Exit Zen Mode
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -9,9 +9,13 @@ import { Button } from "@/components/ui/button";
 import type { CurrentProfile } from "@/lib/auth/dal";
 import { navItems } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
+import { useLayoutStore } from "@/stores/layout-store";
 
 export function Navbar({ profile }: { profile: CurrentProfile | null }) {
   const pathname = usePathname();
+  const isZenMode = useLayoutStore((s) => s.isZenMode);
+
+  if (isZenMode) return null;
 
   return (
     <header className="sticky top-0 z-40 hidden border-b bg-background/80 backdrop-blur-sm md:block">

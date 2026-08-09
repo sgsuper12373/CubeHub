@@ -94,7 +94,7 @@ export function TimeDisplay({
         case "running":
           const ms = now - (s.solveStartedAt ?? now);
           el.textContent = hideWhileSolving
-            ? "solve"
+            ? "Solve"
             : formatMs(ms, s.settings.precision ?? 2);
           break;
         case "stopped":

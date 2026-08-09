@@ -5,9 +5,13 @@ import { usePathname } from "next/navigation";
 
 import { mobileNavItems } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
+import { useLayoutStore } from "@/stores/layout-store";
 
 export function BottomNav() {
   const pathname = usePathname();
+  const isZenMode = useLayoutStore((s) => s.isZenMode);
+
+  if (isZenMode) return null;
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden">

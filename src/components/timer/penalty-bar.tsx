@@ -22,11 +22,13 @@ export function PenaltyBar({
   onPlus2,
   onDnf,
   onDelete,
+  hideDelete,
 }: {
   penalty: Penalty;
   onPlus2: () => void;
   onDnf: () => void;
   onDelete: () => void;
+  hideDelete?: boolean;
 }) {
   const base =
     "min-h-14 flex-1 basis-0 rounded-xl border text-lg font-semibold transition-colors select-none " +
@@ -71,21 +73,23 @@ export function PenaltyBar({
       >
         DNF
       </button>
-      <button
-        type="button"
-        aria-label="Delete solve"
-        className={cn(
-          base,
-          "flex items-center justify-center gap-2 border-border bg-card text-destructive hover:bg-destructive/10",
-        )}
-        onClick={(e) => {
-          e.currentTarget.blur();
-          onDelete();
-        }}
-      >
-        <Trash2 className="size-5" />
-        <span className="hidden sm:inline">Delete</span>
-      </button>
+      {!hideDelete && (
+        <button
+          type="button"
+          aria-label="Delete solve"
+          className={cn(
+            base,
+            "flex items-center justify-center gap-2 border-border bg-card text-destructive hover:bg-destructive/10",
+          )}
+          onClick={(e) => {
+            e.currentTarget.blur();
+            onDelete();
+          }}
+        >
+          <Trash2 className="size-5" />
+          <span className="hidden sm:inline">Delete</span>
+        </button>
+      )}
     </div>
   );
 }

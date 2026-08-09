@@ -4,6 +4,7 @@ import { Check, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { TimerModes } from "@/components/timer/timer-modes";
 import type { Session, TimerPuzzle } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ export function SessionSwitcher({
   onReset,
   onDelete,
   onPuzzleChange,
+  isAuthed,
 }: {
   sessions: Session[];
   activeId: string | null;
@@ -37,6 +39,7 @@ export function SessionSwitcher({
   onReset: () => void;
   onDelete: (id: string) => void;
   onPuzzleChange: (p: TimerPuzzle) => void;
+  isAuthed: boolean;
 }) {
   const [draft, setDraft] = useState<string | null>(null);
   const active = sessions.find((s) => s.id === activeId);
@@ -68,6 +71,8 @@ export function SessionSwitcher({
           </Button>
         ))}
       </div>
+
+      <TimerModes isAuthed={isAuthed} />
 
       {draft === null ? (
         <select

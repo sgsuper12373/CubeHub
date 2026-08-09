@@ -19,16 +19,19 @@ import {
 interface LayoutStore {
   cells: PanelCell[];
   editing: boolean;
+  isZenMode: boolean;
   hydrated: boolean;
   hydrate(): void;
   setCells(cells: PanelCell[]): void;
   setEditing(editing: boolean): void;
+  setZenMode(zen: boolean): void;
   reset(): void;
 }
 
 export const useLayoutStore = create<LayoutStore>()((set) => ({
   cells: DEFAULT_LAYOUT,
   editing: false,
+  isZenMode: false,
   hydrated: false,
 
   hydrate: () => set({ cells: loadLayout(), hydrated: true }),
@@ -39,6 +42,8 @@ export const useLayoutStore = create<LayoutStore>()((set) => ({
   },
 
   setEditing: (editing) => set({ editing }),
+
+  setZenMode: (isZenMode) => set({ isZenMode }),
 
   reset: () => {
     resetLayout();

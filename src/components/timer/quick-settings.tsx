@@ -100,15 +100,6 @@ export function QuickSettings({
               />
             </SettingRow>
 
-            {/* Hide time while solving */}
-            <SettingRow label="Hide time">
-              <ToggleSwitch
-                checked={settings.hideTimeWhileSolving}
-                onChange={(v) => onChange({ hideTimeWhileSolving: v })}
-                label="Hide time while solving"
-              />
-            </SettingRow>
-
             {/* Hold duration */}
             <SettingRow label="Hold duration">
               <div className="flex items-center gap-2">

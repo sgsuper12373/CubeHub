@@ -110,7 +110,7 @@
        holding → warm orange (arming), running/armed → bright green (go). */
   --timer-hold: var(--destructive);
   --timer-ready: var(--primary);
-  --timer-holding: oklch(0.76 0.165 58);
+  --timer-holding: oklch(0.6 0.25 29.23); /* Red */
   --timer-running: oklch(0.82 0.19 152);
 }
 
