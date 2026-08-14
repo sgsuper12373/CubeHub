@@ -18,7 +18,7 @@ export function AlgorithmCard({ algCase, puzzle = "333" }: { algCase: AlgorithmC
   const handleToggleLearned = () => {
     if (!mainAlg) return;
     startTransition(() => {
-      toggleAlgorithmBookmark(algCase.id, !algCase.learned);
+      toggleAlgorithmBookmark(mainAlg.id, !algCase.learned);
     });
   };
 
@@ -89,7 +89,7 @@ export function AlgorithmCard({ algCase, puzzle = "333" }: { algCase: AlgorithmC
 
         {/* Right side: Visualization */}
         <div className={cn(
-          "w-full sm:w-[160px] shrink-0 bg-black/20 border-l border-white/5 p-4 flex items-center justify-center order-1 sm:order-2 aspect-[2/1] sm:aspect-auto",
+          "w-full sm:w-[160px] shrink-0 bg-black/20 border-l border-white/5 p-4 flex flex-col items-center justify-center order-1 sm:order-2 aspect-[2/1] sm:aspect-auto",
           algCase.learned && "grayscale-[0.5]"
         )}>
           {algCase.cube_state ? (
@@ -102,6 +102,15 @@ export function AlgorithmCard({ algCase, puzzle = "333" }: { algCase: AlgorithmC
           ) : (
             <div className="w-16 h-16 sm:w-20 sm:h-20 border-2 border-border/80 rounded-md flex items-center justify-center shadow-sm bg-background">
               <span className="text-[10px] text-muted-foreground font-medium text-center leading-tight px-1">2D LL View</span>
+            </div>
+          )}
+          
+          {algCase.setup_moves && (
+            <div className="mt-4 text-center">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Setup</span>
+              <code className="text-xs font-mono bg-background/50 px-2 py-1 rounded text-foreground/80 border border-border/30">
+                {algCase.setup_moves}
+              </code>
             </div>
           )}
         </div>

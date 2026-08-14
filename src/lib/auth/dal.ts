@@ -24,6 +24,7 @@ export type CurrentProfile = {
   username: string;
   display_name: string | null;
   avatar_url: string | null;
+  is_admin: boolean;
 };
 
 /**
@@ -38,11 +39,22 @@ export const getProfile = cache(async (): Promise<CurrentProfile | null> => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("username, display_name, avatar_url")
+    .select("username, display_name, avatar_url, is_admin")
     .eq("id", user.id)
     .single();
 
   return data;
+});
+
+/**
+ * Ensures the current user is an admin. If not, throws an error or redirects.
+ */
+export const requireAdmin = cache(async () => {
+  const profile = await getProfile();
+  if (!profile || !profile.is_admin) {
+    throw new Error("Unauthorized: Admin access required.");
+  }
+  return profile;
 });
 
 /**

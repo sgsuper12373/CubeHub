@@ -27,6 +27,7 @@ export type AlgorithmCase = {
   case_number: number;
   name: string;
   description: string | null;
+  setup_moves: string | null;
   cube_state: string;
   algorithms: Algorithm[];
   learned: boolean;
@@ -173,9 +174,9 @@ export const getSeries = cache(async (puzzleId: string, seriesSlug: string): Pro
       
     if (!casesData) return { series, cases: [], steps: [] };
     
-    // Filter to approved main algorithms
+    // Filter to approved algorithms
     const cases = casesData.map(c => {
-       const algs = c.algorithms.filter((a: { is_approved: boolean; is_main: boolean }) => a.is_approved && a.is_main);
+       const algs = c.algorithms.filter((a: { is_approved: boolean }) => a.is_approved);
        return { ...c, algorithms: algs, learned: false, starred: false };
     }) as AlgorithmCase[];
 
@@ -259,7 +260,7 @@ export const getAlgorithmCaseById = cache(async (id: string): Promise<AlgorithmC
   if (!caseData) return null;
 
   const algCase = { ...caseData, learned: false, starred: false } as AlgorithmCase;
-  algCase.algorithms = algCase.algorithms.filter(a => a.is_approved && a.is_main);
+  algCase.algorithms = algCase.algorithms.filter(a => a.is_approved);
 
   if (user && algCase.algorithms.length > 0) {
     const mainAlgIds = algCase.algorithms.map(a => a.id);
