@@ -113,7 +113,8 @@ export function TimerScreen(props: {
         // Skip random generation if we are training a specific case
         let alg = "";
         if (props.trainCase) {
-          alg = props.trainCase.cube_state;
+          // The algorithm to scramble the cube into the case is the setup moves
+          alg = props.trainCase.setup_moves || "";
         } else {
           alg = await generateScramble(puzzle);
         }

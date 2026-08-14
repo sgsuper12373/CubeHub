@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Play, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CaseViewer } from "@/components/learn/case-viewer";
+import { FaceletViewer } from "@/components/learn/facelet-viewer";
 import { useTransition } from "react";
 import { toggleAlgorithmBookmark } from "@/lib/learn/actions";
 import Link from "next/link";
@@ -92,7 +93,12 @@ export function AlgorithmCard({ algCase, puzzle = "333" }: { algCase: AlgorithmC
           "w-full sm:w-[160px] shrink-0 bg-black/20 border-l border-white/5 p-4 flex flex-col items-center justify-center order-1 sm:order-2 aspect-[2/1] sm:aspect-auto",
           algCase.learned && "grayscale-[0.5]"
         )}>
-          {algCase.cube_state ? (
+          {algCase.cube_state && algCase.cube_state.length === 54 ? (
+            <FaceletViewer
+              cubeState={algCase.cube_state}
+              size={100}
+            />
+          ) : algCase.cube_state ? (
             <CaseViewer
               cubeState={algCase.cube_state}
               puzzle={puzzle}
@@ -106,9 +112,9 @@ export function AlgorithmCard({ algCase, puzzle = "333" }: { algCase: AlgorithmC
           )}
           
           {algCase.setup_moves && (
-            <div className="mt-4 text-center">
+            <div className="mt-4 text-center w-full">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Setup</span>
-              <code className="text-xs font-mono bg-background/50 px-2 py-1 rounded text-foreground/80 border border-border/30">
+              <code className="text-[10px] sm:text-xs font-mono bg-background/50 px-2 py-1.5 rounded text-foreground/80 border border-border/30 block break-words whitespace-pre-wrap">
                 {algCase.setup_moves}
               </code>
             </div>
