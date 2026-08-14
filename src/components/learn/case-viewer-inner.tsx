@@ -51,9 +51,7 @@ export function CaseViewerInner({
         playerRef.current = null;
       }
 
-      const algToApply = visualization === "experimental-2D-LL" 
-        ? `x2 ${cubeState}` 
-        : cubeState;
+      const algToApply = cubeState;
 
       const player = new TwistyPlayer({
         puzzle: mapPuzzleId(puzzle),

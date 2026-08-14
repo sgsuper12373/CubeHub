@@ -6,11 +6,11 @@ import { cn } from "@/lib/utils";
 // Standard Option 2 colors: U=Yellow, R=Red, F=Green, D=White, L=Orange, B=Blue
 const COLORS: Record<string, string> = {
   U: "#EAB308", // Yellow
-  R: "#EF4444", // Red
   F: "#22C55E", // Green
   D: "#FFFFFF", // White
-  L: "#F97316", // Orange
   B: "#3B82F6", // Blue
+  L: "#EF4444", // Red
+  R: "#F97316", // Orange
   X: "#374151", // Gray (Masked)
 };
 
