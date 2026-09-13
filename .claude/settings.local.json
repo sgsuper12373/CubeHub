@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 \"/home/sumitgarad/.claude/plugins/cache/ui-ux-pro-max-skill/ui-ux-pro-max/2.11.0/.claude/skills/ui-ux-pro-max/scripts/search.py\" \"speedcubing timer tool dark mode teal minimal India\" --design-system -p \"CubeHub\")",
+      "Bash(node *)",
+      "Bash(npx tsc *)",
+      "Bash(git check-ignore *)",
+      "Bash(python3 -)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git checkout *)",
+      "Bash(git merge *)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ],
+  "enabledPlugins": {
+    "ui-ux-pro-max@ui-ux-pro-max-skill": true
+  }
+}

@@ -36,8 +36,13 @@ export function SolveRow({
 
   return (
     <div className="relative overflow-hidden">
-      {/* Actions revealed on swipe */}
-      <div className="absolute inset-y-0 right-0 flex items-stretch">
+      {/* Actions revealed on swipe (mobile only) */}
+      <div
+        className={cn(
+          "absolute inset-y-0 right-0 flex items-stretch md:hidden",
+          !swiped && "pointer-events-none",
+        )}
+      >
         <button
           type="button"
           className="flex w-14 items-center justify-center bg-amber-600/80 text-xs font-bold text-white"
@@ -73,11 +78,12 @@ export function SolveRow({
         </button>
       </div>
 
-      {/* Main row — slides left on swipe */}
+      {/* Main row — slides left on swipe on mobile */}
       <div
         ref={rowRef}
         className={cn(
-          "relative flex min-h-11 items-center gap-3 bg-background px-3 py-1.5 transition-transform duration-200 group cursor-pointer hover:bg-muted/50",
+          "relative flex min-h-11 items-center gap-3 px-3 py-1.5 transition-all duration-200 group cursor-pointer",
+          "bg-background md:bg-transparent hover:bg-muted/50",
           swiped ? "-translate-x-[10.5rem]" : "translate-x-0",
         )}
         onClick={() => setDetailOpen(true)}
@@ -110,13 +116,13 @@ export function SolveRow({
         </span>
 
         {/* Desktop hover actions */}
-        <div className="hidden items-center gap-0.5 md:flex opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="hidden items-center gap-1 md:flex shrink-0 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-150">
           <button
             type="button"
             className={cn(
               "rounded px-1.5 py-0.5 text-xs font-semibold transition-colors",
               solve.penalty === "plus2"
-                ? "bg-amber-600/20 text-amber-400"
+                ? "bg-amber-600/20 text-amber-400 hover:bg-amber-600/30"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted",
             )}
             onClick={(e) => {
@@ -131,7 +137,7 @@ export function SolveRow({
             className={cn(
               "rounded px-1.5 py-0.5 text-xs font-semibold transition-colors",
               solve.penalty === "dnf"
-                ? "bg-destructive/20 text-destructive"
+                ? "bg-destructive/20 text-destructive hover:bg-destructive/30"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted",
             )}
             onClick={(e) => {
