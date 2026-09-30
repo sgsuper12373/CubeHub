@@ -209,13 +209,13 @@ Only three existing token names change; everything else is additive.
 | Sticker hex in `facelet-viewer.tsx` and `admin/cube-painter.tsx` | `--sticker-*` | Migrate now: small files, unblocks colour schemes. The painter had L and R swapped (a bug); it now uses the same tokens |
 
 - [x] Spec reviewed and values confirmed
-- [ ] New tokens added to `:root`, Slate and Paper, with `@theme inline` aliases
-- [ ] `src/themes/` objects plus the CSS generation step
+- [x] New tokens added to `:root`, Slate and Paper, with `@theme inline` aliases
+- [x] `src/themes/` objects plus the CSS generation step
 - [x] Contrast unit test passing for both themes (`tests/unit/theme-contrast.test.ts`, rules in `src/themes/contrast-rules.ts`)
-- [ ] No-FOUC head script (resolves `system`; the cookie is the source of truth)
+- [x] No-FOUC head script (resolves `system`; the cookie is the source of truth)
 - [x] CI guard for new hardcoded colours (`npm run check:colors`, scripts/check-colors.mjs)
 - [x] `learn-*` tokens and sticker hex migrated (shared map in `src/lib/stickers.ts`)
-- [ ] Timer page renders correctly in both themes (`npm run build && npx next start`)
+- [x] Timer page renders correctly in both themes (`npm run build && npx next start`; dev switcher via `NEXT_PUBLIC_THEME_SWITCHER=1`)
 
 ## Review decisions (1 Oct 2026)
 

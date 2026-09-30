@@ -5,6 +5,7 @@ import "./globals.css";
 import { cookies } from "next/headers";
 
 import { AuthListener } from "@/components/auth/auth-listener";
+import { ThemeSwitcher } from "@/components/dev/theme-switcher";
 import { ConfirmHost } from "@/components/ui/confirm-dialog";
 import { Toaster } from "@/components/ui/toast";
 import { THEME_INIT_SCRIPT } from "@/themes/init-script";
@@ -100,6 +101,8 @@ export default async function RootLayout({
         <AuthListener />
         <Toaster />
         <ConfirmHost />
+        {/* TEMP(step 8): renders nothing unless enabled; see the component. */}
+        <ThemeSwitcher />
         {children}
       </body>
     </html>

@@ -5,6 +5,31 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-01 — Step 3, Phase 8: temporary dev theme switcher
+
+**Request:** Phase 8 of the design-token plan: a temporary dev-only switcher so both themes can be checked visually, including under `npm run build && npx next start`.
+
+**Changed**
+- **New: `src/components/dev/theme-switcher.tsx`** (marked `TEMP(step 8)`)
+  - A fixed pill in the bottom-left with Slate | Paper | System, built from `THEMES`. It calls `setTheme()` and reads the current value through the existing `useSyncExternalStore` plumbing.
+  - It sits above the mobile bottom nav and stops click propagation, so it can't start the timer.
+  - It only exists when `NODE_ENV === "development"` or `NEXT_PUBLIC_THEME_SWITCHER === "1"`. Both are inlined at build time, so otherwise it is a no-op and its code is removed by the minifier.
+- **`src/app/layout.tsx`**: renders `<ThemeSwitcher />`.
+- **`next.config.ts`**: `env.NEXT_PUBLIC_THEME_SWITCHER` defaults to `""`. Without that, an unset `NEXT_PUBLIC_` variable is left as a runtime `process.env` lookup and is never folded, which kept the disabled switcher in the shared layout chunk every page loads. Found by grepping the build.
+- **`.env.example`**: documents the flag.
+- `docs/design-tokens.md`: the whole done checklist is ticked.
+
+**Verified**
+- `npm run validate` passes (187 tests); `check:colors` is OK.
+- `npm run build` **without** the flag: `Theme (dev)` appears in 0 client chunks. Before the `next.config` fix, it was in the 33 KB shared chunk that `/`, `/timer`, `/learn` and `/settings` load.
+- `NEXT_PUBLIC_THEME_SWITCHER=1 npm run build && npx next start`:
+  - The switcher shows on `/timer`, and clicking it switches theme without touching the timer.
+  - Idle digits are the foreground colour, and holding turns each theme's red. Released early, so no solve was recorded on the signed-in account; running and ready are checked via their tokens and the contrast test.
+  - The timer font is JetBrains Mono on Paper and Geist Mono on Slate.
+  - `/learn` was already checked in Phase 7.
+
+---
+
 ## 2026-10-01 — Step 3, Phase 7: migrate `learn-*` tokens and sticker colours
 
 **Request:** Phase 7 of the design-token plan: replace the page-and-hue `learn-*` tokens with role tokens and move the sticker hex values onto `--sticker-*`.

@@ -27,6 +27,10 @@ const { version: cubingVersion } = JSON.parse(
 const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_CUBING_VERSION: cubingVersion,
+    // TEMP(step 8): the dev theme switcher's flag. Defaulted to "" so it is
+    // always inlined; an unset NEXT_PUBLIC_ var is left as a runtime lookup,
+    // which kept the disabled switcher's code in the shared layout chunk.
+    NEXT_PUBLIC_THEME_SWITCHER: process.env.NEXT_PUBLIC_THEME_SWITCHER ?? "",
   },
 };
 
