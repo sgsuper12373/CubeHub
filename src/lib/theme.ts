@@ -61,8 +61,11 @@ export function setTheme(theme: Theme): void {
         : "light"
       : theme;
 
-  // Toggle class
-  document.documentElement.classList.toggle("dark", resolved === "dark");
+  // Toggle class (shadcn `dark:` variants) and the theme the tokens key on.
+  const root = document.documentElement;
+  root.classList.toggle("dark", resolved === "dark");
+  if (resolved === "dark") root.dataset.theme = "slate";
+  else delete root.dataset.theme;
 
   // Persist in cookie
   document.cookie = `${COOKIE_NAME}=${theme}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;

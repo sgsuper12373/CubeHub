@@ -5,6 +5,39 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-01 — Step 3, Phase 2: `src/themes/` is the source of truth
+
+**Request:** Phase 2 of the design-token plan: typed theme objects, with the `[data-theme]` CSS generated from them.
+
+**Changed**
+- **New: `src/themes/`**
+  - `types.ts`: `TOKEN_NAMES`, `ThemeDefinition`, `CoreToken`, and `BaseTheme`.
+    - A theme that leaves out a core token fails `tsc`.
+    - The type is named `ThemeDefinition` because `Theme` is already the preference type in `src/lib/theme.ts`.
+  - `base.ts` holds the `:root` light base (internal only). `slate.ts` holds what used to be the `.dark` values. `paper.ts` is the Paper theme.
+  - `index.ts` exports `THEMES`, `ThemeId`, and `resolveTokens()`.
+  - `css.ts` exports `themesToCss()`. It emits `:root` first and then one `[data-theme]` block per theme, sets `color-scheme` from `mode`, and rejects unsafe values and ids.
+  - `themes.generated.css` is the checked-in output.
+- **New test: `tests/unit/themes-css.test.ts`**
+  - A file snapshot (`toMatchFileSnapshot`), so a stale generated file fails CI. Regenerate it with `npx vitest run -u`.
+  - Also checks ordering and `color-scheme`, and that injection is rejected.
+- **`src/app/globals.css`**: the `:root`, `.dark`, and Paper blocks (200 lines) are replaced by `@import "../themes/themes.generated.css"`. The `@theme` aliases stay.
+- **`src/app/layout.tsx`**: renders `data-theme="slate"` when the cookie resolves to dark, because Slate's values are now keyed on `[data-theme="slate"]`, not `.dark`.
+- **`src/lib/theme.ts`**: `setTheme()` sets or removes `data-theme` along with `.dark`, so switching on the client still restyles the page without a reload.
+
+**Kept on purpose**
+- The generated CSS is checked in and there is no build step: nothing more runs in `predev`/`prebuild`, and CI's Node 20 can't import `.ts` without adding `tsx`.
+- `learn-*` values are still defined, as a `LegacyToken` that the base is exempt from, until Phase 7.
+- Slate now lists `timer-holding`, `timer-running`, `timer-digits`, and `radius` explicitly (core tokens). The values are unchanged.
+- Light still means the `:root` base; the switch to `light → paper` is Phase 4.
+
+**Verified**
+- `npm run validate` passes (44 tests).
+- Removing `timer-running` from `paper.ts` makes `tsc` fail with "Property 'timer-running' is missing".
+- `npm run build && npx next start`: the server renders `data-theme="slate"`. Under both Slate and Paper, the computed values of all 184 custom properties match the Phase 1 baseline exactly: 368 checked, 0 differences. `/timer` and `/learn` look unchanged.
+
+---
+
 ## 2026-10-01 — Step 3, Phase 1: design tokens added to globals.css
 
 **Request:** Step 3 of the CubeHub → CubeUniverse plan (the design token spec), Phase 1: add the new tokens for the `:root` base, Slate (`.dark`), and Paper, with `@theme inline` aliases.

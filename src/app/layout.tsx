@@ -58,10 +58,14 @@ export default async function RootLayout({
   // To avoid hydration mismatch, if it's "system", we default to "dark" server-side.
   const resolvedClass =
     themeCookie === "light" ? "light" : "dark";
+  // Token values are keyed on [data-theme] (src/themes/); `.dark` remains for
+  // shadcn `dark:` variants. Light still means the :root base until phase 4.
+  const dataTheme = resolvedClass === "dark" ? "slate" : undefined;
 
   return (
     <html
       lang="en"
+      data-theme={dataTheme}
       className={`${resolvedClass} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla's
