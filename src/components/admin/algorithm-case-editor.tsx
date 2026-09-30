@@ -50,10 +50,10 @@ interface CaseData {
   subset: string;
   case_number: string | number;
   name: string;
-  description: string;
-  setup_moves: string;
+  description: string | null;
+  setup_moves: string | null;
   cube_state: string;
-  thumbnail_url: string;
+  thumbnail_url?: string | null;
   algorithms?: AlgorithmData[];
 }
 
@@ -297,7 +297,7 @@ export function AlgorithmCaseEditor({
       try {
         await deleteAlgorithmCase(initialData!.id!);
         router.push("/master-access/algorithms");
-      } catch (e) {
+      } catch {
         setStateMessage({ type: "error", text: "Failed to delete case." });
       }
     });
@@ -326,7 +326,7 @@ export function AlgorithmCaseEditor({
     });
   };
 
-  const handleMakeMain = (alg: AlgorithmData) => {
+  const handleMakeMain = (_alg: AlgorithmData) => {
     startTransition(async () => {
       alert(
         "To change the main algorithm, please delete the current main and re-add the new one marked as main. (A proper swap requires a database transaction we'll add later.)"
@@ -412,7 +412,7 @@ export function AlgorithmCaseEditor({
               </Label>
               <Textarea
                 name="description"
-                value={formData.description}
+                value={formData.description || ""}
                 onChange={handleChange}
                 placeholder="A brief description of how to recognize this case, e.g. 'Dot — all four yellow corners are wrong'..."
                 className="resize-y min-h-[80px]"
@@ -443,7 +443,7 @@ export function AlgorithmCaseEditor({
               <div className="flex gap-2">
                 <Input
                   name="setup_moves"
-                  value={formData.setup_moves}
+                  value={formData.setup_moves || ""}
                   onChange={handleChange}
                   placeholder="e.g. F R' F' R U2 F R' F' R2 U2 R'"
                   className="font-mono flex-1"

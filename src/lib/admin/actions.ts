@@ -4,7 +4,27 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth/dal";
 import { revalidatePath } from "next/cache";
 
-export async function saveAlgorithmCase(data: any) {
+interface SaveCaseInput {
+  id?: string;
+  puzzle_type: string;
+  subset: string;
+  case_number?: number | string | null;
+  name?: string | null;
+  description?: string | null;
+  setup_moves?: string | null;
+  cube_state: string;
+  thumbnail_url?: string | null;
+}
+
+interface SaveAlgInput {
+  id?: string;
+  case_id?: string;
+  moves: string;
+  is_main: boolean;
+  label?: string | null;
+}
+
+export async function saveAlgorithmCase(data: SaveCaseInput) {
   await requireAdmin();
   const supabase = await createClient();
   
@@ -12,7 +32,7 @@ export async function saveAlgorithmCase(data: any) {
     const { error } = await supabase.from("algorithm_cases").update({
       puzzle_type: data.puzzle_type,
       subset: data.subset,
-      case_number: data.case_number || null,
+      case_number: data.case_number ? Number(data.case_number) : null,
       name: data.name || null,
       description: data.description || null,
       setup_moves: data.setup_moves || null,
@@ -24,7 +44,7 @@ export async function saveAlgorithmCase(data: any) {
     const { data: inserted, error } = await supabase.from("algorithm_cases").insert({
       puzzle_type: data.puzzle_type,
       subset: data.subset,
-      case_number: data.case_number || null,
+      case_number: data.case_number ? Number(data.case_number) : null,
       name: data.name || null,
       description: data.description || null,
       setup_moves: data.setup_moves || null,
@@ -49,7 +69,7 @@ export async function deleteAlgorithmCase(id: string) {
   revalidatePath("/master-access/algorithms");
 }
 
-export async function saveAlgorithm(data: any) {
+export async function saveAlgorithm(data: SaveAlgInput) {
   const profile = await requireAdmin();
   const supabase = await createClient();
   

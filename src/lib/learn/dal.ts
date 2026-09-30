@@ -16,8 +16,20 @@ export type LearnSeries = {
   name: string;
   description: string;
   type: "tutorial" | "algorithms";
+  accessTier?: "public" | "free" | "premium";
   casesCount?: number;
   learnedCount?: number;
+};
+
+export type AlgorithmSubset = {
+  id: string;
+  puzzleType: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  accessTier: "public" | "free" | "premium";
+  isPublished: boolean;
+  orderIndex: number;
 };
 
 export type AlgorithmCase = {
@@ -29,6 +41,7 @@ export type AlgorithmCase = {
   description: string | null;
   setup_moves: string | null;
   cube_state: string;
+  thumbnail_url?: string | null;
   algorithms: Algorithm[];
   learned: boolean;
   starred: boolean;
@@ -66,7 +79,38 @@ function getPuzzleDescription(id: string) {
 }
 
 /**
+ * Returns all published algorithm subsets for a given puzzle type.
+ * Sourced from the algorithm_subsets table (20260914000000_access_tiers.sql).
+ */
+export const getAlgorithmSubsets = cache(
+  async (puzzleType: string): Promise<AlgorithmSubset[]> => {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("algorithm_subsets")
+      .select("*")
+      .eq("puzzle_type", puzzleType)
+      .eq("is_published", true)
+      .order("order_index");
+
+    if (error || !data) return [];
+
+    return data.map((row) => ({
+      id: row.id,
+      puzzleType: row.puzzle_type,
+      slug: row.slug,
+      name: row.name,
+      description: row.description ?? null,
+      accessTier: row.access_tier as "public" | "free" | "premium",
+      isPublished: row.is_published,
+      orderIndex: row.order_index,
+    }));
+  },
+);
+
+/**
  * Returns a list of puzzles that have published series or algorithm cases.
+ * Algorithm subsets are now sourced from the algorithm_subsets table for
+ * correct naming, ordering, and access-tier data.
  */
 export const getPuzzles = cache(async (): Promise<LearnPuzzle[]> => {
   const supabase = await createClient();
@@ -78,26 +122,19 @@ export const getPuzzles = cache(async (): Promise<LearnPuzzle[]> => {
     .eq("is_published", true)
     .order("order_index");
 
-  // 2. Fetch distinct algorithm subsets
-  const { data: algCases } = await supabase
-    .from("algorithm_cases")
-    .select("puzzle_type, subset");
-  
-  // 3. (Optional) Fetch user bookmarks and progress for counts (simplified for now)
+  // 2. Fetch published algorithm subsets
+  const { data: algSubsets } = await supabase
+    .from("algorithm_subsets")
+    .select("*")
+    .eq("is_published", true)
+    .order("order_index");
 
   const puzzlesMap = new Map<string, LearnPuzzle>();
 
-  // Add algorithm subsets (like OLL, PLL)
-  if (algCases) {
-    const subsetMap = new Map<string, Set<string>>(); // puzzle -> set of subsets
-    for (const c of algCases) {
-      if (!subsetMap.has(c.puzzle_type)) {
-        subsetMap.set(c.puzzle_type, new Set());
-      }
-      subsetMap.get(c.puzzle_type)!.add(c.subset);
-    }
-
-    for (const [puzzleId, subsets] of subsetMap.entries()) {
+  // Add algorithm subsets
+  if (algSubsets) {
+    for (const subset of algSubsets) {
+      const puzzleId = subset.puzzle_type as string;
       if (!puzzlesMap.has(puzzleId)) {
         puzzlesMap.set(puzzleId, {
           id: puzzleId,
@@ -106,15 +143,14 @@ export const getPuzzles = cache(async (): Promise<LearnPuzzle[]> => {
           series: [],
         });
       }
-      for (const subset of subsets) {
-        puzzlesMap.get(puzzleId)!.series.push({
-          id: subset,
-          slug: subset,
-          name: subset.toUpperCase(),
-          description: `Algorithm subset: ${subset.toUpperCase()}`,
-          type: "algorithms",
-        });
-      }
+      puzzlesMap.get(puzzleId)!.series.push({
+        id: subset.slug,
+        slug: subset.slug,
+        name: subset.name,
+        description: subset.description ?? `Algorithm subset: ${subset.name}`,
+        type: "algorithms",
+        accessTier: subset.access_tier as "public" | "free" | "premium",
+      });
     }
   }
 
@@ -135,6 +171,8 @@ export const getPuzzles = cache(async (): Promise<LearnPuzzle[]> => {
         name: s.title,
         description: s.description || "",
         type: "tutorial",
+        accessTier:
+          (s.access_tier as "public" | "free" | "premium") ?? "public",
       });
     }
   }
@@ -145,135 +183,215 @@ export const getPuzzles = cache(async (): Promise<LearnPuzzle[]> => {
 /**
  * Returns a specific puzzle and its series.
  */
-export const getPuzzle = cache(async (puzzleId: string): Promise<LearnPuzzle | null> => {
-  const puzzles = await getPuzzles();
-  return puzzles.find((p) => p.id === puzzleId) || null;
-});
+export const getPuzzle = cache(
+  async (puzzleId: string): Promise<LearnPuzzle | null> => {
+    const puzzles = await getPuzzles();
+    return puzzles.find((p) => p.id === puzzleId) || null;
+  },
+);
 
 /**
  * Returns a specific series (either a tutorial series or an algorithm subset).
  */
-export const getSeries = cache(async (puzzleId: string, seriesSlug: string): Promise<{ series: LearnSeries, cases: AlgorithmCase[], steps: TutorialStep[] } | null> => {
-  const puzzle = await getPuzzle(puzzleId);
-  if (!puzzle) return null;
+export const getSeries = cache(
+  async (
+    puzzleId: string,
+    seriesSlug: string,
+  ): Promise<{
+    series: LearnSeries;
+    cases: AlgorithmCase[];
+    steps: TutorialStep[];
+  } | null> => {
+    const puzzle = await getPuzzle(puzzleId);
+    if (!puzzle) return null;
 
-  const series = puzzle.series.find((s) => s.slug === seriesSlug);
-  if (!series) return null;
+    const series = puzzle.series.find((s) => s.slug === seriesSlug);
+    if (!series) return null;
 
-  const supabase = await createClient();
-  const user = await getUser();
+    const supabase = await createClient();
+    const user = await getUser();
 
-  if (series.type === "algorithms") {
-    // Fetch cases and algorithms
-    const { data: casesData } = await supabase
-      .from("algorithm_cases")
-      .select("*, algorithms(*)")
-      .eq("puzzle_type", puzzleId)
-      .eq("subset", seriesSlug)
-      .order("case_number");
-      
-    if (!casesData) return { series, cases: [], steps: [] };
-    
-    // Filter to approved algorithms
-    const cases = casesData.map(c => {
-       const algs = c.algorithms.filter((a: { is_approved: boolean }) => a.is_approved);
-       return { ...c, algorithms: algs, learned: false, starred: false };
-    }) as AlgorithmCase[];
+    if (series.type === "algorithms") {
+      const { data: casesData } = await supabase
+        .from("algorithm_cases")
+        .select("*, algorithms(*)")
+        .eq("puzzle_type", puzzleId)
+        .eq("subset", seriesSlug)
+        .order("case_number");
 
-    // Fetch user bookmarks if logged in
-    if (user && cases.length > 0) {
-      // Find the main algorithm IDs to check bookmarks against
-      const mainAlgIds = cases.flatMap(c => c.algorithms.map(a => a.id));
-      
-      if (mainAlgIds.length > 0) {
-        const { data: bookmarks } = await supabase
-          .from("user_algorithm_bookmarks")
-          .select("algorithm_id, learned")
-          .eq("user_id", user.id)
-          .in("algorithm_id", mainAlgIds);
-          
-        if (bookmarks) {
-          const bookmarkMap = new Map(bookmarks.map(b => [b.algorithm_id, b]));
-          for (const c of cases) {
-            for (const a of c.algorithms) {
-              const b = bookmarkMap.get(a.id);
-              if (b) {
-                c.learned = c.learned || b.learned;
-                // Currently no starred in DB schema, simulating or skipping
-                c.starred = false;
+      if (!casesData) return { series, cases: [], steps: [] };
+
+      const cases = casesData.map((c) => {
+        const algs = (c.algorithms as Algorithm[]).filter(
+          (a) => a.is_approved,
+        );
+        return { ...c, algorithms: algs, learned: false, starred: false };
+      }) as AlgorithmCase[];
+
+      if (user && cases.length > 0) {
+        const mainAlgIds = cases.flatMap((c) => c.algorithms.map((a) => a.id));
+        if (mainAlgIds.length > 0) {
+          const { data: bookmarks } = await supabase
+            .from("user_algorithm_bookmarks")
+            .select("algorithm_id, learned")
+            .eq("user_id", user.id)
+            .in("algorithm_id", mainAlgIds);
+
+          if (bookmarks) {
+            const bookmarkMap = new Map(
+              bookmarks.map((b) => [b.algorithm_id, b]),
+            );
+            for (const c of cases) {
+              for (const a of c.algorithms) {
+                const b = bookmarkMap.get(a.id);
+                if (b) {
+                  c.learned = c.learned || b.learned;
+                  c.starred = false;
+                }
               }
             }
           }
         }
       }
+
+      return { series, cases, steps: [] };
+    } else {
+      const { data: stepsData } = await supabase
+        .from("tutorial_steps")
+        .select("*, tutorial_series!inner(slug)")
+        .eq("tutorial_series.slug", seriesSlug)
+        .eq("is_published", true)
+        .order("order_index");
+
+      if (!stepsData) return { series, cases: [], steps: [] };
+
+      const steps = stepsData.map((s) => ({
+        ...s,
+        completed: false,
+      })) as TutorialStep[];
+
+      if (user && steps.length > 0) {
+        const stepIds = steps.map((s) => s.id);
+        const { data: progress } = await supabase
+          .from("user_tutorial_progress")
+          .select("step_id")
+          .eq("user_id", user.id)
+          .in("step_id", stepIds);
+
+        if (progress) {
+          const progressSet = new Set(progress.map((p) => p.step_id));
+          for (const s of steps) {
+            s.completed = progressSet.has(s.id);
+          }
+        }
+      }
+
+      return { series, cases: [], steps };
+    }
+  },
+);
+
+/**
+ * Returns a specific algorithm case by ID, including its algorithms.
+ * Used for "Train Case" mode in the timer (single-case training).
+ */
+export const getAlgorithmCaseById = cache(
+  async (id: string): Promise<AlgorithmCase | null> => {
+    const supabase = await createClient();
+    const user = await getUser();
+
+    const { data: caseData } = await supabase
+      .from("algorithm_cases")
+      .select("*, algorithms(*)")
+      .eq("id", id)
+      .single();
+
+    if (!caseData) return null;
+
+    const algCase = {
+      ...caseData,
+      learned: false,
+      starred: false,
+    } as AlgorithmCase;
+    algCase.algorithms = (algCase.algorithms as Algorithm[]).filter(
+      (a) => a.is_approved,
+    );
+
+    if (user && algCase.algorithms.length > 0) {
+      const mainAlgIds = algCase.algorithms.map((a) => a.id);
+      const { data: bookmarks } = await supabase
+        .from("user_algorithm_bookmarks")
+        .select("learned")
+        .eq("user_id", user.id)
+        .in("algorithm_id", mainAlgIds);
+
+      if (bookmarks && bookmarks.length > 0) {
+        algCase.learned = bookmarks.some((b) => b.learned);
+      }
     }
 
-    return { series, cases, steps: [] };
-  } else {
-    // Fetch tutorial steps
-    const { data: stepsData } = await supabase
-      .from("tutorial_steps")
-      .select("*, tutorial_series!inner(slug)")
-      .eq("tutorial_series.slug", seriesSlug)
-      .eq("is_published", true)
-      .order("order_index");
+    return algCase;
+  },
+);
 
-    if (!stepsData) return { series, cases: [], steps: [] };
-    
-    const steps = stepsData.map(s => ({ ...s, completed: false })) as TutorialStep[];
-    
-    // Fetch user progress if logged in
-    if (user && steps.length > 0) {
-      const stepIds = steps.map(s => s.id);
-      const { data: progress } = await supabase
-        .from("user_tutorial_progress")
-        .select("step_id")
-        .eq("user_id", user.id)
-        .in("step_id", stepIds);
-        
-      if (progress) {
-        const progressSet = new Set(progress.map(p => p.step_id));
-        for (const s of steps) {
-          s.completed = progressSet.has(s.id);
+/**
+ * Returns a random algorithm case from a subset for drill mode.
+ * Prefers unlearned cases when the user is logged in.
+ * Falls back to any case if all are learned.
+ *
+ * Note: cache() here applies per-request (each drill hit gets a fresh random).
+ * The cache is intentionally per render-pass, not persistent.
+ */
+export const getRandomCaseForDrill = cache(
+  async (
+    puzzleType: string,
+    subsetSlug: string,
+  ): Promise<AlgorithmCase | null> => {
+    const supabase = await createClient();
+    const user = await getUser();
+
+    const { data: allCases } = await supabase
+      .from("algorithm_cases")
+      .select("*, algorithms(*)")
+      .eq("puzzle_type", puzzleType)
+      .eq("subset", subsetSlug)
+      .order("case_number");
+
+    if (!allCases || allCases.length === 0) return null;
+
+    let cases = allCases.map((c) => ({
+      ...c,
+      algorithms: (c.algorithms as Algorithm[]).filter((a) => a.is_approved),
+      learned: false,
+      starred: false,
+    })) as AlgorithmCase[];
+
+    if (user && cases.length > 0) {
+      const allAlgIds = cases.flatMap((c) => c.algorithms.map((a) => a.id));
+      if (allAlgIds.length > 0) {
+        const { data: bookmarks } = await supabase
+          .from("user_algorithm_bookmarks")
+          .select("algorithm_id, learned")
+          .eq("user_id", user.id)
+          .in("algorithm_id", allAlgIds);
+
+        if (bookmarks) {
+          const learnedAlgIds = new Set(
+            bookmarks.filter((b) => b.learned).map((b) => b.algorithm_id),
+          );
+          cases = cases.map((c) => ({
+            ...c,
+            learned: c.algorithms.some(
+              (a) => a.is_main && learnedAlgIds.has(a.id),
+            ),
+          }));
+
+          const unlearned = cases.filter((c) => !c.learned);
+          if (unlearned.length > 0) cases = unlearned;
         }
       }
     }
 
-    return { series, cases: [], steps };
-  }
-});
-
-/**
- * Returns a specific algorithm case by ID, including its algorithms.
- * Used for the "Train Case" mode in the timer.
- */
-export const getAlgorithmCaseById = cache(async (id: string): Promise<AlgorithmCase | null> => {
-  const supabase = await createClient();
-  const user = await getUser();
-
-  const { data: caseData } = await supabase
-    .from("algorithm_cases")
-    .select("*, algorithms(*)")
-    .eq("id", id)
-    .single();
-
-  if (!caseData) return null;
-
-  const algCase = { ...caseData, learned: false, starred: false } as AlgorithmCase;
-  algCase.algorithms = algCase.algorithms.filter(a => a.is_approved);
-
-  if (user && algCase.algorithms.length > 0) {
-    const mainAlgIds = algCase.algorithms.map(a => a.id);
-    const { data: bookmarks } = await supabase
-      .from("user_algorithm_bookmarks")
-      .select("learned")
-      .eq("user_id", user.id)
-      .in("algorithm_id", mainAlgIds);
-      
-    if (bookmarks && bookmarks.length > 0) {
-      algCase.learned = bookmarks.some(b => b.learned);
-    }
-  }
-
-  return algCase;
-});
+    return cases[Math.floor(Math.random() * cases.length)];
+  },
+);

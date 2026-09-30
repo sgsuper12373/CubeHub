@@ -11,7 +11,7 @@ export default async function MasterAccessLayout({
 }) {
   try {
     await requireAdmin();
-  } catch (e) {
+  } catch {
     redirect("/");
   }
 
@@ -22,11 +22,9 @@ export default async function MasterAccessLayout({
         <div className="space-y-1">
           <h2 className="text-xl font-bold tracking-tight px-4 mb-4">Master Access</h2>
           <nav className="space-y-1">
-            <Button variant="ghost" className="w-full justify-start" asChild>
-              <Link href="/master-access/algorithms">
-                <BookOpen className="mr-2 h-4 w-4" />
-                Algorithm Cases
-              </Link>
+            <Button variant="ghost" className="w-full justify-start" render={<Link href="/master-access/algorithms" />} nativeButton={false}>
+              <BookOpen className="mr-2 h-4 w-4" />
+              Algorithm Cases
             </Button>
             <Button variant="ghost" className="w-full justify-start text-muted-foreground" disabled>
               <Settings className="mr-2 h-4 w-4" />

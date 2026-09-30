@@ -20,9 +20,11 @@ describe("UsernameOnboarding Component", () => {
 
   it("does not render modal if profile is null or username is already customized", () => {
     const customProfile = {
+      id: "u1",
       username: "speedcuber_pro",
       display_name: "Speed Cuber",
       avatar_url: null,
+      is_admin: false,
     };
 
     render(<UsernameOnboarding profile={customProfile} />);
@@ -35,9 +37,11 @@ describe("UsernameOnboarding Component", () => {
 
   it("renders modal automatically when profile handle matches default pattern user_<12 hex>", () => {
     const defaultProfile = {
+      id: "u2",
       username: "user_0123456789ab",
       display_name: null,
       avatar_url: null,
+      is_admin: false,
     };
 
     render(<UsernameOnboarding profile={defaultProfile} />);
@@ -53,9 +57,11 @@ describe("UsernameOnboarding Component", () => {
 
   it("closes modal and saves to sessionStorage when 'Skip for now' is clicked", () => {
     const defaultProfile = {
+      id: "u3",
       username: "user_abcdef012345",
       display_name: null,
       avatar_url: null,
+      is_admin: false,
     };
 
     render(<UsernameOnboarding profile={defaultProfile} />);

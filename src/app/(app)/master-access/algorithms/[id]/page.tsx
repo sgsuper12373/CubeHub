@@ -24,17 +24,15 @@ export default async function AdminAlgorithmCasePage({ params }: Props) {
   return (
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/master-access/algorithms">
-            <ChevronLeft className="h-4 w-4" />
-          </Link>
+        <Button variant="ghost" size="icon" render={<Link href="/master-access/algorithms" />} nativeButton={false}>
+          <ChevronLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-2xl font-bold tracking-tight">
           {isNew ? "New Algorithm Case" : `Edit Case: ${initialData?.name || initialData?.id}`}
         </h1>
       </div>
 
-      <AlgorithmCaseEditor initialData={initialData} />
+      <AlgorithmCaseEditor initialData={initialData ?? undefined} />
     </div>
   );
 }

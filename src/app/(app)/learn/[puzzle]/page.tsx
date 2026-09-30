@@ -1,9 +1,5 @@
-import { getPuzzle } from "@/lib/learn/dal";
-import { SeriesCard } from "@/components/learn/series-card";
-import { PuzzleHero } from "@/components/learn/puzzle-hero";
-import { FilterBar } from "@/components/learn/filter-bar";
+import { PuzzleSeriesList } from "@/components/learn/puzzle-series-list";
 import { CTASection } from "@/components/learn/cta-section";
-import { StaggeredGrid } from "@/components/learn/staggered-grid";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -46,23 +42,8 @@ export default async function PuzzleSeriesPage({ params }: Props) {
         {/* Top Hero Section */}
         <PuzzleHero puzzle={puzzleData} />
 
-        {/* Filter and Search Bar */}
-        <FilterBar />
-
-        {/* Series Cards Grid */}
-        <div className="mt-8">
-          {puzzleData.series.length > 0 ? (
-            <StaggeredGrid>
-              {puzzleData.series.map((series) => (
-                <SeriesCard key={series.id} series={series} puzzleId={puzzleData.id} />
-              ))}
-            </StaggeredGrid>
-          ) : (
-            <div className="text-center py-24 border border-white/5 rounded-3xl bg-white/[0.02] backdrop-blur-md">
-              <p className="text-lg text-muted-foreground">No tutorials or algorithms available yet.</p>
-            </div>
-          )}
-        </div>
+        {/* Series List with interactive filtering and search */}
+        <PuzzleSeriesList puzzleId={puzzleData.id} series={puzzleData.series} />
 
         {/* Bottom CTA */}
         <CTASection puzzleId={puzzleData.id} />

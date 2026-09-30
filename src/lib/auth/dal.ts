@@ -21,6 +21,7 @@ export const getUser = cache(async () => {
 });
 
 export type CurrentProfile = {
+  id: string;
   username: string;
   display_name: string | null;
   avatar_url: string | null;
@@ -39,7 +40,7 @@ export const getProfile = cache(async (): Promise<CurrentProfile | null> => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("username, display_name, avatar_url, is_admin")
+    .select("id, username, display_name, avatar_url, is_admin")
     .eq("id", user.id)
     .single();
 

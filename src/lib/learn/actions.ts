@@ -69,3 +69,8 @@ export async function toggleTutorialStepProgress(stepId: string, completed: bool
 
   revalidatePath("/learn", "layout");
 }
+
+export async function getRandomCaseForDrillAction(puzzleType: string, subsetSlug: string) {
+  const { getRandomCaseForDrill } = await import("@/lib/learn/dal");
+  return await getRandomCaseForDrill(puzzleType, subsetSlug);
+}
