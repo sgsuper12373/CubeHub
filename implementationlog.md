@@ -5,6 +5,36 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-01 — Step 3, Phase 3: font tokens
+
+**Request:** Phase 3 of the design-token plan: wire `--font-ui`, `--font-mono` and `--font-timer` through `next/font`, loading JetBrains Mono only when Paper needs it.
+
+**Changed**
+- **`src/themes/`**
+  - New tokens `font-ui`, `font-mono` and `font-timer`. `font-timer` is a core token, so every theme must set it.
+  - In the base and Slate, all three point at the Geist variables.
+  - Paper sets `--font-timer: var(--font-jetbrains-mono), var(--font-geist-mono), monospace`.
+  - The generated CSS is regenerated.
+- **`src/app/layout.tsx`**: adds `JetBrains_Mono({ variable: "--font-jetbrains-mono", preload: false, display: "swap" })` and puts its variable class on `<html>`.
+- **`src/app/globals.css`**
+  - `--font-sans` now points to `var(--font-ui)`.
+  - `--font-mono` is removed from `@theme inline`. The theme token is now Tailwind's own variable: Tailwind's `.font-mono` reads `var(--font-mono)`, and the unlayered token overrides Tailwind's default in `@layer theme`.
+  - New `@utility font-timer`, which sets the font family and `tabular-nums`.
+- **`src/components/timer/time-display.tsx`**: `font-mono tabular-nums` becomes `font-timer`. This is a class swap only.
+
+**Kept on purpose**
+- Timer sizing is unchanged; adopting `--text-timer` belongs to step 6.
+
+**Verified**
+- `npm run validate` passes (44 tests).
+- `npm run build && npx next start`, then `/timer`:
+  - **Slate** loads only the two preloaded Geist woff2 files. JetBrains Mono has no preload link and is not fetched.
+  - **Paper**: after switching, one more woff2 (the JetBrains latin subset) loads. The digits render in JetBrains Mono with `tabular-nums`.
+  - The built CSS has no `--font-mono` cycle.
+- `npm run check:chunks` passes.
+
+---
+
 ## 2026-10-01 — Step 3, Phase 2: `src/themes/` is the source of truth
 
 **Request:** Phase 2 of the design-token plan: typed theme objects, with the `[data-theme]` CSS generated from them.

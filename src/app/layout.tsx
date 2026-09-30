@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 import { cookies } from "next/headers";
@@ -16,6 +16,16 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// Paper's timer font. preload: false keeps it out of the <head> preloads; the
+// @font-face is still declared, so the browser fetches the file only once an
+// element actually renders in it (Paper's --font-timer).
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+  preload: false,
+  display: "swap",
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -66,7 +76,7 @@ export default async function RootLayout({
     <html
       lang="en"
       data-theme={dataTheme}
-      className={`${resolvedClass} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${resolvedClass} ${geistSans.variable} ${geistMono.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla's
           `cz-shortcut-listen`, Grammarly's `data-gr-*`) inject attributes onto

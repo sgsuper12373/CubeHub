@@ -67,6 +67,9 @@
   --layout-gap: 8px;
   --duration-fast: 120ms;
   --duration-base: 200ms;
+  --font-ui: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-timer: var(--font-geist-mono);
   color-scheme: light;
 }
 
@@ -122,6 +125,7 @@
   --warning-foreground: oklch(0.208 0.04 265.8);
   --timer-digits: var(--foreground);
   --timer-scrim: oklch(0.208 0.04 265.8 / 72%);
+  --font-timer: var(--font-geist-mono);
   --learn-bg: #070B17;
   --learn-teal: #00E5C4;
   --learn-purple: #7C5CFF;
@@ -170,5 +174,6 @@
   --warning-foreground: oklch(0.989 0.011 84.6);
   --timer-digits: var(--foreground);
   --timer-scrim: oklch(0.959 0.014 84.6 / 72%);
+  --font-timer: var(--font-jetbrains-mono), var(--font-geist-mono), monospace;
   color-scheme: light;
 }

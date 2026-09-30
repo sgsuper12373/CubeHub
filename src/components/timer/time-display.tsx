@@ -144,7 +144,7 @@ export function TimeDisplay({
       <span
         ref={digitsRef}
         className={cn(
-          "font-mono text-[4.5em] md:text-[6em] leading-none font-semibold tabular-nums transition-[color,transform] duration-150",
+          "font-timer text-[4.5em] md:text-[6em] leading-none font-semibold transition-[color,transform] duration-150",
           // Solve-state palette (design brief §4): arming → orange,
           // armed + running → green (go), result → teal.
           phase === "holding" && "text-timer-holding",

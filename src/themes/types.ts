@@ -75,6 +75,9 @@ export const TOKEN_NAMES = [
   "layout-gap",
   "duration-fast",
   "duration-base",
+  "font-ui",
+  "font-mono",
+  "font-timer",
   "learn-bg",
   "learn-teal",
   "learn-purple",
@@ -111,7 +114,8 @@ export type CoreToken =
   | "timer-holding"
   | "timer-running"
   | "timer-scrim"
-  | "radius";
+  | "radius"
+  | "font-timer";
 
 export type ThemeMode = "light" | "dark";
 

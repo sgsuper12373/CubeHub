@@ -49,5 +49,8 @@ export const paper = {
     "timer-running": "oklch(0.492 0.115 153)", // #1A7340
     "timer-scrim": "oklch(0.959 0.014 84.6 / 72%)",
     radius: "0.75rem",
+    // JetBrains Mono is declared with preload: false, so its file is only
+    // fetched when something renders in it — i.e. only while Paper is active.
+    "font-timer": "var(--font-jetbrains-mono), var(--font-geist-mono), monospace",
   },
 } satisfies ThemeDefinition;

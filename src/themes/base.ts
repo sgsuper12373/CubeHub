@@ -94,5 +94,11 @@ export const base = {
     // Motion. Timer colour transitions stay at or under 150ms.
     "duration-fast": "120ms",
     "duration-base": "200ms",
+    // Font roles. The --font-geist-* / --font-jetbrains-mono families come from
+    // next/font variables on <html> (src/app/layout.tsx).
+    "font-ui": "var(--font-geist-sans)",
+    "font-mono": "var(--font-geist-mono)",
+    // Timer digits only; user-selectable later. Must support tabular numerals.
+    "font-timer": "var(--font-geist-mono)",
   },
 } satisfies BaseTheme;

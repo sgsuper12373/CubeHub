@@ -71,6 +71,7 @@ export const slate = {
     "timer-holding": "oklch(0.6 0.25 29.23)",
     "timer-running": "oklch(0.82 0.19 152)",
     radius: "0.5rem",
+    "font-timer": "var(--font-geist-mono)",
     "timer-scrim": "oklch(0.208 0.04 265.8 / 72%)",
   },
 } satisfies ThemeDefinition;
