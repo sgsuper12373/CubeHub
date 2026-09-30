@@ -220,7 +220,7 @@ export function QuickSettings({
 
 // ── Reusable sub-components ──
 
-function SettingRow({
+export function SettingRow({
   label,
   children,
 }: {
@@ -235,7 +235,7 @@ function SettingRow({
   );
 }
 
-function SegmentedControl({
+export function SegmentedControl({
   options,
   value,
   onChange,

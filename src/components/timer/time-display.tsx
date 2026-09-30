@@ -25,11 +25,14 @@ import { announce, cancelAnnounce } from "@/lib/timer/voice";
 export function TimeDisplay({
   hideWhileSolving,
   celebrate = false,
+  scrim = false,
   className,
 }: {
   hideWhileSolving: boolean;
   /** Briefly true right after a personal best — drives the glow. */
   celebrate?: boolean;
+  /** Sit the digits on --timer-scrim (a background image dropped contrast below 3:1). */
+  scrim?: boolean;
   className?: string;
 }) {
   const phase = useTimerStore((s) => s.phase);
@@ -144,7 +147,8 @@ export function TimeDisplay({
       <span
         ref={digitsRef}
         className={cn(
-          "font-timer text-[4.5em] md:text-[6em] leading-none font-semibold transition-[color,transform] duration-150",
+          "font-timer text-[4.5em] md:text-[6em] leading-none font-semibold transition-[color,transform,background-color] duration-150",
+          scrim && "rounded-[0.15em] bg-timer-scrim px-[0.15em] py-[0.05em]",
           // Solve-state palette (design brief §4): arming → orange,
           // armed + running → green (go), result → teal.
           phase === "holding" && "text-timer-holding",

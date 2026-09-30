@@ -5,6 +5,52 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-01 — Timer background image (local-first), branch `feat/timer-background`
+
+**Request:** Add a custom background image for the timer page only, stored locally for testing. Options: opacity, blur, brightness, fit and position.
+
+**Changed**
+- **New: `src/lib/timer-background/`**
+  - `options.ts`: the option types, defaults and limits, `sanitizeOptions()` (clamps anything read back), the nine `POSITIONS`, and `imageStyle()`. `imageStyle()` sets object-fit and position, opacity, `blur()` and `brightness()`, and a small overscan so a blurred cover doesn't show faded edges.
+  - `scrim.ts`
+    - `luminancePercentiles()`: the 10th and 90th percentile of the image's luminance, skipping transparent pixels.
+    - `effectiveBackground()`: brightness is applied in linear light, then opacity is composited over the theme canvas.
+    - `timerNeedsScrim()`: returns true when any timer colour is below 3:1 against either extreme.
+  - `storage.ts`: the image blob and its statistics go in IndexedDB (`cubehub` / `timer-background`); the options go in localStorage. Every call tolerates blocked storage.
+  - `prepare-image.ts`: validates the file (an image, at most 25 MB), downscales it to 1920px, re-encodes it as WebP (JPEG as fallback), and samples 64×64 for the luminance statistics.
+- **New: `src/stores/timer-background-store.ts`**: a Zustand store with `init`, `setImage`, `removeImage`, `setOptions` and `resetOptions`. It manages the object URL and shows friendly errors.
+- **New: `src/components/timer/timer-background.tsx`**
+  - `<TimerBackground/>`: a fixed `-z-10` layer.
+  - `useTimerScrim()`: reads the live theme tokens through `readTokenRgb` and re-evaluates when the theme, image or options change.
+- **New: `src/components/timer/background-settings.tsx`**: a popover behind an image button next to the settings gear. It has Choose/Replace/Remove, sliders for opacity, blur and brightness, Fill/Fit, a 3×3 position picker, "Reset adjustments", and a "Saved on this device only" note. It uses `useOverlayLock`, so Space can't start a solve while the popover is open.
+- **`timer-screen.tsx`**: the root is now `relative isolate`, so the image sits above the page canvas and below every control. It renders the layer and the button, and passes `scrim` to `<TimeDisplay/>` and the hint line.
+- **`time-display.tsx`**: a new `scrim` prop puts the digits on `bg-timer-scrim`.
+- **`quick-settings.tsx`**: `SettingRow` and `SegmentedControl` are exported for reuse.
+- **`src/themes/color.ts`**: `toLinear` and `toGamma` are exported.
+- **New test: `tests/unit/timer-background.test.ts`** (14 tests): sanitising, style mapping, percentiles, compositing, scrim decisions with the real Slate and Paper tokens, plus a property check that whenever no scrim is chosen, every timer colour really has 3:1.
+- **`docs/design-tokens.md`**: the scrim note now says it is applied automatically.
+
+**Kept on purpose**
+- Local-only and `/timer` only (no Supabase, no `user_settings`), as agreed.
+- The options stay out of `TimerSettings`, which syncs to Supabase for signed-in users.
+- On mobile the panels are full-bleed and have no card chrome, so the image shows behind the whole stack.
+
+**Verified**
+- `npm run validate` passes (203 tests); `check:colors` is OK.
+- `npm run build && npx next start` (with the dev switcher), on `/timer`:
+  - Tested with a black-to-white gradient image generated in the browser and fed through the real file input.
+  - The image rendered behind the translucent panels at 1600×900, and the scrim switched on behind the digits and the hint, in both Paper and Slate.
+  - Opacity at 10% turns the scrim off.
+  - Blur, brightness, fit and position all apply and are saved to localStorage, and survive a reload.
+  - Space is blocked while the popover is open.
+  - A `.txt` file is rejected with "That file isn't an image." and the existing image is kept.
+  - Remove empties IndexedDB and turns the scrim off.
+  - No console errors.
+  - The test image and options were cleared afterwards.
+- `npm run test:e2e:prod`: 10 of 10 pass.
+
+---
+
 ## 2026-10-01 — Session wrap-up: step 3 (design tokens and themes) complete
 
 **Request:** Write the logs and list anything still remaining from the step 3 plan.

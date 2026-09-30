@@ -183,7 +183,7 @@ A test generates the `[data-theme="paper"] { … }` CSS block from these objects
 - Body text (`--foreground`, `--muted-foreground`), `-foreground` pairs, and status colours used as text (`--primary`, `--accent-2`, `--success`, `--warning`, `--destructive`): at least 4.5:1 on `--background`, `--card` and `--surface-raised`.
 - `--foreground-subtle`: at least 4.5:1 on `--background` and `--card` only. It is **never used on `--surface-raised`**, and the test checks only those two surfaces.
 - Timer digits and timer state colours: at least 3:1 (large-text threshold) on the timer background, including any user background image.
-- When a user background drops timer contrast below 3:1, apply `--timer-scrim` behind the digits automatically. *Step 3 defines and tests the token only; auto-apply arrives with background images.*
+- When a user background drops timer contrast below 3:1, apply `--timer-scrim` behind the digits automatically. *Applied automatically on `/timer` when a background image is set: `src/lib/timer-background/scrim.ts` tests the image's 10th and 90th luminance percentiles, after the user's brightness and opacity are applied, against every timer colour.*
 - A unit test computes these ratios for every registered theme and fails CI on any miss.
 
 **Guardrails**

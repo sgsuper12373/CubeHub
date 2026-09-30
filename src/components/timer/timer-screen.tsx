@@ -12,6 +12,8 @@ import { ShortcutHint } from "@/components/timer/shortcut-hint";
 import { ShortcutsOverlay } from "@/components/timer/shortcuts-overlay";
 import { PreviewPanel } from "@/components/timer/preview-panel";
 import { QuickSettings } from "@/components/timer/quick-settings";
+import { BackgroundSettings } from "@/components/timer/background-settings";
+import { TimerBackground, useTimerScrim } from "@/components/timer/timer-background";
 import { StatsPanel } from "@/components/stats/stats-panel";
 import { SessionStats } from "@/components/stats/session-stats";
 import { SolveList } from "@/components/stats/solve-list";
@@ -57,6 +59,7 @@ export function TimerScreen(props: {
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
+  const scrim = useTimerScrim();
   const editingLayout = useLayoutStore((s) => s.editing);
   const isZenMode = useLayoutStore((s) => s.isZenMode);
   const setZenMode = useLayoutStore((s) => s.setZenMode);
@@ -309,10 +312,13 @@ export function TimerScreen(props: {
               <TimeDisplay
                 hideWhileSolving={settings.hideTimeWhileSolving}
                 celebrate={celebrating}
+                scrim={scrim}
               />
               <p
                 className={cn(
                   "absolute bottom-[15%] w-full text-center h-5 text-sm transition-opacity duration-150",
+                  // Over a busy background the hint needs the scrim too.
+                  scrim && "mx-auto w-fit rounded-full bg-timer-scrim px-3 inset-x-0",
                   phase === "holding"
                     ? "text-timer-holding opacity-100"
                     : phase === "ready"
@@ -378,7 +384,10 @@ export function TimerScreen(props: {
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    // `isolate` gives the background image (-z-10) a stacking context of its
+    // own: above the page canvas, below every control.
+    <div className="relative isolate flex min-h-0 flex-1 flex-col">
+      <TimerBackground />
       {/* Session controls stay outside the grid — they're chrome, and letting
           the user bury their own settings button would be a trap. */}
       <div className={fadeWhileSolving}>
@@ -436,11 +445,14 @@ export function TimerScreen(props: {
               isAuthed={props.isAuthed}
             />
             {phase === "idle" || phase === "stopped" ? (
-              <QuickSettings
-                settings={settings}
-                onChange={handleSettingsChange}
-                isAuthed={props.isAuthed}
-              />
+              <div className="flex items-center gap-1">
+                <BackgroundSettings />
+                <QuickSettings
+                  settings={settings}
+                  onChange={handleSettingsChange}
+                  isAuthed={props.isAuthed}
+                />
+              </div>
             ) : null}
         </div>
       </div>
