@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import { useReducedMotion } from "motion/react";
 
+import { observeTheme, readTokenRgb, withAlpha, type Rgb } from "@/lib/token-color";
+
 /**
  * WCA Scramble Notation Pool (Standard 3x3 CFOP, Slice moves, and rotations)
  */
@@ -66,6 +68,19 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
     if (!ctx) return;
 
     let animId: number | null = null;
+
+    // Colours come from the active theme's tokens (read as RGB so we can vary
+    // alpha per frame) and are re-read when the theme changes.
+    let accent: Rgb = [0, 0, 0];
+    let canvasBg: Rgb = [0, 0, 0];
+    let ink: Rgb = [0, 0, 0];
+    const readPalette = () => {
+      accent = readTokenRgb("primary");
+      canvasBg = readTokenRgb("background");
+      ink = readTokenRgb("foreground");
+    };
+    readPalette();
+
     let width = 0;
     let height = 0;
     const tokens: Token[] = [];
@@ -228,7 +243,7 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
           // Draw expanding glowing emerald ring
           ctx.beginPath();
           ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(20, 184, 166, ${wave.alpha * 0.45})`;
+          ctx.strokeStyle = withAlpha(accent, wave.alpha * 0.45);
           ctx.lineWidth = 2.0;
           ctx.stroke();
         }
@@ -310,7 +325,7 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
               ctx.beginPath();
               ctx.moveTo(drawX, drawY);
               ctx.lineTo(drawX + ndx, drawY + ndy);
-              ctx.strokeStyle = `rgba(20, 184, 166, ${lineAlpha})`;
+              ctx.strokeStyle = withAlpha(accent, lineAlpha);
               ctx.lineWidth = 1.2;
               ctx.stroke();
             }
@@ -335,19 +350,17 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
         }
 
         // Deep glassmorphic fill behind letter
-        ctx.fillStyle = `rgba(15, 23, 42, ${Math.min(0.85, t.currentAlpha * 1.1)})`;
+        ctx.fillStyle = withAlpha(canvasBg, Math.min(0.85, t.currentAlpha * 1.1));
         ctx.fill();
 
-        // Brand signature light green border (rgba(20, 184, 166) / rgba(45, 212, 191))
+        // Accent border: brighter and thicker while reacting to the pointer.
         const isHovered = t.currentAlpha > 0.45;
         const borderAlpha = Math.min(1.0, t.currentAlpha * 1.4);
-        ctx.strokeStyle = isHovered
-          ? `rgba(45, 212, 191, ${borderAlpha})` // Bright mint green when reactive
-          : `rgba(20, 184, 166, ${borderAlpha * 0.75})`; // Signature emerald teal at rest
+        ctx.strokeStyle = withAlpha(accent, isHovered ? borderAlpha : borderAlpha * 0.75);
         ctx.lineWidth = isHovered ? 1.8 : 1.2;
 
         if (isHovered) {
-          ctx.shadowColor = "rgba(20, 184, 166, 0.7)";
+          ctx.shadowColor = withAlpha(accent, 0.7);
           ctx.shadowBlur = 14;
         } else {
           ctx.shadowBlur = 0;
@@ -362,11 +375,11 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
         ctx.textBaseline = "middle";
 
         if (isHovered) {
-          ctx.fillStyle = `rgba(240, 253, 250, ${t.currentAlpha})`; // Luminous bright mint white
-          ctx.shadowColor = "rgba(45, 212, 191, 0.6)";
+          ctx.fillStyle = withAlpha(ink, t.currentAlpha);
+          ctx.shadowColor = withAlpha(accent, 0.6);
           ctx.shadowBlur = 6;
         } else {
-          ctx.fillStyle = `rgba(45, 212, 191, ${t.currentAlpha * 0.9})`; // Soft brand teal at rest
+          ctx.fillStyle = withAlpha(accent, t.currentAlpha * 0.9);
         }
 
         ctx.fillText(t.text, 0, 1); // 1px vertical optical alignment
@@ -383,7 +396,17 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
       animId = requestAnimationFrame(render);
     }
 
+    const stopObservingTheme = observeTheme(() => {
+      readPalette();
+      // The reduced-motion path draws a single static frame; redraw it.
+      if (prefersReduced) {
+        render();
+        if (animId) cancelAnimationFrame(animId);
+      }
+    });
+
     return () => {
+      stopObservingTheme();
       if (animId) cancelAnimationFrame(animId);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("pointermove", onPointerMove);

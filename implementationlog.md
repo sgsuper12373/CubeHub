@@ -5,6 +5,31 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-01 — Homepage scramble background follows the theme
+
+**Request:** The homepage's floating move-chip background kept its dark and teal colours in Paper; fix it before continuing with step 3.
+
+**Changed**
+- **New: `src/lib/token-color.ts`**
+  - `readTokenRgb(token)` resolves a theme token (oklch included) to sRGB by painting one canvas pixel, because canvas can't read CSS variables and needs alpha variants.
+  - `withAlpha(rgb, a)` builds the colour string.
+  - `observeTheme(cb)` is a MutationObserver on `<html>` for `data-theme` and `class`.
+- **`src/components/react-bits/scramble-matrix.tsx`**: the ten hardcoded `rgba(...)` colours are replaced with theme tokens:
+  - teal and mint → `--primary`
+  - chip fill → `--background`, which is what the old `rgba(15,23,42)` was in Slate
+  - highlighted letter → `--foreground`
+
+  The palette is re-read when the theme changes. The reduced-motion single frame is redrawn.
+
+**Kept on purpose**
+- Animation, layout and alpha curves are unchanged. The mint highlight is now just `--primary` at full alpha.
+
+**Verified**
+- `npm run validate` passes.
+- `npm run build && npx next start`, `/`: in Paper the chips are cream with rust outlines and letters; Slate looks as before. Switching theme live recolours the canvas without a reload.
+
+---
+
 ## 2026-10-01 — Step 3, Phase 4: no-flash theme with the cookie as the source of truth
 
 **Request:** Phase 4 of the design-token plan: apply the theme before first paint and keep `.dark` working for shadcn. Review decision Q8: the `cubehub-theme` cookie is the single source of truth, with no localStorage.
