@@ -5,6 +5,37 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-01 — Step 3, Phase 1: design tokens added to globals.css
+
+**Request:** Step 3 of the CubeHub → CubeUniverse plan (the design token spec), Phase 1: add the new tokens for the `:root` base, Slate (`.dark`), and Paper, with `@theme inline` aliases.
+
+**Changed**
+- `src/app/globals.css`
+  - Added the 19 new role tokens (`surface-raised`, `surface-overlay`, `foreground-subtle`, `accent-2`, `success`, `warning` and their `-foreground` pairs, `timer-digits`, `timer-scrim`, and `sticker-*`) to `:root` and `.dark`. Values are oklch converted from the spec's hex; sticker colours stay as their exact current hex.
+  - Added a complete `[data-theme="paper"]` block, covering every shadcn token so nothing falls through to the grey base.
+  - Added a `--color-*` alias for every new colour in `@theme inline`.
+  - Added a plain `@theme` block for `--text-scramble`, `--text-timer`, and `--ease-standard`. Aliasing them in `@theme inline` would be circular.
+  - Added `--space-panel`, `--layout-gap`, `--duration-*`, and `color-scheme` to each theme.
+- `docs/design-tokens.md`: the spec, renamed from `CubeUniverse Design Token Spec (Step 3).md` and updated with the review decisions:
+  - four colour fixes: Slate accent-2 `#A48EFF`, and Paper primary `#A94016`, warning `#8C520A`, and success `#216F45`
+  - `foreground-subtle` is not allowed on `surface-raised`
+  - cookie as the source of truth
+  - Tailwind's text and shadow scales deferred
+  - the guard also scans `.ts` files
+
+**Kept on purpose**
+- `--learn-*` stays until Phase 7.
+- `.dark` still carries the Slate values; they move to `src/themes/` in Phase 2.
+- The spec's `--text-lg/xl/2xl` and `--shadow-*` are not defined, because they would override Tailwind's scales across the site.
+
+**Verified**
+- `npm run validate` passes (39 tests; the one lint warning was already there).
+- `npm run build && npx next start`: `/timer` in Slate looks unchanged.
+- Setting `data-theme="paper"` in the browser (with `.dark` removed) gives the cream canvas with dark digits and `color-scheme: light`; `--radius` becomes 0.75rem.
+- The computed values of all 184 custom properties under both themes were saved as the baseline for Phase 2's before/after diff.
+
+---
+
 ## 2026-09-30 — Session wrap-up: next-steps review (no code changes)
 
 **Request:** Review `project_plan/context.md` and this log, and set out the next steps.
