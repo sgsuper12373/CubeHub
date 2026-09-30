@@ -152,6 +152,7 @@ Review (1 Oct 2026) adjusted four more so that status colours pass as text on `-
 | `--primary` | Paper | #B4461A | #A94016 | 4.46 on raised |
 | `--warning` | Paper | #9A5B0B | #8C520A | 4.41 on raised |
 | `--success` | Paper | #23764A | #216F45 | margin |
+| `--destructive` | Slate | oklch(0.704 0.191 22.216) | oklch(0.73 0.191 22.216) | 4.34 on raised (found by the contrast test; the spec's #F87171 hex had hidden it) |
 
 ## Theme format, contrast rules and guardrails
 
@@ -210,7 +211,7 @@ Only three existing token names change; everything else is additive.
 - [x] Spec reviewed and values confirmed
 - [ ] New tokens added to `:root`, Slate and Paper, with `@theme inline` aliases
 - [ ] `src/themes/` objects plus the CSS generation step
-- [ ] Contrast unit test passing for both themes
+- [x] Contrast unit test passing for both themes (`tests/unit/theme-contrast.test.ts`, rules in `src/themes/contrast-rules.ts`)
 - [ ] No-FOUC head script (resolves `system`; the cookie is the source of truth)
 - [ ] CI guard for new hardcoded colours
 - [ ] `learn-*` tokens and sticker hex migrated

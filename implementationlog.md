@@ -5,6 +5,41 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-01 — Step 3, Phase 5: theme contrast test
+
+**Request:** Phase 5 of the design-token plan: a unit test that computes WCAG ratios for every theme and fails on any miss.
+
+**Changed**
+- **New: `src/themes/color.ts`**, with no dependencies. It covers:
+  - parsing hex and oklch; oklch uses Björn Ottosson's matrices
+  - resolving `var()` chains (e.g. `timer-hold` → `destructive`)
+  - alpha compositing
+  - WCAG relative luminance and ratio
+- **New: `src/themes/contrast-rules.ts`**: the spec's rules as data.
+  - Body text: 4.5:1 on background, card and raised.
+  - Status colours as text: 4.5:1 on all three surfaces.
+  - `foreground-subtle`: 4.5:1 on background and card only (review decision).
+  - Every `-foreground`/fill pair: 4.5:1.
+  - Timer digits and states: 3:1 on background and card.
+  - Chart series: 3:1 on background.
+- **New test: `tests/unit/theme-contrast.test.ts`**
+  - One test per theme and pair: 108 checks.
+  - `--timer-scrim` keeps the digits at 3:1 over pure black and pure white background images.
+  - The converter is pinned to known values (`oklch(0.208 0.04 265.8)` = `#0f172a`), so a maths slip can't make every check pass.
+- **`src/themes/slate.ts`**: `--destructive` changed from `oklch(0.704 0.191 22.216)` to `oklch(0.73 0.191 22.216)`.
+  - The test found 4.34:1 on `surface-raised`; the spec's `#F87171` hex had shown 4.54 and hidden it.
+  - Following the "fix values, don't relax rules" decision, this is the smallest lightness step that passes (4.57).
+  - It also slightly lightens `timer-hold`, which aliases it.
+- `themes.generated.css` is regenerated.
+- `docs/design-tokens.md`: the change is recorded and the checklist item ticked.
+
+**Verified**
+- `npm run validate` passes (159 tests).
+- Setting Paper `muted-foreground` to `#999999` fails with `Paper: --muted-foreground on --background is 2.53:1, needs 4.5:1`, and so on. Reverted afterwards.
+- `npm run build` passes, and the built CSS carries the new Slate destructive value.
+
+---
+
 ## 2026-10-01 — Homepage scramble background follows the theme
 
 **Request:** The homepage's floating move-chip background kept its dark and teal colours in Paper; fix it before continuing with step 3.

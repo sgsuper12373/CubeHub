@@ -24,7 +24,9 @@ export const slate = {
     "muted-foreground": "oklch(0.711 0.035 256.8)",
     accent: "oklch(0.32 0.036 259)",
     "accent-foreground": "oklch(0.984 0.003 247.9)",
-    destructive: "oklch(0.704 0.191 22.216)",
+    // Lightened from L 0.704 (4.34:1 on surface-raised) to pass 4.5:1 as text
+    // on every surface (step 3 contrast test).
+    destructive: "oklch(0.73 0.191 22.216)",
     border: "oklch(0.98 0.01 250 / 10%)",
     input: "oklch(0.98 0.01 250 / 15%)",
     ring: "oklch(0.775 0.151 171.7)",
