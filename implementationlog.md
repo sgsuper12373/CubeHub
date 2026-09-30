@@ -5,6 +5,43 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-01 — Learn pages fully themed; guard gaps and CTA link fixed
+
+**Request:** Fix the white text on the learn pages in Paper ("Learn. Practice." was barely visible) and check whether anything else remains.
+
+**Changed**
+- **All learn routes and `src/components/learn/*`**: the remaining 79 raw colours, plus 4 found after tightening the guard.
+  - `text-white` → `text-foreground`, including the hero headings, card titles and stat labels.
+  - `border-white/*` → `border-border`; `hover:border-white/10` → `hover:border-foreground/20`.
+  - `bg-white/[x]` → `bg-foreground/[x]`. Identical on Slate, and a matching subtle tint on Paper.
+  - `bg-black/20|30` (the algorithm card's case well and expanded area) → `bg-background/60|80`, recessed in both themes.
+  - `text-green-400|500` for learned or completed → `text-success`.
+  - The amber access badge, the blue difficulty icon and the yellow rating star → `warning`.
+  - The grid-line backgrounds `#80808012` → `color-mix(in oklch, var(--foreground) 7%, transparent)`.
+  - Mask `#000` → `black` (alpha only).
+  - The cube image's black drop shadow → `color-mix(in oklch, black 80%, transparent)`.
+- **`algorithm-card.tsx`**: the hover glow was `rgba(var(--primary),0.3)`, which is invalid because `--primary` is oklch, so it never rendered. It is now `color-mix(...)`.
+- **CTA bug** (`cta-section.tsx`, `learn/[puzzle]/page.tsx`)
+  - "Start Beginner Method" linked to a hardcoded `/learn/<puzzle>/beginner-method`, which 404s; the series slug is `beginner`.
+  - The page now passes the puzzle's first tutorial series, which is ordered by `order_index`. The CTA is hidden when the puzzle has none (2x2 today) instead of linking to a 404.
+- **`scripts/check-colors.mjs`**: two gaps fixed, both caused by Tailwind's `_` space separator being a word character.
+  - Hex followed by `_` (e.g. `#80808012_1px`) was missed.
+  - `_rgba(0,…)` was missed because of the `\b` boundary.
+  - Fixture tests were added for both.
+
+**Kept on purpose**
+- `mix-blend-screen` glows are left as they are (not a colour); they are simply faint on Paper.
+- The black 404 page is Next's default `not-found`, which follows the OS colour scheme, not our theme. There is no custom `not-found.tsx` yet.
+
+**Verified**
+- `npm run validate` passes (189 tests). `npm run check:colors` is OK. A rescan of every learn file finds 0 raw colours.
+- `NEXT_PUBLIC_THEME_SWITCHER=1 npm run build && npx next start`:
+  - In Paper, `/learn`, `/learn/333`, `/learn/333/oll` and `/learn/333/beginner` all read correctly: headings, card titles, stat labels, grids and badges.
+  - Slate looks as before, except the grid lines are a touch brighter.
+  - The CTA links to `/learn/333/beginner`; `/learn/222` shows no CTA.
+
+---
+
 ## 2026-10-01 — Step 3, Phase 8: temporary dev theme switcher
 
 **Request:** Phase 8 of the design-token plan: a temporary dev-only switcher so both themes can be checked visually, including under `npm run build && npx next start`.

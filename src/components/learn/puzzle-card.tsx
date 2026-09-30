@@ -67,7 +67,7 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
               )}
               
               <div className="flex items-start justify-between">
-                <h2 className="text-3xl font-bold tracking-tight text-white mb-3">
+                <h2 className="text-3xl font-bold tracking-tight text-foreground mb-3">
                   {puzzle.name}
                 </h2>
                 
@@ -75,12 +75,12 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
                 <div className="pointer-events-auto xl:hidden">
                   <Popover>
                     <PopoverTrigger render={
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-white transition-all group-hover:rotate-12">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground transition-all group-hover:rotate-12">
                         <Info className="h-5 w-5" />
                         <span className="sr-only">Info</span>
                       </Button>
                     } />
-                    <PopoverContent className="w-80 border-white/10 bg-background/95 backdrop-blur-md shadow-2xl">
+                    <PopoverContent className="w-80 border-border bg-background/95 backdrop-blur-md shadow-2xl">
                       <p className="text-sm">{puzzle.description}</p>
                     </PopoverContent>
                   </Popover>
@@ -96,11 +96,11 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
             <div className="hidden xl:block pointer-events-auto mt-6">
                <Popover>
                 <PopoverTrigger render={
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-white transition-all group-hover:rotate-12">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground transition-all group-hover:rotate-12">
                     <Info className="h-5 w-5" />
                   </Button>
                 } />
-                <PopoverContent className="w-80 border-white/10 bg-background/95 backdrop-blur-md shadow-2xl">
+                <PopoverContent className="w-80 border-border bg-background/95 backdrop-blur-md shadow-2xl">
                   <p className="text-sm">{puzzle.description}</p>
                 </PopoverContent>
               </Popover>
@@ -114,7 +114,7 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
                  src={imageSrc}
                  alt={puzzle.name}
                  fill
-                 className="object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)] [mask-image:radial-gradient(ellipse_100%_100%_at_50%_50%,#000_60%,transparent_100%)] mix-blend-screen"
+                 className="object-contain drop-shadow-[0_20px_30px_color-mix(in_oklch,black_80%,transparent)] [mask-image:radial-gradient(ellipse_100%_100%_at_50%_50%,black_60%,transparent_100%)] mix-blend-screen"
                  sizes="(max-width: 768px) 200px, 240px"
                  priority
                />
@@ -123,34 +123,34 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
         </div>
 
         {/* Bottom Stats Footer */}
-        <div className="relative z-20 border-t border-white/5 bg-white/[0.02] p-5 flex flex-col 2xl:flex-row items-center justify-between gap-5 pointer-events-none group-hover:bg-white/[0.04] transition-colors">
+        <div className="relative z-20 border-t border-border bg-foreground/[0.02] p-5 flex flex-col 2xl:flex-row items-center justify-between gap-5 pointer-events-none group-hover:bg-foreground/[0.04] transition-colors">
           
           <div className="flex items-center justify-between w-full 2xl:w-auto gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
               <BookOpen className="w-5 h-5 text-primary hidden sm:block" />
               <div>
-                <div className="text-sm font-bold text-white leading-tight"><span className="hidden sm:inline">Step By Step</span></div>
-                <div className="text-sm font-bold text-white leading-tight">Tutorial</div>
+                <div className="text-sm font-bold text-foreground leading-tight"><span className="hidden sm:inline">Step By Step</span></div>
+                <div className="text-sm font-bold text-foreground leading-tight">Tutorial</div>
               </div>
             </div>
             
-            <div className="w-px h-8 bg-white/10" />
+            <div className="w-px h-8 bg-foreground/10" />
             
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
               <Code2 className="w-5 h-5 text-accent-2 hidden sm:block" />
               <div>
-                <div className="text-sm font-bold text-white leading-tight">Multiple </div>
-                <div className="text-sm font-bold text-white leading-tight">Algorithms</div>
+                <div className="text-sm font-bold text-foreground leading-tight">Multiple </div>
+                <div className="text-sm font-bold text-foreground leading-tight">Algorithms</div>
               </div>
             </div>
 
-            <div className="w-px h-8 bg-white/10" />
+            <div className="w-px h-8 bg-foreground/10" />
             
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-              <BarChart2 className="w-5 h-5 text-blue-400 hidden sm:block" />
+              <BarChart2 className="w-5 h-5 text-warning hidden sm:block" />
               <div>
-                <div className="text-sm font-bold text-white leading-tight">{difficulty}</div>
-                <div className="text-sm font-bold text-white leading-tight">Difficulty</div>
+                <div className="text-sm font-bold text-foreground leading-tight">{difficulty}</div>
+                <div className="text-sm font-bold text-foreground leading-tight">Difficulty</div>
               </div>
             </div>
           </div>

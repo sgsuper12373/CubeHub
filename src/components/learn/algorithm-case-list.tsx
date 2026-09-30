@@ -47,9 +47,9 @@ export function AlgorithmCaseList({
   return (
     <div className="space-y-6">
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-muted/20 border border-white/5 p-2 rounded-2xl">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-muted/20 border border-border p-2 rounded-2xl">
         {/* Status Filter Tabs */}
-        <div className="flex items-center gap-1 bg-background/50 p-1 rounded-xl border border-white/5">
+        <div className="flex items-center gap-1 bg-background/50 p-1 rounded-xl border border-border">
           <button
             type="button"
             onClick={() => setFilter("all")}
@@ -86,7 +86,7 @@ export function AlgorithmCaseList({
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            <CheckCircle className="h-3.5 w-3.5 text-green-400" />
+            <CheckCircle className="h-3.5 w-3.5 text-success" />
             Learned ({learnedCount})
           </button>
         </div>
@@ -99,7 +99,7 @@ export function AlgorithmCaseList({
             placeholder="Search cases or moves..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-9 pl-9 pr-3 rounded-xl bg-background/50 border border-white/5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+            className="w-full h-9 pl-9 pr-3 rounded-xl bg-background/50 border border-border text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
           />
         </div>
       </div>
@@ -117,7 +117,7 @@ export function AlgorithmCaseList({
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 border border-dashed border-white/10 rounded-2xl text-muted-foreground">
+        <div className="text-center py-16 border border-dashed border-border rounded-2xl text-muted-foreground">
           <p className="text-sm">No algorithm cases match the filter criteria.</p>
         </div>
       )}

@@ -152,7 +152,7 @@ export function AlgPlayerInner({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-3 p-3 bg-muted/20 border border-white/5 rounded-2xl">
+    <div className="flex flex-col items-center justify-center gap-3 p-3 bg-muted/20 border border-border rounded-2xl">
       {/* 3D Twisty Container */}
       <div
         ref={containerRef}
@@ -167,7 +167,7 @@ export function AlgPlayerInner({
       )}
 
       {/* Interactive Control Bar */}
-      <div className="flex items-center gap-1.5 bg-background/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 shadow-sm">
+      <div className="flex items-center gap-1.5 bg-background/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-border shadow-sm">
         <Button
           type="button"
           variant="ghost"

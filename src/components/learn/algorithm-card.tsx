@@ -35,11 +35,11 @@ export function AlgorithmCard({
   return (
     <Card
       className={cn(
-        "overflow-hidden transition-all duration-300 ease-out flex flex-col h-full border-white/5",
+        "overflow-hidden transition-all duration-300 ease-out flex flex-col h-full border-border",
         !algCase.learned &&
-          "hover:scale-[1.01] hover:shadow-[0_0_30px_-10px_rgba(var(--primary),0.3)] bg-gradient-to-br from-card/90 to-background backdrop-blur-md hover:border-primary/40",
+          "hover:scale-[1.01] hover:shadow-[0_0_30px_-10px_color-mix(in_oklch,var(--primary)_30%,transparent)] bg-gradient-to-br from-card/90 to-background backdrop-blur-md hover:border-primary/40",
         algCase.learned &&
-          "bg-muted/10 border-white/5 hover:border-white/10 opacity-75 hover:opacity-100",
+          "bg-muted/10 border-border hover:border-foreground/20 opacity-75 hover:opacity-100",
       )}
     >
       <CardContent className="p-0 flex flex-col sm:flex-row h-full relative z-10">
@@ -99,7 +99,7 @@ export function AlgorithmCard({
                 <Check
                   className={cn(
                     "h-4 w-4 mr-1.5",
-                    algCase.learned && "text-green-500",
+                    algCase.learned && "text-success",
                   )}
                 />
                 {algCase.learned ? "Learned" : "Mark Learned"}
@@ -144,7 +144,7 @@ export function AlgorithmCard({
         {/* Right side: Visualization preview */}
         <div
           className={cn(
-            "w-full sm:w-[160px] shrink-0 bg-black/20 border-l border-white/5 p-4 flex flex-col items-center justify-center order-1 sm:order-2 aspect-[2/1] sm:aspect-auto cursor-pointer hover:bg-black/30 transition-colors",
+            "w-full sm:w-[160px] shrink-0 bg-background/60 border-l border-border p-4 flex flex-col items-center justify-center order-1 sm:order-2 aspect-[2/1] sm:aspect-auto cursor-pointer hover:bg-background/80 transition-colors",
             algCase.learned && "grayscale-[0.5]",
           )}
           onClick={() => setIsExpanded((prev) => !prev)}
@@ -182,7 +182,7 @@ export function AlgorithmCard({
 
       {/* Expandable 3D Animation Player */}
       {isExpanded && mainAlg && (
-        <div className="p-4 border-t border-white/5 bg-black/30 animate-in fade-in-50 duration-200">
+        <div className="p-4 border-t border-border bg-background/80 animate-in fade-in-50 duration-200">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               3D Algorithm Animation

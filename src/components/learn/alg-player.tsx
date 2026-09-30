@@ -9,7 +9,7 @@ const AlgPlayerInner = dynamic(
     ssr: false,
     loading: () => (
       <div
-        className="flex items-center justify-center bg-muted/20 border border-white/5 rounded-2xl p-6"
+        className="flex items-center justify-center bg-muted/20 border border-border rounded-2xl p-6"
         style={{ width: "100%", height: 260 }}
       >
         <CubeLoader size={28} label="Loading 3D player..." />

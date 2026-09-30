@@ -53,7 +53,7 @@ export function PuzzleSeriesList({ puzzleId, series }: PuzzleSeriesListProps) {
       {/* Filter and Search Bar */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 z-20 relative">
         {/* Segmented Control */}
-        <div className="flex items-center p-1.5 rounded-2xl bg-white/[0.03] border border-white/5 shadow-inner backdrop-blur-md self-stretch md:self-auto overflow-x-auto w-full md:w-auto hide-scrollbar">
+        <div className="flex items-center p-1.5 rounded-2xl bg-foreground/[0.03] border border-border shadow-inner backdrop-blur-md self-stretch md:self-auto overflow-x-auto w-full md:w-auto hide-scrollbar">
           {TABS.map((tab) => {
             const isActive = activeTab === tab;
             return (
@@ -62,7 +62,7 @@ export function PuzzleSeriesList({ puzzleId, series }: PuzzleSeriesListProps) {
                 type="button"
                 onClick={() => setActiveTab(tab)}
                 className={`relative px-5 py-2.5 rounded-xl text-sm font-medium transition-colors whitespace-nowrap outline-none ${
-                  isActive ? "text-white" : "text-muted-foreground hover:text-white"
+                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {isActive && (
@@ -111,7 +111,7 @@ export function PuzzleSeriesList({ puzzleId, series }: PuzzleSeriesListProps) {
           ))}
         </StaggeredGrid>
       ) : (
-        <div className="text-center py-20 border border-white/5 rounded-3xl bg-white/[0.02] backdrop-blur-md">
+        <div className="text-center py-20 border border-border rounded-3xl bg-foreground/[0.02] backdrop-blur-md">
           <p className="text-base text-muted-foreground">
             No tutorials or algorithms found matching your filter.
           </p>

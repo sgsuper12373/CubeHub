@@ -61,7 +61,7 @@ export function SeriesCard({ puzzleId, series }: { puzzleId: string, series: Lea
 
       {/* Top Header */}
       <div className="relative z-10 p-6 pb-2 pointer-events-none flex justify-between items-start">
-        <h3 className="text-2xl font-bold tracking-tight text-white group-hover:text-[var(--theme-color)] transition-colors duration-300 line-clamp-1 pr-4">
+        <h3 className="text-2xl font-bold tracking-tight text-foreground group-hover:text-[var(--theme-color)] transition-colors duration-300 line-clamp-1 pr-4">
           {series.name}
         </h3>
         <div 
@@ -117,8 +117,8 @@ export function SeriesCard({ puzzleId, series }: { puzzleId: string, series: Lea
       </div>
 
       {/* Bottom Stats */}
-      <div className="relative z-10 border-t border-white/5 bg-white/[0.02] px-6 py-4 flex items-center justify-between gap-4 pointer-events-none group-hover:bg-white/[0.04] transition-colors mt-auto">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground group-hover:text-white transition-colors">
+      <div className="relative z-10 border-t border-border bg-foreground/[0.02] px-6 py-4 flex items-center justify-between gap-4 pointer-events-none group-hover:bg-foreground/[0.04] transition-colors mt-auto">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground group-hover:text-foreground transition-colors">
            {theme.icon}
            <span className="font-medium">{isAlg ? "57 Algorithms" : "12 Tutorials"}</span>
         </div>
@@ -133,7 +133,7 @@ export function SeriesCard({ puzzleId, series }: { puzzleId: string, series: Lea
                    "w-1.5 rounded-full transition-all duration-300",
                    level <= difficultyRating 
                      ? "bg-[var(--theme-color)] shadow-[0_0_8px_var(--theme-color)]" 
-                     : "bg-white/10"
+                     : "bg-foreground/10"
                  )}
                  style={{ height: `${8 + level * 2}px` }} // ascending height bars
                />

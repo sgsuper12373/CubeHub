@@ -50,12 +50,14 @@ const RULES = [
   },
   {
     kind: "hex literal",
-    re: /(?<![\w&])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])/g,
+    // `_` may follow: Tailwind arbitrary values use it for spaces.
+    re: /(?<![\w&])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![0-9A-Za-z-])/g,
     hint: "use var(--token); add the colour to src/themes/ if no role fits",
   },
   {
     kind: "colour function",
-    re: /\b(?:rgba?|hsla?|oklch|oklab)\(\s*[\d.]/g,
+    // No \b: in Tailwind arbitrary values `_` (a word char) precedes it.
+    re: /(?<![A-Za-z0-9-])(?:rgba?|hsla?|oklch|oklab)\(\s*[\d.]/g,
     hint: "use var(--token) or color-mix(); canvas code: readTokenRgb()",
   },
 ];

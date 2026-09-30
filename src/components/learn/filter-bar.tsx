@@ -14,7 +14,7 @@ export function FilterBar() {
   return (
     <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-8 z-20 relative">
       {/* Left: Segmented Control */}
-      <div className="flex items-center p-1.5 rounded-2xl bg-white/[0.03] border border-white/5 shadow-inner backdrop-blur-md self-stretch md:self-auto overflow-x-auto w-full md:w-auto hide-scrollbar">
+      <div className="flex items-center p-1.5 rounded-2xl bg-foreground/[0.03] border border-border shadow-inner backdrop-blur-md self-stretch md:self-auto overflow-x-auto w-full md:w-auto hide-scrollbar">
         {TABS.map((tab) => {
           const isActive = activeTab === tab;
           return (
@@ -22,7 +22,7 @@ export function FilterBar() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`relative px-5 py-2.5 rounded-xl text-sm font-medium transition-colors whitespace-nowrap outline-none ${
-                isActive ? "text-white" : "text-muted-foreground hover:text-white"
+                isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {isActive && (
@@ -59,7 +59,7 @@ export function FilterBar() {
 
         <Button 
           variant="outline" 
-          className="h-11 rounded-xl bg-white/[0.03] border-white/5 hover:bg-white/[0.08] hover:text-white transition-all shadow-sm"
+          className="h-11 rounded-xl bg-foreground/[0.03] border-border hover:bg-foreground/[0.08] hover:text-foreground transition-all shadow-sm"
         >
           <ListFilter className="w-4 h-4 mr-2" />
           Filters

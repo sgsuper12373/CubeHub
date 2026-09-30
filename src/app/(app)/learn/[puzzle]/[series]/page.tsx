@@ -69,7 +69,7 @@ export default async function SeriesCasesPage({ params }: Props) {
           <div className="flex items-center gap-3">
             <h1 className="text-4xl font-bold tracking-tight">{series.name}</h1>
             {series.accessTier === "premium" && (
-              <span className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
+              <span className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-warning/10 text-warning border border-warning/20">
                 <Lock className="h-3 w-3" />
                 Premium
               </span>

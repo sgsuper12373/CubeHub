@@ -14,8 +14,10 @@ describe("findColorViolations", () => {
     ['className="text-black"', "white/black class: text-black"],
     ['className="bg-[#fff]"', "arbitrary colour: -[#"],
     ['const C = { U: "#EAB308" };', "hex literal: #EAB308"],
+    ['"bg-[linear-gradient(to_right,#80808012_1px,transparent_1px)]"', "hex literal: #80808012"],
     ["ctx.strokeStyle = `rgba(20, 184, 166, ${a})`;", "colour function: rgba(2"],
     ['style={{ color: "hsl(200 50% 50%)" }}', "colour function: hsl(2"],
+    ['"drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)]"', "colour function: rgba(0"],
   ])("flags %s", (line, expected) => {
     expect(kinds(line)).toContain(expected);
   });

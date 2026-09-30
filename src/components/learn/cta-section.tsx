@@ -4,7 +4,8 @@ import Link from "next/link";
 import { Lightbulb, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function CTASection({ puzzleId }: { puzzleId: string }) {
+/** `href` is the puzzle's first tutorial series (its beginner method). */
+export function CTASection({ href }: { href: string }) {
   return (
     <div className="relative overflow-hidden rounded-3xl bg-card border border-border shadow-2xl group mt-16">
       {/* Background Gradients */}
@@ -17,7 +18,7 @@ export function CTASection({ puzzleId }: { puzzleId: string }) {
             <Lightbulb className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-white mb-2">New to solving?</h3>
+            <h3 className="text-2xl font-bold text-foreground mb-2">New to solving?</h3>
             <p className="text-muted-foreground text-lg leading-relaxed">
               Start with the Beginner Method and build a strong foundation before learning advanced algorithms like CFOP.
             </p>
@@ -26,7 +27,7 @@ export function CTASection({ puzzleId }: { puzzleId: string }) {
 
         <div className="shrink-0 w-full md:w-auto">
           <Button 
-            render={<Link href={`/learn/${puzzleId}/beginner-method`} />}
+            render={<Link href={href} />}
             nativeButton={false}
             className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 py-7 rounded-full shadow-[0_0_30px_color-mix(in_oklch,var(--primary)_20%,transparent)] hover:shadow-[0_0_50px_color-mix(in_oklch,var(--primary)_40%,transparent)] hover:scale-105 active:scale-95 transition-all duration-300 text-lg group/btn"
           >

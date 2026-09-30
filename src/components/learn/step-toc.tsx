@@ -43,7 +43,7 @@ export function StepToc({ steps }: StepTocProps) {
 
   return (
     <aside className="hidden lg:block w-72 shrink-0">
-      <div className="sticky top-24 space-y-3 p-4 rounded-2xl bg-muted/10 border border-white/5 backdrop-blur-md">
+      <div className="sticky top-24 space-y-3 p-4 rounded-2xl bg-muted/10 border border-border backdrop-blur-md">
         <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-2">
           Tutorial Steps
         </h4>
@@ -59,11 +59,11 @@ export function StepToc({ steps }: StepTocProps) {
                   "w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-left transition-all",
                   isActive
                     ? "bg-primary/10 text-primary border border-primary/20 font-semibold"
-                    : "text-muted-foreground hover:text-foreground hover:bg-white/5",
+                    : "text-muted-foreground hover:text-foreground hover:bg-foreground/5",
                 )}
               >
                 {step.completed ? (
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
                 ) : (
                   <Circle
                     className={cn(

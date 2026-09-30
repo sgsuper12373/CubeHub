@@ -71,7 +71,7 @@ export function TutorialStepCard({
             <CheckCircle2
               className={cn(
                 "h-4 w-4 mr-2",
-                step.completed && "text-green-500",
+                step.completed && "text-success",
               )}
             />
             {step.completed ? "Completed" : "Mark Complete"}

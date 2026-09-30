@@ -35,7 +35,7 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
       />
       
       {/* Background Gradients & Grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] z-0" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_oklch,var(--foreground)_7%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklch,var(--foreground)_7%,transparent)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black_70%,transparent_100%)] z-0" />
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/10 blur-[100px] rounded-full pointer-events-none opacity-30 z-0" />
 
       {/* Left Column: Content */}
@@ -56,7 +56,7 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-5xl md:text-6xl font-bold tracking-tighter text-white"
+            className="text-5xl md:text-6xl font-bold tracking-tighter text-foreground"
           >
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent-2">{puzzle.name.split(" ")[0]}</span> {puzzle.name.split(" ").slice(1).join(" ")}
           </motion.h1>
@@ -78,34 +78,34 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex flex-wrap gap-4 pt-4"
         >
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/10 shadow-lg backdrop-blur-md">
+          <div className="flex items-center gap-4 p-4 rounded-2xl bg-foreground/[0.03] border border-border shadow-lg backdrop-blur-md">
             <BookOpen className="w-6 h-6 text-primary" />
             <div>
-              <div className="text-xl font-bold text-white leading-none">{tutorialsCount}</div>
+              <div className="text-xl font-bold text-foreground leading-none">{tutorialsCount}</div>
               <div className="text-sm text-muted-foreground mt-1">Tutorials</div>
             </div>
           </div>
           
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/10 shadow-lg backdrop-blur-md">
+          <div className="flex items-center gap-4 p-4 rounded-2xl bg-foreground/[0.03] border border-border shadow-lg backdrop-blur-md">
             <Code2 className="w-6 h-6 text-accent-2" />
             <div>
-              <div className="text-xl font-bold text-white leading-none">{algsCount}</div>
+              <div className="text-xl font-bold text-foreground leading-none">{algsCount}</div>
               <div className="text-sm text-muted-foreground mt-1">Algorithms</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/10 shadow-lg backdrop-blur-md">
-            <BarChart2 className="w-6 h-6 text-blue-400" />
+          <div className="flex items-center gap-4 p-4 rounded-2xl bg-foreground/[0.03] border border-border shadow-lg backdrop-blur-md">
+            <BarChart2 className="w-6 h-6 text-warning" />
             <div>
-              <div className="text-lg font-bold text-white leading-none">{difficulty}</div>
+              <div className="text-lg font-bold text-foreground leading-none">{difficulty}</div>
               <div className="text-sm text-muted-foreground mt-1">Difficulty</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/10 shadow-lg backdrop-blur-md">
-            <Star className="w-6 h-6 text-yellow-400 fill-yellow-400/20" />
+          <div className="flex items-center gap-4 p-4 rounded-2xl bg-foreground/[0.03] border border-border shadow-lg backdrop-blur-md">
+            <Star className="w-6 h-6 text-warning fill-warning/20" />
             <div>
-              <div className="text-xl font-bold text-white leading-none">4.8</div>
+              <div className="text-xl font-bold text-foreground leading-none">4.8</div>
               <div className="text-sm text-muted-foreground mt-1">Avg. Rating</div>
             </div>
           </div>
