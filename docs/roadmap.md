@@ -73,7 +73,11 @@ Four-level content model: puzzle → method → section → case → algorithm(s
 
 Launch content: 3x3 beginner LBL, CFOP intro, all 57 OLL, all 21 PLL; 2x2 beginner and Ortega.
 
-**This phase applies the access-control migration** — `access_tier`, `algorithm_subsets`, `can_access()`, and the tiered policies. Read `access-control.md` first; the paid-content boundary is set here and is expensive to move later. Spaced repetition also needs new columns (see Known gaps).
+**This phase applies the access-control migration** — `access_tier`, `algorithm_subsets`, `can_access()`, and the tiered policies. Read `access-control.md` first; the paid-content boundary is set here and is expensive to move later.
+
+**Drill Lab (2026-09-30): built, migration not yet applied to live.** `/learn/[puzzle]/drill` shows each case from the inverse of its algorithm (no solver, no hand-entered setup), times reps against the specific algorithm variant, orders cases weakest-first with spaced repetition, and recommends a variant switch when the per-variant medians support it. Schema in `database.md` → Drill Lab. The timer's old `?train=` mode is retired and redirects here.
+
+**Live data is behind the code (found 2026-09-30):** `20260914000000_access_tiers.sql` is not applied to live, so `algorithm_subsets` does not exist there and `getPuzzles()` lists no algorithm sets at all; and live holds 1 algorithm case, not the seeded 57 OLL / 21 PLL. Apply the pending migrations (and the seed) before either the series pages or the Drill Lab can show OLL/PLL.
 
 *Deliverable: shareable tutorials — the main organic-traffic and sign-up driver.*
 

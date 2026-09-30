@@ -91,7 +91,7 @@ export default async function SeriesCasesPage({ params }: Props) {
             <Button
               render={
                 <Link
-                  href={`/timer?train=${encodeURIComponent(series.slug)}&puzzle=${encodeURIComponent(puzzle.id)}`}
+                  href={`/learn/${encodeURIComponent(puzzle.id)}/drill?set=${encodeURIComponent(series.slug)}`}
                 />
               }
               nativeButton={false}
@@ -99,7 +99,7 @@ export default async function SeriesCasesPage({ params }: Props) {
               className="w-full sm:w-auto font-semibold shadow-md"
             >
               <Play className="mr-2 h-4 w-4 fill-current" />
-              Train Set
+              Drill Set
             </Button>
           </div>
         )}

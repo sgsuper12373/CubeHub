@@ -209,10 +209,12 @@ function parseCubeHubExport(root: Record<string, unknown>, activePuzzle?: TimerP
     }
   }
 
+  // A restore recreates the user's sessions, including ones with no solves
+  // yet. Only sessions the backup itself listed (they carry their original id)
+  // survive empty; a placeholder we made up for orphaned solves never does.
   const sessions = Array.from(sessionsMap.values()).filter((s) => {
-    if (s.solves.length === 0) return false;
     s.solves.sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
-    return true;
+    return s.solves.length > 0 || s.id !== undefined;
   });
 
   if (skippedUnsupportedPuzzle > 0) {

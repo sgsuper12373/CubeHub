@@ -54,6 +54,25 @@ export function sessionMean(solves: SolveTimes[]): number | null {
 }
 
 /**
+ * Median of all non-DNF solves, rounded to the millisecond. Matches
+ * `percentile_cont(0.5)` in the database (the mean of the two middle values
+ * for an even count), so in-session and stored medians agree.
+ */
+export function medianMs(solves: SolveTimes[]): number | null {
+  const times: number[] = [];
+  for (const s of solves) {
+    const t = effectiveMs(s);
+    if (t !== null) times.push(t);
+  }
+  if (times.length === 0) return null;
+  times.sort((a, b) => a - b);
+  const mid = times.length >> 1;
+  return times.length % 2 === 1
+    ? times[mid]
+    : Math.round((times[mid - 1] + times[mid]) / 2);
+}
+
+/**
  * WCA trimmed average over the most recent `n` solves (list is newest-first,
  * as kept by the session store): drop the single best and single worst, then
  * mean the rest, rounded to the nearest centisecond.

@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { mobileNavItems } from "@/lib/navigation";
+import { activeNavHref, mobileNavItems } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout-store";
 
 export function BottomNav() {
   const pathname = usePathname();
+  const activeHref = activeNavHref(pathname, mobileNavItems);
   const isZenMode = useLayoutStore((s) => s.isZenMode);
 
   if (isZenMode) return null;
@@ -17,7 +18,7 @@ export function BottomNav() {
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden">
       <div className="flex h-16 items-stretch">
         {mobileNavItems.map(({ label, href, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(`${href}/`);
+          const active = href === activeHref;
           return (
             <Link
               key={href}

@@ -30,12 +30,7 @@ import { toast } from "@/stores/toast-store";
 import { confirm } from "@/stores/confirm-store";
 import { formatMs } from "@/lib/timer/format";
 import { cn } from "@/lib/utils";
-import { Expand, Check, X, Shuffle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
-import { AlgorithmCase } from "@/lib/learn/dal";
-import { CaseViewer } from "@/components/learn/case-viewer";
-import { getRandomCaseForDrillAction, toggleAlgorithmBookmark } from "@/lib/learn/actions";
+import { Expand } from "lucide-react";
 
 /**
  * Client container for /timer: wires the stores to the presentational
@@ -45,8 +40,6 @@ export function TimerScreen(props: {
   isAuthed: boolean;
   userId: string | null;
   initialSettings: ServerTimerSettings | null;
-  trainCase?: AlgorithmCase | null;
-  drillSubset?: string | null;
 }) {
   const phase = useTimerStore((s) => s.phase);
   const scramble = useTimerStore((s) => s.scramble);
@@ -69,20 +62,6 @@ export function TimerScreen(props: {
   const setZenMode = useLayoutStore((s) => s.setZenMode);
   const celebrateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [localTrainCase, setLocalTrainCase] = useState<
-    AlgorithmCase | null | undefined
-  >(undefined);
-  const [localDrillSubset, setLocalDrillSubset] = useState<
-    string | null | undefined
-  >(undefined);
-  const [showDrillReport, setShowDrillReport] = useState(false);
-
-  const currentTrainCase =
-    localTrainCase !== undefined ? localTrainCase : (props.trainCase ?? null);
-  const drillSubset =
-    localDrillSubset !== undefined
-      ? localDrillSubset
-      : (props.drillSubset ?? null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -125,12 +104,7 @@ export function TimerScreen(props: {
     (async () => {
       try {
         const store = useTimerStore.getState();
-        let alg = "";
-        if (currentTrainCase) {
-          alg = `z2 ${currentTrainCase.setup_moves || ""}`.trim();
-        } else {
-          alg = await generateScramble(puzzle);
-        }
+        const alg = await generateScramble(puzzle);
 
         if (!cancelled && store.puzzle === puzzle) store.receiveScramble(alg);
       } catch (err) {
@@ -141,7 +115,7 @@ export function TimerScreen(props: {
     return () => {
       cancelled = true;
     };
-  }, [scramble.alg, scramble.next, puzzle, currentTrainCase]);
+  }, [scramble.alg, scramble.next, puzzle]);
 
   // Record the solve exactly once per stop. `stoppedAt` is unique per solve,
   // which makes this idempotent across re-renders and dev double-effects.
@@ -171,11 +145,6 @@ export function TimerScreen(props: {
       createdAt: new Date().toISOString(),
     });
 
-    // Trigger drill mode self-report if training a case (in next microtask to avoid cascading renders)
-    if (currentTrainCase) {
-      queueMicrotask(() => setShowDrillReport(true));
-    }
-
     // PB detection — compare after the store updates (next microtask)
     queueMicrotask(() => {
       const newSolves = useSessionStore.getState().solves;
@@ -199,49 +168,7 @@ export function TimerScreen(props: {
         );
       }
     });
-  }, [phase, currentTrainCase]);
-
-  const handleNextDrillCase = async () => {
-    if (!drillSubset) {
-      useTimerStore.getState().skipScramble();
-      return;
-    }
-    try {
-      const nextCase = await getRandomCaseForDrillAction(puzzle, drillSubset);
-      if (nextCase) {
-        setLocalTrainCase(nextCase);
-        const setup = `z2 ${nextCase.setup_moves || ""}`.trim();
-        useTimerStore.getState().receiveScramble(setup);
-      }
-    } catch (err) {
-      console.error("Failed to fetch next drill case", err);
-    }
-  };
-
-  const handleDrillReport = async (learned: boolean) => {
-    if (!currentTrainCase) return;
-    setShowDrillReport(false);
-    if (learned && props.isAuthed) {
-      const mainAlg =
-        currentTrainCase.algorithms.find((a) => a.is_main) ||
-        currentTrainCase.algorithms[0];
-      if (mainAlg) {
-        try {
-          await toggleAlgorithmBookmark(mainAlg.id, true);
-          toast({
-            kind: "info",
-            message: `${currentTrainCase.name} marked learned!`,
-            durationMs: 3000,
-          });
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }
-    if (drillSubset) {
-      await handleNextDrillCase();
-    }
-  };
+  }, [phase]);
 
   const togglePenalty = (p: Exclude<Penalty, "none">) => {
     const last = useSessionStore.getState().solves[0];
@@ -347,67 +274,11 @@ export function TimerScreen(props: {
       case "scramble":
         return (
           <div className={cn("flex flex-col items-center", fadeWhileSolving)}>
-            {currentTrainCase && (
-              <div className="mt-3 mb-1 flex items-center justify-between gap-3 px-3.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium max-w-md w-full">
-                <div className="flex items-center gap-2 truncate">
-                  <span className="font-bold text-primary shrink-0">
-                    {drillSubset
-                      ? `Drill: ${drillSubset.toUpperCase()}`
-                      : "Training"}
-                  </span>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="text-foreground/90 font-semibold truncate">
-                    {currentTrainCase.name}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {drillSubset && (
-                    <button
-                      type="button"
-                      onClick={() => void handleNextDrillCase()}
-                      className="hover:text-primary transition-colors flex items-center gap-1 text-[11px] text-muted-foreground font-medium"
-                      title="Next random case"
-                    >
-                      <Shuffle className="h-3 w-3" />
-                      Next
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLocalTrainCase(null);
-                      setLocalDrillSubset(null);
-                      useTimerStore.getState().skipScramble();
-                    }}
-                    className="hover:text-destructive transition-colors p-0.5"
-                    title="Exit drill mode"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-            )}
-            {currentTrainCase && scramble.alg && (
-              <div className="bg-black/20 p-2 my-1 rounded-md border border-white/5 shadow-inner">
-                <CaseViewer
-                  cubeState={scramble.alg}
-                  puzzle={puzzle}
-                  size={100}
-                  visualization="experimental-2D-LL"
-                />
-              </div>
-            )}
             <ScrambleBar
               alg={scramble.alg}
               generating={scramble.generating}
               puzzle={puzzle}
-              onNext={() => {
-                if (drillSubset) {
-                  void handleNextDrillCase();
-                } else {
-                  useTimerStore.getState().skipScramble();
-                }
-              }}
+              onNext={() => useTimerStore.getState().skipScramble()}
               onCopy={() => {
                 const { alg } = useTimerStore.getState().scramble;
                 if (alg) void navigator.clipboard.writeText(alg);
@@ -601,44 +472,6 @@ export function TimerScreen(props: {
         onDelete={handleDelete}
         onNotes={handleNotes}
       />
-
-      {/* Skippable Self-Report Overlay for Drill Mode */}
-      {showDrillReport && currentTrainCase && !solving && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-200">
-          <div className="flex items-center gap-3 bg-card/95 border border-primary/40 px-4 py-2.5 rounded-2xl shadow-2xl backdrop-blur-md">
-            <span className="text-xs font-medium text-foreground">
-              Recognized <strong>{currentTrainCase.name}</strong>?
-            </span>
-            <div className="flex items-center gap-1.5">
-              <Button
-                size="sm"
-                className="h-7 px-2.5 text-xs font-medium"
-                onClick={() => void handleDrillReport(true)}
-              >
-                <Check className="h-3.5 w-3.5 mr-1 text-green-400" />
-                Yes (Learned)
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="h-7 px-2.5 text-xs font-medium"
-                onClick={() => void handleDrillReport(false)}
-              >
-                No / Hard
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-                onClick={() => setShowDrillReport(false)}
-                title="Skip"
-              >
-                <X className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Zen Mode Exit Button */}
       {isZenMode && !solving && (

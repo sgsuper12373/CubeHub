@@ -7,12 +7,13 @@ import { Logo } from "@/components/layout/logo";
 import { UserMenu } from "@/components/layout/user-menu";
 import { Button } from "@/components/ui/button";
 import type { CurrentProfile } from "@/lib/auth/dal";
-import { navItems } from "@/lib/navigation";
+import { activeNavHref, navItems } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout-store";
 
 export function Navbar({ profile }: { profile: CurrentProfile | null }) {
   const pathname = usePathname();
+  const activeHref = activeNavHref(pathname, navItems);
   const isZenMode = useLayoutStore((s) => s.isZenMode);
 
   if (isZenMode) return null;
@@ -25,7 +26,7 @@ export function Navbar({ profile }: { profile: CurrentProfile | null }) {
         </Link>
         <div className="flex h-full items-center gap-1">
           {navItems.map(({ label, href, icon: Icon }) => {
-            const active = pathname === href || pathname.startsWith(`${href}/`);
+            const active = href === activeHref;
             return (
               <Link
                 key={href}

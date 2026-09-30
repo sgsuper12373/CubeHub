@@ -26,7 +26,7 @@
 // A missing file is a failure. So is a JS file served with a non-JS MIME type,
 // because browsers refuse to run module scripts served that way.
 
-const DEFAULT_PAGES = ["/", "/timer", "/learn"];
+const DEFAULT_PAGES = ["/", "/timer", "/learn", "/learn/333/drill?set=pll"];
 const CONCURRENCY = 8;
 
 const [baseArg, ...extraPages] = process.argv.slice(2);

@@ -128,14 +128,14 @@ export function AlgorithmCard({
               )}
             </div>
 
-            <Link href={`/timer?train=${algCase.id}&puzzle=${puzzle}`}>
+            <Link href={`/learn/${puzzle}/drill?case=${algCase.id}`}>
               <Button
                 variant={algCase.learned ? "ghost" : "secondary"}
                 size="sm"
                 className="font-medium"
               >
                 <Play className="h-3.5 w-3.5 mr-1.5" />
-                Train Case
+                Drill Case
               </Button>
             </Link>
           </div>

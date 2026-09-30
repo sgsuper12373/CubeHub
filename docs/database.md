@@ -24,13 +24,13 @@ These hold regardless of the details below and are the parts worth internalising
 |---|---|
 | Identity | `profiles`, `user_settings`, `user_follows`, `subscriptions` |
 | Timer | `sessions`, `solves`, `personal_bests` |
-| Learn | `algorithm_cases`, `algorithms`, `tutorial_series`, `tutorial_steps`, `user_algorithm_bookmarks`, `user_tutorial_progress` |
+| Learn | `algorithm_cases`, `algorithms`, `tutorial_series`, `tutorial_steps`, `user_algorithm_bookmarks`, `user_tutorial_progress`, `drill_attempts`, `drill_state` |
 | Compete | `matches`, `match_games`, `elo_ratings`, `elo_history` |
 | Social | `clubs`, `club_members`, `club_join_requests`, `notifications` |
 | Commerce | `products` |
 | Meta | `achievements`, `user_achievements` |
 
-Views: `v_session_solves`, `v_user_puzzle_summary` — both `security_invoker='on'`, so they respect the caller's RLS rather than the definer's. Keep new views that way unless you specifically need to bypass RLS.
+Views: `v_session_solves`, `v_user_puzzle_summary`, `v_drill_variant_stats` — all `security_invoker='on'`, so they respect the caller's RLS rather than the definer's. Keep new views that way unless you specifically need to bypass RLS.
 
 **A view over `solves` must filter `deleted_at`.** `v_user_puzzle_summary` did not, so soft-deleted solves kept inflating `total_solves` and could hold `best_single_ms` at a time the user had thrown away. Fixed in `20260726000000_average_pbs.sql`; `v_session_solves` is worth checking before anything reads it.
 
@@ -86,6 +86,7 @@ This is the pattern the access tiers extend — the flag check gains an `AND can
 | `update_club_member_count()` | `AFTER INSERT/DELETE ON club_members` | Maintains the denormalised counter. |
 | `is_premium(profiles)` | — | `premium_until IS NOT NULL AND premium_until > now()`. The entitlement source of truth. |
 | `rls_auto_enable()` | `ensure_rls` event trigger on `CREATE TABLE` | Enables RLS on new `public` tables. |
+| `recompute_drill_state(user, algorithm)` | statement-level triggers on `drill_attempts` insert / update / delete | Replays that algorithm's attempts in order and writes `drill_state` (counts, SM-2-style ease, interval, `next_review_at`). Authoritative, so penalty edits and deletes heal it. |
 
 ## Indexing
 
@@ -93,13 +94,27 @@ Notable choices worth preserving: a partial index on `solves(puzzle_type, effect
 
 Three partial/expression **unique** indexes encode invariants: `uq_profiles_username_lower` (usernames unique case-insensitively), `uq_one_active_session` (one active session per user + puzzle), `uq_one_main_alg_per_case` (one `is_main` algorithm per case).
 
+## Drill Lab
+
+Added in `20260930000000_drill_lab.sql`, tested by `supabase/tests/drill_lab_test.sql`.
+
+**The grain is `(user_id, algorithm_id)`, never `case_id`.** The Drill Lab compares *variants* of one case ("you are 0.28s faster with the alternative"), which is impossible once attempts are rolled up to the case. The case is one join away through `algorithms`.
+
+| Object | What it is |
+|---|---|
+| `drill_attempts` | One row per timed rep. `time_ms` is execution only; `recognition_ms` is filled only in recognition mode. `effective_time_ms` and `succeeded` (`penalty <> 'dnf'`) are **generated**. `source` is `drill` or `detected_in_solve`. Owner-scoped `FOR ALL` policy. |
+| `drill_state` | Spaced-repetition state per `(user, algorithm)`: attempt/success counts, `ease`, `interval_days`, `next_review_at`. **Trigger-written only**: an owner `SELECT` policy and no write policies, like `personal_bests`. |
+| `v_drill_variant_stats` | Per `(user, algorithm)` with `case_id`: attempts, successes, `median_ms` and `median_recognition_ms` (`percentile_cont`, DNFs excluded), plus the state's `ease` / `next_review_at`. What the app reads. |
+
+Scheduling (SM-2, adapted for drilling): a DNF is a lapse (ease −0.2, floor 1.3; due again in 10 minutes). A success only advances the schedule when it lands at or after `next_review_at`, because a drill sitting is many reps and each one counting as a review would push the next one months out. Review quality is 5 when faster than the median of earlier successes, else 4.
+
 ## Known gaps
 
 Things the schema does not yet support, each blocking specific roadmap work.
 
 **`mean3` personal bests are not maintained.** `single`, `ao5`, `ao12`, `ao50` and `ao100` are all written as of `20260726000000_average_pbs.sql`. `mean3` is the remaining category the constraint permits and nothing writes — it is a big-cube and blindfolded convention, so it is unused until those puzzles exist.
 
-**No spaced-repetition storage.** `user_algorithm_bookmarks` has only `learned boolean` — no attempt counts, success counts, or next-review scheduling. *Blocks drill mode in Phase 3.*
+~~**No spaced-repetition storage.**~~ Closed by `20260930000000_drill_lab.sql`. See **Drill Lab** above.
 
 **No `access_tier`, no `algorithm_subsets`.** The whole tiered-content model in `access-control.md` is unbuilt, and `algorithm_cases.subset` is unconstrained free text. *Blocks paid content.*
 
