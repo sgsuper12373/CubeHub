@@ -5,6 +5,47 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-01 — Focus Mode (csTimer-style clean timer), branch `feat/focus-mode`
+
+**Request:** Add a mode where, like csTimer, everything (navbar, options, panels) disappears once the timer starts, leaving a clean timer.
+
+**Branch:** `feat/focus-mode`, stacked on `feat/timer-background`, because both edit `timer-screen.tsx`.
+
+**Changed**
+- **New: `src/lib/timer/focus.ts`**
+  - `isFocusHidden(phase, inInspection)` hides from **ready** (armed), **inspecting**, and **running**, plus holding *during* inspection.
+  - A press-and-hold from idle doesn't hide anything, so releasing early can't flash the UI away and back.
+  - Also `FOCUS_ATTR`, and `loadFocusMode`/`saveFocusMode` in localStorage.
+- **`src/stores/layout-store.ts`**: adds `isFocusMode` and `setFocusMode` (persisted). `hydrate()` restores it.
+- **`timer-screen.tsx`**: toggles `data-focus-solving` on `<html>` while `focusHidden`, and removes it on unmount. The session-controls row and the sign-in nudge are marked `data-focus-hide`.
+- **Marked `data-focus-hide`**
+  - `navbar.tsx`: the header.
+  - `bottom-nav.tsx`: the nav.
+  - `stats-panel.tsx`: the mobile stats button.
+  - `layout-shell.tsx`: the layout edit bar and the panel titles.
+- **`globals.css`**: under `[data-focus-solving]`, every marked element and every grid panel except the timer gets `opacity: 0; visibility: hidden`. The timer panel loses its card background and border.
+  - It uses opacity and visibility, not `display`, so nothing reflows and the digits don't move mid-solve.
+  - It leaves in 150ms and returns over 300ms ease-out, matching the existing solve dim.
+- **`timer-modes.tsx`**: a new **Focus Mode** toggle in the Modes menu (tooltip: "Hide everything but the timer while solving"). `ModeToggle` gained an optional `hint`.
+- **New test: `tests/unit/focus-mode.test.ts`** (6 tests): the hide rule for every phase, including the idle-hold and inspection-hold cases, and persistence through `hydrate()`.
+
+**Kept on purpose**
+- Zen Mode is unchanged: it hides the navs permanently. Focus Mode is independent and only acts during a solve.
+- The background image stays visible in Focus Mode; it's part of the canvas.
+
+**Verified**
+- `npm run validate` passes (209 tests); `check:colors` is OK.
+- `npm run build && npx next start`, `/timer`, Slate, with the user's own background image set:
+  - Turned Focus Mode on through the Modes menu; it was saved.
+  - A plain hold from idle didn't hide anything.
+  - Once armed and then running, the navbar, scramble and stats panels were hidden, and the timer panel's card was transparent. Only the running digits were left over the background, in the same position.
+  - Escape cancelled (no solve recorded) and everything came back.
+  - Focus Mode was set back to off afterwards.
+- The inspection path is covered by unit tests only, because enabling WCA inspection would change the signed-in account's synced settings.
+- `npm run test:e2e:prod`: 10 of 10 pass.
+
+---
+
 ## 2026-10-01 — Timer background image (local-first), branch `feat/timer-background`
 
 **Request:** Add a custom background image for the timer page only, stored locally for testing. Options: opacity, blur, brightness, fit and position.

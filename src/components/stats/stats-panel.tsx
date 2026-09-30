@@ -73,6 +73,7 @@ export function StatsPanel({
           drawerOpen && "hidden",
         )}
         aria-label="Show stats"
+        data-focus-hide
         onClick={() => setDrawerOpen(true)}
       >
         <BarChart3 className="size-5" />

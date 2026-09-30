@@ -142,6 +142,35 @@
   }
 }
 
+/* ── Focus Mode (csTimer-style) ───────────────────────────────────────────
+   While a solve is under way <TimerScreen/> sets data-focus-solving on
+   <html>; everything except the timer panel's digits fades out. Hidden with
+   opacity + visibility (not display) so nothing reflows and the digits
+   don't move mid-solve. Leaves fast, returns gently, like the solve dim. */
+[data-focus-hide],
+.layout-grid > [data-panel] {
+  transition:
+    opacity 300ms ease-out,
+    visibility 300ms,
+    background-color 300ms ease-out,
+    border-color 300ms ease-out;
+}
+
+[data-focus-solving] [data-focus-hide],
+[data-focus-solving] .layout-grid > [data-panel]:not([data-panel="timer"]) {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition-duration: 150ms;
+}
+
+/* The timer panel stays, minus its card chrome: just the digits. */
+[data-focus-solving] .layout-grid > [data-panel="timer"] {
+  background-color: transparent;
+  border-color: transparent;
+  transition-duration: 150ms;
+}
+
 /* Hide the scrollbar on the horizontally-scrolling stat strip while keeping it
    scrollable (referenced by <StatTiles/>). */
 .hide-scrollbar {

@@ -7,6 +7,7 @@ import {
   resetLayout,
   saveLayout,
 } from "@/lib/timer/layout";
+import { loadFocusMode, saveFocusMode } from "@/lib/timer/focus";
 
 /**
  * The /timer panel arrangement, plus whether the layout editor is open.
@@ -20,11 +21,14 @@ interface LayoutStore {
   cells: PanelCell[];
   editing: boolean;
   isZenMode: boolean;
+  /** Hide everything but the digits while a solve is under way. */
+  isFocusMode: boolean;
   hydrated: boolean;
   hydrate(): void;
   setCells(cells: PanelCell[]): void;
   setEditing(editing: boolean): void;
   setZenMode(zen: boolean): void;
+  setFocusMode(focus: boolean): void;
   reset(): void;
 }
 
@@ -32,9 +36,10 @@ export const useLayoutStore = create<LayoutStore>()((set) => ({
   cells: DEFAULT_LAYOUT,
   editing: false,
   isZenMode: false,
+  isFocusMode: false,
   hydrated: false,
 
-  hydrate: () => set({ cells: loadLayout(), hydrated: true }),
+  hydrate: () => set({ cells: loadLayout(), isFocusMode: loadFocusMode(), hydrated: true }),
 
   setCells: (cells) => {
     set({ cells });
@@ -44,6 +49,11 @@ export const useLayoutStore = create<LayoutStore>()((set) => ({
   setEditing: (editing) => set({ editing }),
 
   setZenMode: (isZenMode) => set({ isZenMode }),
+
+  setFocusMode: (isFocusMode) => {
+    set({ isFocusMode });
+    saveFocusMode(isFocusMode);
+  },
 
   reset: () => {
     resetLayout();

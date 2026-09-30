@@ -15,7 +15,7 @@ export function BottomNav() {
   if (isZenMode) return null;
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden" data-focus-hide>
       <div className="flex h-16 items-stretch">
         {mobileNavItems.map(({ label, href, icon: Icon }) => {
           const active = href === activeHref;

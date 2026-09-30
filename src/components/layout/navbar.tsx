@@ -19,7 +19,7 @@ export function Navbar({ profile }: { profile: CurrentProfile | null }) {
   if (isZenMode) return null;
 
   return (
-    <header className="sticky top-0 z-40 hidden border-b bg-background/80 backdrop-blur-sm md:block">
+    <header className="sticky top-0 z-40 hidden border-b bg-background/80 backdrop-blur-sm md:block" data-focus-hide>
       <nav className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4">
         <Link href="/" aria-label="CubeHub home" className="text-lg">
           <Logo />

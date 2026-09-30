@@ -72,7 +72,7 @@ export function LayoutShell({
   return (
     <div className={cn("flex min-h-0 flex-1 flex-col", className)}>
       {/* Editing is a desktop affordance; the grid itself only exists at md+. */}
-      <div className="hidden items-center justify-end gap-1 px-2 py-1 md:flex">
+      <div className="hidden items-center justify-end gap-1 px-2 py-1 md:flex" data-focus-hide>
         {editing && (
           <Button
             variant="ghost"
@@ -136,7 +136,7 @@ export function LayoutShell({
               >
                 {/* The scramble reads for itself; every other panel is titled. */}
                 {cell.i !== "scramble" && (
-                  <div className="hidden shrink-0 items-center px-3 pt-2.5 pb-1 md:flex">
+                  <div className="hidden shrink-0 items-center px-3 pt-2.5 pb-1 md:flex" data-focus-hide>
                     <span className="text-xs font-semibold text-foreground">
                       {PANEL_LABELS[cell.i]}
                     </span>

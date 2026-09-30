@@ -32,6 +32,7 @@ import { toast } from "@/stores/toast-store";
 import { confirm } from "@/stores/confirm-store";
 import { formatMs } from "@/lib/timer/format";
 import { cn } from "@/lib/utils";
+import { FOCUS_ATTR, isFocusHidden } from "@/lib/timer/focus";
 import { Expand } from "lucide-react";
 
 /**
@@ -62,6 +63,8 @@ export function TimerScreen(props: {
   const scrim = useTimerScrim();
   const editingLayout = useLayoutStore((s) => s.editing);
   const isZenMode = useLayoutStore((s) => s.isZenMode);
+  const isFocusMode = useLayoutStore((s) => s.isFocusMode);
+  const inInspection = useTimerStore((s) => s.inspectionStartedAt !== null);
   const setZenMode = useLayoutStore((s) => s.setZenMode);
   const celebrateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -258,6 +261,16 @@ export function TimerScreen(props: {
   const solving =
     phase === "holding" || phase === "ready" || phase === "running";
 
+  // Focus Mode: while a solve is under way, only the digits stay. The hiding
+  // is CSS keyed on an <html> attribute (globals.css) so it also reaches the
+  // navbar and bottom nav, which live outside this screen.
+  const focusHidden = isFocusMode && isFocusHidden(phase, inInspection);
+  useEffect(() => {
+    const root = document.documentElement;
+    root.toggleAttribute(FOCUS_ATTR, focusHidden);
+    return () => root.removeAttribute(FOCUS_ATTR);
+  }, [focusHidden]);
+
   // Zen mode (design brief §4): everything except the digits dims to ~10% once
   // an attempt is under way — dimmed, not gone. It leaves fast (150ms) and
   // returns gracefully (300ms ease-out) when the solve lands.
@@ -390,7 +403,7 @@ export function TimerScreen(props: {
       <TimerBackground />
       {/* Session controls stay outside the grid — they're chrome, and letting
           the user bury their own settings button would be a trap. */}
-      <div className={fadeWhileSolving}>
+      <div className={fadeWhileSolving} data-focus-hide>
         <div className="flex items-center justify-between px-4 py-2 relative z-20">
           <SessionSwitcher
               sessions={sessions}
@@ -461,7 +474,7 @@ export function TimerScreen(props: {
 
       {/* Sign-in nudge for logged-out users */}
       {!props.isAuthed && backend === "local" && !nudgeDismissed && !solving && (
-        <div className="px-4 py-2">
+        <div className="px-4 py-2" data-focus-hide>
           <SignInNudge
             solveCount={solves.length}
             onDismiss={() => setNudgeDismissed(true)}

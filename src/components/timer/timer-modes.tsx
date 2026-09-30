@@ -1,6 +1,6 @@
 "use client";
 
-import { Monitor, Expand, EyeOff, Trophy, Settings2 } from "lucide-react";
+import { Monitor, Expand, EyeOff, Trophy, Settings2, Focus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -13,6 +13,8 @@ import type { TimerSettings } from "@/lib/timer/types";
 export function TimerModes({ isAuthed }: { isAuthed?: boolean }) {
   const isZenMode = useLayoutStore((s) => s.isZenMode);
   const setZenMode = useLayoutStore((s) => s.setZenMode);
+  const isFocusMode = useLayoutStore((s) => s.isFocusMode);
+  const setFocusMode = useLayoutStore((s) => s.setFocusMode);
   const settings = useTimerStore((s) => s.settings);
   const applySettings = useTimerStore((s) => s.applySettings);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -51,6 +53,13 @@ export function TimerModes({ isAuthed }: { isAuthed?: boolean }) {
             onToggle={(v) => setZenMode(v)}
           />
           <ModeToggle
+            icon={Focus}
+            label="Focus Mode"
+            hint="Hide everything but the timer while solving"
+            active={isFocusMode}
+            onToggle={(v) => setFocusMode(v)}
+          />
+          <ModeToggle
             icon={Monitor}
             label="Full Screen Mode"
             active={isFullscreen}
@@ -83,11 +92,14 @@ export function TimerModes({ isAuthed }: { isAuthed?: boolean }) {
 function ModeToggle({
   icon: Icon,
   label,
+  hint,
   active,
   onToggle,
 }: {
   icon: React.ElementType;
   label: string;
+  /** Optional one-line explanation, shown as a tooltip. */
+  hint?: string;
   active: boolean;
   onToggle: (v: boolean) => void;
 }) {
@@ -95,6 +107,7 @@ function ModeToggle({
     <button
       type="button"
       onClick={() => onToggle(!active)}
+      title={hint}
       className="flex w-full items-center justify-between gap-3 rounded-md px-2 py-2 text-sm text-foreground transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
     >
       <div className="flex items-center gap-2.5">
