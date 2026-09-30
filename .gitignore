@@ -50,3 +50,6 @@ next-env.d.ts
 
 # project plan
 /project_plan/
+
+# cubing.js, built by scripts/build-cubing.mjs on predev/prebuild
+/public/cubing

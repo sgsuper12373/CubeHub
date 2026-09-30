@@ -113,15 +113,16 @@ The database already supports premium: `subscriptions`, `profiles.premium_until`
 
 ## Carried-over technical work
 
-- **Deploy** — live on Vercel as of 2026-07-25, building with `next build --webpack`. Two things to verify against the deployed origin: the Supabase **Site URL** and redirect allow-list (they were `http://localhost:3000`, and auth confirmation links break if they still are), and `NEXT_PUBLIC_SITE_URL` in the Vercel environment — it feeds `metadataBase`, so Open Graph URLs resolve against localhost without it. No CI/CD beyond Vercel's own git integration.
+- **Deploy** — live on Vercel as of 2026-07-25. Since 2026-09-30 `npm run build` is plain `next build` (Turbopack), with `prebuild` generating `public/cubing/`; confirm the Vercel project uses `npm run build` and has no build-command override pinning `--webpack`. Two things to verify against the deployed origin: the Supabase **Site URL** and redirect allow-list (they were `http://localhost:3000`, and auth confirmation links break if they still are), and `NEXT_PUBLIC_SITE_URL` in the Vercel environment — it feeds `metadataBase`, so Open Graph URLs resolve against localhost without it. No CI/CD beyond Vercel's own git integration.
 - **GitHub OAuth** — planned, not built.
-- **`cubing.js` render test** — never done; it's a Phase 0 leftover that Phase 3 depends on.
+- **`cubing.js` render test** — done 2026-09-30: `tests/e2e/cubing-runtime.spec.ts` (3D cube, 2D preview, worker-generated scramble), run against the production build in CI.
 
-## Planned: one bundler for dev and production
+## Done: one bundler for dev and production (2026-09-30)
 
-**Priority: do this before Phase 3.** Not a nice-to-have — it is the thing that made two
-production bugs invisible, and Phase 3 adds the 3D case viewer, which leans on exactly the
-dependency that breaks.
+**Resolved.** `next dev` and `next build` both run Turbopack, `next.config.ts` has no bundler
+workarounds, and cubing.js is no longer bundled at all. What was done is under
+[The fix](#the-fix-2026-09-30). The problem and the failed attempts are kept first, because
+they explain why the fix has the shape it does.
 
 ### The problem
 
@@ -200,37 +201,50 @@ from the entry; imports are relative, so it mirrors cleanly), not copying `dist/
 it from the CDN directly also works, at the cost of a runtime third-party dependency and the
 landing page's "Works offline" claim.
 
-### The real fix
+### The fix (2026-09-30)
 
-Get dev and production onto the same bundler. Re-ranked after the attempt above:
+Route 3, pointed at the right artifact.
 
-1. **Take cubing out of the bundle** — serve `cubing/dist` from `public/` and load it at
-   runtime. Now the strongest option, because the failures in both bundlers are failures to
-   *locate a worker file*, and this removes the bundler from that question entirely. Also
-   immunises the app against whatever cubing does next, which on a 0.x line matters. Most
-   plumbing; you would keep the loading lazy by hand.
-2. **Report the worker instantiation failure upstream** — to Next (Turbopack not honouring
-   `new URL(…, import.meta.url)` for workers inside a dependency) and/or to cubing. A minimal
-   repro is a bare Next app plus one `randomScrambleForEvent` call. Cheap to file, uncertain
-   timeline, and it would fix this properly for everyone.
-3. **Wait.** Only defensible while the workarounds hold and nothing new depends on them. They
-   are documented and verified, so this is survivable — but it is what let a broken 3D cube
-   sit on the live site for weeks, so it is a choice, not a default.
+- **`scripts/build-cubing.mjs`** (runs on `predev` and `prebuild`) runs esbuild over the
+  installed `cubing/dist/lib` with `three` and cubing's self-references bundled in, splitting
+  on, output to `public/cubing/<version>/` (gitignored, about 1.8 MB, 34 files, under 200 ms,
+  byte-identical on rebuild). That is the same kind of artifact `cdn.cubing.net` serves:
+  ESM split into chunks, with only relative imports. We build it locally rather than
+  mirroring the CDN because the CDN serves only the latest release (0.63.8 at the time),
+  with no version pinning, while our types come from the installed 0.56.0.
+  `chunks/search-worker-entry.js` keeps its exact name and directory, so cubing's own
+  `new URL("./search-worker-entry.js", import.meta.url)` resolves without any bundler's help.
+- **`src/lib/cubing/runtime.ts`** is the only way in: `loadTwisty`, `loadScramble`,
+  `loadAlg`, `loadPuzzles`, each a memoised `import(/* webpackIgnore: true */ url)`. Types
+  still come from `node_modules` through `typeof import("cubing/…")`. **ESLint rejects any
+  value import from `cubing/*`, static or dynamic, in `src/`.**
+- **`next.config.ts`** carries only `NEXT_PUBLIC_CUBING_VERSION`, which is read from the
+  installed package. The version is in the URL, so an upgrade can never mix cached files.
+- **`scripts/check-chunks.mjs`** (`npm run check:chunks -- <url>`) is the guard, and runs in
+  CI after the build. It crawls `/`, `/timer`, `/learn` and requests every chunk the app can
+  load lazily: Turbopack's literal chunk paths, any webpack runtime's `id→hash` map
+  (including a runtime embedded in a chunk, which is where the old cubing worker chunk kept
+  its own), and the whole `/cubing/<version>/` module graph including the worker entry. Any
+  missing file, or JS served with a non-JS MIME type, fails it. It was checked against
+  deliberately broken builds: a missing cubing worker, a missing Turbopack chunk, and a
+  webpack build with a chunk emitted under a name its runtime does not request. It caught
+  all three.
+- **Playwright runs against `next start` in CI** (and locally via `npm run test:e2e:prod`),
+  not `next dev`. `tests/e2e/cubing-runtime.spec.ts` loads the landing page and `/timer`
+  in a real browser and waits for a drawn 3D canvas, a mounted preview, and a scramble
+  generated by cubing's worker. Hiding the worker file makes it fail, as it should.
 
-### Definition of done
+Verified in a browser, on both the production build and `next dev`: the landing hero, the 3D
+showcase cube, the timer's scramble and preview, and the tutorial cube players all render,
+with no page errors and no failed requests.
 
-`next build` and `next dev` use the same bundler, both `next.config.ts` workarounds are gone,
-and the landing hero plus the scramble preview render in a local production build.
+**Still true:** loading the page in a browser is the only proof that a module graph runs.
+For changes that touch cubing.js, workers or dynamic imports, run `npm run test:e2e:prod`,
+not only `npm run dev`. Now that both use one bundler this is less critical, but it is still
+the check that counts.
 
-### Until then
-
-Never sign off a change involving cubing.js, workers, or dynamic imports on `npm run dev`
-alone — check `npm run build && npx next start` too.
-
-A cheap guard that would have caught the 3D bug in seconds, and is worth a script: fetch
-`/_next/static/chunks/webpack-*.js`, extract its `id:"hash"` map, and request every entry.
-Any 404 is a dynamic import that will hang forever. It works against a local server or a
-deployed URL.
+Upstream reports (Turbopack not honouring `new URL(…, import.meta.url)` workers inside a
+dependency) are still worth filing, but nothing here waits on them any more.
 
 ## Open questions
 

@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import type { PuzzleID } from "cubing/twisty";
 
+import { loadTwisty } from "@/lib/cubing/runtime";
+
 /**
  * Inner component that mounts a cubing.js TwistyPlayer showing a cube case.
  * Split into its own file so next/dynamic can tree-shake it.
@@ -42,7 +44,7 @@ export function CaseViewerInner({
     let cancelled = false;
 
     (async () => {
-      const { TwistyPlayer } = await import("cubing/twisty");
+      const { TwistyPlayer } = await loadTwisty();
       if (cancelled || !containerRef.current) return;
 
       // Clean up any previous player

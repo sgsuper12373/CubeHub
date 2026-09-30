@@ -69,15 +69,3 @@ export function setTheme(theme: Theme): void {
 
   for (const listener of listeners) listener();
 }
-
-/**
- * Resolve a Theme to the effective dark/light value (for display purposes).
- * Client-only due to matchMedia dependency.
- */
-export function resolveTheme(theme: Theme): "dark" | "light" {
-  if (theme !== "system") return theme;
-  if (typeof window === "undefined") return "dark";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-}

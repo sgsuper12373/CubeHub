@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { Sparkles, Cpu, Zap, Timer } from "lucide-react";
 
 import { ScramblePreview } from "@/components/timer/scramble-preview";

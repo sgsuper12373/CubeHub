@@ -1,5 +1,16 @@
 import { defineConfig, devices } from "@playwright/test";
 
+/**
+ * CI, and `npm run test:e2e:prod`, test the production build via `next start`,
+ * because that is what ships. Anything touching cubing.js, workers or dynamic
+ * imports must pass there, not only under `next dev` (see docs/roadmap.md).
+ * It uses its own port so it never reuses a dev server that happens to be
+ * running on 3000.
+ */
+const prod = !!process.env.CI || process.env.E2E_PROD === "1";
+const port = prod ? 3100 : 3000;
+const baseURL = `http://localhost:${port}`;
+
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
@@ -8,7 +19,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL,
     trace: "on-first-retry",
   },
   projects: [
@@ -18,8 +29,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
+    command: prod ? `npx next start -p ${port}` : "npm run dev",
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },

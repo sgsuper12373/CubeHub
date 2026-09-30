@@ -50,8 +50,3 @@ export const useLayoutStore = create<LayoutStore>()((set) => ({
     set({ cells: DEFAULT_LAYOUT });
   },
 }));
-
-/** True while the layout editor is open. Read imperatively from handlers. */
-export function isEditingLayout(): boolean {
-  return useLayoutStore.getState().editing;
-}

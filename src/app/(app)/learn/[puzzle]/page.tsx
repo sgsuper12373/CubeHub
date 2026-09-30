@@ -1,3 +1,5 @@
+import { getPuzzle } from "@/lib/learn/dal";
+import { PuzzleHero } from "@/components/learn/puzzle-hero";
 import { PuzzleSeriesList } from "@/components/learn/puzzle-series-list";
 import { CTASection } from "@/components/learn/cta-section";
 import { Metadata } from "next";

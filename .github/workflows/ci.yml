@@ -75,6 +75,25 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: "ey00000000000000000000000000000000000000000000000000000000000000000000000000000000"
           SUPABASE_SERVICE_ROLE_KEY: "ey00000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
+      # Requests every chunk and cubing module the built app can load lazily,
+      # and fails on any that is missing. A missing one is a dynamic import that
+      # hangs forever with no error (see docs/roadmap.md).
+      - name: Chunk Guard (every lazy chunk resolves)
+        run: |
+          # Run next directly (not via npx) so $! is the server itself and
+          # `kill` frees the port for Playwright's own server below.
+          node node_modules/next/dist/bin/next start -p 3100 &
+          SERVER=$!
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3100/ && break; sleep 1; done
+          npm run check:chunks -- http://localhost:3100
+          kill $SERVER
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: "https://bmgupzbyzuxrdsqtiwli.supabase.co"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "ey00000000000000000000000000000000000000000000000000000000000000000000000000000000"
+          SUPABASE_SERVICE_ROLE_KEY: "ey00000000000000000000000000000000000000000000000000000000000000000000000000000000"
+
+      # Runs against the production build (`next start`), not `next dev`;
+      # see playwright.config.ts.
       - name: Run Playwright Smoke Tests
         run: npm run test:e2e
         env:

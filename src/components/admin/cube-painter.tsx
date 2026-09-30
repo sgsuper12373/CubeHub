@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { X, Check } from "lucide-react";
 
 // Standard Option 2: Yellow top, Green front
-const _FACE_CHARS = ["U", "R", "F", "D", "L", "B"];
 const DEFAULT_COLORS = {
   U: "#EAB308", // Yellow (Top)
   R: "#EF4444", // Red (Right)

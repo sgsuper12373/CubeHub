@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { cn } from "@/lib/utils";
 
 // Standard Option 2 colors: U=Yellow, R=Red, F=Green, D=White, L=Orange, B=Blue

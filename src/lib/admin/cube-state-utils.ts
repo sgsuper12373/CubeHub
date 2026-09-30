@@ -9,8 +9,7 @@
  * we persist it.
  */
 
-import { Alg } from "cubing/alg";
-import { cube3x3x3 } from "cubing/puzzles";
+import { loadAlg, loadPuzzles } from "@/lib/cubing/runtime";
 
 /**
  * Validates that a setup moves string is valid cubing notation.
@@ -27,6 +26,8 @@ export async function validateAndNormalizeAlg(
     if (!setupMoves.trim()) {
       return { valid: false, error: "Setup moves cannot be empty." };
     }
+
+    const [{ Alg }, { cube3x3x3 }] = await Promise.all([loadAlg(), loadPuzzles()]);
 
     // Step 1: Parse the algorithm notation
     const alg = new Alg(setupMoves);
@@ -59,6 +60,7 @@ export async function validateAndNormalizeAlg(
 export async function setupMovesToFaceletString(
   setupMoves: string
 ): Promise<string> {
+  const [{ Alg }, { cube3x3x3 }] = await Promise.all([loadAlg(), loadPuzzles()]);
   const kpuzzle = await cube3x3x3.kpuzzle();
   const alg = new Alg(setupMoves);
   const transformation = kpuzzle.algToTransformation(alg);

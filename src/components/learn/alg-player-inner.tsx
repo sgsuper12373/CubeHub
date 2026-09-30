@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { PuzzleID } from "cubing/twisty";
 import { Play, Pause, RotateCcw, FastForward, FlipHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { loadTwisty } from "@/lib/cubing/runtime";
 import { cn } from "@/lib/utils";
 
 function mapPuzzleId(puzzle: string): PuzzleID {
@@ -79,7 +80,7 @@ export function AlgPlayerInner({
     let cancelled = false;
 
     (async () => {
-      const { TwistyPlayer } = await import("cubing/twisty");
+      const { TwistyPlayer } = await loadTwisty();
       if (cancelled || !containerRef.current) return;
 
       if (playerRef.current) {

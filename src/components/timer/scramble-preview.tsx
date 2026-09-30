@@ -11,8 +11,8 @@ import type { TimerPuzzle } from "@/lib/timer/types";
  * is available. Uses next/dynamic with ssr: false because <twisty-player>
  * is a web component that requires browser APIs.
  *
- * cubing/twisty lands in its own chunk, separate from cubing/scramble,
- * so it never enters the initial /timer bundle.
+ * cubing itself is not bundled: it loads at runtime from public/cubing/
+ * (see lib/cubing/runtime.ts), so it never enters the initial /timer bundle.
  */
 
 const TwistyPlayer = dynamic(

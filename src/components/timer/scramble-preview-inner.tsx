@@ -3,11 +3,13 @@
 import { useEffect, useRef } from "react";
 import type { PuzzleID } from "cubing/twisty";
 
+import { loadTwisty } from "@/lib/cubing/runtime";
 import type { TimerPuzzle } from "@/lib/timer/types";
 
 /**
  * The actual twisty-player element. Split into its own file so next/dynamic
- * can tree-shake it. cubing/twisty is imported here and nowhere else.
+ * keep it out of the initial bundle. cubing itself is loaded at runtime from
+ * public/ (see lib/cubing/runtime.ts), never bundled.
  */
 function mapPuzzleToTwisty(puzzle: string): PuzzleID {
   switch (puzzle) {
@@ -61,8 +63,8 @@ export function ScramblePreviewInner({
     let cancelled = false;
 
     (async () => {
-      // Dynamic import so cubing/twisty only loads when preview is shown
-      const { TwistyPlayer } = await import("cubing/twisty");
+      // Loaded on demand, so cubing only downloads when the preview is shown.
+      const { TwistyPlayer } = await loadTwisty();
       if (cancelled || !containerRef.current) return;
 
       // Clean up any previous player
