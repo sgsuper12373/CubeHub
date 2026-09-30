@@ -54,9 +54,6 @@ export const slate = {
     "sidebar-accent-foreground": "oklch(0.984 0.003 247.9)",
     "sidebar-border": "oklch(0.98 0.01 250 / 10%)",
     "sidebar-ring": "oklch(0.775 0.151 171.7)",
-    "learn-bg": "#070B17",
-    "learn-teal": "#00E5C4",
-    "learn-purple": "#7C5CFF",
     // ── Step 3 role tokens (Slate) ──
     "surface-raised": "oklch(0.323 0.042 259.8)", // #273449
     "surface-overlay": "oklch(0.208 0.04 265.8 / 72%)",

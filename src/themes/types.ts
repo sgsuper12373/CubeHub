@@ -78,9 +78,6 @@ export const TOKEN_NAMES = [
   "font-ui",
   "font-mono",
   "font-timer",
-  "learn-bg",
-  "learn-teal",
-  "learn-purple",
 ] as const;
 
 export type TokenName = (typeof TOKEN_NAMES)[number];
@@ -131,14 +128,8 @@ export interface ThemeDefinition {
   tokens: Pick<Tokens, CoreToken> & Partial<Tokens>;
 }
 
-/**
- * Page-and-hue tokens being migrated away (step 3, phase 7). They were only
- * ever defined for the dark theme, so the base carries no value for them.
- */
-export type LegacyToken = "learn-bg" | "learn-teal" | "learn-purple";
-
 /** The internal light base emitted on `:root`. Not a user-selectable theme. */
 export interface BaseTheme {
   mode: ThemeMode;
-  tokens: Omit<Tokens, LegacyToken>;
+  tokens: Tokens;
 }

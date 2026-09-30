@@ -5,6 +5,51 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-01 — Step 3, Phase 7: migrate `learn-*` tokens and sticker colours
+
+**Request:** Phase 7 of the design-token plan: replace the page-and-hue `learn-*` tokens with role tokens and move the sticker hex values onto `--sticker-*`.
+
+**Changed**
+- **Learn pages and components**: `learn/page.tsx`, `learn/[puzzle]/page.tsx`, `series-card`, `feature-section`, `filter-bar`, `hero-section`, `cta-section`, `puzzle-hero`, `puzzle-card`, and `puzzle-series-list`. 56 lines in total: the 39 `learn-*` usages plus the hardcoded teal and purple `rgba(...)` glows.
+  - `learn-teal` → `primary` and `learn-purple` → `accent-2`, keeping opacity modifiers.
+  - `bg-learn-bg` → `bg-background` on the two full-page canvases and `bg-card` on panels (review decision Q2).
+  - `rgba(0,229,196,x)` / `rgba(124,92,255,x)` → `color-mix(in oklch, var(--primary|--accent-2) x%, transparent)`. This applies in Tailwind arbitrary values, inline `style` gradients, and the series-card colour object.
+  - Other raw colours on the same lines were also cleaned, because the colour guard checks whole added lines:
+    - `text-white` → `text-foreground`
+    - `border-white/*` → `border-border`
+    - `bg-white/[0.03]` → `bg-muted/30`
+    - `text-black` on the teal CTA → `text-primary-foreground`
+    - `to-blue-400` → `to-accent-2`
+    - the mask `#000` → `black`
+- **New: `src/lib/stickers.ts`**: `STICKER_FILL` (a face letter → `var(--sticker-*)`), `STICKER_OUTLINE`, and `stickerFill()`.
+- **`facelet-viewer.tsx`**
+  - The hex map is gone. All 21 stickers and the outline use `style={{ fill, stroke }}`, because `var()` in SVG presentation attributes is unreliable.
+  - The background rect uses `--sticker-outline`.
+- **`admin/cube-painter.tsx`**
+  - Uses the shared map, which **fixes its swapped R/L colours** (review decision Q7).
+  - The grid gap uses `bg-sticker-outline`.
+- **Legacy tokens removed**: `--learn-*` from `slate.ts` and `TOKEN_NAMES`, the `LegacyToken` exemption, and the `--color-learn-*` aliases. The generated CSS is regenerated.
+- **New test: `tests/unit/stickers.test.tsx`** (5 tests)
+  - the token map and the default scheme (R orange, L red)
+  - FaceletViewer renders `var(--sticker-*)` fills and the outline, with no hex
+  - missing facelets render as masked
+- `docs/design-tokens.md`: checklist ticked.
+
+**Kept on purpose**
+- Raw colours on learn-page lines that don't use `learn-*` are unchanged (out of scope for step 3). The most visible are `text-white` on "Learn. Practice.", the card titles and the stat labels, which are nearly invisible on Paper.
+- `--sticker-*` does not reach the cubing.js 3D and 2D players; they need a stickering config later.
+
+**Verified**
+- `npm run validate` passes (187 tests); `npm run check:colors` is OK.
+- No `learn-(bg|teal|purple)` remains in `src/`.
+- `npm run build && npx next start`:
+  - `/learn` and `/learn/333` in Slate: panels are now on `--card` (the expected lift from `#070B17`); accents, badges and gradients are unchanged.
+  - In Paper, everything migrated follows the theme.
+  - FaceletViewer renders only for cases with a painted 54-character `cube_state`, and there are none in the data today, so it is covered by the render test instead.
+- `npm run test:e2e:prod`: 10 of 10 pass.
+
+---
+
 ## 2026-10-01 — Step 3, Phase 6: CI colour guard
 
 **Request:** Phase 6 of the design-token plan: fail CI on new raw colours in changed files. Review decisions: scan `.ts` as well as `.tsx`, and flag `white`/`black` classes.

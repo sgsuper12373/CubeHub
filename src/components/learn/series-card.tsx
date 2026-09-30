@@ -16,22 +16,22 @@ export function SeriesCard({ puzzleId, series }: { puzzleId: string, series: Lea
   
   // Theme colors
   const theme = isMethod ? {
-    color: "var(--learn-teal)",
-    bg: "rgba(0, 229, 196, 0.1)",
-    border: "rgba(0, 229, 196, 0.2)",
-    shadow: "rgba(0, 229, 196, 0.25)",
+    color: "var(--primary)",
+    bg: "color-mix(in oklch, var(--primary) 10%, transparent)",
+    border: "color-mix(in oklch, var(--primary) 20%, transparent)",
+    shadow: "color-mix(in oklch, var(--primary) 25%, transparent)",
     icon: <BookOpen className="w-4 h-4" />
   } : isAlg ? {
-    color: "var(--learn-purple)",
-    bg: "rgba(124, 92, 255, 0.1)",
-    border: "rgba(124, 92, 255, 0.2)",
-    shadow: "rgba(124, 92, 255, 0.25)",
+    color: "var(--accent-2)",
+    bg: "color-mix(in oklch, var(--accent-2) 10%, transparent)",
+    border: "color-mix(in oklch, var(--accent-2) 20%, transparent)",
+    shadow: "color-mix(in oklch, var(--accent-2) 25%, transparent)",
     icon: <FileCode2 className="w-4 h-4" />
   } : {
-    color: "var(--learn-teal)",
-    bg: "rgba(0, 229, 196, 0.1)",
-    border: "rgba(0, 229, 196, 0.2)",
-    shadow: "rgba(0, 229, 196, 0.25)",
+    color: "var(--primary)",
+    bg: "color-mix(in oklch, var(--primary) 10%, transparent)",
+    border: "color-mix(in oklch, var(--primary) 20%, transparent)",
+    shadow: "color-mix(in oklch, var(--primary) 25%, transparent)",
     icon: <BookOpen className="w-4 h-4" />
   };
 
@@ -41,7 +41,7 @@ export function SeriesCard({ puzzleId, series }: { puzzleId: string, series: Lea
   return (
     <div 
       ref={cardRef}
-      className="group relative flex flex-col h-full rounded-3xl overflow-hidden bg-learn-bg border border-white/5 transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-2"
+      className="group relative flex flex-col h-full rounded-3xl overflow-hidden bg-card border border-border transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-2"
       style={{
          "--theme-color": theme.color,
       } as React.CSSProperties}

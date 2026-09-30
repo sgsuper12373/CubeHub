@@ -22,7 +22,7 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
   const difficulty = puzzle.id === "333" ? "Beginner to Adv." : "Beginner Friendly";
   
   const isPopular = puzzle.id === "333";
-  const accentColor = isPopular ? "var(--learn-teal)" : "var(--learn-purple)";
+  const accentColor = isPopular ? "var(--primary)" : "var(--accent-2)";
 
   // Image source based on puzzle ID
   const imageSrc = puzzle.id === "333" ? "/images/learn/333.jpg" : "/images/learn/222.jpg";
@@ -36,13 +36,13 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
     >
       <div 
         ref={cardRef}
-        className="group relative flex flex-col h-full rounded-3xl overflow-hidden bg-learn-bg border border-white/5 transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-2 hover:border-learn-teal/50 hover:shadow-[0_10px_40px_-10px_rgba(0,229,196,0.25)]"
+        className="group relative flex flex-col h-full rounded-3xl overflow-hidden bg-card border border-border transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-2 hover:border-primary/50 hover:shadow-[0_10px_40px_-10px_color-mix(in_oklch,var(--primary)_25%,transparent)]"
       >
         {/* Dynamic Spotlight */}
         <div 
           className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0"
           style={{
-            background: `radial-gradient(400px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(0, 229, 196, 0.06), transparent 100%)`
+            background: `radial-gradient(400px circle at ${mousePosition.x}px ${mousePosition.y}px, color-mix(in oklch, var(--primary) 6%, transparent), transparent 100%)`
           }}
         />
 
@@ -60,7 +60,7 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
           <div className="flex-1 flex flex-col justify-between max-w-sm">
             <div>
               {isPopular && (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-4 rounded-full border border-learn-teal/20 bg-learn-teal/5 text-learn-teal text-xs font-semibold tracking-wide">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-4 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-semibold tracking-wide">
                   <Star className="w-3.5 h-3.5 fill-current" />
                   Most Popular
                 </div>
@@ -127,7 +127,7 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
           
           <div className="flex items-center justify-between w-full 2xl:w-auto gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-              <BookOpen className="w-5 h-5 text-learn-teal hidden sm:block" />
+              <BookOpen className="w-5 h-5 text-primary hidden sm:block" />
               <div>
                 <div className="text-sm font-bold text-white leading-tight"><span className="hidden sm:inline">Step By Step</span></div>
                 <div className="text-sm font-bold text-white leading-tight">Tutorial</div>
@@ -137,7 +137,7 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
             <div className="w-px h-8 bg-white/10" />
             
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-              <Code2 className="w-5 h-5 text-learn-purple hidden sm:block" />
+              <Code2 className="w-5 h-5 text-accent-2 hidden sm:block" />
               <div>
                 <div className="text-sm font-bold text-white leading-tight">Multiple </div>
                 <div className="text-sm font-bold text-white leading-tight">Algorithms</div>

@@ -126,9 +126,6 @@
   --timer-digits: var(--foreground);
   --timer-scrim: oklch(0.208 0.04 265.8 / 72%);
   --font-timer: var(--font-geist-mono);
-  --learn-bg: #070B17;
-  --learn-teal: #00E5C4;
-  --learn-purple: #7C5CFF;
   color-scheme: dark;
 }
 

@@ -28,7 +28,7 @@ export function FilterBar() {
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute inset-0 rounded-xl bg-learn-teal/20 border border-learn-teal/30 shadow-[0_0_20px_rgba(0,229,196,0.15)]"
+                  className="absolute inset-0 rounded-xl bg-primary/20 border border-primary/30 shadow-[0_0_20px_color-mix(in_oklch,var(--primary)_15%,transparent)]"
                   transition={{ type: "spring", stiffness: 300, damping: 24 }}
                 />
               )}
@@ -46,14 +46,14 @@ export function FilterBar() {
           }`}
         >
           <Search className={`absolute left-3 w-4 h-4 transition-colors ${
-            isSearchFocused ? "text-learn-teal" : "text-muted-foreground"
+            isSearchFocused ? "text-primary" : "text-muted-foreground"
           }`} />
           <input
             type="text"
             placeholder="Search tutorials or algorithms..."
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setIsSearchFocused(false)}
-            className="w-full h-11 pl-10 pr-4 rounded-xl bg-white/[0.03] border border-white/5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-learn-teal/50 focus:border-learn-teal/50 transition-all shadow-inner"
+            className="w-full h-11 pl-10 pr-4 rounded-xl bg-muted/30 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all shadow-inner"
           />
         </div>
 

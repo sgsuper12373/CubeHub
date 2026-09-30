@@ -56,9 +56,6 @@
   --color-timer-ready: var(--timer-ready);
   --color-timer-holding: var(--timer-holding);
   --color-timer-running: var(--timer-running);
-  --color-learn-bg: var(--learn-bg);
-  --color-learn-teal: var(--learn-teal);
-  --color-learn-purple: var(--learn-purple);
   /* Step 3 role tokens (docs/design-tokens.md). */
   --color-surface-raised: var(--surface-raised);
   --color-surface-overlay: var(--surface-overlay);

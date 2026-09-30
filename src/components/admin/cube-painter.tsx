@@ -3,17 +3,9 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, Check } from "lucide-react";
-
-// Standard Option 2: Yellow top, Green front
-const DEFAULT_COLORS = {
-  U: "#EAB308", // Yellow (Top)
-  R: "#EF4444", // Red (Right)
-  F: "#22C55E", // Green (Front)
-  D: "#FFFFFF", // White (Bottom)
-  L: "#F97316", // Orange (Left)
-  B: "#3B82F6", // Blue (Back)
-  X: "#374151", // Gray (Masked/Unknown)
-};
+// Sticker colours are the shared --sticker-* tokens (yellow top, green front),
+// the same map FaceletViewer renders with. This previously had R and L swapped.
+import { STICKER_FILL, stickerFill } from "@/lib/stickers";
 
 const DEFAULT_STATE = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB";
 
@@ -55,11 +47,11 @@ export function CubePainter({
   const renderFace = (faceIndex: number) => {
     const startIndex = faceIndex * 9;
     return (
-      <div className="grid grid-cols-3 gap-0.5 bg-black p-0.5 rounded-sm">
+      <div className="grid grid-cols-3 gap-0.5 bg-sticker-outline p-0.5 rounded-sm">
         {Array.from({ length: 9 }).map((_, i) => {
           const faceletIndex = startIndex + i;
           const char = facelets[faceletIndex] || "X";
-          const color = DEFAULT_COLORS[char as keyof typeof DEFAULT_COLORS] || DEFAULT_COLORS.X;
+          const color = stickerFill(char);
           
           return (
             <button
@@ -93,7 +85,7 @@ export function CubePainter({
               Select Color
             </p>
             <div className="flex flex-wrap justify-center gap-2">
-              {Object.entries(DEFAULT_COLORS).map(([char, color]) => (
+              {Object.entries(STICKER_FILL).map(([char, color]) => (
                 <button
                   key={char}
                   onClick={() => setSelectedBrush(char)}

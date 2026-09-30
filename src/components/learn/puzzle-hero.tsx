@@ -24,19 +24,19 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
   return (
     <section 
       ref={containerRef}
-      className="relative flex flex-col lg:flex-row items-center pt-8 pb-12 overflow-hidden rounded-3xl bg-learn-bg border border-white/5 shadow-2xl group/hero px-8 lg:px-12 gap-12"
+      className="relative flex flex-col lg:flex-row items-center pt-8 pb-12 overflow-hidden rounded-3xl bg-card border border-border shadow-2xl group/hero px-8 lg:px-12 gap-12"
     >
       {/* Dynamic Mouse Spotlight */}
       <div 
         className="pointer-events-none absolute inset-0 transition-opacity duration-300 z-0"
         style={{
-          background: `radial-gradient(800px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(0, 229, 196, 0.04), transparent 40%)`
+          background: `radial-gradient(800px circle at ${mousePosition.x}px ${mousePosition.y}px, color-mix(in oklch, var(--primary) 4%, transparent), transparent 40%)`
         }}
       />
       
       {/* Background Gradients & Grid */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] z-0" />
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-learn-teal/10 blur-[100px] rounded-full pointer-events-none opacity-30 z-0" />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/10 blur-[100px] rounded-full pointer-events-none opacity-30 z-0" />
 
       {/* Left Column: Content */}
       <div className="flex-1 space-y-8 relative z-10 w-full">
@@ -45,7 +45,7 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <Button variant="ghost" size="sm" render={<Link href="/learn" />} nativeButton={false} className="-ml-3 text-learn-teal hover:text-learn-teal hover:bg-learn-teal/10 transition-colors">
+          <Button variant="ghost" size="sm" render={<Link href="/learn" />} nativeButton={false} className="-ml-3 text-primary hover:text-primary hover:bg-primary/10 transition-colors">
               <ChevronLeft className="mr-1 h-4 w-4" />
               Back to Puzzles
           </Button>
@@ -58,7 +58,7 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-5xl md:text-6xl font-bold tracking-tighter text-white"
           >
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-learn-teal to-blue-400">{puzzle.name.split(" ")[0]}</span> {puzzle.name.split(" ").slice(1).join(" ")}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent-2">{puzzle.name.split(" ")[0]}</span> {puzzle.name.split(" ").slice(1).join(" ")}
           </motion.h1>
 
           <motion.p 
@@ -79,7 +79,7 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
           className="flex flex-wrap gap-4 pt-4"
         >
           <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/10 shadow-lg backdrop-blur-md">
-            <BookOpen className="w-6 h-6 text-learn-teal" />
+            <BookOpen className="w-6 h-6 text-primary" />
             <div>
               <div className="text-xl font-bold text-white leading-none">{tutorialsCount}</div>
               <div className="text-sm text-muted-foreground mt-1">Tutorials</div>
@@ -87,7 +87,7 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
           </div>
           
           <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/10 shadow-lg backdrop-blur-md">
-            <Code2 className="w-6 h-6 text-learn-purple" />
+            <Code2 className="w-6 h-6 text-accent-2" />
             <div>
               <div className="text-xl font-bold text-white leading-none">{algsCount}</div>
               <div className="text-sm text-muted-foreground mt-1">Algorithms</div>
@@ -136,13 +136,13 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
              src={imageSrc} 
              alt={`${puzzle.name} 3D Render`}
              fill 
-             className="object-contain drop-shadow-[0_20px_40px_rgba(0,229,196,0.3)] transition-all duration-500 [mask-image:radial-gradient(ellipse_100%_100%_at_50%_50%,#000_60%,transparent_100%)] mix-blend-screen"
+             className="object-contain drop-shadow-[0_20px_40px_color-mix(in_oklch,var(--primary)_30%,transparent)] transition-all duration-500 [mask-image:radial-gradient(ellipse_100%_100%_at_50%_50%,black_60%,transparent_100%)] mix-blend-screen"
              priority
            />
         </motion.div>
 
         {/* Glowing floor ring */}
-        <div className="absolute -bottom-8 w-[120%] h-16 rounded-full border border-learn-teal/30 bg-learn-teal/10 blur-[6px] shadow-[0_0_60px_rgba(0,229,196,0.3)] transform rotate-x-75 pointer-events-none" />
+        <div className="absolute -bottom-8 w-[120%] h-16 rounded-full border border-primary/30 bg-primary/10 blur-[6px] shadow-[0_0_60px_color-mix(in_oklch,var(--primary)_30%,transparent)] transform rotate-x-75 pointer-events-none" />
       </motion.div>
     </section>
   );
