@@ -5,6 +5,50 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-01 — Session wrap-up: step 3 (design tokens and themes) complete
+
+**Request:** Write the logs and list anything still remaining from the step 3 plan.
+
+No source files changed; only this entry was added.
+
+**Plan status: all 8 phases done**, one commit each with its own entry below:
+
+| Phase | Commit |
+| --- | --- |
+| 1. Tokens | `87f8509` |
+| 2. `src/themes/` as source of truth | `2f80426` |
+| 3. Fonts | `6c97b83` |
+| 4. No-FOUC, cookie as source of truth | `fd6701d` |
+| 5. Contrast test | `61f26fb` |
+| 6. CI colour guard | `b033615` |
+| 7. `learn-*` and stickers | `aaa9ef9` |
+| 8. Dev switcher | `0559a1a` |
+
+Follow-ups from review: homepage canvas `5b971fa`; learn pages fully themed, CTA link, and guard gaps `917eb59`.
+
+Every item on the "done" checklist in `docs/design-tokens.md` is ticked.
+
+**Not pushed yet.**
+- The commits are local on `main`.
+- The first CI run of the colour guard happens on push; it diffs the pushed range via `github.event.before`.
+
+**Verified only indirectly**
+- `system` preference on a light OS: covered by the jsdom test of the real init script. The dev machine's OS is dark, so it was not seen in a browser.
+- FaceletViewer and the admin CubePainter: render test only. There is no painted `cube_state` in the data, and the painter is admin-only.
+- The dev switcher's mobile position above the bottom nav was not visually checked.
+
+**Follow-ups for later steps (out of step 3 scope)**
+- Step 8: remove `src/components/dev/theme-switcher.tsx` and the `NEXT_PUBLIC_THEME_SWITCHER` default in `next.config.ts` once the theme settings page exists.
+- Step 8: `system` does not react to OS theme changes mid-session (a small `matchMedia` listener). Decide whether a missing cookie should mean `system` instead of Slate.
+- Step 6: the type-scale (`--text-lg/xl/2xl`) and `--shadow-*` tokens were deferred because they collide with Tailwind's scales. Adopt `--text-timer` for timer sizing.
+- `--timer-scrim` is defined and tested but not applied automatically yet; that needs user background images.
+- `--sticker-*` does not reach the cubing.js 3D/2D players yet; they need a stickering config.
+- Hardcoded colours remain outside the learn pages, e.g. stats and profile. The guard only blocks new ones.
+- There is no custom `not-found.tsx`; Next's default 404 ignores the theme.
+- The learn pages' `mix-blend-screen` glows are faint on Paper (cosmetic).
+
+---
+
 ## 2026-10-01 — Learn pages fully themed; guard gaps and CTA link fixed
 
 **Request:** Fix the white text on the learn pages in Paper ("Learn. Practice." was barely visible) and check whether anything else remains.
