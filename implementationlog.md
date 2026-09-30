@@ -5,6 +5,42 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-01 — Step 3, Phase 6: CI colour guard
+
+**Request:** Phase 6 of the design-token plan: fail CI on new raw colours in changed files. Review decisions: scan `.ts` as well as `.tsx`, and flag `white`/`black` classes.
+
+**Changed**
+- **New: `scripts/check-colors.mjs`** (`npm run check:colors [base]`, default `origin/main`)
+  - Scans only lines **added** since the merge base, including uncommitted edits locally.
+  - Flags:
+    - palette classes (`bg-slate-800`)
+    - `white`/`black` classes (`text-white`, `bg-white/5`)
+    - arbitrary colours (`bg-[#…]`, `-[rgb(…)`)
+    - hex literals
+    - literal colour functions (`rgba(0, …)`)
+  - Comment lines and `rgb(${r} …)` template strings are ignored, so `token-color.ts` passes.
+  - Exempt: `src/themes/**`, `tests/**`, and the ImageResponse files (`icon.tsx`, `opengraph-image.tsx`), which can't read CSS variables.
+  - Escape hatch: a `color-guard-allow: <reason>` comment on the same line or the line above.
+  - The output gives `file:line  match  (kind)` and a suggested fix.
+- **New test: `tests/unit/color-guard.test.ts`** (23 tests): lines that should and shouldn't be flagged, exemptions, diff parsing with line numbers, and allow comments.
+- **`package.json`**: new `check:colors` script.
+- **`.github/workflows/ci.yml`**
+  - The validate job checks out with `fetch-depth: 0` and runs the guard after lint.
+  - The base is `origin/<base_ref>` for pull requests, `github.event.before` for pushes (only the pushed commits), and `origin/main` as a fallback. Event values are passed via `env`, not interpolated into the script.
+- `docs/design-tokens.md`: checklist ticked.
+
+**Kept on purpose**
+- Added lines only, so touching an old file doesn't force a full migration (step 3 scope).
+- `npm run validate` is unchanged, because the guard needs an `origin/main` ref.
+
+**Verified**
+- 182 unit tests pass; `tsc` and lint are clean.
+- `npm run check:colors` on this branch: OK.
+- Adding `bg-slate-800 text-[#fff]` and `"#EAB308"` to `cta-section.tsx` without committing fails with exit 1 and four findings at the right `file:line`. After reverting it exits 0.
+- A SHA base (the push path) works.
+
+---
+
 ## 2026-10-01 — Step 3, Phase 5: theme contrast test
 
 **Request:** Phase 5 of the design-token plan: a unit test that computes WCAG ratios for every theme and fails on any miss.

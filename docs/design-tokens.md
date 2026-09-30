@@ -213,7 +213,7 @@ Only three existing token names change; everything else is additive.
 - [ ] `src/themes/` objects plus the CSS generation step
 - [x] Contrast unit test passing for both themes (`tests/unit/theme-contrast.test.ts`, rules in `src/themes/contrast-rules.ts`)
 - [ ] No-FOUC head script (resolves `system`; the cookie is the source of truth)
-- [ ] CI guard for new hardcoded colours
+- [x] CI guard for new hardcoded colours (`npm run check:colors`, scripts/check-colors.mjs)
 - [ ] `learn-*` tokens and sticker hex migrated
 - [ ] Timer page renders correctly in both themes (`npm run build && npx next start`)
 

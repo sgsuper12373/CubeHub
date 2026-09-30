@@ -33,6 +33,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Full history, so the colour guard can diff against the base.
+          fetch-depth: 0
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
@@ -45,6 +48,23 @@ jobs:
 
       - name: Run Type Check & Linting
         run: npx tsc --noEmit && npm run lint
+
+      # Fails on new raw colours (palette classes, hex, rgba…) in added lines
+      # of .ts/.tsx files. See docs/design-tokens.md and scripts/check-colors.mjs.
+      - name: Colour Guard (no new hardcoded colours)
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "$EVENT" = "pull_request" ]; then
+            BASE="origin/$BASE_REF"
+          elif [ -n "$BEFORE" ] && ! echo "$BEFORE" | grep -qE '^0+$'; then
+            BASE="$BEFORE"   # push: check just the pushed commits
+          else
+            BASE="origin/main"
+          fi
+          npm run check:colors -- "$BASE"
 
       - name: Run Unit Tests (Vitest)
         run: npm run test
