@@ -5,6 +5,48 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-01 — Step 3, Phase 4: no-flash theme with the cookie as the source of truth
+
+**Request:** Phase 4 of the design-token plan: apply the theme before first paint and keep `.dark` working for shadcn. Review decision Q8: the `cubehub-theme` cookie is the single source of truth, with no localStorage.
+
+**Changed**
+- **New: `src/themes/preference.ts`**
+  - Defines `ThemePreference` (`slate | paper | system`) and `THEME_COOKIE`.
+  - `parseThemePreference()` maps the legacy `dark` → `slate` and `light` → `paper`. Missing or unknown values → Slate.
+  - Also `resolveThemeId()`, `themeMode()`, and `SYSTEM_THEMES`.
+- **New: `src/themes/init-script.ts`**
+  - `THEME_INIT_SCRIPT` is built from the theme registry, so ids and modes can't drift.
+  - It does something only when the cookie is `system`: it reads `prefers-color-scheme` and sets `data-theme` and `.dark`.
+- **`src/app/layout.tsx`**
+  - Renders `data-theme` and `.dark` from the cookie.
+  - Inlines the script in `<head>`, following Next's `preventing-flash-before-hydration` guide.
+  - Adds `suppressHydrationWarning` on `<html>`.
+  - The unused `light` class is no longer rendered.
+- **`src/lib/theme.ts`**
+  - The type is renamed from `Theme` to `ThemePreference`.
+  - `setTheme()` resolves the theme, sets `data-theme` and `.dark`, and writes only the cookie.
+- **`src/components/settings/settings-form.tsx`**: the Light / Dark / System options now store `paper` / `slate` / `system`. The labels are unchanged.
+- **New test: `tests/unit/theme-preference.test.ts`** (7 tests)
+  - Parsing, including the legacy values, and resolution.
+  - Runs the real init script in jsdom with `matchMedia` mocked, for system + light, system + dark, and a no-op for an explicit theme or no cookie.
+
+**Kept on purpose**
+- No localStorage.
+- `color-scheme` comes from the generated `[data-theme]` CSS, so the script doesn't set it.
+- With `system`, changing the OS theme mid-session isn't picked up live; it applies on the next load, as before.
+
+**Verified**
+- `npm run validate` passes (51 tests).
+- `npm run build && npx next start`:
+  - The server renders the right attributes for every cookie value: none → slate, light → paper, paper → paper, dark → slate, system → slate (server-side guess).
+  - The script is in `<head>` with its regex escaped correctly.
+- In the browser:
+  - `system` on a dark OS stays Slate. The OS-light path is covered by the jsdom test.
+  - Choosing Light in Settings switches to Paper at once and writes `cubehub-theme=paper`. After a reload the server renders Paper.
+  - No hydration or other console errors on reload under paper or system.
+
+---
+
 ## 2026-10-01 — Step 3, Phase 3: font tokens
 
 **Request:** Phase 3 of the design-token plan: wire `--font-ui`, `--font-mono` and `--font-timer` through `next/font`, loading JetBrains Mono only when Paper needs it.

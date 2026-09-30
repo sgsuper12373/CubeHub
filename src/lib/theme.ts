@@ -1,26 +1,38 @@
 /**
- * Minimal cookie-based theme utility. Zero dependencies, no FOUC.
+ * Cookie-based theme preference. Zero dependencies, no FOUC.
  *
- * Strategy:
- * - Server: read `cubehub-theme` cookie in layout.tsx → set class on <html>
- * - Client: toggle class + set cookie so next navigation is correct
- * - "system" preference resolved client-side via matchMedia
+ * Strategy (docs/design-tokens.md):
+ * - The `cubehub-theme` cookie is the single source of truth. It holds a
+ *   theme id from src/themes ("slate", "paper") or "system"; the legacy
+ *   "dark"/"light" values are still read.
+ * - Server: layout.tsx renders `data-theme` and `.dark` from the cookie.
+ * - "system" is resolved before first paint by the inline head script
+ *   (src/themes/init-script.ts) and here on the client via matchMedia.
+ * - `.dark` is derived from the theme's `mode` so shadcn `dark:` variants
+ *   keep working; token values are keyed on `data-theme`.
  */
 
-export type Theme = "dark" | "light" | "system";
+import {
+  parseThemePreference,
+  resolveThemeId,
+  THEME_COOKIE,
+  themeMode,
+  type ThemePreference,
+} from "@/themes/preference";
+import { DEFAULT_THEME_ID } from "@/themes";
 
-const COOKIE_NAME = "cubehub-theme";
+export type { ThemePreference } from "@/themes/preference";
+
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 
-/** Read theme from cookie (works server- and client-side). */
-export function getThemeFromCookie(cookieHeader?: string): Theme {
+/** Read the preference from a cookie header (works server- and client-side). */
+export function getThemeFromCookie(cookieHeader?: string): ThemePreference {
   const raw = cookieHeader
     ?.split(";")
-    .find((c) => c.trim().startsWith(`${COOKIE_NAME}=`))
+    .find((c) => c.trim().startsWith(`${THEME_COOKIE}=`))
     ?.split("=")[1]
     ?.trim();
-  if (raw === "light" || raw === "dark" || raw === "system") return raw;
-  return "dark"; // default
+  return parseThemePreference(raw);
 }
 
 /**
@@ -38,37 +50,31 @@ export function subscribeTheme(onChange: () => void): () => void {
 }
 
 /** Client snapshot. Returns a string, so it is stable between reads. */
-export function getThemeSnapshot(): Theme {
+export function getThemeSnapshot(): ThemePreference {
   return getThemeFromCookie(
     typeof document === "undefined" ? undefined : document.cookie,
   );
 }
 
 /** Server snapshot — matches the default the root layout renders. */
-export function getThemeServerSnapshot(): Theme {
-  return "dark";
+export function getThemeServerSnapshot(): ThemePreference {
+  return DEFAULT_THEME_ID;
 }
 
-/** Set theme — updates the <html> class and cookie. Client-only. */
-export function setTheme(theme: Theme): void {
+/** Set the preference — applies it to <html> and writes the cookie. Client-only. */
+export function setTheme(pref: ThemePreference): void {
   if (typeof document === "undefined") return;
 
-  // Resolve "system" to actual preference
-  const resolved =
-    theme === "system"
-      ? window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light"
-      : theme;
+  const id = resolveThemeId(
+    pref,
+    window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark",
+  );
 
-  // Toggle class (shadcn `dark:` variants) and the theme the tokens key on.
   const root = document.documentElement;
-  root.classList.toggle("dark", resolved === "dark");
-  if (resolved === "dark") root.dataset.theme = "slate";
-  else delete root.dataset.theme;
+  root.dataset.theme = id;
+  root.classList.toggle("dark", themeMode(id) === "dark");
 
-  // Persist in cookie
-  document.cookie = `${COOKIE_NAME}=${theme}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+  document.cookie = `${THEME_COOKIE}=${pref}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
 
   for (const listener of listeners) listener();
 }

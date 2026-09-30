@@ -7,6 +7,13 @@ import { cookies } from "next/headers";
 import { AuthListener } from "@/components/auth/auth-listener";
 import { ConfirmHost } from "@/components/ui/confirm-dialog";
 import { Toaster } from "@/components/ui/toast";
+import { THEME_INIT_SCRIPT } from "@/themes/init-script";
+import {
+  parseThemePreference,
+  resolveThemeId,
+  THEME_COOKIE,
+  themeMode,
+} from "@/themes/preference";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -63,21 +70,28 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const cookieStore = await cookies();
-  const themeCookie = cookieStore.get("cubehub-theme")?.value;
-  // If there's no cookie, default to "dark". The client resolves "system" via matchMedia.
-  // To avoid hydration mismatch, if it's "system", we default to "dark" server-side.
-  const resolvedClass =
-    themeCookie === "light" ? "light" : "dark";
-  // Token values are keyed on [data-theme] (src/themes/); `.dark` remains for
-  // shadcn `dark:` variants. Light still means the :root base until phase 4.
-  const dataTheme = resolvedClass === "dark" ? "slate" : undefined;
+  // The cookie is the source of truth for the theme. Token values are keyed
+  // on [data-theme] (src/themes/); `.dark` is derived from the theme's mode
+  // for shadcn `dark:` variants. "system" can't be resolved here, so the
+  // server renders the default and THEME_INIT_SCRIPT corrects it before
+  // first paint.
+  const themeId = resolveThemeId(
+    parseThemePreference(cookieStore.get(THEME_COOKIE)?.value),
+  );
+  const modeClass = themeMode(themeId) === "dark" ? "dark " : "";
 
   return (
+    // suppressHydrationWarning: THEME_INIT_SCRIPT may change data-theme and
+    // the `dark` class before hydration (only when the preference is "system").
     <html
       lang="en"
-      data-theme={dataTheme}
-      className={`${resolvedClass} ${geistSans.variable} ${geistMono.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      data-theme={themeId}
+      suppressHydrationWarning
+      className={`${modeClass}${geistSans.variable} ${geistMono.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla's
           `cz-shortcut-listen`, Grammarly's `data-gr-*`) inject attributes onto
           <body> before React hydrates. This suppresses the one-level attribute

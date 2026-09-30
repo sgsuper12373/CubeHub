@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  type Theme,
+  type ThemePreference,
   setTheme,
   subscribeTheme,
   getThemeSnapshot,
@@ -67,7 +67,7 @@ export function SettingsForm({
     });
   };
 
-  const handleThemeChange = (t: Theme) => {
+  const handleThemeChange = (t: ThemePreference) => {
     setTheme(t); // notifies subscribers, so `theme` above updates
   };
 
@@ -188,12 +188,12 @@ export function SettingsForm({
           <SettingRow label="Theme" description="Choose your preferred color scheme.">
             <SegmentedControl
               options={[
-                { value: "light", label: "Light" },
-                { value: "dark", label: "Dark" },
+                { value: "paper", label: "Light" },
+                { value: "slate", label: "Dark" },
                 { value: "system", label: "System" },
               ]}
               value={theme}
-              onChange={(v) => handleThemeChange(v as Theme)}
+              onChange={(v) => handleThemeChange(v as ThemePreference)}
             />
           </SettingRow>
           
