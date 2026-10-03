@@ -54,39 +54,39 @@ export function AlgorithmCaseList({
             type="button"
             onClick={() => setFilter("all")}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+              "flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-2 py-1.5 rounded-lg text-xs font-medium transition-colors sm:flex-none sm:px-3",
               filter === "all"
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            <Layers className="h-3.5 w-3.5" />
+            <Layers className="hidden min-[400px]:block h-3.5 w-3.5" />
             All ({cases.length})
           </button>
           <button
             type="button"
             onClick={() => setFilter("unlearned")}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+              "flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-2 py-1.5 rounded-lg text-xs font-medium transition-colors sm:flex-none sm:px-3",
               filter === "unlearned"
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            <Circle className="h-3.5 w-3.5" />
+            <Circle className="hidden min-[400px]:block h-3.5 w-3.5" />
             To Learn ({unlearnedCount})
           </button>
           <button
             type="button"
             onClick={() => setFilter("learned")}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+              "flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-2 py-1.5 rounded-lg text-xs font-medium transition-colors sm:flex-none sm:px-3",
               filter === "learned"
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            <CheckCircle className="h-3.5 w-3.5 text-success" />
+            <CheckCircle className="hidden min-[400px]:block h-3.5 w-3.5 text-success" />
             Learned ({learnedCount})
           </button>
         </div>
@@ -106,14 +106,9 @@ export function AlgorithmCaseList({
 
       {/* Grid of cases */}
       {filteredCases.length > 0 ? (
-        <div className="flex flex-wrap justify-center gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filteredCases.map((algCase) => (
-            <div
-              key={algCase.id}
-              className="w-full sm:w-[calc(50%-1rem)] xl:w-[400px]"
-            >
-              <AlgorithmCard algCase={algCase} puzzle={puzzle} />
-            </div>
+            <AlgorithmCard key={algCase.id} algCase={algCase} puzzle={puzzle} />
           ))}
         </div>
       ) : (

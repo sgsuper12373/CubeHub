@@ -91,8 +91,13 @@ export function AlgPlayerInner({
       const player = new TwistyPlayer({
         puzzle: mapPuzzleId(puzzle),
         alg: activeMoves,
-        experimentalSetupAlg: activeSetup || undefined,
-        experimentalSetupAnchor: "start",
+        // With setup moves, play from the state they produce. Without them,
+        // anchor at the end: the algorithm finishes on a solved cube, so the
+        // player opens on the case itself. (Passing an undefined setup alg
+        // throws inside cubing.js.)
+        ...(activeSetup
+          ? { experimentalSetupAlg: activeSetup, experimentalSetupAnchor: "start" as const }
+          : { experimentalSetupAnchor: "end" as const }),
         visualization: "3D",
         background: "none",
         controlPanel: "none",

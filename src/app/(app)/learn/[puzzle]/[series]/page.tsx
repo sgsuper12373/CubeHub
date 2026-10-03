@@ -51,7 +51,7 @@ export default async function SeriesCasesPage({ params }: Props) {
     totalItems > 0 ? Math.round((learnedItems / totalItems) * 100) : 0;
 
   return (
-    <div className="container max-w-7xl py-8 space-y-8">
+    <div className="mx-auto w-full max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-4 flex-1">
@@ -81,7 +81,7 @@ export default async function SeriesCasesPage({ params }: Props) {
             )}
           </div>
 
-          <p className="text-xl text-muted-foreground max-w-2xl">
+          <p className="text-lg text-muted-foreground max-w-2xl">
             {series.description}
           </p>
         </div>
@@ -117,7 +117,7 @@ export default async function SeriesCasesPage({ params }: Props) {
             </div>
             <Progress value={progressPercent} className="h-2" />
           </div>
-          <p className="text-sm text-muted-foreground sm:max-w-[220px] text-right">
+          <p className="text-sm text-muted-foreground sm:max-w-[240px] sm:text-right">
             {isAlgorithms
               ? "Keep drilling cases to improve your recognition and execution speed."
               : "Complete all steps to master this tutorial."}

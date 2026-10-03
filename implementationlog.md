@@ -5,6 +5,47 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-04 — Learn series page (`/learn/[puzzle]/[series]`) layout fixes, branch `fix/learn-series-layout`
+
+**Request:** The learn method page (e.g. `/learn/333/oll`) isn't centred and the cube diagrams spill out of their boxes. Redesign it properly and fix the issues.
+
+**Causes found**
+- The page used `container`, which in Tailwind v4 has no `mx-auto` or padding, so it sat flush against the left edge.
+- Each card was 400px wide with a fixed 160px cube column, and the left column (`flex-1` without `min-w-0`) couldn't shrink below its buttons. Together they needed about 430px, so `overflow-hidden` clipped the cube column's right side.
+- The shared `Card` adds vertical padding, so the cube panel floated with gaps above and below.
+- Opening Animate inside a card stretched every card in that grid row.
+- `alg-player-inner.tsx` passed `experimentalSetupAlg: undefined` when a case had no setup moves. cubing.js threw (`reading 'experimentalIsEmpty'`) and the player started from a solved cube instead of the case.
+
+**Changed**
+- **`[series]/page.tsx`**: `mx-auto w-full max-w-7xl` with responsive padding (also fixes the tutorial pages); the progress note is only right-aligned from `sm` up.
+- **`algorithm-case-list.tsx`**: a real grid (1 / 2 / 3 columns) aligned with the page edges, in place of the fixed-width flex-wrap. On narrow phones the filter tabs share the row equally, don't wrap, and drop their icons below 400px.
+- **`algorithm-card.tsx`**, redesigned:
+  - The diagram sits in a fixed 96px tile next to the name (a real button with an aria-label).
+  - The main algorithm comes first under "Main", and the others under "Alternatives", across the full card width with wrapping. This replaces the badge that squeezed whichever line was main.
+  - The setup is shown as a small line, and the footer is pinned to the bottom so rows line up.
+  - Animate opens a Base UI dialog with a 240px player instead of expanding the card.
+  - Drill Case uses `Button render={<Link/>}` instead of a button nested inside a link.
+- **`case-viewer.tsx`**: the wrapper is fixed to `size` and the loader fills it, so nothing shifts when the cube loads.
+- **`alg-player-inner.tsx`**: with setup moves the player plays from their state (anchor `start`); without them it anchors at `end`, so it opens on the case.
+
+**Kept on purpose**
+- The card viewers still use the hand-entered `cube_state`. Moving to derive-from-algorithm is a separate Phase 3 item.
+
+**Not changed, found while checking**
+- At about 820px wide the site navbar overflows by about 86px (the user name and sign-out button). It affects every page.
+- Tutorial step content (`/learn/333/beginner`) shows raw Markdown (`##`, `-`). No Markdown renderer is installed.
+
+**Verified**
+- `npm run validate`: 209 tests pass (one pre-existing lint warning); `check:colors` is OK.
+- `npm run build` passes, and `npm run test:e2e:prod` passes 12 of 12.
+- In the browser on `next dev`, Paper and Slate, at 1568px, 820px, 375px and 360px:
+  - all 57 OLL cards are measured with no diagram, code, button or link outside its card, and no diagram outside its tile
+  - there is no horizontal page overflow except the navbar issue above
+  - the dialog opens and closes, and the console shows no errors after the player fix
+- On `next start`, the dialog opened on the OLL 2 case with no console errors.
+
+---
+
 ## 2026-10-04 — Merge the landing page redesign into `main`
 
 **Request:** Merge `origin/claude/adoring-feynman-x4btyg` (landing UI changes) into `main`, resolving any conflicts.

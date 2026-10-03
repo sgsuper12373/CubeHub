@@ -19,7 +19,7 @@ const CaseViewerInner = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex items-center justify-center" style={{ width: 80, height: 80 }}>
+      <div className="flex h-full w-full items-center justify-center">
         <CubeLoader size={24} label="Loading cube" />
       </div>
     ),
@@ -44,7 +44,12 @@ export function CaseViewer({
   className?: string;
 }) {
   return (
-    <div className={className ?? "flex items-center justify-center"}>
+    // Fixed to `size` so the loading placeholder and the player take the same
+    // space, and a card's layout doesn't shift when the cube appears.
+    <div
+      className={className ?? "flex items-center justify-center"}
+      style={{ width: size, height: size }}
+    >
       <CaseViewerInner
         cubeState={cubeState}
         puzzle={puzzle}
