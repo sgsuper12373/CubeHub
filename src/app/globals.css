@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "../components/react-bits/react-bits.css";
 /* Token values for the :root base and every theme. Generated from
    src/themes/*.ts — edit those, not this import. */
 @import "../themes/themes.generated.css";
@@ -243,6 +242,33 @@
   }
   50% {
     border-color: var(--foreground);
+  }
+}
+
+/* ── Landing reveal ─────────────────────────────────────────────────────────
+   Sections fade up as they scroll into view. Scroll-driven, so there is no JS
+   and nothing to hydrate; browsers without `animation-timeline` (and anyone
+   who prefers reduced motion) simply see the content at rest. Text is never
+   hidden before the animation can run — the old JS reveals left headings
+   blank or faded in screenshots and on slow devices. */
+@keyframes landing-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: landing-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
   }
 }
 

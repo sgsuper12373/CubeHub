@@ -2,80 +2,98 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { ArrowRight, IndianRupee, Pause, Play, ShieldCheck, Sparkles, WifiOff } from "lucide-react";
+import { useState } from "react";
 
-import { DemoTimer } from "@/components/marketing/demo-timer";
+import { HeroTimerCard } from "@/components/marketing/hero-timer-card";
+import { Eyebrow } from "@/components/marketing/section-heading";
 import { Button } from "@/components/ui/button";
 
-// Dynamic import with SSR disabled to ensure zero initial server script load and immediate hydration
+// Client-only canvas; nothing for the server to render.
 const ScrambleMatrix = dynamic(
   () => import("@/components/react-bits/scramble-matrix").then((m) => m.ScrambleMatrix),
-  {
-    ssr: false,
-    loading: () => <div className="size-full" />,
-  },
+  { ssr: false, loading: () => <div className="size-full" /> },
 );
 
+const TRUST = [
+  { icon: ShieldCheck, label: "WCA random-state scrambles" },
+  { icon: WifiOff, label: "Works offline" },
+  { icon: IndianRupee, label: "Built for India" },
+] as const;
+
 export function HeroSection() {
+  const [paused, setPaused] = useState(false);
+
   return (
-    <section className="relative overflow-hidden bg-background pt-12 pb-20 md:py-28 lg:py-32">
-      {/* ── Interactive WCA Scramble Matrix (Single Canvas DOM element for 60fps performance & 0 CLS) ── */}
-      <div className="absolute inset-0 z-0 opacity-90 [mask-image:radial-gradient(circle_at_50%_45%,rgba(0,0,0,1)_55%,rgba(0,0,0,0.1)_95%)] pointer-events-auto">
-        <ScrambleMatrix className="size-full" />
+    <section className="relative isolate overflow-hidden bg-background">
+      {/* Interactive notation field. Decorative and pointer-events-none, so it
+          never eats a tap or a scroll; it fades out towards the copy. */}
+      <div className="absolute inset-0 -z-10 opacity-80 [mask-image:radial-gradient(ellipse_at_70%_40%,black_35%,transparent_80%)] max-lg:[mask-image:radial-gradient(ellipse_at_50%_70%,black_25%,transparent_75%)]">
+        <ScrambleMatrix className="size-full" paused={paused} />
       </div>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-40 left-1/2 -z-10 size-[36rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
+      />
 
-      <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center gap-8 px-4 text-center">
-        {/* ── Headline & Subtitle ── */}
-        <div className="flex flex-col items-center gap-4 max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-balance bg-gradient-to-br from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent sm:text-6xl lg:text-7xl">
-            Your cubing timer, and everything after it.
+      <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 pt-12 pb-16 md:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-28">
+        <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+          <Eyebrow icon={Sparkles}>Free · No sign-up · Ready in seconds</Eyebrow>
+
+          <h1 className="mt-5 text-4xl font-bold tracking-tight text-balance text-foreground sm:text-6xl lg:text-[4.25rem] lg:leading-[1.02]">
+            Your cubing timer, <span className="text-primary">and everything after it.</span>
           </h1>
-          <p className="max-w-xl text-pretty text-base text-muted-foreground sm:text-lg md:text-xl font-normal leading-relaxed">
-            Time a solve right here — no sign-up, no setup. Then keep your
-            tutorials, stats, real-time races, and unbiased buying advice in one unified place.
+
+          <p className="mt-5 max-w-xl text-base text-pretty text-muted-foreground sm:text-lg md:text-xl md:leading-relaxed">
+            Time a solve the moment you land. Then track every average, learn
+            OLL and PLL with 3D cases, drill your weakest algorithms, and find
+            your next cube in ₹ — all in one place.
           </p>
+
+          <div className="mt-8 flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
+            <Button
+              size="lg"
+              className="h-12 rounded-full px-7 text-base font-semibold shadow-lg shadow-primary/25 hover:bg-primary/90"
+              nativeButton={false}
+              render={<Link href="/timer" />}
+            >
+              Start timing free
+              <ArrowRight data-icon="inline-end" className="size-4" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="h-12 rounded-full bg-background/60 px-7 text-base font-semibold backdrop-blur"
+              nativeButton={false}
+              render={<Link href="/learn" />}
+            >
+              Explore tutorials
+            </Button>
+          </div>
+
+          <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground lg:justify-start">
+            {TRUST.map(({ icon: Icon, label }) => (
+              <li key={label} className="flex items-center gap-1.5">
+                <Icon className="size-4 text-primary" aria-hidden />
+                {label}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        {/* ── Centered Interactive Demo Timer ── */}
-        <div className="w-full max-w-lg mt-2 mb-2">
-          <DemoTimer className="w-full" />
-        </div>
-
-        {/* ── Primary Action Buttons ── */}
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          <Button
-            size="lg"
-            className="rounded-full px-8 py-6 text-base font-semibold shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-primary/40 hover:scale-[1.02]"
-            nativeButton={false}
-            render={<Link href="/timer" />}
-          >
-            Start timing free
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="rounded-full border-white/20 bg-background/60 px-8 py-6 text-base font-semibold backdrop-blur-md transition-all duration-300 hover:border-white/40 hover:bg-white/10 hover:scale-[1.02]"
-            nativeButton={false}
-            render={<Link href="/signup" />}
-          >
-            Create account
-          </Button>
-        </div>
-
-        {/* ── Trust Factors ── */}
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-2 text-xs font-medium text-muted-foreground/80">
-          <span className="flex items-center gap-1.5">
-            <span className="size-1.5 rounded-full bg-emerald-500" /> WCA-compliant scrambles
-          </span>
-          <span>•</span>
-          <span className="flex items-center gap-1.5">
-            <span className="size-1.5 rounded-full bg-cyan-500" /> Works 100% offline
-          </span>
-          <span>•</span>
-          <span className="flex items-center gap-1.5">
-            <span className="size-1.5 rounded-full bg-amber-500" /> Free forever
-          </span>
-        </div>
+        <HeroTimerCard className="mx-auto max-w-md lg:max-w-none" />
       </div>
+
+      {/* Visitors decide whether the background moves. */}
+      <button
+        type="button"
+        onClick={() => setPaused((p) => !p)}
+        aria-pressed={paused}
+        className="absolute right-4 bottom-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-background/70 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur transition-colors hover:text-foreground"
+      >
+        {paused ? <Play className="size-3.5" aria-hidden /> : <Pause className="size-3.5" aria-hidden />}
+        {paused ? "Animate background" : "Pause background"}
+      </button>
     </section>
   );
 }

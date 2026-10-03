@@ -50,7 +50,22 @@ interface Shockwave {
   alpha: number;
 }
 
-export function ScrambleMatrix({ className = "" }: { className?: string }) {
+/**
+ * The landing hero's background: a field of WCA move tokens that drift, lean
+ * away from the cursor (or a finger), and ripple on click.
+ *
+ * Purely decorative and `pointer-events-none`, so it never steals a tap or a
+ * scroll — input is read from window listeners instead. The loop only runs
+ * while the canvas is on screen, the tab is visible and `paused` is false;
+ * otherwise one static frame stays painted.
+ */
+export function ScrambleMatrix({
+  className = "",
+  paused = false,
+}: {
+  className?: string;
+  paused?: boolean;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pointerRef = useRef<{ x: number | null; y: number | null; active: boolean }>({
     x: null,
@@ -60,6 +75,15 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
   const idleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const shockwavesRef = useRef<Shockwave[]>([]);
   const prefersReduced = useReducedMotion();
+  // Pausing is read through a ref so toggling it freezes the field in place
+  // instead of re-running the effect, which would reshuffle every token.
+  const pausedRef = useRef(paused);
+  const syncRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    pausedRef.current = paused;
+    syncRef.current?.();
+  }, [paused]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -68,6 +92,9 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
     if (!ctx) return;
 
     let animId: number | null = null;
+    // Animate only when allowed and worth it; see the observers below.
+    let still = prefersReduced || pausedRef.current;
+    let onScreen = true;
 
     // Colours come from the active theme's tokens (read as RGB so we can vary
     // alpha per frame) and are re-read when the theme changes.
@@ -92,8 +119,11 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
     // Initialize tokens across grid cells with generous spacing for light green bordered keycaps
     const initTokens = () => {
       tokens.length = 0;
-      const cellW = 115;
-      const cellH = 90;
+      // Sparser on phones: fewer tokens to draw, and less visual noise
+      // behind the hero copy on a narrow screen.
+      const compact = width < 640;
+      const cellW = compact ? 96 : 115;
+      const cellH = compact ? 84 : 90;
       const cols = Math.floor(width / cellW) || 1;
       const rows = Math.floor(height / cellH) || 1;
       const actualCellW = width / cols;
@@ -142,12 +172,12 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
       height = rect.height;
       canvas.width = width * dpr;
       canvas.height = height * dpr;
-      ctx.scale(dpr, dpr);
+      // setTransform, not scale: scale() compounds on every resize.
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       initTokens();
+      if (still || !onScreen) render();
     };
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
 
     // Global Window Pointer tracking across foreground components
     const onPointerMove = (e: PointerEvent | MouseEvent) => {
@@ -197,6 +227,10 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
       };
     };
 
+    const onTouchEnd = () => {
+      pointerRef.current.active = false;
+    };
+
     const onClick = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       if (
@@ -207,6 +241,7 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
       ) {
         return;
       }
+      if (still) return;
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
 
@@ -220,10 +255,6 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
         alpha: 0.9,
       });
     };
-
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("touchmove", onTouchMove, { passive: true });
-    window.addEventListener("click", onClick);
 
     // Animation Loop
     const render = () => {
@@ -255,7 +286,7 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
         const t = tokens[i];
 
         // 1. Calculate ambient position via smooth harmonic trigonometry (eliminates edge jumps!)
-        if (!prefersReduced) {
+        if (!still) {
           t.phaseX += t.freqX;
           t.phaseY += t.freqY;
           t.angle += t.dAngle;
@@ -311,7 +342,7 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
         const drawY = baseY + t.currentOffsetY;
 
         // 5. Draw connecting tension lines between highly illuminated neighbor tokens under cursor
-        if (t.currentAlpha > 0.55 && !prefersReduced) {
+        if (t.currentAlpha > 0.55 && !still) {
           for (let j = i + 1; j < Math.min(tokens.length, i + 6); j++) {
             const neighbor = tokens[j];
             const ndx = (neighbor.originX + neighbor.currentOffsetX) - drawX;
@@ -386,31 +417,70 @@ export function ScrambleMatrix({ className = "" }: { className?: string }) {
         ctx.restore();
       }
 
-      animId = requestAnimationFrame(render);
+      if (!still && onScreen && !document.hidden) {
+        animId = requestAnimationFrame(render);
+      } else {
+        animId = null;
+      }
     };
 
-    if (prefersReduced) {
-      render();
-      if (animId) cancelAnimationFrame(animId);
-    } else {
-      animId = requestAnimationFrame(render);
-    }
+    const start = () => {
+      if (animId === null && !still && onScreen && !document.hidden) {
+        animId = requestAnimationFrame(render);
+      }
+    };
+    const stop = () => {
+      if (animId !== null) cancelAnimationFrame(animId);
+      animId = null;
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    start();
+
+    syncRef.current = () => {
+      still = prefersReduced || pausedRef.current;
+      if (still) {
+        stop();
+        pointerRef.current.active = false;
+        shockwavesRef.current = [];
+        render();
+      } else {
+        start();
+      }
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("click", onClick);
+
+    // No point painting a hero nobody can see.
+    const io = new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting;
+      if (onScreen) start();
+      else stop();
+    });
+    io.observe(canvas);
+    const onVisibility = () => (document.hidden ? stop() : start());
+    document.addEventListener("visibilitychange", onVisibility);
 
     const stopObservingTheme = observeTheme(() => {
       readPalette();
-      // The reduced-motion path draws a single static frame; redraw it.
-      if (prefersReduced) {
-        render();
-        if (animId) cancelAnimationFrame(animId);
-      }
+      // A frozen canvas holds a single static frame; repaint it.
+      if (still || !onScreen) render();
     });
 
     return () => {
+      syncRef.current = null;
       stopObservingTheme();
-      if (animId) cancelAnimationFrame(animId);
+      stop();
+      io.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
       window.removeEventListener("click", onClick);
       if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current);
     };
