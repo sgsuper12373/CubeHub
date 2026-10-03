@@ -5,6 +5,29 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-04 — Navbar fits at tablet widths; tutorial steps render Markdown, branch `fix/navbar-and-tutorial-markdown`
+
+**Request:** Merge `fix/learn-series-layout` into `main` (done as a fast-forward), then fix the two problems found while checking it: the navbar overflowing at about 820px, and tutorial steps showing raw Markdown.
+
+**Changed**
+- **`src/components/layout/navbar.tsx`**: from `md` to `lg` (768–1023px) the links are icon-only. The label is still there as `sr-only` text, with a `title` tooltip; it shows from `lg` up. Spacing is tighter below `lg`, and the user menu is `shrink-0`.
+  - Seven labelled links plus the logo and user menu need about 930px, so they overflowed by about 86px at 820px.
+- **New: `src/components/learn/step-markdown.tsx`**: renders `content_md` with `react-markdown` (no raw HTML, so submitted content can't inject markup) and `remark-breaks`.
+  - Headings, lists, bold, code and links are styled with theme tokens. The old `prose` classes did nothing, because the typography plugin isn't installed.
+  - A leading `## …` heading is dropped when it repeats the card title ("Step 2: First Layer Corners" under "First Layer Corners").
+  - `remark-breaks` keeps single line breaks, which the content uses to put an algorithm on one line and its explanation on the next.
+- **`tutorial-step-card.tsx`**: uses `<StepMarkdown/>` in place of the `whitespace-pre-wrap` raw text.
+- **`package.json`**: adds `react-markdown` and `remark-breaks`.
+
+**Verified**
+- `npm run validate`: 209 tests pass (one pre-existing lint warning); `check:colors` is OK.
+- `npm run build` passes, and `npm run test:e2e:prod` passes 12 of 12.
+- In the browser on `next dev`:
+  - At 780, 1000, 1040 and 1100px the page never scrolls sideways. Icons only below 1024px, labels at 1024px and up.
+  - `/learn/333/beginner`: all 7 steps render headings and lists with no raw `##` or `**` left, and the algorithm and explanation lines stay separate.
+
+---
+
 ## 2026-10-04 — Learn series page (`/learn/[puzzle]/[series]`) layout fixes, branch `fix/learn-series-layout`
 
 **Request:** The learn method page (e.g. `/learn/333/oll`) isn't centred and the cube diagrams spill out of their boxes. Redesign it properly and fix the issues.

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CaseViewer } from "@/components/learn/case-viewer";
+import { StepMarkdown } from "@/components/learn/step-markdown";
 import { toggleTutorialStepProgress } from "@/lib/learn/actions";
 
 interface TutorialStepCardProps {
@@ -80,10 +81,8 @@ export function TutorialStepCard({
 
         {/* Body with Markdown content & optional 3D cube visualizer */}
         <div className="flex flex-col md:flex-row">
-          <div className="flex-1 p-6 prose prose-sm sm:prose-base dark:prose-invert max-w-none">
-            <div className="whitespace-pre-wrap font-sans leading-relaxed text-foreground/90">
-              {step.content_md}
-            </div>
+          <div className="min-w-0 flex-1 p-6">
+            <StepMarkdown content={step.content_md} title={step.title} />
           </div>
 
           {step.cube_state && (
