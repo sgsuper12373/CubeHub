@@ -665,3 +665,29 @@ across `src/`, `tests/`, `docs/`, `project_plan/` and `public/` before removing 
 - `npm run validate` (tsc, eslint, vitest): passes. 17/17 tests, 0 lint errors.
 - `npm run build`: passes, all routes compile.
 - Pre-existing uncommitted edits to `src/app/(app)/learn/[puzzle]/page.tsx` were left untouched.
+
+---
+
+## Landing page redesign (3 Oct 2026)
+
+The old hero timer claimed Space whenever it was half on screen and started on any touch,
+so on a phone a thumb scrolling past the card started solves. The landing page is rebuilt
+around one rule: it never reacts to Space or touches unless the visitor asks it to.
+
+| Section | File | Notes |
+| --- | --- | --- |
+| Hero | `marketing/hero-section.tsx`, `marketing/hero-timer-card.tsx` | Two-column hero. The card plays a time-lapsed replay (scramble → hold → run → stop) and takes no input. "Try a solve here" opts in: keys only while the pad has focus, touches only when they start on the pad, a finger that drifts more than 12px cancels the hold, and Esc, Done, or scrolling the card away hands the page back. Reduced motion shows a static finished solve. |
+| Background | `react-bits/scramble-matrix.tsx` | Kept the interactive notation field. Added a `paused` prop (the hero's "Pause background" button), stops the loop when off screen or the tab is hidden, uses fewer tokens on phones, and fixes `ctx.scale` compounding on every resize. |
+| Product bento | `marketing/feature-bento.tsx` | Replaces `feature-grid` and `cube-showcase`. Tiles show small slices of the real UI (stats and sparkline, drill queue, 3D case, ₹ cubes). Compete and Shop carry a "Soon" tag. Tiles use a stretched title link, so dragging the 3D cube can't trigger navigation; on touch the cube is display-only so swipes scroll. |
+| Make it yours | `marketing/customize-section.tsx` | Real settings, not a mock: theme via `setTheme`, plus precision, hold time and 2D/3D preview through `saveClientSettings` (the keys `/timer` reads on mount). Live preview, theme swatches painted with each theme's own tokens via nested `data-theme`, and a press-and-hold button to feel the hold time. |
+| India, CTA, footer | `marketing/india-section.tsx`, `marketing/cta-band.tsx` | Token tints instead of raw amber/cyan; rankings and calendar marked "Soon". |
+
+- Section headings are plain text with `SectionHeading`. This fixes the audit's invisible
+  `ScrollFloat` H2s. Motion comes from a CSS scroll-driven `.reveal` class in `globals.css`,
+  which never hides content where it isn't supported or under reduced motion.
+- Removed `scroll-float`, `scroll-reveal`, `react-bits.css`, `demo-timer`, `feature-grid`,
+  `cube-showcase`, and the `gsap` dependency (nothing else used it).
+- New e2e test `tests/e2e/landing-hero.spec.ts`: Space scrolls the page, and opt-in mode times a
+  solve.
+- Verification: tsc, eslint (one pre-existing warning), 189 unit tests, `check:colors`,
+  `next build`, and e2e (`landing-hero` + `cubing-runtime`, 4/4) against `next start`.
