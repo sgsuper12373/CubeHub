@@ -5,6 +5,18 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-04 — Docs: mark JSON backup restore as resolved in the roadmap
+
+**Request:** Fix the stale "still open" note in `docs/roadmap.md` found while reviewing outstanding work.
+
+**Changed**
+- **`docs/roadmap.md`** (Phase 2): the note said CubeHub's JSON export could not be re-imported. That is no longer true: `parseCubeHubExport()` in `import-cstimer.ts` restores it, keeping the original ids. The note is struck through and marked resolved, so the history stays.
+
+**Verified**
+- Read `isCubeHubExport()`/`parseCubeHubExport()` and the dispatch in the import parser, and confirmed `tests/unit/import-cstimer.test.ts` covers native CubeHub JSON. Docs only, no code changed.
+
+---
+
 ## 2026-10-01 — Focus Mode (csTimer-style clean timer), branch `feat/focus-mode`
 
 **Request:** Add a mode where, like csTimer, everything (navbar, options, panels) disappears once the timer starts, leaving a clean timer.

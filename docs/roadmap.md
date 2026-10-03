@@ -63,9 +63,10 @@ correctly moved that account's single/Ao5/Ao12.
 
 Works logged out over localStorage, exactly as it works signed in.
 
-**Still open:** the JSON export cannot be re-imported. Import accepts csTimer only, so
-CubeHub's own versioned envelope is currently a backup with no restore path. `toSolves()`
-in `import-cstimer.ts` is the piece to reuse.
+~~**Still open:** the JSON export cannot be re-imported.~~ **Resolved:** import now accepts
+CubeHub's own versioned JSON export as well as csTimer files, so a backup can be restored.
+`parseCubeHubExport()` in `import-cstimer.ts` handles it, keeping the original solve ids so a
+repeat import is a no-op (covered in `tests/unit/import-cstimer.test.ts`).
 
 ## Phase 3 — Learn
 
