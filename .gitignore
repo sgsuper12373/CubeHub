@@ -53,3 +53,6 @@ next-env.d.ts
 
 # cubing.js, built by scripts/build-cubing.mjs on predev/prebuild
 /public/cubing
+
+# Supabase CLI cache
+supabase/.temp/

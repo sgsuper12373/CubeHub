@@ -5,6 +5,34 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-04 — Commit 2x2 and OLL seed scripts (`supabase/DataSeeds/`)
+
+**Request:** Find out which of the new seed scripts the live database still needed, apply them, then commit the scripts.
+
+**Database state (checked through the read-only Supabase MCP connection)**
+- `20261004000000_oll_algorithm_refresh.sql` had already been applied on 2026-10-03: all 224 target algorithms are present, each case has the right main, and the case pictures for 9/37/49/50 are fixed.
+- The founder applied the five 2x2 files through the Dashboard SQL editor. Verified afterwards:
+
+  | Subset | Cases | Algorithms | Tier |
+  |---|---|---|---|
+  | Beginner | 6 | 20 | public |
+  | Ortega | 12 | 47 | public |
+  | CLL | 42 | 146 | free |
+  | EG-1 | 40 | 68 | free |
+  | EG-2 | 40 | 55 | free |
+
+  Every case has exactly one main algorithm.
+- Ortega's 9 existing drill attempts are still linked to their algorithms.
+
+**Changed**
+- **`supabase/DataSeeds/`**: the six seed scripts are now committed. Each runs in a transaction, checks its own results and is safe to run twice.
+  - They are kept out of `supabase/migrations/` on purpose, so a fresh database built from migrations alone won't have this data.
+- **`.gitignore`**: ignores `supabase/.temp/` (Supabase CLI cache).
+
+**Note:** the remote migration history table is empty because every migration was applied by hand. Run `supabase migration repair --status applied <version>` for each migration before ever using `supabase db push`.
+
+---
+
 ## 2026-10-04 — Navbar fits at tablet widths; tutorial steps render Markdown, branch `fix/navbar-and-tutorial-markdown`
 
 **Request:** Merge `fix/learn-series-layout` into `main` (done as a fast-forward), then fix the two problems found while checking it: the navbar overflowing at about 820px, and tutorial steps showing raw Markdown.
