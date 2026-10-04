@@ -5,6 +5,7 @@ import { AlgorithmCase } from "@/lib/learn/dal";
 import { AlgorithmCard } from "@/components/learn/algorithm-card";
 import { Search, CheckCircle, Circle, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { caseCategories, caseCategory } from "@/lib/learn/case-category";
 
 type FilterStatus = "all" | "unlearned" | "learned";
 
@@ -17,9 +18,18 @@ export function AlgorithmCaseList({
 }) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterStatus>("all");
+  const [category, setCategory] = useState<string | null>(null);
+
+  const categories = useMemo(() => caseCategories(cases), [cases]);
+  // Ignore a selected category this set doesn't have (e.g. after navigation).
+  const activeCategory = categories.some((c) => c.name === category) ? category : null;
 
   const filteredCases = useMemo(() => {
     let result = cases;
+
+    if (activeCategory) {
+      result = result.filter((c) => caseCategory(c.description) === activeCategory);
+    }
 
     if (filter === "learned") {
       result = result.filter((c) => c.learned);
@@ -39,7 +49,7 @@ export function AlgorithmCaseList({
     }
 
     return result;
-  }, [cases, filter, search]);
+  }, [cases, filter, search, activeCategory]);
 
   const learnedCount = cases.filter((c) => c.learned).length;
   const unlearnedCount = cases.length - learnedCount;
@@ -104,6 +114,30 @@ export function AlgorithmCaseList({
         </div>
       </div>
 
+      {/* Category filter: only for sets whose descriptions carry a category */}
+      {categories.length > 0 && (
+        <div
+          role="group"
+          aria-label="Filter by category"
+          className="hide-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+        >
+          <CategoryChip
+            label="All categories"
+            active={activeCategory === null}
+            onClick={() => setCategory(null)}
+          />
+          {categories.map((c) => (
+            <CategoryChip
+              key={c.name}
+              label={c.name}
+              count={c.count}
+              active={activeCategory === c.name}
+              onClick={() => setCategory(activeCategory === c.name ? null : c.name)}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Grid of cases */}
       {filteredCases.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -117,5 +151,38 @@ export function AlgorithmCaseList({
         </div>
       )}
     </div>
+  );
+}
+
+function CategoryChip({
+  label,
+  count,
+  active,
+  onClick,
+}: {
+  label: string;
+  count?: number;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+        active
+          ? "border-primary/40 bg-primary/15 text-foreground"
+          : "border-border bg-background/50 text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {label}
+      {count !== undefined && (
+        <span className={cn("tabular-nums", active ? "text-primary" : "text-muted-foreground/70")}>
+          {count}
+        </span>
+      )}
+    </button>
   );
 }

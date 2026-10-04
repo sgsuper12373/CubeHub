@@ -5,6 +5,34 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-04 — Category filter on Learn series pages; remove dead `filter-bar.tsx`, branch `feat/case-category-filter`
+
+**Request:** Wire `filter-bar.tsx` into the series pages. It turned out to be an early draft of the hub-page filter that `PuzzleSeriesList` already implements, and the series pages already filter by status and search. The founder chose to delete the stub and add category filters to the series pages.
+
+**Changed**
+- **Deleted: `src/components/learn/filter-bar.tsx`**: unused; nothing imported it.
+- **New: `src/lib/learn/case-category.ts`**:
+  - `caseCategory()` reads the text before " · " in a case description.
+  - `caseCategories()` lists a set's categories in case order, with counts. It returns nothing unless every case has a category and there are at least two.
+- **`algorithm-case-list.tsx`**: a row of category chips under the status and search bar.
+  - It combines with the status filter and search.
+  - Clicking the active chip clears it. On narrow screens the row scrolls sideways.
+  - The chips use `aria-pressed` and theme tokens only.
+- **New test: `tests/unit/case-category.test.ts`**.
+
+**Kept on purpose**
+- Only " · " counts as a separator. OLL ("Dot, Run") and PLL get no chips, because splitting on commas would break PLL descriptions like "Adjacent corner swap, adjacent edge swap". To give OLL shape groups, rewrite its descriptions as "Dot · Run" in a seed script.
+
+**Verified**
+- `npm run validate`: tsc, lint (one pre-existing warning), and 217 of 217 tests pass. `check:colors` is OK.
+- In the browser on `next dev`:
+  - `/learn/222/cll` shows All, Sune 6, Anti-Sune 6, Pi 6, U 6, L 6, T 6, H 4 and PLL 2. Choosing PLL leaves 2 cards.
+  - `/learn/222/ortega` at 375px shows OLL 7 and PBL 5. PBL leaves 5 cards, and toggling it off brings back 12.
+  - The page never scrolls sideways.
+  - `/learn/333/pll` has no category row.
+
+---
+
 ## 2026-10-04 — Case card diagrams come from the main algorithm, branch `feat/derived-case-diagrams`
 
 **Request:** Next item after housekeeping: stop the Learn case cards depending on hand-entered `cube_state`. Access tiers are on hold until the founder decides what is premium.
