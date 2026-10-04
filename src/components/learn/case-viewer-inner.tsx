@@ -9,9 +9,10 @@ import { loadTwisty } from "@/lib/cubing/runtime";
  * Inner component that mounts a cubing.js TwistyPlayer showing a cube case.
  * Split into its own file so next/dynamic can tree-shake it.
  *
- * Unlike ScramblePreviewInner (which shows a scramble), this shows the
- * end state of a setup algorithm — what the cube looks like before you
- * apply the OLL/PLL/etc. algorithm.
+ * Unlike ScramblePreviewInner (which shows a scramble), this shows a case:
+ * what the cube looks like before you apply the OLL/PLL/etc. algorithm.
+ * Given `algorithm`, it shows the state that algorithm solves. Given
+ * `cubeState`, it shows the end state of that setup algorithm.
  */
 function mapPuzzleId(puzzle: string): PuzzleID {
   switch (puzzle) {
@@ -27,12 +28,14 @@ function mapPuzzleId(puzzle: string): PuzzleID {
 }
 
 export function CaseViewerInner({
+  algorithm,
   cubeState,
   puzzle = "333",
   size = 80,
   visualization = "2D",
 }: {
-  cubeState: string;
+  algorithm?: string;
+  cubeState?: string;
   puzzle?: string;
   size?: number;
   visualization?: "2D" | "3D" | "experimental-2D-LL";
@@ -53,11 +56,14 @@ export function CaseViewerInner({
         playerRef.current = null;
       }
 
-      const algToApply = cubeState;
-
       const player = new TwistyPlayer({
         puzzle: mapPuzzleId(puzzle),
-        alg: algToApply,
+        // An algorithm is anchored at the end: the cube is solved after it,
+        // so the player opens on the case it solves. A setup algorithm plays
+        // from solved, and we jump to its end below.
+        ...(algorithm
+          ? { alg: algorithm, experimentalSetupAnchor: "end" as const }
+          : { alg: cubeState ?? "" }),
         visualization,
         background: "none",
         controlPanel: "none",
@@ -74,9 +80,8 @@ export function CaseViewerInner({
       containerRef.current.appendChild(player);
       playerRef.current = player;
 
-      // Jump to the end of the algorithm so the case state is shown
-      // immediately without animation
-      player.controller?.jumpToEnd?.();
+      // Show a setup algorithm's end state immediately, without animation
+      if (!algorithm) player.controller?.jumpToEnd?.();
     })();
 
     return () => {
@@ -86,7 +91,7 @@ export function CaseViewerInner({
         playerRef.current = null;
       }
     };
-  }, [cubeState, puzzle, size, visualization]);
+  }, [algorithm, cubeState, puzzle, size, visualization]);
 
   return <div ref={containerRef} className="flex items-center justify-center" />;
 }

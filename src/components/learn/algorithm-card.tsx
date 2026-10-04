@@ -11,6 +11,7 @@ import { CaseViewer } from "@/components/learn/case-viewer";
 import { FaceletViewer } from "@/components/learn/facelet-viewer";
 import { AlgPlayer } from "@/components/learn/alg-player";
 import { toggleAlgorithmBookmark } from "@/lib/learn/actions";
+import { caseDiagram, mainAlgorithm } from "@/lib/learn/case-diagram";
 import Link from "next/link";
 
 export function AlgorithmCard({
@@ -23,8 +24,8 @@ export function AlgorithmCard({
   const [isPending, startTransition] = useTransition();
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
-  const mainAlg =
-    algCase.algorithms.find((a) => a.is_main) || algCase.algorithms[0];
+  const mainAlg = mainAlgorithm(algCase);
+  const diagram = caseDiagram(algCase);
 
   const handleToggleLearned = () => {
     if (!mainAlg) return;
@@ -61,19 +62,21 @@ export function AlgorithmCard({
               algCase.learned && "grayscale-[0.5]",
             )}
           >
-            {algCase.cube_state && algCase.cube_state.length === 54 ? (
-              <FaceletViewer cubeState={algCase.cube_state} size={80} />
-            ) : algCase.cube_state ? (
+            {diagram.kind === "facelets" ? (
+              <FaceletViewer cubeState={diagram.state} size={80} />
+            ) : diagram.kind === "none" ? (
+              <span className="px-1 text-center text-[10px] font-medium leading-tight text-muted-foreground">
+                2D LL View
+              </span>
+            ) : (
               <CaseViewer
-                cubeState={algCase.cube_state}
+                {...(diagram.kind === "algorithm"
+                  ? { algorithm: diagram.moves }
+                  : { cubeState: diagram.moves })}
                 puzzle={puzzle}
                 size={80}
                 visualization="experimental-2D-LL"
               />
-            ) : (
-              <span className="px-1 text-center text-[10px] font-medium leading-tight text-muted-foreground">
-                2D LL View
-              </span>
             )}
           </button>
 

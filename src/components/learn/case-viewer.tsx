@@ -6,8 +6,8 @@ import { CubeLoader } from "@/components/ui/cube-loader";
 
 /**
  * Lazy-loaded case viewer using cubing.js's <twisty-player>.
- * Renders a 2D top-down view of a cube case (OLL, PLL, etc.) from its
- * setup algorithm.
+ * Renders a view of a cube case (OLL, PLL, etc.) from the algorithm that
+ * solves it, or from a setup algorithm.
  *
  * Uses next/dynamic with ssr: false because <twisty-player> is a web
  * component that requires browser APIs.
@@ -27,14 +27,17 @@ const CaseViewerInner = dynamic(
 );
 
 export function CaseViewer({
+  algorithm,
   cubeState,
   puzzle = "333",
   size = 80,
   visualization = "2D",
   className,
 }: {
+  /** Algorithm that solves the case; the case shown is its inverse */
+  algorithm?: string;
   /** Setup algorithm that produces the case state from solved */
-  cubeState: string;
+  cubeState?: string;
   /** Puzzle type — defaults to 3x3 */
   puzzle?: string;
   /** Pixel size — defaults to 80px for cards */
@@ -51,6 +54,7 @@ export function CaseViewer({
       style={{ width: size, height: size }}
     >
       <CaseViewerInner
+        algorithm={algorithm}
         cubeState={cubeState}
         puzzle={puzzle}
         size={size}

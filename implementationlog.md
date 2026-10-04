@@ -5,6 +5,35 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-04 — Case card diagrams come from the main algorithm, branch `feat/derived-case-diagrams`
+
+**Request:** Next item after housekeeping: stop the Learn case cards depending on hand-entered `cube_state`. Access tiers are on hold until the founder decides what is premium.
+
+**Changed**
+- **New: `src/lib/learn/case-diagram.ts`**: `caseDiagram()` decides what a card draws.
+  - It uses the case's main algorithm when there is one. Every case in the live database has at least one algorithm.
+  - It falls back to `cube_state` (a facelet string or a setup algorithm) only for a case with no algorithms.
+  - `mainAlgorithm()` replaces the inline lookup in the card.
+- **`case-viewer.tsx` / `case-viewer-inner.tsx`**: accept `algorithm` as well as `cubeState`.
+  - With `algorithm`, the player is anchored at the end (`experimentalSetupAnchor: "end"`), so it opens on the state the algorithm solves. This is the Drill Lab's primitive.
+  - With `cubeState`, it plays from solved and jumps to the end, as before.
+- **`algorithm-card.tsx`**: draws from `caseDiagram()`.
+- **New test: `tests/unit/case-diagram.test.ts`**: the main algorithm wins over a `cube_state` that disagrees with it (the Ortega seed bug), with fallbacks after that.
+
+**Kept on purpose**
+- Tutorial steps still use `cube_state`. A step has no algorithm column to derive from, and its `cube_state` holds the move sequence the step teaches ("Target State").
+- `cube_state` stays in the schema and the admin editor. It is still the fallback, and dropping it is a separate decision.
+- Cards keep the current white-on-top 2D LL view. Switching to the Drill Lab's yellow-on-top (`z2`) view would be a visual change, so it was left out.
+
+**Verified**
+- `npm run validate`: tsc, lint (one pre-existing warning), and 212 of 212 tests pass. `check:colors` is OK.
+- In the browser on `next dev`, each card's twisty-player state was compared, in the page, against the main algorithm inverted from solved:
+  - OLL 57/57, PLL 21/21, 2x2 Beginner 6/6, Ortega 12/12, CLL 42/42, EG-1 40/40 and EG-2 40/40 all match.
+  - None match the algorithm applied forwards.
+- `/learn/333/beginner` tutorial steps still show the end state of their `cube_state`, with no console errors.
+
+---
+
 ## 2026-10-04 — Housekeeping: Supabase MCP read-only; declare `server-only` and `postcss`
 
 **Request:** Do the quick housekeeping items from the Phase 3 review.
