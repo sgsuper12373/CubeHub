@@ -8,12 +8,18 @@ import { test, expect, type Page } from "@playwright/test";
  */
 
 /**
- * The drill needs seeded algorithm data. CI builds against a placeholder
- * Supabase key and gets none, so these skip there with a reason instead of
- * failing; run them against a seeded database (see implementationlog.md).
+ * The drill needs seeded algorithm data. CI reads the live data with the
+ * public key from the NEXT_PUBLIC_SUPABASE_ANON_KEY repo secret and sets
+ * E2E_REQUIRE_DATA, so missing data fails there rather than hiding as a skip.
+ * Without that secret (a fork, or a local run with no .env.local) these skip
+ * with a reason instead.
  */
 async function skipWithoutData(page: Page) {
   const empty = await page.getByText("Nothing to drill here").isVisible();
+  if (process.env.E2E_REQUIRE_DATA === "1") {
+    expect(empty, "Drill Lab found no algorithm data, but E2E_REQUIRE_DATA is set").toBe(false);
+    return;
+  }
   test.skip(empty, "no seeded algorithm data in this environment");
 }
 

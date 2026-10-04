@@ -85,6 +85,29 @@ execution in `next/og` `ImageResponse`, which `src/app/opengraph-image.tsx` uses
 
 ---
 
+## 2026-10-04 — Drill Lab e2e tests run in CI against live data, branch `ci/drill-e2e-data`
+
+**Request:** Un-skip the three Drill Lab e2e tests that skip in CI.
+
+**Cause:** CI builds against the real Supabase URL with a placeholder anon key. Every query fails, `/learn/333/drill` shows "Nothing to drill here", and `skipWithoutData` skips the tests. The tests themselves were fine: they passed locally against live data.
+
+**Decision (founder):** CI gets the real public (anon) key from a repo secret and reads live data as a signed-out browser does. This was chosen over running a local Supabase in CI, which would cost 2–3 minutes per run plus `config.toml` and seed setup.
+
+**Changed**
+- **`.github/workflows/ci.yml`** (e2e job):
+  - The build, chunk-guard and Playwright steps use `secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY`, falling back to the old placeholder.
+  - `E2E_REQUIRE_DATA` is set when that secret exists.
+  - `SUPABASE_SERVICE_ROLE_KEY` stays a placeholder; the service role key is never given to CI.
+- **`tests/e2e/drill.spec.ts`**: with `E2E_REQUIRE_DATA=1`, missing drill data fails the test instead of skipping it, so a broken key or empty database can't hide as three skips. Without it (a fork, or a local run without `.env.local`) the tests skip as before.
+
+**Founder action needed:** add the repo secret `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Until then CI behaves exactly as before.
+
+**Verified**
+- `npm run build`, then `E2E_PROD=1 E2E_REQUIRE_DATA=1 npx playwright test` (production build, as in CI): 12 of 12 pass, including the 3 drill tests that used to skip.
+- `ci.yml` parses as valid YAML.
+
+---
+
 ## 2026-10-04 — Category filter on Learn series pages; remove dead `filter-bar.tsx`, branch `feat/case-category-filter`
 
 **Request:** Wire `filter-bar.tsx` into the series pages. It turned out to be an early draft of the hub-page filter that `PuzzleSeriesList` already implements, and the series pages already filter by status and search. The founder chose to delete the stub and add category filters to the series pages.

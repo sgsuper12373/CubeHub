@@ -73,6 +73,13 @@ jobs:
     name: Playwright Browser Smoke Tests
     runs-on: ubuntu-latest
     needs: validate
+    # The public (anon) key comes from a repo secret so the Drill Lab tests can
+    # read the live algorithm data, exactly as a signed-out browser does. It is
+    # the key the app already ships to every visitor. The service role key is
+    # never given to CI. Without the secret (e.g. on a fork) the placeholder is
+    # used and the data-dependent tests skip; with it, missing data fails them.
+    env:
+      E2E_REQUIRE_DATA: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY != '' && '1' || '' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -92,7 +99,7 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: "https://bmgupzbyzuxrdsqtiwli.supabase.co"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "ey00000000000000000000000000000000000000000000000000000000000000000000000000000000"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'ey00000000000000000000000000000000000000000000000000000000000000000000000000000000' }}
           SUPABASE_SERVICE_ROLE_KEY: "ey00000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
       # Requests every chunk and cubing module the built app can load lazily,
@@ -109,7 +116,7 @@ jobs:
           kill $SERVER
         env:
           NEXT_PUBLIC_SUPABASE_URL: "https://bmgupzbyzuxrdsqtiwli.supabase.co"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "ey00000000000000000000000000000000000000000000000000000000000000000000000000000000"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'ey00000000000000000000000000000000000000000000000000000000000000000000000000000000' }}
           SUPABASE_SERVICE_ROLE_KEY: "ey00000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
       # Runs against the production build (`next start`), not `next dev`;
@@ -119,7 +126,7 @@ jobs:
         env:
           CI: true
           NEXT_PUBLIC_SUPABASE_URL: "https://bmgupzbyzuxrdsqtiwli.supabase.co"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "ey00000000000000000000000000000000000000000000000000000000000000000000000000000000"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'ey00000000000000000000000000000000000000000000000000000000000000000000000000000000' }}
           SUPABASE_SERVICE_ROLE_KEY: "ey00000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
       - name: Upload Playwright Report on Failure
