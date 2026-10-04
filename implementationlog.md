@@ -5,6 +5,24 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-04 — Housekeeping: Supabase MCP read-only; declare `server-only` and `postcss`
+
+**Request:** Do the quick housekeeping items from the Phase 3 review.
+
+**Changed**
+- **`.mcp.json`**: adds `read_only=true` to the Supabase MCP URL. It had been exposing write tools (`apply_migration`, branch merge and reset), which contradicted `docs/database.md`. Schema and data changes stay deliberate, through the dashboard SQL editor or the CLI.
+- **`package.json`**:
+  - adds `server-only` to dependencies. It is imported by `src/lib/{admin,auth,profile}/dal.ts`. Next.js resolves it internally, so builds worked without it, but vitest or another tool importing those files would fail to resolve it.
+  - adds `postcss` to devDependencies. `postcss.config.mjs` needs it, and it was only installed because other packages depend on it.
+  - The lockfile changes are just those two packages plus `postcss`'s `nanoid` patch bump.
+
+**Verified**
+- `npm run validate`: tsc, lint, and 209 of 209 tests pass.
+- `npm run build` passes.
+- The MCP change takes effect the next time the session reconnects to the server.
+
+---
+
 ## 2026-10-04 — Commit 2x2 and OLL seed scripts (`supabase/DataSeeds/`)
 
 **Request:** Find out which of the new seed scripts the live database still needed, apply them, then commit the scripts.
