@@ -24,7 +24,7 @@ export function Navbar({ profile }: { profile: CurrentProfile | null }) {
         <Link href="/" aria-label="CubeHub home" className="text-lg">
           <Logo />
         </Link>
-        {/* Labels show from lg up; between md and lg seven labelled links
+        {/* Labels show from lg up; between md and lg eight labelled links
             don't fit beside the logo and user menu, so they go icon-only. */}
         <div className="flex h-full min-w-0 items-center gap-1">
           {navItems.map(({ label, href, icon: Icon }) => {

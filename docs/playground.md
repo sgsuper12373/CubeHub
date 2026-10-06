@@ -1,6 +1,30 @@
 # Playground — plan
 
-Status: **proposal, not built.** Nothing here is in the schema or the routes yet.
+Status: **Phase 1 built (2026-10-06)** — `/playground`, 3x3 and 2x2. Phases 2–3 are
+still proposals. Decided: playground solves are **never stored**, anywhere (no
+Supabase, no localStorage), and the smart-cube work waits until there is a
+Bluetooth cube to test with.
+
+### What Phase 1 shipped, and how it differs from the plan below
+
+- Code: `src/lib/playground/` (keymap, history reducer, KPuzzle solved/valid-move
+  checks), `src/components/playground/`, route `src/app/(app)/playground/page.tsx`.
+  `?puzzle=222` opens the 2x2.
+- State is a `useReducer` in the screen, not a zustand store: nothing outside the
+  page reads it, and nothing is persisted.
+- 3D uses cubing's **`PG3D`** renderer, not its default 3x3 one, because
+  click-to-turn (`experimentalMovePressInput: "basic"`) is silently skipped on the
+  default renderer. Clicks are routed through our own move list by intercepting
+  `player.experimentalModel.experimentalAddMove` (see `playground-cube.tsx`). That
+  is an experimental cubing API: re-test clicking after any cubing upgrade.
+- Every move, from keys, pad or clicks, is checked against the puzzle's KPuzzle
+  first, so a shift-click slice on a 2x2 is ignored instead of breaking the cube.
+- Move count ignores whole-cube rotations. A double turn typed as two key presses
+  counts as two moves, as in csTimer.
+- Navbar has a Playground link; the phone bottom bar does not (still five tabs).
+  On mobile it is reached from a button in the Learn hero.
+- Tests: `tests/unit/playground.test.ts`, `tests/e2e/playground.spec.ts` (keys, pad,
+  undo/redo, solving a real worker scramble, 2x2).
 
 ## What it is
 
@@ -68,7 +92,7 @@ that widens.
   the first turn → stops on solved. Shows time, move count, TPS.
 - **Solve replay**: every move is stored with a timestamp, so a finished solve can
   be replayed at real speed in the same player.
-- Virtual solve history kept in **localStorage only** at first (see Data below).
+- ~~Virtual solve history in localStorage~~: dropped. Solves are not stored.
 
 ### Phase 3 — more puzzles and smart cubes
 
@@ -140,12 +164,9 @@ rather than getting its own tab. Revisit if usage justifies swapping a tab.
 
 ### Data
 
-- Phase 1: none.
-- Phase 2: virtual solves in localStorage.
-- If virtual solves are later synced, use a **separate `virtual_solves` table**
-  (or at minimum a column that excludes them from every PB trigger and
-  leaderboard index). Do **not** insert them into `solves`: the PB triggers and
-  `effective_time_ms` leaderboards assume physical solves.
+**Decided: none, in any phase.** Playground solves are never stored. If that ever
+changes, use a separate `virtual_solves` table; never insert them into `solves`,
+whose PB triggers and leaderboards assume physical solves.
 
 ## Suggested order of work
 
@@ -156,11 +177,9 @@ rather than getting its own tab. Revisit if usage justifies swapping a tab.
 5. Phase 2: "Try it" buttons, share links, virtual solve mode, replay.
 6. Phase 3 puzzles, then smart-cube spike.
 
-## Open questions for the founder
+## Open questions — answered (2026-10-06)
 
-1. Is "Playground" meant to be this virtual cube sandbox, or something else
-   (e.g. an algorithm editor or a scramble explorer)?
-2. Should virtual solves ever be saved to an account, or stay local-only?
-3. Mobile: is it acceptable that Playground has no bottom-bar tab?
-4. Do you have a Bluetooth smart cube to test with? That decides whether Phase 3
-   smart-cube support is realistic.
+1. Playground is the virtual cube sandbox described here. **Yes.**
+2. Store virtual solves? **No, never.**
+3. No phone bottom-bar tab: kept as planned; Learn links to it.
+4. Bluetooth smart cube to test with? **Not yet**, so smart-cube support waits.

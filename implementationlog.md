@@ -871,3 +871,31 @@ across `src/`, `tests/`, `docs/`, `project_plan/` and `public/` before removing 
 - `npm run validate` (tsc, eslint, vitest): passes. 17/17 tests, 0 lint errors.
 - `npm run build`: passes, all routes compile.
 - Pre-existing uncommitted edits to `src/app/(app)/learn/[puzzle]/page.tsx` were left untouched.
+
+## 2026-10-06 — Playground, Phase 1
+
+A virtual puzzle sandbox at `/playground` (plan: `docs/playground.md`).
+
+### Added
+
+- `src/lib/playground/`: csTimer-layout key map by `KeyboardEvent.code`, a pure
+  history reducer (moves, undo/redo, `revision` for redraw-vs-animate), and KPuzzle
+  checks for legal moves and solved-in-any-orientation.
+- `src/components/playground/`: the screen, the `<twisty-player>` wrapper (PG3D so
+  click-to-turn works; clicks are routed through the reducer), and a move pad for
+  phones.
+- Navbar link; a "Try the Playground" button in the Learn hero for mobile, where the
+  bottom bar stays at five tabs.
+- `tests/unit/playground.test.ts` (15 tests), `tests/e2e/playground.spec.ts` (3 tests).
+
+### Decided
+
+- Playground solves are never stored. No Bluetooth smart-cube work until there is a
+  cube to test with.
+
+### Verification
+
+- `tsc`, eslint (no new errors), `check:colors`, `npm test` (224 passed).
+- `npm run build`, then the playground and cubing-runtime e2e specs against
+  `next start`: 5 passed. Click and touch-tap turning checked by hand in Chromium.
+
