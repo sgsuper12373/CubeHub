@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  Box,
   GraduationCap,
   ShoppingCart,
   Swords,
@@ -26,6 +27,7 @@ export const navItems: NavItem[] = [
   { label: "Stats", href: "/stats", icon: BarChart3 },
   { label: "Learn", href: "/learn", icon: GraduationCap },
   { label: "Drill", href: "/learn/333/drill", icon: Target, match: /^\/learn\/[^/]+\/drill(\/|$)/ },
+  { label: "Playground", href: "/playground", icon: Box },
   { label: "Compete", href: "/compete", icon: Swords },
   { label: "Shop", href: "/shop", icon: ShoppingCart },
   { label: "Profile", href: "/settings", icon: User },
@@ -51,7 +53,9 @@ export function activeNavHref(pathname: string, items: readonly NavItem[]): stri
  *   cuber is already looking at their numbers when they want more of them.
  * - Compete, which is still a placeholder page. Drill took its slot; Compete
  *   comes back when it has something to show.
+ * - Playground, which is linked from the Learn page instead: it is a side
+ *   trip from learning, not a daily destination like the timer.
  */
-const MOBILE_HIDDEN: ReadonlySet<string> = new Set(["/stats", "/compete"]);
+const MOBILE_HIDDEN: ReadonlySet<string> = new Set(["/stats", "/compete", "/playground"]);
 
 export const mobileNavItems: NavItem[] = navItems.filter((item) => !MOBILE_HIDDEN.has(item.href));

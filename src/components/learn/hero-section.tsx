@@ -1,11 +1,14 @@
 "use client";
 
 import { motion } from "motion/react";
-import { GraduationCap } from "lucide-react";
+import { Box, GraduationCap } from "lucide-react";
+import Link from "next/link";
 import { useMousePosition } from "@/hooks/use-mouse-position";
 import { useRef } from "react";
 
 import Image from "next/image";
+
+import { Button } from "@/components/ui/button";
 
 export function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -60,6 +63,17 @@ export function HeroSection() {
           >
             Master the Puzzles with interactive tutorials, algorithm libraries and guided lessons.
           </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            {/* The phone bar has no Playground tab, so this is its way in on mobile. */}
+            <Button variant="outline" size="lg" nativeButton={false} render={<Link href="/playground" />}>
+              <Box /> No cube to hand? Try the Playground
+            </Button>
+          </motion.div>
         </div>
 
         {/* Right Column: Hero Image */}

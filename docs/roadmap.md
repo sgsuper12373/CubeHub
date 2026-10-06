@@ -82,6 +82,12 @@ Launch content: 3x3 beginner LBL, CFOP intro, all 57 OLL, all 21 PLL; 2x2 beginn
 
 *Deliverable: shareable tutorials — the main organic-traffic and sign-up driver.*
 
+## Playground
+
+**Phase 1 built (2026-10-06):** `/playground`, a virtual 3x3/2x2 to turn with keys, the
+on-screen pad or clicks, scramble, undo/redo, with solved detection. Nothing is stored.
+Plan, decisions and later phases in `playground.md`.
+
 ## Phase 4 — Shop
 
 Curated database of ~50–100 cubes. Recommender: puzzle → level (or pulled from the user's actual stats) → budget slider ₹300–₹5,000+ → priority. Returns 3–5 ranked cubes with a two-line "why this cube", INR range, and affiliate links. Sponsored brand pages.
