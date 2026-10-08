@@ -12,13 +12,11 @@ Written 2026-10-04. Tick items off or delete them as they're done.
 include a middleware/proxy bypass and server-action denial-of-service. The fix is
 **16.3.8**, a minor release.
 
-- [ ] Ask Claude: *"upgrade Next.js to 16.3.8"*. That means bumping `next` and
-      `eslint-config-next`, reading the release notes in `node_modules/next/dist/docs/`,
-      running `npm run validate`, building, and running the e2e suite.
+- [x] Ask Claude: *"upgrade Next.js to 16.3.8"*. Done 2026-10-08 (see `implementationlog.md`).
 - [ ] Push and redeploy straight after.
 
-`npm audit` also lists high-severity issues in dev tools (`shadcn`, `braces`,
-`js-yaml`…). They don't ship to users, so they can wait for a routine `npm audit fix`.
+`npm audit` still lists issues in dev tools only (`shadcn` and its `proxy-addr` critical,
+`braces`, `js-yaml`…). They don't ship to users, so they can wait for a routine `npm audit fix`.
 
 ---
 
@@ -76,7 +74,7 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
 
 Roughly in the suggested order:
 
-- [ ] **Next.js upgrade** (section 1).
+- [x] **Next.js upgrade** (section 1).
 - [ ] **Database security fixes:** one small migration, applied via the dashboard.
   - Give `is_admin()` a fixed `search_path`.
   - Revoke public `EXECUTE` on the trigger functions `maintain_average_pbs_on_insert`,

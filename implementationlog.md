@@ -5,6 +5,35 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-08 — Next.js 16.2.10 → 16.3.8 (security)
+
+**Request:** Upgrade Next.js to fix the critical advisories in 16.2.10. One is remote code
+execution in `next/og` `ImageResponse`, which `src/app/opengraph-image.tsx` uses.
+
+**Changed**
+- `package.json` / `package-lock.json`: `next` and `eslint-config-next` 16.2.10 → 16.3.8, both still pinned exact. React 19.2.4 is within the peer range.
+
+**Kept on purpose**
+- No codemods. The two 16.3 codemods (`cache-components-instant-false` and
+  `remove-partial-prefetch`) only apply when you enable `cacheComponents` or
+  `partialPrefetching`. Neither is used.
+- Dev-tool advisories are left alone. The remaining `npm audit` critical (`proxy-addr`)
+  and the highs come through `shadcn` and `eslint-config-next`, and none of them ship.
+  `next` is no longer flagged.
+
+**Verified**
+- `npm run validate`: tsc, lint (the same one pre-existing warning), and 246 of 246 unit tests pass.
+- `npm run build` passes on Turbopack; all routes compile.
+- `npm run test:e2e:prod`: 21 of 21 pass against `next start`.
+- `check:chunks` against the local production server: 65 files across 4 pages, all resolve.
+- **New log noise, harmless:** the server now prints `The destination stream closed early`
+  when a client drops a page mid-stream. It appeared about 9 times per e2e run, all from
+  Playground tests, and 0 times on 16.2.10. Letting each page reach network idle before
+  it closes brings it to 0, so it is an aborted request, not a failure. Full page loads of
+  `/`, `/playground`, `/timer` and `/learn` return 200 with no errors.
+
+---
+
 ## 2026-10-06 — Playground: custom key mapping replaces the csTimer layout option
 
 **Request:** Remove the csTimer keys option and let users map keys themselves.
