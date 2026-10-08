@@ -1,7 +1,7 @@
 # Playground — plan
 
-Status: **Phase 1 built (2026-10-06)** — `/playground`, 3x3 and 2x2. Phases 2–3 are
-still proposals. Decided: playground solves are **never stored**, anywhere (no
+Status: **Phases 1 and 2 built (2026-10-06)** — `/playground`, 3x3 and 2x2, with
+alg check, Learn "Try it", share links and practice mode. Phase 3 is still a proposal. Decided: playground solves are **never stored**, anywhere (no
 Supabase, no localStorage), and the smart-cube work waits until there is a
 Bluetooth cube to test with.
 
@@ -25,6 +25,29 @@ Bluetooth cube to test with.
   On mobile it is reached from a button in the Learn hero.
 - Tests: `tests/unit/playground.test.ts`, `tests/e2e/playground.spec.ts` (keys, pad,
   undo/redo, solving a real worker scramble, 2x2).
+
+### What Phase 2 shipped (round 2)
+
+- **Keys: notation by default, fully remappable.** R turns R, Shift+R turns R',
+  plus M/E/S and x/y/z. (The first version used csTimer's layout, where the R key
+  does `l'`; beginners found that confusing.) The key list (`?`, or Controls →
+  "Keys & custom mapping") has **Edit keys**: bind any key or Shift+key to any of
+  the 45 moves (faces, slices, wide, rotations, each with ' and 2). A key does one
+  move, so rebinding it moves it. Space, Esc, Tab, Enter and `?` can't be bound.
+  The bindings are saved in localStorage (`lib/playground/prefs.ts`; settings only,
+  never solves), with "Reset to default". A csTimer preset was considered and left
+  out on the founder's call.
+- **Try an algorithm** panel (`alg-panel.tsx`, parsing in `lib/playground/alg-input.ts`):
+  *Set up case* shows the case an alg solves (`z2` + inverse, as in the Drill Lab),
+  *Show me* sets it up and plays the alg, *Apply* turns the current cube. Input is
+  capped at 300 chars and 300 expanded moves (`(R U)1000000` is rejected lazily).
+- **Links:** `?case=<alg>` (Learn cards' "Try it" button), and `?setup=&moves=`
+  from the copy-link button, so a shared link reproduces the cube.
+- **Practice mode** (`lib/playground/practice.ts`): scramble → optional 15s
+  inspection → the clock starts on the first non-rotation turn (or at 15s) → stops
+  on solved, showing time, moves and TPS, plus a replay at fixed tempo. Not stored.
+- **Quality of life:** X2 buttons on the pad and M/E/S/wide behind "More moves",
+  a "Simplified" history line, turn speed, show-hidden-faces, `?` key overlay.
 
 ## What it is
 
@@ -66,9 +89,7 @@ that widens.
 
 - **Live 3D puzzle** using the existing `loadTwisty()` runtime loader. No new dependency.
 - **Inputs**
-  - Keyboard: csTimer-compatible layout (I/K = R/R', D/E = L/L', J/F = U/U',
-    H/G = F/F', S/L = D/D', W/O = B/B', ;/A = y/y', T/B = x/x', P/Q = z/z').
-    Verify each key against csTimer before shipping; muscle memory is the point.
+  - Keyboard: notation keys by default, user-remappable (see "What Phase 2 shipped").
   - Mouse / touch: drag to rotate the view; click or swipe on a face to turn it
     (cubing.js has experimental move-press input on the 3D view, see feasibility).
   - On-screen move pad (R R' U U' …) for phones, where there is no keyboard and
@@ -91,7 +112,8 @@ that widens.
 - **Virtual solve mode**: scramble → optional 15s inspection → timer starts on
   the first turn → stops on solved. Shows time, move count, TPS.
 - **Solve replay**: every move is stored with a timestamp, so a finished solve can
-  be replayed at real speed in the same player.
+  be replayed at real speed in the same player. (Built at a fixed tempo; the
+  timestamps are recorded, so real-pace replay is a later step.)
 - ~~Virtual solve history in localStorage~~: dropped. Solves are not stored.
 
 ### Phase 3 — more puzzles and smart cubes

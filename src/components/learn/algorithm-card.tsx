@@ -5,13 +5,14 @@ import { AlgorithmCase } from "@/lib/learn/dal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@base-ui/react/dialog";
-import { Play, Check, Eye, X } from "lucide-react";
+import { Play, Check, Eye, X, Box } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CaseViewer } from "@/components/learn/case-viewer";
 import { FaceletViewer } from "@/components/learn/facelet-viewer";
 import { AlgPlayer } from "@/components/learn/alg-player";
 import { toggleAlgorithmBookmark } from "@/lib/learn/actions";
 import { caseDiagram, mainAlgorithm } from "@/lib/learn/case-diagram";
+import { isPlaygroundPuzzle } from "@/lib/playground/puzzles";
 import Link from "next/link";
 
 export function AlgorithmCard({
@@ -150,6 +151,24 @@ export function AlgorithmCard({
             >
               <Eye className="mr-1.5 h-3.5 w-3.5" />
               Animate
+            </Button>
+          )}
+
+          {mainAlg && isPlaygroundPuzzle(puzzle) && (
+            <Button
+              render={
+                <Link
+                  href={`/playground?puzzle=${puzzle}&case=${encodeURIComponent(mainAlg.moves)}`}
+                />
+              }
+              nativeButton={false}
+              variant="ghost"
+              size="sm"
+              className="text-xs font-medium"
+              title="Set this case up on the virtual cube and solve it"
+            >
+              <Box className="mr-1.5 h-3.5 w-3.5" />
+              Try it
             </Button>
           )}
 

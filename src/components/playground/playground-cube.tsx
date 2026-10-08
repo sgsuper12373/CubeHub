@@ -21,6 +21,9 @@ type AddMove = TwistyPlayer["experimentalModel"]["experimentalAddMove"];
  *
  * Move press only works on cubing's PG3D renderer (its default 3x3 renderer
  * skips it), hence `visualization: "PG3D"`.
+ *
+ * `replayToken` changing (to anything but 0) plays the whole attempt from the
+ * start state: the practice-mode replay.
  */
 export function PlaygroundCube({
   puzzle,
@@ -28,6 +31,9 @@ export function PlaygroundCube({
   scramble,
   moves,
   revision,
+  tempoScale,
+  hintStickers,
+  replayToken,
   onMove,
 }: {
   puzzle: PlaygroundPuzzle;
@@ -35,6 +41,9 @@ export function PlaygroundCube({
   scramble: string;
   moves: readonly string[];
   revision: number;
+  tempoScale: number;
+  hintStickers: boolean;
+  replayToken: number;
   onMove: (move: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -45,13 +54,13 @@ export function PlaygroundCube({
   // animate one appended move or has to redraw.
   const shownRef = useRef<{ revision: number; length: number } | null>(null);
   // Latest props for the mount effect, which must not re-run on every move.
-  const latestRef = useRef({ scramble, moves, revision });
+  const latestRef = useRef({ scramble, moves, revision, tempoScale, hintStickers });
   const configKey = `${puzzle}|${visualization}`;
   const [readyKey, setReadyKey] = useState<string | null>(null);
 
   useEffect(() => {
     onMoveRef.current = onMove;
-    latestRef.current = { scramble, moves, revision };
+    latestRef.current = { scramble, moves, revision, tempoScale, hintStickers };
   });
 
   useEffect(() => {
@@ -62,7 +71,7 @@ export function PlaygroundCube({
       if (cancelled || !containerRef.current) return;
 
       playerRef.current?.remove();
-      const { scramble, moves, revision } = latestRef.current;
+      const { scramble, moves, revision, tempoScale, hintStickers } = latestRef.current;
       const player = new TwistyPlayer({
         puzzle: twistyPuzzleId(puzzle),
         experimentalSetupAlg: scramble,
@@ -70,10 +79,10 @@ export function PlaygroundCube({
         visualization: visualization === "3D" ? "PG3D" : "2D",
         background: "none",
         controlPanel: "none",
-        hintFacelets: "none",
+        hintFacelets: hintStickers ? "floating" : "none",
         experimentalDragInput: "auto",
         experimentalMovePressInput: "basic",
-        tempoScale: 3,
+        tempoScale,
       });
       player.timestamp = "end";
       player.style.width = "100%";
@@ -106,10 +115,11 @@ export function PlaygroundCube({
     if (!player || !addMove || !shown || readyKey !== configKey) return;
     if (shown.revision === revision && shown.length === moves.length) return;
 
-    if (shown.revision === revision && moves.length === shown.length + 1) {
-      // One move appended: animate it. No cancellation, so `R R'` stays two
-      // moves in the player just as it does in the history.
-      addMove(moves[moves.length - 1], { cancel: false });
+    if (shown.revision === revision && moves.length > shown.length) {
+      // Moves appended (one turn, or a whole alg from the alg box): animate
+      // them in order. No cancellation, so `R R'` stays two moves in the
+      // player just as it does in the history.
+      for (const move of moves.slice(shown.length)) addMove(move, { cancel: false });
     } else {
       player.experimentalSetupAlg = scramble;
       player.alg = moves.join(" ");
@@ -117,6 +127,21 @@ export function PlaygroundCube({
     }
     shownRef.current = { revision, length: moves.length };
   }, [scramble, moves, revision, readyKey, configKey]);
+
+  // View settings apply to the live player; no need to rebuild it.
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player || readyKey !== configKey) return;
+    player.tempoScale = tempoScale;
+    player.hintFacelets = hintStickers ? "floating" : "none";
+  }, [tempoScale, hintStickers, readyKey, configKey]);
+
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!replayToken || !player || readyKey !== configKey) return;
+    player.timestamp = "start";
+    player.play();
+  }, [replayToken, readyKey, configKey]);
 
   return (
     <div className="relative aspect-square w-full max-w-[min(28rem,70vh)]" data-testid="playground-cube">

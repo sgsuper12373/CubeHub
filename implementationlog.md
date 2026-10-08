@@ -5,6 +5,57 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-06 — Playground: custom key mapping replaces the csTimer layout option
+
+**Request:** Remove the csTimer keys option and let users map keys themselves.
+
+**Changed**
+- **`lib/playground/keymap.ts`**: the two fixed layouts are gone.
+  - Keys are now `KeyBindings`, a map from chord (`KeyR`, `Shift+KeyR`) to move. `DEFAULT_BINDINGS` gives notation keys.
+  - Any of 45 moves can be bound (faces, M/E/S, wide, rotations, each with ' and 2). On a 2x2 only face turns and rotations work.
+  - New `bindKey`/`unbindKey` (a key does one move), `chordProblem` (Space, Esc, Tab, Enter, `?` and bare modifiers are refused), `sanitizeBindings` and `chordLabel`.
+- **`lib/playground/prefs.ts`**: stores `keyBindings` instead of `keyLayout`. Bad stored data falls back to the defaults.
+- **`keys-overlay.tsx`**: the key list gains **Edit keys**.
+  - Press "+" on a move, then a key. "×" removes a key, and "Reset to default" restores the notation keys.
+  - A note says when a key was taken from another move. Esc stops listening.
+  - It listens in the capture phase, behind the overlay lock, so binding a key never turns the cube.
+- **`playground-screen.tsx`**: the Controls panel loses the layout toggle. It says whether custom keys are active and opens the key list.
+- **Tests**: the unit keymap tests now cover binding, rebinding, refused keys, the 2x2 filter and sanitising (29 tests). The e2e test binds I to R through the editor, checks that Space is refused and that the binding survives a reload, then resets it.
+
+**Verified**: `npm run validate` passes (tsc, lint with one pre-existing warning, and 246 of 246 unit tests). `check:colors` is OK. The full Playwright suite passes, 21 of 21. The editor was screenshotted at 1280px and 390px.
+
+---
+
+## 2026-10-06 — Playground round 2: notation keys, alg check, Learn "Try it", practice mode
+
+**Request:** The founder found that pressing R did not turn R. They asked whether csTimer and other sites work the same way, and what else the playground needs. Plan: `~/.claude/plans/steady-baking-dove.md`.
+
+**Finding:** It was not a bug. csTimer's virtual cube maps the R key to `l'` (`twistynnn.js`), and cubing.js copies that layout. Ruwix-style simulators use notation keys instead. The founder chose to offer both, with notation as the default.
+
+**Changed**
+- **`lib/playground/keymap.ts`**: notation and speed (csTimer) layouts. The speed layout now has S/E and u/d too. `moveForKey(press, puzzle, layout)` and `keysForMove()`.
+- **New: `lib/playground/prefs.ts`**: key layout, turn speed, hint stickers and inspection, kept in localStorage behind `useSyncExternalStore` (defaults on the server, so no hydration mismatch).
+- **`lib/playground/history.ts`**:
+  - New `case`, `load` and `moves` actions.
+  - Move timestamps (`times`) for practice replay.
+  - `setupKind` records where the cube started.
+- **New: `lib/playground/alg-input.ts`**: parse, cap and validate an alg, build a case setup (`z2` plus the inverse), simplify the history.
+- **New: `lib/playground/practice.ts`**: the practice-mode phases as pure transitions.
+- **`components/playground/`**:
+  - New `alg-panel.tsx`, `practice-timer.tsx` and `keys-overlay.tsx` (`?`).
+  - `move-pad.tsx` gains X2 buttons and a "More moves" section.
+  - `playground-cube.tsx` animates multi-move appends and gains turn speed, hint stickers and replay.
+  - `playground-screen.tsx` ties these together and adds a copy-link button.
+- **`app/(app)/playground/page.tsx`**: reads the `case`, `setup` and `moves` params (each at most 300 chars).
+- **`components/learn/algorithm-card.tsx`**: a "Try it" button that opens `/playground?puzzle=…&case=<main alg>`.
+- **Tests**: `tests/unit/playground.test.ts` grew to 28 tests (layouts, alg parsing, T-perm case round trip, practice timing, prefs). `tests/e2e/playground.spec.ts` grew to 9 tests (Shift prime, a remembered csTimer switch, alg case and Apply, a bad alg, `?case=`, practice, Learn "Try it").
+
+**Verified**
+- `npm run validate`: tsc, lint (one pre-existing warning), and 245 of 245 unit tests pass. `check:colors` is OK.
+- The full Playwright suite passes, 21 of 21. Screenshots at 1280px and 390px show no horizontal scroll.
+
+---
+
 ## 2026-10-04 — Category filter on Learn series pages; remove dead `filter-bar.tsx`, branch `feat/case-category-filter`
 
 **Request:** Wire `filter-bar.tsx` into the series pages. It turned out to be an early draft of the hub-page filter that `PuzzleSeriesList` already implements, and the series pages already filter by status and search. The founder chose to delete the stub and add category filters to the series pages.
