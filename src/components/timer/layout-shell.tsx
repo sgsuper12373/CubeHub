@@ -30,6 +30,61 @@ const LayoutEditorInner = dynamic(
 );
 
 /**
+ * The Edit layout toggle (and Reset while editing). Rendered in the timer's
+ * top bar beside the settings buttons rather than on a row of its own, so it
+ * doesn't cost the grid a line. Editing is a desktop affordance: the grid
+ * itself only exists at md+.
+ */
+export function LayoutControls() {
+  const editing = useLayoutStore((s) => s.editing);
+  return (
+    <div className="hidden items-center gap-1 md:flex">
+      {editing && (
+        <Button
+          variant="ghost"
+          size="xs"
+          onClick={(e) => {
+            e.currentTarget.blur();
+            useLayoutStore.getState().reset();
+          }}
+        >
+          <RotateCcw />
+          Reset
+        </Button>
+      )}
+      {editing ? (
+        <Button
+          size="xs"
+          aria-pressed
+          onClick={(e) => {
+            e.currentTarget.blur();
+            useLayoutStore.getState().setEditing(false);
+          }}
+        >
+          <Check />
+          Done
+        </Button>
+      ) : (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Edit layout"
+          aria-pressed={false}
+          title="Edit layout"
+          onClick={(e) => {
+            // Blur so the next Space reaches the timer, not this button.
+            e.currentTarget.blur();
+            useLayoutStore.getState().setEditing(true);
+          }}
+        >
+          <LayoutGrid />
+        </Button>
+      )}
+    </div>
+  );
+}
+
+/**
  * Desktop panel layout for /timer.
  *
  * Two render paths over one stored arrangement:
@@ -71,36 +126,6 @@ export function LayoutShell({
 
   return (
     <div className={cn("flex min-h-0 flex-1 flex-col", className)}>
-      {/* Editing is a desktop affordance; the grid itself only exists at md+. */}
-      <div className="hidden items-center justify-end gap-1 px-2 py-1 md:flex" data-focus-hide>
-        {editing && (
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={(e) => {
-              e.currentTarget.blur();
-              useLayoutStore.getState().reset();
-            }}
-          >
-            <RotateCcw />
-            Reset
-          </Button>
-        )}
-        <Button
-          variant={editing ? "default" : "ghost"}
-          size="xs"
-          aria-pressed={editing}
-          onClick={(e) => {
-            // Blur so the next Space reaches the timer, not this button.
-            e.currentTarget.blur();
-            useLayoutStore.getState().setEditing(!editing);
-          }}
-        >
-          {editing ? <Check /> : <LayoutGrid />}
-          {editing ? "Done" : "Edit layout"}
-        </Button>
-      </div>
-
       <div ref={containerRef} className="flex min-h-0 flex-1 flex-col">
         {editing ? (
           <LayoutEditorInner

@@ -22,7 +22,7 @@ import { StatsPanel } from "@/components/stats/stats-panel";
 import { SessionStats } from "@/components/stats/session-stats";
 import { SolveList } from "@/components/stats/solve-list";
 import { SessionTrend } from "@/components/stats/session-trend";
-import { LayoutShell } from "@/components/timer/layout-shell";
+import { LayoutControls, LayoutShell } from "@/components/timer/layout-shell";
 import type { PanelId } from "@/lib/timer/layout";
 import { useLayoutStore } from "@/stores/layout-store";
 import { generateScramble } from "@/lib/timer/scrambler";
@@ -533,6 +533,7 @@ export function TimerScreen(props: {
             />
             {phase === "idle" || phase === "stopped" ? (
               <div className="flex items-center gap-1">
+                <LayoutControls />
                 <BackgroundSettings />
                 <QuickSettings
                   settings={settings}

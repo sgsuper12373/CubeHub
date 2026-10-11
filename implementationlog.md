@@ -5,6 +5,23 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-11 — Edit layout button moves to the top bar
+
+**Request:** The Edit layout button took a whole row above the grid. Move it to the top line, beside the settings buttons.
+
+**Changed**
+- **`layout-shell.tsx`**: the button row is gone. A new exported `LayoutControls` holds the controls.
+  - At rest it's an icon-only "Edit layout" button (LayoutGrid icon, with a tooltip), matching its icon neighbours.
+  - While editing it shows text "Reset" and "Done" buttons, so the mode stays obvious.
+  - It stays desktop-only (`hidden md:flex`).
+- **`timer-screen.tsx`**: renders `<LayoutControls />` before the background and settings buttons in the top bar.
+
+**Verified**
+- Screenshots at 1280px, at rest and while editing: the grid starts about 35px higher. Done brings the icon back, and the button stays hidden at 390px.
+- `npm run validate`: 323 of 323 unit tests. `check:colors` is OK. `npm run build` passes. `npm run test:e2e:prod` passed 30 of 30.
+
+---
+
 ## 2026-10-11 — Timer round, step 7: inspection beeps (round complete)
 
 **Request:** Step 7 of `docs/timer-plan.md`, the last one.
