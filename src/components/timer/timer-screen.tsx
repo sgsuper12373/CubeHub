@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 import { PenaltyBar } from "@/components/timer/penalty-bar";
 import { ScrambleBar } from "@/components/timer/scramble-bar";
 import { SessionSwitcher } from "@/components/timer/session-switcher";
 import { TimeDisplay } from "@/components/timer/time-display";
 import { TouchStage } from "@/components/timer/touch-stage";
+import { TypingEntry } from "@/components/timer/typing-entry";
 import { SignInNudge } from "@/components/timer/sign-in-nudge";
 import { ShortcutHint } from "@/components/timer/shortcut-hint";
 import { ShortcutsOverlay } from "@/components/timer/shortcuts-overlay";
@@ -50,6 +51,7 @@ export function TimerScreen(props: {
   const scramble = useTimerStore((s) => s.scramble);
   const puzzle = useTimerStore((s) => s.puzzle);
   const settings = useTimerStore((s) => s.settings);
+  const typing = settings.inputMode === "typing";
   const applySettings = useTimerStore((s) => s.applySettings);
   const resultPenalty = useTimerStore((s) => s.inspectionPenalty);
 
@@ -62,13 +64,12 @@ export function TimerScreen(props: {
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
-  /** The all-time PB card, tied to the stop that earned it. */
+  /** The all-time PB card, tied to the solve that earned it. */
   const [celebration, setCelebration] = useState<{
     hits: RecordHit[];
     puzzle: TimerPuzzle;
-    stoppedAt: number;
+    solveId: string;
   } | null>(null);
-  const stoppedAt = useTimerStore((s) => s.stoppedAt);
   const scrim = useTimerScrim();
   const editingLayout = useLayoutStore((s) => s.editing);
   const isZenMode = useLayoutStore((s) => s.isZenMode);
@@ -104,6 +105,8 @@ export function TimerScreen(props: {
   }, [props.initialSettings, applySettings]);
 
   const handleSettingsChange = (partial: Partial<TimerSettings>) => {
+    // A stopped timer's scramble is spent; typing starts on a fresh one.
+    if (partial.inputMode === "typing") useTimerStore.getState().advanceScramble();
     applySettings(partial);
     saveSettings(partial, props.isAuthed);
   };
@@ -142,7 +145,7 @@ export function TimerScreen(props: {
    * Session bests get a toast. All-time bests get the celebration card and the
    * glow on the digits; categories celebrated there aren't toasted twice.
    */
-  const announceRecords = (hits: RecordHit[]) => {
+  const announceRecords = (hits: RecordHit[], solveId: string) => {
     const allTime = hits.filter((h) => h.scope === "allTime");
     const session = hits.filter((h) => h.scope === "session");
 
@@ -155,9 +158,8 @@ export function TimerScreen(props: {
         durationMs: 4000,
       });
     }
-    const t = useTimerStore.getState();
-    if (allTime.length > 0 && t.stoppedAt !== null) {
-      setCelebration({ hits: allTime, puzzle: t.puzzle, stoppedAt: t.stoppedAt });
+    if (allTime.length > 0) {
+      setCelebration({ hits: allTime, puzzle: useTimerStore.getState().puzzle, solveId });
     }
     if (hits.length > 0) {
       setCelebrating(true);
@@ -166,11 +168,39 @@ export function TimerScreen(props: {
     }
   };
 
+  /**
+   * Save a solve on the current scramble and announce any records. Shared by
+   * the timer (on stop) and typing mode (on Enter).
+   */
+  const recordSolve = (timeMs: number, penalty: Penalty, source: "web" | "manual") => {
+    const t = useTimerStore.getState();
+    const sessionState = useSessionStore.getState();
+    const solve = {
+      id: crypto.randomUUID(),
+      sessionId: sessionState.activeSessionId ?? "",
+      puzzle: t.puzzle,
+      timeMs,
+      penalty,
+      effectiveTimeMs: null,
+      scramble: t.scramble.alg ?? "",
+      notes: null,
+      ...(source === "manual" && { source }),
+      createdAt: new Date().toISOString(),
+    };
+
+    // Records are judged against the solves *before* this one, so read them
+    // before the store adds it.
+    const { hits, known } = detectRecords(sessionState.solves, solve, sessionState.knownBests);
+    sessionState.setKnownBests(known);
+    void sessionState.addSolve(solve);
+    announceRecords(hits, solve.id);
+  };
+
   // Record the solve exactly once per stop. `stoppedAt` is unique per solve,
   // which makes this idempotent across re-renders and dev double-effects.
-  // Also handles PB detection.
-  useEffect(() => {
-    if (phase !== "stopped") return;
+  // An effect event, so the effect re-runs on `phase` alone while still
+  // calling the latest recordSolve.
+  const onStopped = useEffectEvent(() => {
     const t = useTimerStore.getState();
     if (
       t.stoppedAt === null ||
@@ -180,25 +210,14 @@ export function TimerScreen(props: {
       return;
     lastRecordedStopRef.current = t.stoppedAt;
 
-    const sessionState = useSessionStore.getState();
-    const solve = {
-      id: crypto.randomUUID(),
-      sessionId: sessionState.activeSessionId ?? "",
-      puzzle: t.puzzle,
-      timeMs: Math.max(1, Math.round(t.finalElapsedMs)), // DB check: time_ms > 0
-      penalty: t.inspectionPenalty,
-      effectiveTimeMs: null,
-      scramble: t.scramble.alg ?? "",
-      notes: null,
-      createdAt: new Date().toISOString(),
-    };
-
-    // Records are judged against the solves *before* this one, so read them
-    // before the store adds it.
-    const { hits, known } = detectRecords(sessionState.solves, solve, sessionState.knownBests);
-    sessionState.setKnownBests(known);
-    void sessionState.addSolve(solve);
-    announceRecords(hits);
+    recordSolve(
+      Math.max(1, Math.round(t.finalElapsedMs)), // DB check: time_ms > 0
+      t.inspectionPenalty,
+      "web",
+    );
+  });
+  useEffect(() => {
+    if (phase === "stopped") onStopped();
   }, [phase]);
 
   const togglePenalty = (p: Exclude<Penalty, "none">) => {
@@ -342,6 +361,17 @@ export function TimerScreen(props: {
         );
 
       case "timer":
+        if (typing) {
+          return (
+            <TypingEntry
+              timerFontSize={settings.timerFontSize}
+              onSubmit={(timeMs, penalty) => {
+                recordSolve(timeMs, penalty, "manual");
+                useTimerStore.getState().skipScramble();
+              }}
+            />
+          );
+        }
         return (
           <>
             <TouchStage
@@ -510,11 +540,11 @@ export function TimerScreen(props: {
 
       {phase === "stopped" && solves.length > 0 && <ShortcutHint />}
 
-      {/* Shown until closed or until the next solve begins (a new stop, or any
-          phase past idle, means the moment has passed). */}
+      {/* Shown until closed or until the next solve begins (a newer solve, or
+          the timer leaving idle, means the moment has passed). */}
       {celebration &&
-        celebration.stoppedAt === stoppedAt &&
-        (phase === "stopped" || phase === "idle") && (
+        solves[0]?.id === celebration.solveId &&
+        (typing || phase === "stopped" || phase === "idle") && (
         <PbCelebration
           hits={celebration.hits}
           puzzle={celebration.puzzle}

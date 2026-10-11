@@ -90,7 +90,7 @@ export async function syncLocalToCloud(userId: string): Promise<number> {
       time_ms: s.timeMs,
       penalty: s.penalty,
       scramble: s.scramble,
-      source: "web" as const,
+      source: s.source ?? "web",
       created_at: s.createdAt,
     }));
 

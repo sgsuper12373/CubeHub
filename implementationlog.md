@@ -5,6 +5,38 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-11 — Timer round, step 4: manual time entry (typing mode)
+
+**Request:** Step 4 of `docs/timer-plan.md`. Stackmat support stays deferred until users ask.
+
+**Changed**
+- **New `lib/timer/parse-time.ts`**: `parseTypedTime()` reads input the way csTimer does.
+  - `12.34`, `12.345`, `1:02.34`, `1:00:00`.
+  - Digits only: `1234` → 12.34, `10234` → 1:02.34.
+  - `+` suffix is +2; `DNF` and `DNF(12.34)` are DNF (a bare DNF stores 1 ms, because the DB requires time > 0).
+  - Rejects zero, invalid clock values (`1:75`) and anything of 24 h or more, with a message for the UI.
+- **New `components/timer/typing-entry.tsx`**: replaces the touch stage while typing mode is on, so Space types into the box and the timer's shortcuts are inactive.
+  - A big timer-font box. Enter saves; Escape blurs.
+  - OK/+2/DNF buttons (phone keypads have no `+`); a marker typed in the box wins over the button.
+  - Shows "Saved 12.34" after each save, or an inline error.
+- **Settings:** `inputMode: "timer" | "typing"` is client-only (`settings-persistence.ts`), with an "Enter times by" toggle in quick settings. Switching to typing after a timed solve moves to a fresh scramble.
+- **`Solve.source`** is optional; `"manual"` is set for typed times. `repo-supabase.ts` and the sign-in sync send it (the migration already allows `manual`).
+- **`timer-screen.tsx`**:
+  - The record-and-announce logic is now one `recordSolve(timeMs, penalty, source)`, used by the timer (through `useEffectEvent`, so the stop effect keeps `[phase]` deps) and by typing mode. Typed solves get session bests and PB cards too.
+  - The PB card is now keyed to the solve id, since a typed solve has no stop timestamp.
+- **Tests:**
+  - New `tests/unit/parse-time.test.ts` (25 cases).
+  - New e2e test: switch to Typing, `1234` → "Saved 12.34" and a new scramble, `abc` is rejected, DNF button, localStorage has both solves with `source: "manual"`, and the mode survives a reload.
+
+**Fixed while checking:** the timer-size setting was an inline `font-size` on the input, which overrode its `em` size and made typed digits small. It now sits on a wrapper, as in TimeDisplay.
+
+**Verified**
+- `npm run validate`: 305 of 305 unit tests; lint has the one pre-existing warning. `check:colors` is OK.
+- `npm run build` passes. `npm run test:e2e:prod` passed 26 of 26.
+- Screenshots of typing mode at 1280px and 390px.
+
+---
+
 ## 2026-10-11 — Timer round, step 3: copy an average as text
 
 **Request:** Step 3 of `docs/timer-plan.md`.

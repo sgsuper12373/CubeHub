@@ -85,6 +85,20 @@ export function QuickSettings({
           </div>
 
           <div className="space-y-4">
+            {/* Time with the timer, or type results in (Stackmat, competition) */}
+            <SettingRow label="Enter times by">
+              <SegmentedControl
+                options={[
+                  { value: "timer", label: "Timer" },
+                  { value: "typing", label: "Typing" },
+                ]}
+                value={settings.inputMode}
+                onChange={(v) =>
+                  onChange({ inputMode: v as TimerSettings["inputMode"] })
+                }
+              />
+            </SettingRow>
+
             {/* Inspection mode */}
             <SettingRow label="Inspection">
               <SegmentedControl

@@ -50,6 +50,8 @@ export interface TimerSettings {
   timerFontSize: number;
   /** Disable starting the timer by clicking with a mouse (touch is still allowed) */
   disableMouseClick: boolean;
+  /** Time solves with the timer, or type results in. Client-only (localStorage). */
+  inputMode: "timer" | "typing";
 }
 
 export const DEFAULT_TIMER_SETTINGS: TimerSettings = {
@@ -63,6 +65,7 @@ export const DEFAULT_TIMER_SETTINGS: TimerSettings = {
   previewDimension: "2D",
   timerFontSize: 100,
   disableMouseClick: false,
+  inputMode: "timer",
 };
 
 export interface Solve {
@@ -81,6 +84,11 @@ export interface Solve {
   effectiveTimeMs: number | null;
   scramble: string;
   notes: string | null;
+  /**
+   * How the time was produced (DB `solves.source`). Absent means "web", the
+   * timer. "manual" marks a typed-in time, so leaderboards can leave it out.
+   */
+  source?: "web" | "manual";
   /** ISO timestamp. Wall-clock is fine for metadata; never used for timing math. */
   createdAt: string;
   /**

@@ -9,7 +9,7 @@ import { DEFAULT_TIMER_SETTINGS } from "./types";
  *   → saved via server action, loaded via getTimerSettings() in dal.ts
  *
  * Client-only fields (localStorage for everyone):
- *   holdMs, precision, voiceEnabled, previewDimension
+ *   holdMs, precision, voiceEnabled, previewDimension, inputMode
  *   → never synced to the cloud; these are per-device preferences
  *
  * `previewDimension` is deliberately client-only. `show_scramble_preview`
@@ -24,6 +24,7 @@ interface ClientOnlySettings {
   precision: 2 | 3;
   voiceEnabled: boolean;
   previewDimension: "2D" | "3D";
+  inputMode: "timer" | "typing";
 }
 
 const CLIENT_DEFAULTS: ClientOnlySettings = {
@@ -31,6 +32,7 @@ const CLIENT_DEFAULTS: ClientOnlySettings = {
   precision: DEFAULT_TIMER_SETTINGS.precision,
   voiceEnabled: DEFAULT_TIMER_SETTINGS.voiceEnabled,
   previewDimension: DEFAULT_TIMER_SETTINGS.previewDimension,
+  inputMode: DEFAULT_TIMER_SETTINGS.inputMode,
 };
 
 /** Read client-only settings from localStorage. */
@@ -59,6 +61,10 @@ export function loadClientSettings(): ClientOnlySettings {
         parsed.previewDimension === "2D" || parsed.previewDimension === "3D"
           ? parsed.previewDimension
           : CLIENT_DEFAULTS.previewDimension,
+      inputMode:
+        parsed.inputMode === "timer" || parsed.inputMode === "typing"
+          ? parsed.inputMode
+          : CLIENT_DEFAULTS.inputMode,
     };
   } catch {
     return CLIENT_DEFAULTS;
@@ -114,6 +120,7 @@ export function saveSettings(
     clientFields.voiceEnabled = partial.voiceEnabled;
   if (partial.previewDimension !== undefined)
     clientFields.previewDimension = partial.previewDimension;
+  if (partial.inputMode !== undefined) clientFields.inputMode = partial.inputMode;
   if (Object.keys(clientFields).length > 0) saveClientSettings(clientFields);
 
   // DB-backed fields → server action (authed only)

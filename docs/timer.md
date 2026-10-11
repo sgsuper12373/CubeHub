@@ -19,6 +19,10 @@ Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Dri
 - Adjustable hold-to-start time (150–550 ms).
 - Display precision of 2 or 3 decimals, and an adjustable timer font size.
 - An option to ignore mouse clicks, so a stray click can't start the timer (touch still works).
+- **Typing mode** (Settings → "Enter times by"): type results instead of timing them, for a
+  Stackmat, a phone stopwatch or competition results. Reads csTimer-style input (`12.34`,
+  `1234`, `1:02.34`, `12.34+`, `DNF`); +2 and DNF are also buttons for phone keypads.
+  Typed solves are saved with `source = 'manual'` and still count for stats and PBs.
 
 ### Inspection
 - Off, 8s or 15s (WCA).
@@ -93,7 +97,7 @@ The full plan is in [`timer-plan.md`](timer-plan.md). Tick each item as it ships
   - Covers single, Mo3, Ao5 and Ao12.
 - [x] **3. Copy an average as text.** Done 2026-10-11. csTimer-style text (`Ao5: 12.34 = 11.20, (10.90), …`
       with scrambles), ready to paste into WhatsApp or Instagram.
-- [ ] **4. Manual time entry.** A "Typing" input mode that reads `12.34`, `1:02.34`, `1234`,
+- [x] **4. Manual time entry.** Done 2026-10-11. A "Typing" input mode that reads `12.34`, `1:02.34`, `1234`,
       `12.34+` and `DNF`. Typed solves are saved with `source = 'manual'`.
 - [ ] **5. Previous scramble and custom scramble.** Go back one scramble (`←`), or paste
       your own. Custom scrambles are saved with `scramble_type = 'custom'`.

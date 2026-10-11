@@ -70,7 +70,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
           time_ms: solve.timeMs,
           penalty: solve.penalty,
           scramble: solve.scramble,
-          source: "web",
+          source: solve.source ?? "web",
           created_at: solve.createdAt,
         },
         { onConflict: "id", ignoreDuplicates: true },

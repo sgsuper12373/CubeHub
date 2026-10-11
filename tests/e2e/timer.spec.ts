@@ -99,3 +99,46 @@ test("clicking Ao5 copies the average as csTimer-style text", async ({ page, con
   expect(lines[2]).toMatch(/^1\. \(\d+\.\d{2}\) {3}\S/);
   expect(lines[6]).toMatch(/^5\. \(\d+\.\d{2}\) {3}\S/);
 });
+
+test("typing mode saves typed times as manual solves", async ({ page }) => {
+  await page.goto("/timer");
+  await expect(scramble(page)).toBeVisible({ timeout: 60_000 });
+
+  await page.getByRole("button", { name: "Timer settings" }).click();
+  await page.getByRole("radio", { name: "Typing" }).click();
+  await page.keyboard.press("Escape");
+
+  const box = page.getByLabel("Time", { exact: true });
+  await expect(box).toBeVisible();
+  const before = await scramble(page).getAttribute("aria-label");
+
+  await box.fill("1234");
+  await box.press("Enter");
+  await expect(page.getByText("Saved 12.34")).toBeVisible();
+  await expect(box).toHaveValue("");
+  // The scramble is spent, so the next one is up.
+  await expect(scramble(page)).not.toHaveAttribute("aria-label", before ?? "");
+
+  await box.fill("abc");
+  await box.press("Enter");
+  await expect(page.getByText('"abc" isn\'t a time')).toBeVisible();
+
+  await box.fill("15.5");
+  await page.getByRole("radio", { name: "DNF" }).click();
+  await box.press("Enter");
+  await expect(page.getByText("Saved DNF")).toBeVisible();
+
+  // Stored locally with source "manual" and the scrambles they were typed on.
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const data = JSON.parse(localStorage.getItem("cubehub.timer.v1") ?? "{}");
+        return (data.solves ?? []).map((s: { timeMs: number; penalty: string; source?: string }) =>
+          `${s.timeMs}/${s.penalty}/${s.source}`);
+      }),
+    )
+    .toEqual(["12340/none/manual", "15500/dnf/manual"]);
+
+  await page.reload();
+  await expect(page.getByLabel("Time", { exact: true })).toBeVisible();
+});
