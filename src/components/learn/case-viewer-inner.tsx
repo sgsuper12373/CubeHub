@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import type { PuzzleID } from "cubing/twisty";
 
 import { loadTwisty } from "@/lib/cubing/runtime";
+import { CASE_ORIENTATION } from "@/lib/drill/case-state";
 
 /**
  * Inner component that mounts a cubing.js TwistyPlayer showing a cube case.
@@ -13,6 +14,7 @@ import { loadTwisty } from "@/lib/cubing/runtime";
  * what the cube looks like before you apply the OLL/PLL/etc. algorithm.
  * Given `algorithm`, it shows the state that algorithm solves. Given
  * `cubeState`, it shows the end state of that setup algorithm.
+ * An algorithm's case is drawn yellow-on-top, matching the Drill Lab.
  */
 function mapPuzzleId(puzzle: string): PuzzleID {
   switch (puzzle) {
@@ -58,11 +60,15 @@ export function CaseViewerInner({
 
       const player = new TwistyPlayer({
         puzzle: mapPuzzleId(puzzle),
-        // An algorithm is anchored at the end: the cube is solved after it,
-        // so the player opens on the case it solves. A setup algorithm plays
-        // from solved, and we jump to its end below.
+        // An algorithm is anchored at the end: the cube is solved (yellow on
+        // top) after it, so the player opens on the case it solves. A setup
+        // algorithm plays from solved, and we jump to its end below.
         ...(algorithm
-          ? { alg: algorithm, experimentalSetupAnchor: "end" as const }
+          ? {
+              alg: algorithm,
+              experimentalSetupAlg: CASE_ORIENTATION,
+              experimentalSetupAnchor: "end" as const,
+            }
           : { alg: cubeState ?? "" }),
         visualization,
         background: "none",

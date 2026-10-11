@@ -5,6 +5,7 @@ import type { PuzzleID } from "cubing/twisty";
 import { Play, Pause, RotateCcw, FastForward, FlipHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { loadTwisty } from "@/lib/cubing/runtime";
+import { CASE_ORIENTATION } from "@/lib/drill/case-state";
 import { cn } from "@/lib/utils";
 
 function mapPuzzleId(puzzle: string): PuzzleID {
@@ -91,13 +92,16 @@ export function AlgPlayerInner({
       const player = new TwistyPlayer({
         puzzle: mapPuzzleId(puzzle),
         alg: activeMoves,
-        // With setup moves, play from the state they produce. Without them,
-        // anchor at the end: the algorithm finishes on a solved cube, so the
-        // player opens on the case itself. (Passing an undefined setup alg
-        // throws inside cubing.js.)
+        // Cases are held yellow-on-top, as in the Drill Lab. With setup
+        // moves, play from the state they produce. Without them, anchor at
+        // the end: the algorithm finishes on a solved cube, so the player
+        // opens on the case itself.
         ...(activeSetup
-          ? { experimentalSetupAlg: activeSetup, experimentalSetupAnchor: "start" as const }
-          : { experimentalSetupAnchor: "end" as const }),
+          ? {
+              experimentalSetupAlg: `${CASE_ORIENTATION} ${activeSetup}`,
+              experimentalSetupAnchor: "start" as const,
+            }
+          : { experimentalSetupAlg: CASE_ORIENTATION, experimentalSetupAnchor: "end" as const }),
         visualization: "3D",
         background: "none",
         controlPanel: "none",

@@ -10,6 +10,9 @@ export type ThemePreference = ThemeId | "system";
 
 export const THEME_COOKIE = "cubehub-theme";
 
+/** The preference when there's no cookie: follow the OS colour scheme. */
+export const DEFAULT_THEME_PREFERENCE: ThemePreference = "system";
+
 /** Which theme "system" resolves to for each OS colour scheme. */
 export const SYSTEM_THEMES: Record<ThemeMode, ThemeId> = {
   dark: "slate",
@@ -17,17 +20,20 @@ export const SYSTEM_THEMES: Record<ThemeMode, ThemeId> = {
 };
 
 // Cookie values written before step 3.
-const LEGACY: Record<string, ThemePreference> = { dark: "slate", light: "paper" };
+export const LEGACY_THEME_VALUES: Record<string, ThemePreference> = {
+  dark: "slate",
+  light: "paper",
+};
 
 function isThemeId(value: string): value is ThemeId {
   return THEMES.some((t) => t.id === value);
 }
 
-/** Parse a raw cookie value. Missing or unknown → the default theme. */
+/** Parse a raw cookie value. Missing or unknown → "system". */
 export function parseThemePreference(raw: string | null | undefined): ThemePreference {
-  if (!raw) return DEFAULT_THEME_ID;
+  if (!raw) return DEFAULT_THEME_PREFERENCE;
   if (raw === "system" || isThemeId(raw)) return raw;
-  return LEGACY[raw] ?? DEFAULT_THEME_ID;
+  return LEGACY_THEME_VALUES[raw] ?? DEFAULT_THEME_PREFERENCE;
 }
 
 /**

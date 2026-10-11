@@ -5,6 +5,36 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-11 — Merge `ci/drill-e2e-data`; yellow-on-top case cards; "System" as default theme
+
+**Request:** Merge the CI branch (the fast-forward was failing). Founder decisions: case cards
+yellow on top (white is the first layer, solved on the bottom), and "System" as the default theme.
+
+**Git**
+- `git merge --ff-only` failed because the branches had diverged: `ci/drill-e2e-data` was cut
+  from `477f2d6`, and `main` had 6 newer commits. The branch's one commit was rebased onto
+  `main` (uncommitted `docs/todo.md` edits stashed first). The only conflict was in this log,
+  where both sides added entries at the top; both were kept. Then `main` fast-forwarded to `0422e3f`.
+
+**Changed**
+- **`components/learn/case-viewer-inner.tsx`**: the card picture uses `experimentalSetupAlg: CASE_ORIENTATION` (`z2`) when it draws from an algorithm, the same as the Drill Lab.
+- **`components/learn/alg-player-inner.tsx`**: the 3D player opens yellow-on-top too. Hand-entered `setup_moves` are applied after the `z2`.
+- **`themes/preference.ts`**: new `DEFAULT_THEME_PREFERENCE = "system"`. A missing or unknown cookie now parses to it. `LEGACY_THEME_VALUES` is exported for the head script.
+- **`themes/init-script.ts`**: the script resolves the OS scheme unless the cookie names a concrete theme (`slate`, `paper`, `dark`, `light`). Before, it acted only on `system`.
+- **`lib/theme.ts`**: the server snapshot is `"system"`.
+- **`AGENTS.md`**: Next 16.3's `next dev` rewrites the `nextjs-agent-rules` block, which had wiped the CubeHub brief inside it. The brief now sits after the `END` marker.
+- **Docs**: `todo.md` (decisions ticked; leaked-password protection skipped as paid-only) and `design-tokens.md` (no cookie means System).
+
+**Kept on purpose**
+- `DEFAULT_THEME_ID` stays Slate. It's what the server draws before the head script knows the OS scheme, so first paint stays dark-first.
+- Tutorial step diagrams and admin-painted facelet cards are not rotated. They're drawn for a specific orientation (e.g. the beginner white cross).
+
+**Verified**
+- `npm run validate`: tsc, lint (the one pre-existing warning), and 247 of 247 unit tests pass. `check:colors` is OK.
+- Screenshots on `next dev`: `/learn/333/pll` and `/learn/222/cll` cards show yellow on top, and the Aa-perm 3D player opens yellow-top with green in front. A fresh browser with no cookie and a light OS got Paper, with "System" selected.
+
+---
+
 ## 2026-10-08 — Next.js 16.2.10 → 16.3.8 (security)
 
 **Request:** Upgrade Next.js to fix the critical advisories in 16.2.10. One is remote code

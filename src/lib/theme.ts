@@ -13,13 +13,13 @@
  */
 
 import {
+  DEFAULT_THEME_PREFERENCE,
   parseThemePreference,
   resolveThemeId,
   THEME_COOKIE,
   themeMode,
   type ThemePreference,
 } from "@/themes/preference";
-import { DEFAULT_THEME_ID } from "@/themes";
 
 export type { ThemePreference } from "@/themes/preference";
 
@@ -58,7 +58,7 @@ export function getThemeSnapshot(): ThemePreference {
 
 /** Server snapshot — matches the default the root layout renders. */
 export function getThemeServerSnapshot(): ThemePreference {
-  return DEFAULT_THEME_ID;
+  return DEFAULT_THEME_PREFERENCE;
 }
 
 /** Set the preference — applies it to <html> and writes the cookie. Client-only. */

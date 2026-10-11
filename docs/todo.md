@@ -23,20 +23,19 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
 ## 2. Only you can do these
 
 ### Git and CI
-- [ ] **Push `main`.** It is 4 commits ahead of GitHub: the seed scripts, housekeeping, the
+- [X] **Push `main`.** It is 4 commits ahead of GitHub: the seed scripts, housekeeping, the
       card diagrams and the category filter. Run `git push`.
-- [ ] **Add the GitHub secret for the Drill Lab tests.** Go to github.com/sgsuper12373/CubeHub →
+- [x] **Add the GitHub secret for the Drill Lab tests.** Go to github.com/sgsuper12373/CubeHub →
       Settings → Secrets and variables → Actions → New repository secret.
       Name it `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and give it the value of that variable in `.env.local`.
       ⚠️ Never add `SUPABASE_SERVICE_ROLE_KEY` as a secret.
-- [ ] **Then merge branch `ci/drill-e2e-data`.** Ask Claude, or run
-      `git merge --ff-only ci/drill-e2e-data`, then push. In the next CI run, the 3 drill tests
+- [x] **Then merge branch `ci/drill-e2e-data`.** Done 2026-10-11 (rebased onto `main` first,
+      since `main` had moved on). Push to run it. In the next CI run, the 3 drill tests
       should **pass**, not skip.
 
 ### Supabase dashboard
-- [ ] **Turn on leaked-password protection:** Authentication → Settings → Password
-      security. It checks new passwords against HaveIBeenPwned. Flagged by Supabase's
-      security advisor. (It may need a paid plan; if so, skip it.)
+- [ ] ~~**Turn on leaked-password protection.**~~ Needs a paid Supabase plan. Skipped for now;
+      revisit if the project upgrades.
 - [ ] **Site URL and redirect allow-list:** Authentication → URL Configuration. Both must be
       the live domain, not `http://localhost:3000`, or sign-up confirmation links break.
 - [ ] **Before ever running `supabase link` + `supabase db push`,** mark the existing migrations
@@ -46,7 +45,7 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
       ```
 
 ### Vercel
-- [ ] Build command is `npm run build`, with no override pinning `--webpack`.
+- [x] Build command is `npm run build`, with no override pinning `--webpack`.
 - [ ] `NEXT_PUBLIC_SITE_URL` is set to the live domain. Without it, share-preview (Open Graph) links point at localhost.
 - [ ] After a deploy, run `npm run check:chunks -- https://<your-domain>`.
 
@@ -60,13 +59,13 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
 
 ## 3. Decisions waiting on you
 
-- [ ] **Access tiers.** Which sets or tutorials are `free` (need an account) and which are
+- [ ] **Access tiers** (on hold). Which sets or tutorials are `free` (need an account) and which are
       `premium`? Today the tier is only a badge. Once decided, Claude can make the
       database enforce it (RLS). See `docs/access-control.md`.
-- [ ] **Case card colours.** Cards show white on top; Drill Lab shows yellow on top. Make
-      them match? It's a one-line change, but every card would look different.
-- [ ] **Theme default.** When there's no theme cookie, use "System" or "Slate"?
-- [ ] **Domain:** `cubehub.in` or `cubehub.io` (roadmap open question 1).
+- [x] **Case card colours.** Yellow on top everywhere, like the Drill Lab (white is the
+      first layer, solved on the bottom). Done 2026-10-11.
+- [x] **Theme default.** "System". Done 2026-10-11.
+- [ ] **Domain** (on hold): `cubehub.in` or `cubehub.io` (roadmap open question 1).
 
 ---
 

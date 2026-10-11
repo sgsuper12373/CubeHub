@@ -15,10 +15,10 @@ describe("parseThemePreference", () => {
     expect(parseThemePreference("light")).toBe("paper");
   });
 
-  it("falls back to the default (Slate) for missing or unknown values", () => {
-    expect(parseThemePreference(undefined)).toBe("slate");
-    expect(parseThemePreference("")).toBe("slate");
-    expect(parseThemePreference("neon")).toBe("slate");
+  it("falls back to system for missing or unknown values", () => {
+    expect(parseThemePreference(undefined)).toBe("system");
+    expect(parseThemePreference("")).toBe("system");
+    expect(parseThemePreference("neon")).toBe("system");
   });
 });
 
@@ -67,10 +67,19 @@ describe("THEME_INIT_SCRIPT", () => {
     expect(root.classList.contains("dark")).toBe(true);
   });
 
-  it("does nothing for an explicit theme or no cookie — the server already rendered it", () => {
+  it("follows the OS when there's no cookie or an unknown value", () => {
+    run(null, true);
+    expect(root.dataset.theme).toBe("paper");
+    expect(root.classList.contains("dark")).toBe(false);
+    root.setAttribute("data-theme", "slate");
+    run("neon", true);
+    expect(root.dataset.theme).toBe("paper");
+  });
+
+  it("does nothing for an explicit or legacy theme — the server already rendered it", () => {
     run("slate", true);
     expect(root.dataset.theme).toBe("slate");
-    run(null, true);
+    run("dark", true);
     expect(root.dataset.theme).toBe("slate");
     expect(root.classList.contains("dark")).toBe(true);
   });

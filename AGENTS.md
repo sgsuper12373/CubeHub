@@ -1,7 +1,12 @@
 <!-- BEGIN:nextjs-agent-rules -->
+
 # This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
 
 # CubeHub — AI Agent Brief
 
@@ -59,7 +64,3 @@ The project is being built by a small team (currently solo), so solutions should
 Help the founder build CubeHub by writing code, designing systems, reviewing decisions, and solving problems as they come up. When a task is given, work within the current phase and the current tech stack. If something seems like it conflicts with the project's direction, flag it clearly and suggest an alternative.
 
 Ask about current implementation details when they matter. Do not assume the stack, schema, or feature scope from this document alone — those evolve. This brief tells you the goal and the spirit of the project. The founder will give you the specifics for each task.
-
-
-
-<!-- END:nextjs-agent-rules -->
