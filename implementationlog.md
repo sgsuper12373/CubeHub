@@ -5,6 +5,34 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-11 — Timer round, step 6: recently deleted
+
+**Request:** Step 6 of `docs/timer-plan.md`.
+
+**Changed**
+- **`lib/timer/repo.ts`**: `loadDeletedSolves(puzzle, limit = 100)` and `purgeSolves(ids)`, plus `RECENTLY_DELETED_DAYS = 30` and `recentlyDeletedSince()`.
+  - **Cloud:** reads `deleted_at >= now − 30 days` (newest deletion first) and maps `deleted_at` back. The purge is `delete … where id in (…) and user_id = me and deleted_at is not null`, so a stray id can never hard-delete a live solve.
+  - **Local:** the same filters on the localStorage rows.
+- **`session-store.ts`**: `loadDeletedSolves()` and `purgeSolves()` for the current puzzle.
+- **New `components/timer/recently-deleted.tsx`**: a modal (overlay lock, Escape closes).
+  - Each row shows time, session name, "deleted 5 minutes ago" (`Intl.RelativeTimeFormat`) and the scramble.
+  - Row actions are Restore (reusing `restoreSolves`, which also refreshes the list and PBs) and a bin icon that turns into Keep / Delete forever. That inline confirm avoids stacking a second dialog.
+  - Restore all, and an empty state.
+- **`session-switcher.tsx`**: a "Recently deleted" button (ArchiveRestore icon).
+- **Not done:** the automatic purge of rows older than 30 days stays deferred (listed in `docs/timer.md`). Old rows simply stop appearing.
+- **Tests:**
+  - New `tests/unit/recently-deleted.test.ts`: the local list's window and order; purge ignores live ids; restore; the relative-time wording.
+  - A new e2e test: D deletes, the dialog lists it as "deleted just now", Restore brings it back, delete again, then Delete forever, and storage keeps only the other solve.
+
+**Verified**
+- **Cloud path against RLS** on a throwaway `supabase/postgres` with all migrations, acting as user A (`request.jwt.claim.sub`):
+  - A sees exactly their 1 soft-deleted solve.
+  - A purge given A's deleted id, A's live id and B's deleted id removed only the first.
+- `npm run validate`: 318 of 318 unit tests; lint has the one pre-existing warning. `check:colors` is OK.
+- `npm run build` passes. `npm run test:e2e:prod` passed 29 of 29.
+
+---
+
 ## 2026-10-11 — Timer round, step 5: previous scramble and custom scramble
 
 **Request:** Step 5 of `docs/timer-plan.md`.

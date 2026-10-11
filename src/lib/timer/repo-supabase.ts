@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
-import type { SolveRepository } from "./repo";
+import { recentlyDeletedSince, type SolveRepository } from "./repo";
 import type {
   PbCategory,
   Penalty,
@@ -166,6 +166,34 @@ export function createSupabaseRepo(userId: string): SolveRepository {
       if (error) throw error;
     },
 
+    async loadDeletedSolves(puzzle, limit = 100) {
+      const { data, error } = await getClient()
+        .from("solves")
+        .select(
+          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at, deleted_at",
+        )
+        .eq("user_id", userId)
+        .eq("puzzle_type", puzzle)
+        .gte("deleted_at", recentlyDeletedSince())
+        .order("deleted_at", { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return (data ?? []).map(mapSolve);
+    },
+
+    async purgeSolves(ids) {
+      if (ids.length === 0) return;
+      // Only rows already in the trash: a stray id can never destroy a live solve.
+      const { error } = await getClient()
+        .from("solves")
+        .delete()
+        .in("id", ids)
+        .eq("user_id", userId)
+        .not("deleted_at", "is", null);
+      if (error) throw error;
+    },
+
     async loadSolveMetrics(puzzle, { since, limit = 5000 } = {}) {
       // Served by idx_solves_user_puzzle (user_id, puzzle_type, created_at desc).
       // The select is deliberately narrow — no scramble, no notes.
@@ -326,6 +354,7 @@ function mapSolve(row: {
   scramble: string;
   notes: string | null;
   created_at: string;
+  deleted_at?: string | null;
 }): Solve {
   return {
     id: row.id,
@@ -337,5 +366,6 @@ function mapSolve(row: {
     scramble: row.scramble,
     notes: row.notes,
     createdAt: row.created_at,
+    ...(row.deleted_at !== undefined && { deletedAt: row.deleted_at }),
   };
 }

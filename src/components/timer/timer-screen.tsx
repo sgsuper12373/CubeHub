@@ -14,6 +14,7 @@ import { ShortcutsOverlay } from "@/components/timer/shortcuts-overlay";
 import { PreviewPanel } from "@/components/timer/preview-panel";
 import { PbCelebration } from "@/components/timer/pb-celebration";
 import { CustomScrambleDialog } from "@/components/timer/custom-scramble-dialog";
+import { RecentlyDeleted } from "@/components/timer/recently-deleted";
 import { QuickSettings } from "@/components/timer/quick-settings";
 import { BackgroundSettings } from "@/components/timer/background-settings";
 import { TimerBackground, useTimerScrim } from "@/components/timer/timer-background";
@@ -65,6 +66,7 @@ export function TimerScreen(props: {
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [customOpen, setCustomOpen] = useState(false);
+  const [deletedOpen, setDeletedOpen] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
   /** The all-time PB card, tied to the solve that earned it. */
   const [celebration, setCelebration] = useState<{
@@ -390,7 +392,7 @@ export function TimerScreen(props: {
         return (
           <>
             <TouchStage
-              disabled={shortcutsOpen || customOpen || editingLayout}
+              disabled={shortcutsOpen || customOpen || deletedOpen || editingLayout}
               onShowShortcuts={() => setShortcutsOpen(true)}
             >
               <TimeDisplay
@@ -526,6 +528,7 @@ export function TimerScreen(props: {
                 })();
               }}
               onPuzzleChange={changePuzzle}
+              onOpenDeleted={() => setDeletedOpen(true)}
               isAuthed={props.isAuthed}
             />
             {phase === "idle" || phase === "stopped" ? (
@@ -564,6 +567,14 @@ export function TimerScreen(props: {
           hits={celebration.hits}
           puzzle={celebration.puzzle}
           onClose={() => setCelebration(null)}
+        />
+      )}
+
+      {deletedOpen && (
+        <RecentlyDeleted
+          puzzle={puzzle}
+          sessions={sessions}
+          onClose={() => setDeletedOpen(false)}
         />
       )}
 

@@ -41,6 +41,10 @@ interface SessionStore {
   resetSession(): Promise<{ undo: () => void }>;
   /** Un-delete solves by id and refresh the active list. Safe to call from an undo toast. */
   restoreSolves(ids: string[]): Promise<void>;
+  /** "Recently deleted" for the current puzzle, most recently deleted first. */
+  loadDeletedSolves(): Promise<Solve[]>;
+  /** Permanently delete solves that are already in "Recently deleted". */
+  purgeSolves(ids: string[]): Promise<void>;
   setPuzzle(p: TimerPuzzle): Promise<void>;
   /** After a solve: the bests as `detectRecords` updated them. */
   setKnownBests(known: KnownBests): void;
@@ -302,6 +306,10 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
     if (get().activeSessionId === sessionId) set({ solves });
     await refreshKnownBests();
   },
+
+  loadDeletedSolves: () => repo.loadDeletedSolves(get().puzzle),
+
+  purgeSolves: (ids) => repo.purgeSolves(ids),
 
   setPuzzle: async (p) => {
     if (get().puzzle === p) return;

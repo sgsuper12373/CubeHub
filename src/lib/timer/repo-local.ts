@@ -1,4 +1,4 @@
-import type { SolveRepository } from "./repo";
+import { recentlyDeletedSince, type SolveRepository } from "./repo";
 import { bestAverageOfN, effectiveMs } from "./stats";
 import type { PersonalBest, Session, Solve, SolveMetric } from "./types";
 
@@ -123,6 +123,22 @@ export const localRepo: SolveRepository = {
     if (ids.length === 0) return;
     const set = new Set(ids);
     for (const s of read().solves) if (set.has(s.id)) s.deletedAt = null;
+    scheduleFlush();
+  },
+
+  async loadDeletedSolves(puzzle, limit = 100) {
+    const since = recentlyDeletedSince();
+    return read()
+      .solves.filter((s) => s.puzzle === puzzle && !!s.deletedAt && s.deletedAt >= since)
+      .sort((a, b) => (a.deletedAt! < b.deletedAt! ? 1 : -1))
+      .slice(0, limit);
+  },
+
+  async purgeSolves(ids) {
+    if (ids.length === 0) return;
+    const set = new Set(ids);
+    const data = read();
+    data.solves = data.solves.filter((s) => !(set.has(s.id) && s.deletedAt));
     scheduleFlush();
   },
 

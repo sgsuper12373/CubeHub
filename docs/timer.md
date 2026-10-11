@@ -44,6 +44,9 @@ Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Dri
 - Named sessions per puzzle: create, rename, switch, clear and delete.
 - Clearing a session and deleting a solve are soft deletes, with an Undo toast that still
   works after a reload.
+- **Recently deleted** (the archive button by the session controls): the event's solves
+  deleted in the last 30 days, with Restore, Restore all, and Delete forever (confirmed in
+  the row). Deleting a whole session is still permanent and doesn't land here.
 - Destructive actions ask for confirmation first.
 
 ### Penalties and shortcuts
@@ -104,7 +107,7 @@ The full plan is in [`timer-plan.md`](timer-plan.md). Tick each item as it ships
       `12.34+` and `DNF`. Typed solves are saved with `source = 'manual'`.
 - [x] **5. Previous scramble and custom scramble.** Done 2026-10-11. Go back one scramble (`←`), or paste
       your own. Custom scrambles are saved with `scramble_type = 'custom'`.
-- [ ] **6. Recently deleted.** Restore or permanently delete soft-deleted solves from the
+- [x] **6. Recently deleted.** Done 2026-10-11. Restore or permanently delete soft-deleted solves from the
       last 30 days.
 - [ ] **7. Inspection beeps.** The inspection alert can be voice, beep or off.
 

@@ -7,6 +7,13 @@ import type {
   TimerPuzzle,
 } from "./types";
 
+/** How far back "Recently deleted" looks. */
+export const RECENTLY_DELETED_DAYS = 30;
+
+export function recentlyDeletedSince(now: Date = new Date()): string {
+  return new Date(now.getTime() - RECENTLY_DELETED_DAYS * 24 * 60 * 60 * 1000).toISOString();
+}
+
 /**
  * Persistence boundary for the timer. Two implementations:
  * repo-local.ts (localStorage, logged out) and repo-supabase.ts (cloud).
@@ -33,6 +40,13 @@ export interface SolveRepository {
   deleteSolvesInSession(sessionId: string): Promise<void>;
   /** Clear the soft-delete marker, bringing the solves back. */
   restoreSolves(ids: string[]): Promise<void>;
+  /**
+   * Soft-deleted solves for a puzzle from the last `RECENTLY_DELETED_DAYS`,
+   * most recently deleted first, with `deletedAt` set.
+   */
+  loadDeletedSolves(puzzle: TimerPuzzle, limit?: number): Promise<Solve[]>;
+  /** Hard delete — gone for good. Only offered for solves already soft-deleted. */
+  purgeSolves(ids: string[]): Promise<void>;
 
   // ── Analytics reads (Phase 2) ──
   // Deliberately separate from loadSolves: these cross session boundaries and

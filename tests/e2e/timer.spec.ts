@@ -193,3 +193,37 @@ test("a pasted scramble is used, marked custom and saved with the solve", async 
   await expect(page.getByText("Custom scramble")).toHaveCount(0);
   await expect(scramble(page)).not.toHaveAttribute("aria-label", "Scramble: R U' F2");
 });
+
+test("recently deleted restores a solve, or deletes it forever", async ({ page }) => {
+  await page.goto("/timer");
+  await expect(scramble(page)).toBeVisible({ timeout: 60_000 });
+  await solve(page, 300);
+  await solve(page, 400);
+
+  const stored = () =>
+    page.evaluate(() => {
+      const data = JSON.parse(localStorage.getItem("cubehub.timer.v1") ?? "{}");
+      return (data.solves ?? []).map((s: { deletedAt?: string | null }) => (s.deletedAt ? "deleted" : "live"));
+    });
+
+  // D deletes the last solve (a soft delete).
+  await page.keyboard.press("d");
+  await expect.poll(stored).toEqual(["live", "deleted"]);
+
+  await page.getByRole("button", { name: "Recently deleted" }).click();
+  const dialog = page.getByRole("dialog", { name: /Recently deleted/ });
+  await expect(dialog.getByRole("listitem")).toHaveCount(1);
+  await expect(dialog).toContainText("deleted just now");
+  await dialog.getByRole("button", { name: /^Restore \d/ }).click();
+  await expect(dialog.getByText(/Nothing deleted/)).toBeVisible();
+  await expect.poll(stored).toEqual(["live", "live"]);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+
+  await page.keyboard.press("d");
+  await page.getByRole("button", { name: "Recently deleted" }).click();
+  await dialog.getByRole("button", { name: /forever$/ }).click();
+  await dialog.getByRole("button", { name: "Delete forever" }).click();
+  await expect(dialog.getByText(/Nothing deleted/)).toBeVisible();
+  await expect.poll(stored).toEqual(["live"]);
+});

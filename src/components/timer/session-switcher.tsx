@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { ArchiveRestore, Check, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ export function SessionSwitcher({
   onReset,
   onDelete,
   onPuzzleChange,
+  onOpenDeleted,
   isAuthed,
 }: {
   sessions: Session[];
@@ -37,6 +38,8 @@ export function SessionSwitcher({
   onReset: () => void;
   onDelete: (id: string) => void;
   onPuzzleChange: (p: TimerPuzzle) => void;
+  /** Opens "Recently deleted". */
+  onOpenDeleted: () => void;
   isAuthed: boolean;
 }) {
   const [draft, setDraft] = useState<string | null>(null);
@@ -140,6 +143,18 @@ export function SessionSwitcher({
         onClick={() => { if (activeId) onDelete(activeId); }}
       >
         <Trash2 />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        aria-label="Recently deleted"
+        title="Recently deleted"
+        onClick={(e) => {
+          e.currentTarget.blur();
+          onOpenDeleted();
+        }}
+      >
+        <ArchiveRestore />
       </Button>
     </div>
   );
