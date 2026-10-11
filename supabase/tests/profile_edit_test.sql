@@ -1,4 +1,5 @@
--- Test for 20261013000000_profile_edit.sql: privacy, WCA ID format, avatars.
+-- Test for 20261013000000_profile_edit.sql: privacy and the WCA ID format.
+-- (Avatar storage has its own test: avatars_storage_test.sql.)
 --
 -- SAFE TO RUN ON PRODUCTION. Everything happens inside a transaction that ends
 -- in ROLLBACK. It creates two throwaway users and acts as them the way
@@ -102,35 +103,7 @@ insert into results
 select 'a well-formed WCA ID is saved', '2019TEST01',
        (select wca_id from public.profiles where id = 'b0000000-0000-4000-8000-00000000000b'), null;
 
--- Avatars: B may write in B's folder only.
-insert into storage.objects (bucket_id, name, owner)
-values ('avatars', 'b0000000-0000-4000-8000-00000000000b/1.webp', 'b0000000-0000-4000-8000-00000000000b');
-insert into results
-select 'avatar: the owner can upload to their folder', '1',
-       (select count(*)::text from storage.objects
-        where bucket_id = 'avatars' and name like 'b0000000-0000-4000-8000-00000000000b/%'), null;
-do $$
-begin
-  begin
-    insert into storage.objects (bucket_id, name, owner)
-    values ('avatars', 'a0000000-0000-4000-8000-00000000000a/evil.webp', 'b0000000-0000-4000-8000-00000000000b');
-    insert into results values ('avatar: writing into someone else''s folder is refused', 'refused', 'accepted', null);
-  exception when insufficient_privilege then
-    insert into results values ('avatar: writing into someone else''s folder is refused', 'refused', 'refused', null);
-  end;
-end;
-$$;
 reset role;
-
--- A cannot delete B's avatar.
-set local role authenticated;
-select set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-00000000000a', true);
-delete from storage.objects where bucket_id = 'avatars' and name like 'b0000000-0000-4000-8000-00000000000b/%';
-reset role;
-insert into results
-select 'avatar: another user cannot delete it', '1',
-       (select count(*)::text from storage.objects
-        where bucket_id = 'avatars' and name like 'b0000000-0000-4000-8000-00000000000b/%'), null;
 
 update results
 set verdict = case when expected = actual then 'PASS' else 'FAIL' end

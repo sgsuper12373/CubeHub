@@ -54,12 +54,19 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
       every row should say PASS. Add `20261012000000` to the `migration repair` list above.
       Until it's applied, profiles show 0 total solves.
 
-- [ ] **Apply `supabase/migrations/20261013000000_profile_edit.sql` BEFORE deploying the
-      `user_profile` branch.** It adds `profiles.is_public` (the new profile page reads it, so
-      without the column every profile 404s), private-profile rules, the WCA ID check and the
-      `avatars` Storage bucket. Then run `supabase/tests/profile_edit_test.sql` (all PASS) and
-      add `20261013000000` to the `migration repair` list.
-      In Storage, the `avatars` bucket should show as **public**, with a 2 MB limit.
+- [ ] **Profile step 2: two migrations, BEFORE deploying the `user_profile` branch**
+      (the new profile page reads `profiles.is_public`; without it every profile 404s).
+      Run each file in the SQL editor, then its test (every row PASS):
+      1. `supabase/migrations/20261013000000_profile_edit.sql` →
+         test `supabase/tests/profile_edit_test.sql` (privacy, WCA ID).
+      2. `supabase/migrations/20261013000100_avatars_storage.sql` →
+         test `supabase/tests/avatars_storage_test.sql` (avatar uploads).
+         If step 2 fails with "must be owner of table objects", the bucket part still needs
+         to exist: create it in Storage → New bucket → name `avatars`, **Public**, 2 MB,
+         types `image/webp, image/png, image/jpeg`. Then in Storage → Policies → avatars,
+         add policies for INSERT, UPDATE, DELETE and SELECT, for `authenticated`, with the
+         expression `bucket_id = 'avatars' and (storage.foldername(name))[1] = (select auth.uid())::text`.
+      Then add `20261013000000 20261013000100` to the `migration repair` list.
 
 ### Vercel
 - [x] Build command is `npm run build`, with no override pinning `--webpack`.

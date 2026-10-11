@@ -5,6 +5,22 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-11 — Profile step 2 follow-up: avatars Storage split into its own migration
+
+**Why:** The founder's SQL editor runs showed the profile migration never landed (no `is_public`, no bucket). The SQL editor runs a file as one transaction, and newer hosted projects can refuse `create policy … on storage.objects` ("must be owner"). One refusal rolls back everything, including the column the page needs.
+
+**Changed**
+- `20261013000000_profile_edit.sql` now holds only the profile part (`is_public`, the PB policy, `get_profile_stats`, the WCA ID check).
+- New `20261013000100_avatars_storage.sql` holds the bucket and the four `storage.objects` policies.
+- The tests are split to match: `profile_edit_test.sql` (11 checks) and a new `avatars_storage_test.sql` (3 checks). Each refuses to run before its own migration, with a clear message.
+- `docs/todo.md` has the run order and a dashboard fallback (create the bucket and policies through Storage) in case the policies are refused.
+
+**Verified** on a throwaway DB:
+- With only the first migration: `profile_edit_test` 11 of 11, and the avatar test stops with "Apply … first".
+- After the second: `avatars_storage_test` 3 of 3.
+
+---
+
 ## 2026-10-11 — Profile step 2: edit profile, avatars, event tabs, public stats, privacy; session proxy switched on
 
 **Request:** Step 2 (Group A) of `docs/profile.md`.
