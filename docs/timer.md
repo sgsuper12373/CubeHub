@@ -49,8 +49,11 @@ Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Dri
 - A trend sparkline with the Ao5 change.
 - A solve list with notes, penalties and per-solve details (including copy scramble).
 - On mobile, a stats drawer.
-- A "New PB" toast and a glow on the digits. ⚠️ This currently compares within the session
-  only; it is fixed in this round (item 2).
+- Records for single, Mo3, Ao5 and Ao12. A **session best** gets a toast. An **all-time PB**
+  gets confetti, a card listing what was beaten and by how much, and a **Share** button that
+  makes a 1080×1350 image (the phone's share sheet on mobile; download plus clipboard on
+  desktop). The card closes when the next solve starts. A best first set during this visit
+  counts as a session best until it is part of the history (after a reload).
 
 ### Modes
 - **Zen:** everything but the digits dims while solving.
@@ -80,7 +83,7 @@ The full plan is in [`timer-plan.md`](timer-plan.md). Tick each item as it ships
   - **Mo3** is added to the stats for every event (Ao5 stays the headline average).
   - **Mo3 personal bests** in the database. The same migration also carries the pending
     security fix (`is_admin()` search_path, and trigger-function `EXECUTE` revokes).
-- [ ] **2. PB notifications and celebration.**
+- [x] **2. PB notifications and celebration.** Done 2026-10-11.
   - "Session best" toast for the current session.
   - "All-time PB" celebration, with confetti and a share image (a 1080×1350 PNG, shared
     through the phone's share sheet or downloaded).

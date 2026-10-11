@@ -4,6 +4,7 @@ import { localRepo } from "@/lib/timer/repo-local";
 import type { SolveRepository } from "@/lib/timer/repo";
 import { createSupabaseRepo } from "@/lib/timer/repo-supabase";
 import { hasLocalData, syncLocalToCloud } from "@/lib/timer/sync";
+import { knownBestsFrom, type KnownBests } from "@/lib/timer/pb-detect";
 import type {
   Penalty,
   Session,
@@ -23,6 +24,8 @@ interface SessionStore {
   activeSessionId: string | null;
   /** Active session only, newest first. */
   solves: Solve[];
+  /** All-time bests for the puzzle, for PB detection (see pb-detect.ts). */
+  knownBests: KnownBests;
   syncing: boolean;
 
   hydrate(userId: string | null): Promise<void>;
@@ -39,6 +42,8 @@ interface SessionStore {
   /** Un-delete solves by id and refresh the active list. Safe to call from an undo toast. */
   restoreSolves(ids: string[]): Promise<void>;
   setPuzzle(p: TimerPuzzle): Promise<void>;
+  /** After a solve: the bests as `detectRecords` updated them. */
+  setKnownBests(known: KnownBests): void;
 
   /** Trigger local → cloud sync. Called from AuthListener on SIGNED_IN. */
   syncToCloud(userId: string): Promise<void>;
@@ -48,6 +53,19 @@ interface SessionStore {
 let repo: SolveRepository = localRepo;
 let activeUserId: string | null = null;
 let hydration: Promise<void> | null = null;
+
+/**
+ * All-time bests from the repo. A failure only costs the celebration, never
+ * the timer, so it degrades to "no history".
+ */
+async function loadKnownBests(puzzle: TimerPuzzle): Promise<KnownBests> {
+  try {
+    return knownBestsFrom(await repo.loadPersonalBests(puzzle));
+  } catch (err) {
+    console.error("loading personal bests failed", err);
+    return {};
+  }
+}
 
 /** Load (or lazily create) the sessions for a puzzle and pick the active one. */
 async function loadPuzzle(puzzle: TimerPuzzle) {
@@ -64,8 +82,23 @@ async function loadPuzzle(puzzle: TimerPuzzle) {
     sessions = [initial];
   }
   const active = sessions.find((s) => s.isActive) ?? sessions[0];
-  const solves = await repo.loadSolves(active.id, SOLVE_LIMIT);
-  return { sessions, active, solves };
+  const [solves, knownBests] = await Promise.all([
+    repo.loadSolves(active.id, SOLVE_LIMIT),
+    loadKnownBests(puzzle),
+  ]);
+  return { sessions, active, solves, knownBests };
+}
+
+/**
+ * Re-read the all-time bests after a change that can lower or raise them (the
+ * database triggers have already recomputed by the time the write returns).
+ */
+async function refreshKnownBests() {
+  const puzzle = useSessionStore.getState().puzzle;
+  const knownBests = await loadKnownBests(puzzle);
+  if (useSessionStore.getState().puzzle === puzzle) {
+    useSessionStore.setState({ knownBests });
+  }
 }
 
 export const useSessionStore = create<SessionStore>()((set, get) => ({
@@ -75,6 +108,7 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
   sessions: [],
   activeSessionId: null,
   solves: [],
+  knownBests: {},
   syncing: false,
 
   hydrate: (userId) => {
@@ -113,8 +147,8 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
         }
       }
 
-      const { sessions, active, solves } = await loadPuzzle(get().puzzle);
-      set({ sessions, activeSessionId: active.id, solves, hydrated: true });
+      const { sessions, active, solves, knownBests } = await loadPuzzle(get().puzzle);
+      set({ sessions, activeSessionId: active.id, solves, knownBests, hydrated: true });
     })();
     return hydration;
   },
@@ -137,11 +171,13 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
       ),
     });
     await repo.updatePenalty(solveId, p);
+    await refreshKnownBests();
   },
 
   deleteSolve: async (solveId) => {
     set({ solves: get().solves.filter((s) => s.id !== solveId) });
     await repo.deleteSolve(solveId);
+    await refreshKnownBests();
   },
 
   setNotes: async (solveId, notes) => {
@@ -193,6 +229,7 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
     
     // Delete from repo first
     await repo.deleteSession(sessionId);
+    await refreshKnownBests();
     
     // Switch to next session in UI and mark active
     const newSessions = s.sessions.filter((x) => x.id !== sessionId);
@@ -240,6 +277,7 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
     // the toast is missed. The DB trigger recomputes the PB off the survivors.
     set({ solves: [] });
     await repo.deleteSolvesInSession(sessionId);
+    await refreshKnownBests();
 
     return { undo: () => void get().restoreSolves(clearedIds) };
   },
@@ -262,14 +300,19 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
     if (!sessionId) return;
     const solves = await repo.loadSolves(sessionId, SOLVE_LIMIT);
     if (get().activeSessionId === sessionId) set({ solves });
+    await refreshKnownBests();
   },
 
   setPuzzle: async (p) => {
     if (get().puzzle === p) return;
     set({ puzzle: p, hydrated: false });
-    const { sessions, active, solves } = await loadPuzzle(p);
+    const { sessions, active, solves, knownBests } = await loadPuzzle(p);
     if (get().puzzle !== p) return; // switched again mid-load
-    set({ sessions, activeSessionId: active.id, solves, hydrated: true });
+    set({ sessions, activeSessionId: active.id, solves, knownBests, hydrated: true });
+  },
+
+  setKnownBests: (known) => {
+    set({ knownBests: known });
   },
 
   syncToCloud: async (userId) => {

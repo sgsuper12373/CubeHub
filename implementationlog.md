@@ -5,6 +5,50 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-11 — Timer round, step 2: session best vs all-time PB, celebration, share image
+
+**Request:** Step 2 of `docs/timer-plan.md`. The founder's direction: say "session best" for
+the session and "all-time PB" for an overall best, add a real celebration, and let people
+share it as an image.
+
+**Found:** the old "New PB!" toast compared within the session only, so any new session's
+second solve could claim a PB. It also checked on the next microtask after `addSolve`, which
+waits on hydration first, so it could read the solve list from before the new solve.
+
+**Changed**
+- **New `lib/timer/pb-detect.ts`**: `detectRecords(previous, solve, known)`, a pure function.
+  - Covers single, Mo3, Ao5 and Ao12. Only windows ending at the new solve are checked.
+  - It is an all-time PB only against a *confirmed* best, meaning one loaded from history.
+    A best first set during this visit counts as a session best until a reload. This stops
+    confetti on a brand-new cuber's second solve.
+- **`session-store.ts`**:
+  - `knownBests` is loaded with the event (through `repo.loadPersonalBests`).
+  - It's re-read after a delete, penalty, restore, clear or session delete, which can move a best either way.
+  - `setKnownBests` stores what the detector learned.
+- **`timer-screen.tsx`**:
+  - Builds the solve, runs the detector against the solves *before* it, then adds the solve.
+  - Session bests get a "Session best: …" toast. All-time bests get the new card. Both get the existing glow on the digits.
+- **New `components/timer/pb-celebration.tsx`**: a non-modal card (it doesn't trap focus or keys).
+  - Shows each record, the improvement and the previous best, with confetti in the sticker colours.
+  - The share image is pre-drawn, so Share calls `navigator.share` inside the tap (Safari needs that).
+  - It's tied to the stop that earned it, so it disappears when the next solve begins (derived, not an effect).
+- **New `lib/timer/share-card.ts`**:
+  - A 1080×1350 canvas image in theme colours (`readTokenRgb`) and theme fonts.
+  - Shows the wordmark, a sticker row, event and category, the time, the improvement, the window's solves with trimmed ones in brackets, other records hit by the same solve, the date and the host.
+  - `shareImage()` uses the share sheet when files can be shared; otherwise it downloads the PNG and copies it to the clipboard.
+- **`stats.ts`**: `trimmedIndices()` (a stable sort, so tied times still trim two different solves).
+- **Dependency:** `canvas-confetti` 1.9.3 (+ types), loaded only when a PB happens and skipped under reduced motion.
+- **Tests:**
+  - New `tests/unit/pb-detect.test.ts` (13 tests).
+  - The e2e test in `timer.spec.ts` covers the session toast, then a reload and an all-time card, then Share downloads `cubehub-pb.png`, then the next solve closes the card.
+
+**Verified**
+- `npm run validate`: tsc, lint (the one pre-existing warning), and 273 of 273 unit tests. `check:colors` is OK.
+- `npm run build` passes. `npm run test:e2e:prod` passed 24 of 24.
+- In the browser, 5 solves, a reload and 3 faster solves gave an all-time Mo3 and Ao5 card. Screenshots at 1280px and 390px. The downloaded image was checked by eye: Ao5 headline, `1.21 (1.41) 0.61 (0.51) 0.56`, "Also new: Mo3".
+
+---
+
 ## 2026-10-11 — Timer round, step 1: event dropdown and Mo3, branch `timer-page`
 
 **Request:** Step 1 of `docs/timer-plan.md`. Popular events in a dropdown, and Mo3 for every event.

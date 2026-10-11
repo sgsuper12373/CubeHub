@@ -11,6 +11,7 @@ import { SignInNudge } from "@/components/timer/sign-in-nudge";
 import { ShortcutHint } from "@/components/timer/shortcut-hint";
 import { ShortcutsOverlay } from "@/components/timer/shortcuts-overlay";
 import { PreviewPanel } from "@/components/timer/preview-panel";
+import { PbCelebration } from "@/components/timer/pb-celebration";
 import { QuickSettings } from "@/components/timer/quick-settings";
 import { BackgroundSettings } from "@/components/timer/background-settings";
 import { TimerBackground, useTimerScrim } from "@/components/timer/timer-background";
@@ -23,10 +24,10 @@ import type { PanelId } from "@/lib/timer/layout";
 import { useLayoutStore } from "@/stores/layout-store";
 import { generateScramble } from "@/lib/timer/scrambler";
 import { loadLastEvent, saveLastEvent } from "@/lib/timer/events";
-import { bestSingle } from "@/lib/timer/stats";
+import { detectRecords, RECORD_LABEL, type RecordHit } from "@/lib/timer/pb-detect";
 import { loadClientSettings, saveSettings } from "@/lib/timer/settings-persistence";
 import type { ServerTimerSettings } from "@/lib/auth/dal";
-import type { Penalty, TimerSettings } from "@/lib/timer/types";
+import type { Penalty, TimerPuzzle, TimerSettings } from "@/lib/timer/types";
 import { useSessionStore } from "@/stores/session-store";
 import { useTimerStore } from "@/stores/timer-store";
 import { toast } from "@/stores/toast-store";
@@ -61,6 +62,13 @@ export function TimerScreen(props: {
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
+  /** The all-time PB card, tied to the stop that earned it. */
+  const [celebration, setCelebration] = useState<{
+    hits: RecordHit[];
+    puzzle: TimerPuzzle;
+    stoppedAt: number;
+  } | null>(null);
+  const stoppedAt = useTimerStore((s) => s.stoppedAt);
   const scrim = useTimerScrim();
   const editingLayout = useLayoutStore((s) => s.editing);
   const isZenMode = useLayoutStore((s) => s.isZenMode);
@@ -130,6 +138,34 @@ export function TimerScreen(props: {
     };
   }, [scramble.alg, scramble.next, puzzle]);
 
+  /**
+   * Session bests get a toast. All-time bests get the celebration card and the
+   * glow on the digits; categories celebrated there aren't toasted twice.
+   */
+  const announceRecords = (hits: RecordHit[]) => {
+    const allTime = hits.filter((h) => h.scope === "allTime");
+    const session = hits.filter((h) => h.scope === "session");
+
+    if (session.length > 0) {
+      toast({
+        kind: "pb",
+        message: `Session best: ${session
+          .map((h) => `${RECORD_LABEL[h.category]} ${formatMs(h.timeMs)}`)
+          .join(" · ")}`,
+        durationMs: 4000,
+      });
+    }
+    const t = useTimerStore.getState();
+    if (allTime.length > 0 && t.stoppedAt !== null) {
+      setCelebration({ hits: allTime, puzzle: t.puzzle, stoppedAt: t.stoppedAt });
+    }
+    if (hits.length > 0) {
+      setCelebrating(true);
+      if (celebrateTimerRef.current) clearTimeout(celebrateTimerRef.current);
+      celebrateTimerRef.current = setTimeout(() => setCelebrating(false), 1200);
+    }
+  };
+
   // Record the solve exactly once per stop. `stoppedAt` is unique per solve,
   // which makes this idempotent across re-renders and dev double-effects.
   // Also handles PB detection.
@@ -144,43 +180,25 @@ export function TimerScreen(props: {
       return;
     lastRecordedStopRef.current = t.stoppedAt;
 
-    // Snapshot the current best BEFORE adding the new solve
-    const currentSolves = useSessionStore.getState().solves;
-    const previousBest = bestSingle(currentSolves);
-
-    void useSessionStore.getState().addSolve({
+    const sessionState = useSessionStore.getState();
+    const solve = {
       id: crypto.randomUUID(),
+      sessionId: sessionState.activeSessionId ?? "",
       puzzle: t.puzzle,
       timeMs: Math.max(1, Math.round(t.finalElapsedMs)), // DB check: time_ms > 0
       penalty: t.inspectionPenalty,
+      effectiveTimeMs: null,
       scramble: t.scramble.alg ?? "",
       notes: null,
       createdAt: new Date().toISOString(),
-    });
+    };
 
-    // PB detection — compare after the store updates (next microtask)
-    queueMicrotask(() => {
-      const newSolves = useSessionStore.getState().solves;
-      const newBest = bestSingle(newSolves);
-      // Fire PB toast only if we have at least 2 solves and the best improved
-      if (
-        newBest !== null &&
-        newSolves.length >= 2 &&
-        (previousBest === null || newBest < previousBest)
-      ) {
-        toast({
-          kind: "pb",
-          message: `New PB! ${formatMs(newBest)}`,
-          durationMs: 4000,
-        });
-        setCelebrating(true);
-        if (celebrateTimerRef.current) clearTimeout(celebrateTimerRef.current);
-        celebrateTimerRef.current = setTimeout(
-          () => setCelebrating(false),
-          1200,
-        );
-      }
-    });
+    // Records are judged against the solves *before* this one, so read them
+    // before the store adds it.
+    const { hits, known } = detectRecords(sessionState.solves, solve, sessionState.knownBests);
+    sessionState.setKnownBests(known);
+    void sessionState.addSolve(solve);
+    announceRecords(hits);
   }, [phase]);
 
   const togglePenalty = (p: Exclude<Penalty, "none">) => {
@@ -491,6 +509,18 @@ export function TimerScreen(props: {
       )}
 
       {phase === "stopped" && solves.length > 0 && <ShortcutHint />}
+
+      {/* Shown until closed or until the next solve begins (a new stop, or any
+          phase past idle, means the moment has passed). */}
+      {celebration &&
+        celebration.stoppedAt === stoppedAt &&
+        (phase === "stopped" || phase === "idle") && (
+        <PbCelebration
+          hits={celebration.hits}
+          puzzle={celebration.puzzle}
+          onClose={() => setCelebration(null)}
+        />
+      )}
 
       <ShortcutsOverlay
         open={shortcutsOpen}

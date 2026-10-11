@@ -132,6 +132,21 @@ export function windowStat(solves: SolveTimes[], n: WindowSize): number | "DNF" 
 }
 
 /**
+ * Which solves of a window (newest first) a WCA average throws away: the best
+ * and the worst, where a DNF is the worst. Empty for a mean (n = 3), which
+ * trims nothing. csTimer-style listings show these in brackets.
+ */
+export function trimmedIndices(window: SolveTimes[]): Set<number> {
+  if (window.length <= 3) return new Set();
+  // Stable sort, DNF as +Infinity: ties keep their order, so the best and the
+  // worst are always two different solves.
+  const order = window
+    .map((s, i) => ({ i, t: effectiveMs(s) ?? Number.POSITIVE_INFINITY }))
+    .sort((x, y) => x.t - y.t);
+  return new Set([order[0].i, order[order.length - 1].i]);
+}
+
+/**
  * The current Ao5 alongside the Ao5 as it stood one solve ago, so the UI can
  * show which way the average is trending.
  *
