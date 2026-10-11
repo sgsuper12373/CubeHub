@@ -5,6 +5,45 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-11 — Profile step 1: real public stats, no ELO, "My profile" (branch `user_profile`)
+
+**Request:** Step 1 of `docs/profile.md`, planned in `~/.claude/plans/spicy-jumping-feather.md`.
+
+**Found**
+- "Total solves" counted `solves` rows, which RLS (`solves_all`) lets only the owner read, so everyone else's profile showed 0.
+- The page showed a made-up ELO badge and card.
+- The nav's Profile tab opened `/settings`.
+
+**Changed**
+- **New migration `20261012000000_profile_stats.sql`**: `get_profile_stats(p_user)`.
+  - It's `SECURITY DEFINER` and `stable`, with `search_path ''`.
+  - Returns only `total_solves`, `by_event`, and `first_solve_on`/`last_solve_on` as IST calendar dates (never times).
+  - Executable by `anon` and `authenticated`. RLS on `solves` is unchanged.
+- **`lib/profile/dal.ts`**: the stats come from the RPC (`stats: ProfileStats`, falling back to zeros if it fails). The `elo_ratings` query, `eloRating` and `peakEloRating` are gone.
+- **`profile/[username]/page.tsx`**:
+  - Removed `getEloTier`, the tier badge and the ELO card.
+  - The four cards are now Total solves, 3x3 best single, 3x3 best Ao5 and Last active, in a new `StatCard` that uses role tokens.
+  - The owner gets a Settings button.
+  - The metadata no longer mentions competitive ranking.
+- **New `profile/page.tsx`**: "My profile" redirects to `/profile/<username>`, or to `/login?next=%2Fprofile` when signed out.
+- **`lib/navigation.ts`**: Profile is now `/profile`, and it matches `/profile…` and `/settings`.
+- **`user-menu.tsx`**: the name links to `/profile`.
+- **Tests:**
+  - New `supabase/tests/profile_stats_test.sql`. It rolls back and creates two throwaway users, then checks counts, deleted solves excluded, the per-event split, IST dates across midnight UTC, the visitor still unable to read rows, zeros for a user with no solves, and anon access.
+  - The nav unit test.
+  - New `tests/e2e/profile.spec.ts`: the signed-out redirect, a 404 with no ELO, and the nav href.
+
+**Left for Step 2:** the page has no side padding (cards touch the screen edge on phones), and the PB table scrolls sideways at 390px. Step 2 rebuilds this page with event tabs.
+
+**Founder action:** apply the migration and run its test (see `docs/todo.md`). Until then the live RPC returns 404, profiles show 0 solves, and the dev overlay shows the logged error.
+
+**Verified**
+- All 11 migrations apply on a throwaway `supabase/postgres`, and `profile_stats_test.sql` passes 7 of 7.
+- `npm run validate`: 324 of 324 unit tests. `check:colors` is OK. `npm run build` passes. `npm run test:e2e:prod` passed 33 of 33.
+- Screenshots of a real profile, signed out, at 1280px (dark) and 390px (light): no ELO, and the Profile tab is highlighted.
+
+---
+
 ## 2026-10-11 — Edit layout button moves to the top bar
 
 **Request:** The Edit layout button took a whole row above the grid. Move it to the top line, beside the settings buttons.

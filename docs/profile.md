@@ -39,18 +39,18 @@ The owner-only RLS on `solves` and `user_algorithm_bookmarks` stays exactly as i
 
 ---
 
-## Step 1: Fix the three problems
+## Step 1: Fix the three problems (done 2026-10-11; migration `20261012000000_profile_stats.sql`)
 
-- [ ] **Real public stats.** The new migration adds `get_profile_stats(p_username)`, which returns:
+- [x] **Real public stats.** The new migration adds `get_profile_stats(p_username)`, which returns:
   - total live solves
   - solves per event
   - first and last solve dates
 
   The DAL calls it instead of counting `solves`. Tested against RLS as another user, as with the
   timer migration.
-- [ ] **Remove the ELO card and tier badge.** Drop the fake rating, the `getEloTier` badge and the
+- [x] **Remove the ELO card and tier badge.** Drop the fake rating, the `getEloTier` badge and the
   `elo_ratings` query from the DAL. The competitive rank comes back with Compete (see Later).
-- [ ] **"My profile".**
+- [x] **"My profile".**
   - New route `/profile`: signed in, it redirects to `/profile/<your username>`; signed out, to
     `/login?next=/profile`.
   - The nav's Profile link points there.

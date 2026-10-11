@@ -1,35 +1,28 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getUser } from "@/lib/auth/dal";
 import { getPublicProfile } from "@/lib/profile/dal";
 import { eventLabel } from "@/lib/timer/events";
 import { formatMs } from "@/lib/timer/format";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
+  Activity,
   Trophy,
   Calendar,
   ExternalLink,
-  Flame,
+  Settings,
   Zap,
   Timer as TimerIcon,
   ChevronLeft,
+  type LucideIcon,
 } from "lucide-react";
 
 interface Props {
   params: Promise<{
     username: string;
   }>;
-}
-
-function getEloTier(rating: number) {
-  if (rating < 900) return { name: "Scrambled", color: "text-zinc-400 bg-zinc-500/10 border-zinc-500/20" };
-  if (rating < 1100) return { name: "Beginner", color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" };
-  if (rating < 1300) return { name: "Intermediate", color: "text-teal-400 bg-teal-500/10 border-teal-500/20" };
-  if (rating < 1500) return { name: "Advanced", color: "text-blue-400 bg-blue-500/10 border-blue-500/20" };
-  if (rating < 1700) return { name: "Expert", color: "text-purple-400 bg-purple-500/10 border-purple-500/20" };
-  if (rating < 1900) return { name: "Master", color: "text-amber-400 bg-amber-500/10 border-amber-500/20" };
-  return { name: "Grandmaster", color: "text-rose-400 bg-rose-500/10 border-rose-500/20" };
 }
 
 function formatPuzzle(p: string) {
@@ -47,19 +40,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const name = profile.displayName || profile.username;
   return {
     title: `${name} (@${profile.username}) — CubeHub`,
-    description: `View ${name}'s solve statistics, personal bests, and competitive ranking on CubeHub.`,
+    description: `${name}'s solve stats and personal bests on CubeHub.`,
   };
 }
 
 export default async function ProfilePage({ params }: Props) {
   const resolvedParams = await params;
-  const profile = await getPublicProfile(resolvedParams.username);
+  const [profile, user] = await Promise.all([
+    getPublicProfile(resolvedParams.username),
+    getUser(),
+  ]);
 
   if (!profile) {
     notFound();
   }
 
-  const eloTier = getEloTier(profile.eloRating);
+  const isOwner = user?.id === profile.id;
+  const lastActive = profile.stats.lastSolveOn
+    ? formatDay(profile.stats.lastSolveOn)
+    : "—";
   const joinDate = new Date(profile.createdAt).toLocaleDateString("en-US", {
     month: "short",
     year: "numeric",
@@ -110,11 +109,6 @@ export default async function ProfilePage({ params }: Props) {
             <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
               {profile.displayName || profile.username}
             </h1>
-            <span
-              className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${eloTier.color}`}
-            >
-              {eloTier.name} ({profile.eloRating})
-            </span>
           </div>
 
           <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
@@ -138,73 +132,26 @@ export default async function ProfilePage({ params }: Props) {
             )}
           </div>
         </div>
+
+        {isOwner && (
+          <Button
+            variant="outline"
+            size="sm"
+            render={<Link href="/settings" />}
+            nativeButton={false}
+          >
+            <Settings />
+            Settings
+          </Button>
+        )}
       </div>
 
       {/* Stats Summary Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="border-white/5 bg-muted/20">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-primary/10 text-primary">
-              <TimerIcon className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">
-                Total Solves
-              </p>
-              <h3 className="text-2xl font-bold font-mono text-foreground">
-                {profile.totalSolves}
-              </h3>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-white/5 bg-muted/20">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-amber-500/10 text-amber-400">
-              <Trophy className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">
-                3x3 ELO Rating
-              </p>
-              <h3 className="text-2xl font-bold font-mono text-foreground">
-                {profile.eloRating}
-              </h3>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-white/5 bg-muted/20">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-teal-500/10 text-teal-400">
-              <Zap className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">
-                3x3 Best Single
-              </p>
-              <h3 className="text-2xl font-bold font-mono text-foreground">
-                {singlePb333 ? formatMs(singlePb333.timeMs) : "—"}
-              </h3>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-white/5 bg-muted/20">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-purple-500/10 text-purple-400">
-              <Flame className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">
-                3x3 Best Ao5
-              </p>
-              <h3 className="text-2xl font-bold font-mono text-foreground">
-                {ao5Pb333 ? formatMs(ao5Pb333.timeMs) : "—"}
-              </h3>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <StatCard icon={TimerIcon} label="Total solves" value={profile.stats.totalSolves.toLocaleString("en-IN")} />
+        <StatCard icon={Zap} label="3x3 best single" value={singlePb333 ? formatMs(singlePb333.timeMs) : "—"} />
+        <StatCard icon={Trophy} label="3x3 best Ao5" value={ao5Pb333 ? formatMs(ao5Pb333.timeMs) : "—"} />
+        <StatCard icon={Activity} label="Last active" value={lastActive} />
       </div>
 
       {/* Personal Bests Section */}
@@ -250,5 +197,32 @@ export default async function ProfilePage({ params }: Props) {
         )}
       </div>
     </div>
+  );
+}
+
+/** "2026-10-11" (an IST calendar date from the stats function) → "11 Oct 2026". */
+function formatDay(day: string): string {
+  const [y, m, d] = day.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function StatCard({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
+  return (
+    <Card className="border-border bg-card/60">
+      <CardContent className="flex items-center gap-4 p-5">
+        <div className="rounded-xl bg-primary/10 p-3 text-primary">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs font-medium text-muted-foreground">{label}</p>
+          <p className="truncate font-mono text-2xl font-bold text-foreground">{value}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

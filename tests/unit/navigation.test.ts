@@ -14,6 +14,14 @@ describe("nav active tab", () => {
     expect(activeNavHref("/learn/333/drills-intro", navItems)).toBe("/learn");
   });
 
+  it("Profile covers your profile, anyone's profile and Settings", () => {
+    expect(navItems.find((i) => i.label === "Profile")?.href).toBe("/profile");
+    expect(activeNavHref("/profile", navItems)).toBe("/profile");
+    expect(activeNavHref("/profile/someone", navItems)).toBe("/profile");
+    expect(activeNavHref("/settings", navItems)).toBe("/profile");
+    expect(activeNavHref("/profiles-list", navItems)).toBeNull();
+  });
+
   it("the phone bar keeps five tabs, with Drill in it", () => {
     expect(mobileNavItems).toHaveLength(5);
     expect(mobileNavItems.map((i) => i.label)).toContain("Drill");
