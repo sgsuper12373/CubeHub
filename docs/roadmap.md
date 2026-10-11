@@ -38,6 +38,9 @@ Note `solves.effective_time_ms` is a generated column that already applies +2/DN
 
 *Deliverable met: a usable timer plus a front door, ready to share with the cubing community for beta feedback.*
 
+The full feature list, the final feature round, and what's deferred until users ask are in
+[`timer.md`](timer.md).
+
 ## Phase 2 — Analytics
 
 **Complete and verified** (merged into `main`).
