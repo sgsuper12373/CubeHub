@@ -5,6 +5,31 @@ Written 2026-10-04. Tick items off or delete them as they're done.
 
 ---
 
+## Next session: start here (suggested 2026-10-12)
+
+The timer round and all five profile steps are done and pushed (see `timer.md`,
+`profile.md`). Suggested next work, most valuable first:
+
+1. **Make tutorials findable on Google:** a sitemap, plus one page per case such as
+   `/learn/333/oll/27`. Details in section 5, idea 1.
+2. **Error tracking and analytics before sharing the beta:** Vercel Analytics plus Sentry.
+   Section 5, idea 3.
+3. **Error and 404 pages:** a themed `error.tsx` and `not-found.tsx`. Section 5, idea 2.
+4. **Daily scramble with an India-wide leaderboard:** section 5, idea 5. It can reuse the
+   profile and achievement work. Leave typed times out with `solves.source = 'manual'`, as
+   the speed badges and levels already do.
+5. **A sign-in test account for e2e tests:**
+   - Every signed-in flow (profile editing, photo upload, privacy, achievements, typed
+     solves in the cloud, Learn "mark learned") is checked by hand today.
+   - The fix is a dedicated test user, plus a Playwright setup that signs in once and
+     reuses the session, with CI secrets for its email and password.
+   - It needs its own throwaway data, cleaned up after each run, and must never use the
+     service-role key.
+
+Before any of these, finish the post-deploy checks in section 2 (Vercel and "Check by hand").
+
+---
+
 ## 1. Urgent: upgrade Next.js (security)
 
 `next` 16.2.10 has known **critical** vulnerabilities. One is remote code execution in
