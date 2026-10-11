@@ -5,6 +5,18 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-12 — PLL seed script moved into `supabase/DataSeeds/`
+
+**Request:** Move the PLL seed script into DataSeeds.
+
+**Found:** `20261003000000_pll_algorithm_refresh.sql` existed only on the local branch `claude/adoring-feynman-x4btyg`, in a stray `supabase/dataSeeding/` folder. It isn't on `main` and was never pushed. The OLL seed in `DataSeeds/` refers to it as the PLL counterpart.
+
+**Live check (read-only):** it was already applied. There are 97 PLL algorithms live, exactly the script's 97 target rows, and the Aa main (`x L2 D2 L' U' L D2 L' U L' x'`) and corrected Ab main (`x R2 D2 R U R' D2 R U' R x'`) match.
+
+**Changed:** the file now lives at `supabase/DataSeeds/20261003000000_pll_algorithm_refresh.sql`, unchanged except the header. The `migration repair` line is replaced by a note that this is a seed (no repair entry) and is already applied.
+
+---
+
 ## 2026-10-12 — Profile steps 4–5 checked on live data
 
 **Live checks** (the founder applied `20261015000100` and `20261016000000`):
