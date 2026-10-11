@@ -260,7 +260,7 @@ function EventSection({
                 category === "single" ? "border-primary/40" : "border-border",
               )}
             >
-              <p className="text-[0.65rem] font-semibold tracking-wider text-muted-foreground uppercase">{label}</p>
+              <p className="text-xs font-semibold text-muted-foreground">{label}</p>
               <p
                 className={cn(
                   "mt-1 font-mono text-xl font-semibold tabular-nums",
@@ -280,13 +280,15 @@ function EventSection({
 
 function StatCard({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-card/60 p-4">
-      <div className="rounded-lg bg-primary/10 p-2.5 text-primary">
+    // Icon above the text on phones, beside it from sm up: two columns of
+    // side-by-side cards leave too little room for "11 Oct 2026".
+    <div className="flex flex-col items-start gap-2 rounded-xl border border-border bg-card/60 p-3 sm:flex-row sm:items-center sm:gap-3 sm:p-4">
+      <div className="shrink-0 rounded-lg bg-primary/10 p-2 text-primary sm:p-2.5">
         <Icon className="size-4" aria-hidden />
       </div>
       <div className="min-w-0">
         <p className="text-xs font-medium text-muted-foreground">{label}</p>
-        <p className="truncate font-mono text-lg font-bold text-foreground">{value}</p>
+        <p className="truncate font-mono text-base font-bold text-foreground sm:text-lg">{value}</p>
       </div>
     </div>
   );

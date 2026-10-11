@@ -5,6 +5,25 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-11 — Profile step 2 checked on live data; phone stat-card fix
+
+**Live checks** (after the founder applied both migrations and the tests passed in the SQL editor):
+- `profiles.is_public` is readable.
+- The `avatars` bucket exists: a missing file returns `NoSuchKey`, where a missing bucket returns `NoSuchBucket`.
+- `/profile/sgsueper12373` signed out shows 505 total solves (3x3 501 + 2x2 4), 2 events, member since Jul 2026 and last active 11 Oct 2026.
+- The 3x3 tab is selected by default, as the most practised; `?event=222` shows 2x2.
+- No page errors and no sideways scroll at 390px.
+
+**Fixed**
+- On phones the stat cards cut "11 Oct 2026" off. The icon now sits above the text below `sm`, with smaller value text. A script checking every `p.truncate` reports nothing clipped at 360, 390, 640 or 1280px.
+- PB labels lost the `uppercase` style, which showed "MO3" and "AO5". They now read "Mo3" and "Ao5".
+
+**Still to check by hand (signed in):** the Edit profile form, a photo upload, and the private toggle.
+
+**Verified:** `npm run validate` (337 of 337), `check:colors`, `npm run build`, `npm run test:e2e:prod` (34 of 34).
+
+---
+
 ## 2026-10-11 — Profile step 2 follow-up: avatars Storage split into its own migration
 
 **Why:** The founder's SQL editor runs showed the profile migration never landed (no `is_public`, no bucket). The SQL editor runs a file as one transaction, and newer hosted projects can refuse `create policy … on storage.objects` ("must be owner"). One refusal rolls back everything, including the column the page needs.

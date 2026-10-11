@@ -54,7 +54,7 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
       every row should say PASS. Add `20261012000000` to the `migration repair` list above.
       Until it's applied, profiles show 0 total solves.
 
-- [ ] **Profile step 2: two migrations, BEFORE deploying the `user_profile` branch**
+- [x] **Profile step 2: two migrations, BEFORE deploying the `user_profile` branch** (both applied 2026-10-11)
       (the new profile page reads `profiles.is_public`; without it every profile 404s).
       Run each file in the SQL editor, then its test (every row PASS):
       1. `supabase/migrations/20261013000000_profile_edit.sql` →
