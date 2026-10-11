@@ -89,6 +89,11 @@ export interface Solve {
    * timer. "manual" marks a typed-in time, so leaderboards can leave it out.
    */
   source?: "web" | "manual";
+  /**
+   * DB `solves.scramble_type`. Absent means "random_state", a generated
+   * scramble; "custom" marks one the user pasted in.
+   */
+  scrambleType?: "random_state" | "custom";
   /** ISO timestamp. Wall-clock is fine for metadata; never used for timing math. */
   createdAt: string;
   /**

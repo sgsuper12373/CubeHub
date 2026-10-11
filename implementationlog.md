@@ -5,6 +5,31 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-11 — Timer round, step 5: previous scramble and custom scramble
+
+**Request:** Step 5 of `docs/timer-plan.md`.
+
+**Changed**
+- **`stores/timer-store.ts`**: the scramble state (`ScrambleSlots`) gains `prev` and `custom`.
+  - `moveOn()` is shared by advance and skip, and remembers the current scramble as `prev`.
+  - New `previousScramble()`: works when idle or stopped; after a solve it repeats the scramble just solved. An unused random scramble goes back into `next`.
+  - New `setCustomScramble()`: the random scramble waits in `next`. `setPuzzle` clears every slot.
+- **New `lib/timer/custom-scramble.ts`**: tidies pasted input (spacing, typographic quotes, keeps Megaminx line breaks, 500-character cap) and syntax-checks it with cubing's `Alg`. It accepts R++/D-- and Pyraminx tips.
+- **New `components/timer/custom-scramble-dialog.tsx`**: the same hand-rolled modal as the shortcuts list, with the overlay lock so Space can't start the timer behind it. Enter uses the scramble; Shift+Enter adds a line.
+- **`scramble-bar.tsx`**: Previous, New, Copy and "Enter your own scramble" buttons, plus a "Custom scramble" label. "New" after a solve now moves on instead of doing nothing.
+- **`touch-stage.tsx`**: `←` previous and `→` new scramble (between solves), also listed in the shortcuts overlay.
+- **`Solve.scrambleType`** is optional; `"custom"` is set from the store. `repo-supabase.ts` and the sign-in sync send `scramble_type`.
+- **Tests:**
+  - New `tests/unit/scramble-slots.test.ts` (11 tests: transitions and the checker against the real cubing parser).
+  - Two e2e tests: Previous via the button and the arrow keys; a pasted scramble (junk is rejected, then a tidied scramble is used, labelled, and the solve is stored with `scrambleType: "custom"`, and the next scramble is random).
+
+**Verified**
+- `npm run validate`: 316 of 316 unit tests; lint has the one pre-existing warning. `check:colors` is OK.
+- `npm run build` passes. `npm run test:e2e:prod` passed 28 of 28.
+- Phone screenshots of the dialog and of the bar with the custom label.
+
+---
+
 ## 2026-10-11 — Timer round, step 4: manual time entry (typing mode)
 
 **Request:** Step 4 of `docs/timer-plan.md`. Stackmat support stays deferred until users ask.

@@ -142,3 +142,54 @@ test("typing mode saves typed times as manual solves", async ({ page }) => {
   await page.reload();
   await expect(page.getByLabel("Time", { exact: true })).toBeVisible();
 });
+
+test("previous scramble comes back with the button and with ←", async ({ page }) => {
+  await page.goto("/timer");
+  await expect(scramble(page)).toBeVisible({ timeout: 60_000 });
+  const first = await scramble(page).getAttribute("aria-label");
+
+  await page.getByRole("button", { name: "New 3x3 scramble" }).click();
+  await expect(scramble(page)).not.toHaveAttribute("aria-label", first ?? "");
+  const second = await scramble(page).getAttribute("aria-label");
+
+  await page.getByRole("button", { name: "Previous scramble" }).click();
+  await expect(scramble(page)).toHaveAttribute("aria-label", first ?? "");
+
+  // → goes forward again to the one we left, ← back once more.
+  await page.keyboard.press("ArrowRight");
+  await expect(scramble(page)).toHaveAttribute("aria-label", second ?? "");
+  await page.keyboard.press("ArrowLeft");
+  await expect(scramble(page)).toHaveAttribute("aria-label", first ?? "");
+});
+
+test("a pasted scramble is used, marked custom and saved with the solve", async ({ page }) => {
+  await page.goto("/timer");
+  await expect(scramble(page)).toBeVisible({ timeout: 60_000 });
+
+  await page.getByRole("button", { name: "Enter your own scramble" }).click();
+  const dialog = page.getByRole("dialog", { name: /Enter a 3x3 scramble/ });
+  await dialog.getByLabel("Scramble").fill("hello!");
+  await dialog.getByRole("button", { name: "Use scramble" }).click();
+  await expect(dialog.getByText("That isn't valid move notation")).toBeVisible();
+
+  await dialog.getByLabel("Scramble").fill("  R  U’ F2 ");
+  await dialog.getByRole("button", { name: "Use scramble" }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(scramble(page)).toHaveAttribute("aria-label", "Scramble: R U' F2");
+  await expect(page.getByText("Custom scramble")).toBeVisible();
+
+  await solve(page, 300);
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const data = JSON.parse(localStorage.getItem("cubehub.timer.v1") ?? "{}");
+        return (data.solves ?? []).map((s: { scramble: string; scrambleType?: string }) => `${s.scramble}|${s.scrambleType}`);
+      }),
+    )
+    .toEqual(["R U' F2|custom"]);
+
+  // The next scramble is random again.
+  await page.keyboard.press("ArrowRight");
+  await expect(page.getByText("Custom scramble")).toHaveCount(0);
+  await expect(scramble(page)).not.toHaveAttribute("aria-label", "Scramble: R U' F2");
+});

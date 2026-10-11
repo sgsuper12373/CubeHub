@@ -92,6 +92,19 @@ export function TouchStage({
           return;
         }
 
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          store.previousScramble();
+          return;
+        }
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          // After a solve the scramble on show is spent; otherwise skip it.
+          if (store.phase === "stopped") store.advanceScramble();
+          else store.skipScramble();
+          return;
+        }
+
         if (key === "d") {
           const last = useSessionStore.getState().solves[0];
           if (last) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Shuffle } from "lucide-react";
+import { Check, Copy, PenLine, Shuffle, Undo2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -78,14 +78,23 @@ export function ScrambleBar({
   alg,
   generating,
   puzzle,
+  custom = false,
+  canPrevious = false,
   onNext,
   onCopy,
+  onPrevious,
+  onCustom,
 }: {
   alg: string | null;
   generating: boolean;
   puzzle: TimerPuzzle;
+  /** The scramble was pasted in rather than generated. */
+  custom?: boolean;
+  canPrevious?: boolean;
   onNext: () => void;
   onCopy: () => void;
+  onPrevious?: () => void;
+  onCustom?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const copyResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -110,9 +119,30 @@ export function ScrambleBar({
         <ScrambleTokens alg={alg} />
       )}
       <div className="flex shrink-0 items-center gap-1">
+        {custom && (
+          <span className="mr-1 rounded-full bg-muted px-2 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
+            Custom scramble
+          </span>
+        )}
+        {onPrevious && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Previous scramble"
+            title="Previous scramble (←)"
+            disabled={!canPrevious}
+            onClick={(e) => {
+              e.currentTarget.blur();
+              onPrevious();
+            }}
+          >
+            <Undo2 />
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="icon-sm"
+          title="New scramble (→)"
           aria-label={`New ${eventLabel(puzzle)} scramble`}
           disabled={alg === null && generating}
           onClick={onNext}
@@ -133,6 +163,20 @@ export function ScrambleBar({
         >
           {copied ? <Check className="text-timer-ready" /> : <Copy />}
         </Button>
+        {onCustom && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Enter your own scramble"
+            title="Enter your own scramble"
+            onClick={(e) => {
+              e.currentTarget.blur();
+              onCustom();
+            }}
+          >
+            <PenLine />
+          </Button>
+        )}
       </div>
     </div>
   );

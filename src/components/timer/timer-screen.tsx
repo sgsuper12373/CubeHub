@@ -13,6 +13,7 @@ import { ShortcutHint } from "@/components/timer/shortcut-hint";
 import { ShortcutsOverlay } from "@/components/timer/shortcuts-overlay";
 import { PreviewPanel } from "@/components/timer/preview-panel";
 import { PbCelebration } from "@/components/timer/pb-celebration";
+import { CustomScrambleDialog } from "@/components/timer/custom-scramble-dialog";
 import { QuickSettings } from "@/components/timer/quick-settings";
 import { BackgroundSettings } from "@/components/timer/background-settings";
 import { TimerBackground, useTimerScrim } from "@/components/timer/timer-background";
@@ -63,6 +64,7 @@ export function TimerScreen(props: {
   const lastRecordedStopRef = useRef<number | null>(null);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [customOpen, setCustomOpen] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
   /** The all-time PB card, tied to the solve that earned it. */
   const [celebration, setCelebration] = useState<{
@@ -185,6 +187,7 @@ export function TimerScreen(props: {
       scramble: t.scramble.alg ?? "",
       notes: null,
       ...(source === "manual" && { source }),
+      ...(t.scramble.custom && { scrambleType: "custom" as const }),
       createdAt: new Date().toISOString(),
     };
 
@@ -339,7 +342,19 @@ export function TimerScreen(props: {
               alg={scramble.alg}
               generating={scramble.generating}
               puzzle={puzzle}
-              onNext={() => useTimerStore.getState().skipScramble()}
+              custom={scramble.custom}
+              canPrevious={
+                scramble.prev !== null ||
+                (phase === "stopped" && scramble.alg !== null)
+              }
+              onPrevious={() => useTimerStore.getState().previousScramble()}
+              onCustom={() => setCustomOpen(true)}
+              onNext={() => {
+                const t = useTimerStore.getState();
+                // After a solve, the scramble on show is spent.
+                if (t.phase === "stopped") t.advanceScramble();
+                else t.skipScramble();
+              }}
               onCopy={() => {
                 const { alg } = useTimerStore.getState().scramble;
                 if (alg) void navigator.clipboard.writeText(alg);
@@ -375,7 +390,7 @@ export function TimerScreen(props: {
         return (
           <>
             <TouchStage
-              disabled={shortcutsOpen || editingLayout}
+              disabled={shortcutsOpen || customOpen || editingLayout}
               onShowShortcuts={() => setShortcutsOpen(true)}
             >
               <TimeDisplay
@@ -549,6 +564,17 @@ export function TimerScreen(props: {
           hits={celebration.hits}
           puzzle={celebration.puzzle}
           onClose={() => setCelebration(null)}
+        />
+      )}
+
+      {customOpen && (
+        <CustomScrambleDialog
+          puzzle={puzzle}
+          onClose={() => setCustomOpen(false)}
+          onUse={(alg) => {
+            useTimerStore.getState().setCustomScramble(alg);
+            setCustomOpen(false);
+          }}
         />
       )}
 

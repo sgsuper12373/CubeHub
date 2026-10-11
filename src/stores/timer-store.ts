@@ -23,6 +23,38 @@ export function inspectionDurationMs(mode: InspectionMode): number | null {
   return mode === "8s" ? 8_000 : 15_000;
 }
 
+/**
+ * The current scramble, the prefetched next one, and the one shown before the
+ * current (so "previous" can bring it back). `custom` marks a scramble the
+ * user pasted in, saved with `scramble_type = 'custom'`.
+ */
+export interface ScrambleSlots {
+  alg: string | null;
+  next: string | null;
+  generating: boolean;
+  custom: boolean;
+  prev: { alg: string; custom: boolean } | null;
+}
+
+const EMPTY_SCRAMBLE: ScrambleSlots = {
+  alg: null,
+  next: null,
+  generating: true,
+  custom: false,
+  prev: null,
+};
+
+/** Move on to the next scramble, remembering the current one as `prev`. */
+function moveOn(s: ScrambleSlots): ScrambleSlots {
+  return {
+    alg: s.next,
+    next: null,
+    generating: s.next === null,
+    custom: false,
+    prev: s.alg !== null ? { alg: s.alg, custom: s.custom } : s.prev,
+  };
+}
+
 interface TimerStore {
   phase: TimerPhase;
   puzzle: TimerPuzzle;
@@ -36,7 +68,7 @@ interface TimerStore {
   finalElapsedMs: number | null;
   /** Accrued from inspection overrun; attached to the solve when it is recorded. */
   inspectionPenalty: Penalty;
-  scramble: { alg: string | null; next: string | null; generating: boolean };
+  scramble: ScrambleSlots;
 
   /**
    * High-level machine input shared by both engines (keyboard and pointer).
@@ -67,6 +99,13 @@ interface TimerStore {
   receiveScramble(alg: string): void;
   /** Discard the current scramble ("new scramble" button); idle only. */
   skipScramble(): void;
+  /**
+   * Bring back the scramble shown before this one (idle or stopped). An
+   * unused random scramble goes back into the `next` slot, so it isn't lost.
+   */
+  previousScramble(): void;
+  /** Use a scramble the user pasted in (idle or stopped). */
+  setCustomScramble(alg: string): void;
   setScrambleGenerating(generating: boolean): void;
   setPuzzle(p: TimerPuzzle): void;
   applySettings(s: Partial<TimerSettings>): void;
@@ -82,7 +121,7 @@ export const useTimerStore = create<TimerStore>()((set, get) => ({
   stoppedAt: null,
   finalElapsedMs: null,
   inspectionPenalty: "none",
-  scramble: { alg: null, next: null, generating: true },
+  scramble: EMPTY_SCRAMBLE,
 
   press: (now) => {
     const s = get();
@@ -205,18 +244,14 @@ export const useTimerStore = create<TimerStore>()((set, get) => ({
       holdStartedAt: null,
       inspectionStartedAt: null,
       inspectionPenalty: "none",
-      scramble: {
-        alg: s.scramble.next,
-        next: null,
-        generating: s.scramble.next === null,
-      },
+      scramble: moveOn(s.scramble),
     });
   },
 
   receiveScramble: (alg) => {
     const { scramble } = get();
     if (scramble.alg === null) {
-      set({ scramble: { alg, next: scramble.next, generating: false } });
+      set({ scramble: { ...scramble, alg, generating: false, custom: false } });
     } else {
       set({ scramble: { ...scramble, next: alg, generating: false } });
     }
@@ -225,11 +260,40 @@ export const useTimerStore = create<TimerStore>()((set, get) => ({
   skipScramble: () => {
     const s = get();
     if (s.phase !== "idle") return;
+    set({ scramble: moveOn(s.scramble) });
+  },
+
+  previousScramble: () => {
+    // After a solve, "previous" means "this one again": move on first so the
+    // scramble just solved becomes `prev`.
+    if (get().phase === "stopped") get().advanceScramble();
+    const s = get();
+    if (s.phase !== "idle" || s.scramble.prev === null) return;
+    const { alg, custom, next } = s.scramble;
     set({
       scramble: {
-        alg: s.scramble.next,
-        next: null,
-        generating: s.scramble.next === null,
+        alg: s.scramble.prev.alg,
+        custom: s.scramble.prev.custom,
+        // Keep an unused random scramble for later; a pasted one is dropped.
+        next: alg !== null && !custom ? alg : next,
+        generating: false,
+        prev: null,
+      },
+    });
+  },
+
+  setCustomScramble: (custom) => {
+    if (get().phase === "stopped") get().advanceScramble();
+    const s = get();
+    if (s.phase !== "idle") return;
+    const { alg, next } = s.scramble;
+    set({
+      scramble: {
+        alg: custom,
+        custom: true,
+        next: alg !== null && !s.scramble.custom ? alg : next,
+        generating: false,
+        prev: alg !== null ? { alg, custom: s.scramble.custom } : s.scramble.prev,
       },
     });
   },
@@ -242,7 +306,7 @@ export const useTimerStore = create<TimerStore>()((set, get) => ({
     if (get().puzzle === p) return;
     set({
       puzzle: p,
-      scramble: { alg: null, next: null, generating: true },
+      scramble: EMPTY_SCRAMBLE,
     });
   },
 

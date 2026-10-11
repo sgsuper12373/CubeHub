@@ -13,6 +13,8 @@ const SHORTCUTS: { keys: string[]; label: string }[] = [
   { keys: ["D"], label: "Delete the last solve" },
   { keys: ["1"], label: "Toggle +2 on the last solve" },
   { keys: ["2"], label: "Toggle DNF on the last solve" },
+  { keys: ["←"], label: "Previous scramble" },
+  { keys: ["→"], label: "New scramble" },
   { keys: ["?"], label: "Show this list" },
 ];
 

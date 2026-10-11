@@ -32,7 +32,10 @@ Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Dri
 ### Scrambles and preview
 - WCA random-state scrambles from cubing.js, generated in a worker. The next scramble is
   prepared in advance, so a new one is instant.
-- New scramble and copy scramble buttons.
+- New scramble (`→`), previous scramble (`←`), copy scramble, and **enter your own
+  scramble** (paste one to race a friend on it). A pasted scramble is checked as move
+  notation, labelled "Custom scramble", and saved with `scramble_type = 'custom'`; the next
+  scramble is random again. "Previous" right after a solve repeats the scramble just solved.
 - Scramble preview as a 2D net or a 3D cube.
 
 ### Puzzles and sessions
@@ -46,7 +49,7 @@ Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Dri
 ### Penalties and shortcuts
 - After a solve, a +2 / DNF / delete bar. Penalties can be changed on any solve in the list.
 - Keyboard: `Space` start/stop, any key for a panic stop, `Esc` cancel, `D` delete last,
-  `1` toggle +2, `2` toggle DNF, `?` shortcuts list.
+  `1` toggle +2, `2` toggle DNF, `←` previous scramble, `→` new scramble, `?` shortcuts list.
 
 ### Stats (on the timer page)
 - Best, mean, Mo3, Ao5, Ao12, Ao50 and Ao100 (WCA mean and trimmed averages).
@@ -99,7 +102,7 @@ The full plan is in [`timer-plan.md`](timer-plan.md). Tick each item as it ships
       with scrambles), ready to paste into WhatsApp or Instagram.
 - [x] **4. Manual time entry.** Done 2026-10-11. A "Typing" input mode that reads `12.34`, `1:02.34`, `1234`,
       `12.34+` and `DNF`. Typed solves are saved with `source = 'manual'`.
-- [ ] **5. Previous scramble and custom scramble.** Go back one scramble (`←`), or paste
+- [x] **5. Previous scramble and custom scramble.** Done 2026-10-11. Go back one scramble (`←`), or paste
       your own. Custom scrambles are saved with `scramble_type = 'custom'`.
 - [ ] **6. Recently deleted.** Restore or permanently delete soft-deleted solves from the
       last 30 days.

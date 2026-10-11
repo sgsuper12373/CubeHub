@@ -71,6 +71,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
           penalty: solve.penalty,
           scramble: solve.scramble,
           source: solve.source ?? "web",
+          scramble_type: solve.scrambleType ?? "random_state",
           created_at: solve.createdAt,
         },
         { onConflict: "id", ignoreDuplicates: true },
