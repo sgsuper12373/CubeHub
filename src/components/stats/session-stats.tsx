@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Star } from "lucide-react";
+import { BarChart3, Copy, Star } from "lucide-react";
 
 import { formatAverage, formatMs } from "@/lib/timer/format";
 import {
@@ -11,6 +11,8 @@ import {
   wcaAverage,
   worstSingle,
 } from "@/lib/timer/stats";
+import { copyAverage } from "@/lib/timer/copy-text";
+import type { WindowSize } from "@/lib/timer/stats";
 import type { Solve } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +46,12 @@ export function SessionStats({ solves }: { solves: Solve[] }) {
   const worst = worstSingle(solves);
   const mean = sessionMean(solves);
 
+  /** A copy handler while the window is full, so short rows stay plain text. */
+  const copyFor = (n: WindowSize) => {
+    if (solves.length < n) return undefined;
+    return () => copyAverage(solves, n);
+  };
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-auto px-3 py-1">
       <Row label="Solves" value={`${valid}/${count}`} accent />
@@ -56,9 +64,9 @@ export function SessionStats({ solves }: { solves: Solve[] }) {
       />
       <Row label="Worst" value={worst !== null ? formatMs(worst) : "—"} />
       <div className="my-1.5 border-t border-border/60" />
-      <Row label="Mo3" value={formatAverage(meanOfN(solves, 3))} />
-      <Row label="Ao5" value={formatAverage(wcaAverage(solves, 5))} accent />
-      <Row label="Ao12" value={formatAverage(wcaAverage(solves, 12))} />
+      <Row label="Mo3" value={formatAverage(meanOfN(solves, 3))} onCopy={copyFor(3)} />
+      <Row label="Ao5" value={formatAverage(wcaAverage(solves, 5))} accent onCopy={copyFor(5)} />
+      <Row label="Ao12" value={formatAverage(wcaAverage(solves, 12))} onCopy={copyFor(12)} />
       <Row label="Ao50" value={formatAverage(wcaAverage(solves, 50))} />
       <Row label="Ao100" value={formatAverage(wcaAverage(solves, 100))} />
     </div>
@@ -70,6 +78,7 @@ function Row({
   value,
   accent = false,
   star = false,
+  onCopy,
 }: {
   label: string;
   value: string;
@@ -77,26 +86,59 @@ function Row({
   accent?: boolean;
   /** Personal-best star on the label. */
   star?: boolean;
+  /** Makes the row a button that copies the average as text. */
+  onCopy?: () => void;
 }) {
+  const labelEl = (
+    <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+      {star && (
+        <Star
+          className="size-3 fill-timer-ready text-timer-ready"
+          aria-label="personal best"
+        />
+      )}
+      {label}
+    </span>
+  );
+  const valueEl = (
+    <span
+      className={cn(
+        "font-mono text-sm font-semibold tabular-nums",
+        accent ? "text-timer-ready" : "text-foreground",
+      )}
+    >
+      {value}
+    </span>
+  );
+
+  if (!onCopy) {
+    return (
+      <div className="flex items-center justify-between py-1.5">
+        {labelEl}
+        {valueEl}
+      </div>
+    );
+  }
   return (
-    <div className="flex items-center justify-between py-1.5">
-      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        {star && (
-          <Star
-            className="size-3 fill-timer-ready text-timer-ready"
-            aria-label="personal best"
-          />
-        )}
-        {label}
+    <button
+      type="button"
+      title={`Copy ${label} as text`}
+      aria-label={`Copy ${label} ${value} as text`}
+      onClick={(e) => {
+        // Blur so the next Space reaches the timer, not this button.
+        e.currentTarget.blur();
+        onCopy();
+      }}
+      className="group -mx-1.5 flex items-center justify-between rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+    >
+      {labelEl}
+      <span className="flex items-center gap-1.5">
+        <Copy
+          className="size-3 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+          aria-hidden
+        />
+        {valueEl}
       </span>
-      <span
-        className={cn(
-          "font-mono text-sm font-semibold tabular-nums",
-          accent ? "text-timer-ready" : "text-foreground",
-        )}
-      >
-        {value}
-      </span>
-    </div>
+    </button>
   );
 }

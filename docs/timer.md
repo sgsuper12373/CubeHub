@@ -47,6 +47,9 @@ Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Dri
 ### Stats (on the timer page)
 - Best, mean, Mo3, Ao5, Ao12, Ao50 and Ao100 (WCA mean and trimmed averages).
 - A trend sparkline with the Ao5 change.
+- Click Mo3, Ao5 or Ao12 (or tap the tile on mobile) to copy it as csTimer-style text:
+  the average, then each solve numbered oldest first with trimmed ones in brackets and its
+  scramble. The PB card has the same "Copy text".
 - A solve list with notes, penalties and per-solve details (including copy scramble).
 - On mobile, a stats drawer.
 - Records for single, Mo3, Ao5 and Ao12. A **session best** gets a toast. An **all-time PB**
@@ -88,7 +91,7 @@ The full plan is in [`timer-plan.md`](timer-plan.md). Tick each item as it ships
   - "All-time PB" celebration, with confetti and a share image (a 1080×1350 PNG, shared
     through the phone's share sheet or downloaded).
   - Covers single, Mo3, Ao5 and Ao12.
-- [ ] **3. Copy an average as text.** csTimer-style text (`Ao5: 12.34 = 11.20, (10.90), …`
+- [x] **3. Copy an average as text.** Done 2026-10-11. csTimer-style text (`Ao5: 12.34 = 11.20, (10.90), …`
       with scrambles), ready to paste into WhatsApp or Instagram.
 - [ ] **4. Manual time entry.** A "Typing" input mode that reads `12.34`, `1:02.34`, `1234`,
       `12.34+` and `DNF`. Typed solves are saved with `source = 'manual'`.

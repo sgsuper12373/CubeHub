@@ -8,6 +8,7 @@ import { SessionTrend } from "@/components/stats/session-trend";
 import { SolveList } from "@/components/stats/solve-list";
 import { StatTiles } from "@/components/stats/stat-tiles";
 import { Button } from "@/components/ui/button";
+import { copyAverage } from "@/lib/timer/copy-text";
 import { bestSingle, meanOfN, sessionMean, wcaAverage } from "@/lib/timer/stats";
 import type { Penalty, Solve } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
@@ -52,6 +53,7 @@ export function StatsPanel({
         ao100={ao100}
         mean={mean}
         count={solves.length}
+        onCopy={(n) => copyAverage(solves, n)}
       />
       <SessionTrend solves={solves} />
       <SolveList

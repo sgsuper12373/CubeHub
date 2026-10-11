@@ -1,12 +1,13 @@
 "use client";
 
-import { Share2, Trophy, X } from "lucide-react";
+import { Copy, Share2, Trophy, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { eventLabel } from "@/lib/timer/events";
 import { formatMs } from "@/lib/timer/format";
-import { RECORD_LABEL, type RecordHit } from "@/lib/timer/pb-detect";
+import { copyWithToast } from "@/lib/timer/copy-text";
+import { RECORD_LABEL, recordText, type RecordHit } from "@/lib/timer/pb-detect";
 import { drawShareCard, headlineHit, shareImage } from "@/lib/timer/share-card";
 import type { TimerPuzzle } from "@/lib/timer/types";
 import { readTokenRgb } from "@/lib/token-color";
@@ -92,6 +93,17 @@ export function PbCelebration({
       </div>
 
       <div className="mt-3 flex justify-end gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={(e) => {
+            e.currentTarget.blur();
+            void copyWithToast(recordText(head, puzzle), `${RECORD_LABEL[head.category]} text`);
+          }}
+        >
+          <Copy />
+          Copy text
+        </Button>
         <Button
           size="sm"
           disabled={!image}

@@ -1,5 +1,6 @@
 import { bestAverageOfN, bestSingle, effectiveMs, windowStat, type WindowSize } from "./stats";
-import type { PbCategory, PersonalBest, Solve } from "./types";
+import { formatAverageText, formatSingleText } from "./share-text";
+import type { PbCategory, PersonalBest, Solve, TimerPuzzle } from "./types";
 
 /**
  * What a new solve just achieved: a session best, or an all-time personal
@@ -13,7 +14,7 @@ import type { PbCategory, PersonalBest, Solve } from "./types";
 export const RECORD_CATEGORIES = ["single", "mean3", "ao5", "ao12"] as const;
 export type RecordCategory = (typeof RECORD_CATEGORIES)[number];
 
-const WINDOW: Record<Exclude<RecordCategory, "single">, WindowSize> = {
+export const RECORD_WINDOW: Record<Exclude<RecordCategory, "single">, WindowSize> = {
   mean3: 3,
   ao5: 5,
   ao12: 12,
@@ -81,7 +82,7 @@ export function detectRecords(
       sessionBefore = bestSingle(previous);
       solves = [solve];
     } else {
-      const n = WINDOW[category];
+      const n = RECORD_WINDOW[category];
       const stat = windowStat(next, n);
       value = typeof stat === "number" ? stat : null;
       sessionBefore = bestAverageOfN(previous, n)?.timeMs ?? null;
@@ -102,4 +103,10 @@ export function detectRecords(
   }
 
   return { hits, known: updated };
+}
+
+/** A record as paste-ready text: the solve and scramble, or the whole window. */
+export function recordText(hit: RecordHit, puzzle: TimerPuzzle, when?: Date): string {
+  if (hit.category === "single") return formatSingleText(hit.solves[0], puzzle, when);
+  return formatAverageText(hit.solves, RECORD_WINDOW[hit.category], puzzle, when) ?? "";
 }

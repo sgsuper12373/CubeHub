@@ -5,6 +5,29 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-11 — Timer round, step 3: copy an average as text
+
+**Request:** Step 3 of `docs/timer-plan.md`.
+
+**Changed**
+- **New `lib/timer/share-text.ts`**: `formatAverageText()` and `formatSingleText()`, both pure.
+  - Output is csTimer-style: `3x3 Ao5: 12.33 · CubeHub · 11 Oct 2026`, a blank line, then `1. 11.20   <scramble>` oldest first.
+  - Trimmed solves are in brackets (reusing `trimmedIndices`). Megaminx scrambles are flattened to one line.
+- **New `lib/timer/copy-text.ts`**: `copyWithToast()` and `copyAverage()`. The clipboard write shows a "… copied" toast, or an error toast.
+- **`session-stats.tsx`**: the Mo3, Ao5 and Ao12 rows become buttons once their window is full. A copy icon appears on hover or focus, and the button blurs after a click so Space still reaches the timer.
+- **`stat-tiles.tsx` / `stats-panel.tsx`**: the same for the mobile drawer tiles.
+- **`pb-celebration.tsx`**: a "Copy text" button. `recordText()` in `pb-detect.ts` gives a single with its scramble, or the whole window.
+- **Tests:**
+  - New `tests/unit/share-text.test.ts` (7 tests, exact text).
+  - New e2e test: 5 solves, click Ao5, read the real clipboard, check the header, 5 lines, and trimmed first and last.
+
+**Verified**
+- `npm run validate`: 280 of 280 unit tests; lint has the one pre-existing warning. `check:colors` is OK.
+- `npm run build` passes. `npm run test:e2e:prod` passed 25 of 25.
+- Light-theme screenshot: the Ao5 hover state and the PB card with Copy text and Share.
+
+---
+
 ## 2026-10-11 — Timer round, step 2: session best vs all-time PB, celebration, share image
 
 **Request:** Step 2 of `docs/timer-plan.md`. The founder's direction: say "session best" for

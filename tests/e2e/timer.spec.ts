@@ -80,3 +80,22 @@ test("session best toast, then an all-time PB card with a share image", async ({
   await page.keyboard.up("Space");
   await expect(card).toHaveCount(0);
 });
+
+test("clicking Ao5 copies the average as csTimer-style text", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/timer");
+  await expect(scramble(page)).toBeVisible({ timeout: 60_000 });
+
+  for (const ms of [400, 500, 600, 700, 800]) await solve(page, ms);
+
+  await page.getByRole("button", { name: /^Copy Ao5 .* as text$/ }).click();
+  await expect(page.getByText("Ao5 copied")).toBeVisible();
+
+  const text = await page.evaluate(() => navigator.clipboard.readText());
+  const lines = text.split("\n");
+  expect(lines[0]).toMatch(/^3x3 Ao5: \d+\.\d{2} · CubeHub · /);
+  expect(lines.slice(2)).toHaveLength(5);
+  // The fastest (first) and slowest (last) solves are trimmed.
+  expect(lines[2]).toMatch(/^1\. \(\d+\.\d{2}\) {3}\S/);
+  expect(lines[6]).toMatch(/^5\. \(\d+\.\d{2}\) {3}\S/);
+});
