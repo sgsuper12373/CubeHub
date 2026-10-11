@@ -44,6 +44,11 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
       supabase migration repair --status applied 20260718000000 20260721000000 20260726000000 20260726000100 20260730000000 20260805000000 20260814210434 20260914000000 20260930000000
       ```
 
+- [ ] **Apply `supabase/migrations/20261011000000_timer_round.sql`** in the dashboard SQL
+      editor (Mo3 PBs, `manual` solve source, security fixes). Then run
+      `supabase/tests/timer_round_test.sql` there: every row should say PASS. Add
+      `20261011000000` to the `migration repair` list above.
+
 ### Vercel
 - [x] Build command is `npm run build`, with no override pinning `--webpack`.
 - [ ] `NEXT_PUBLIC_SITE_URL` is set to the live domain. Without it, share-preview (Open Graph) links point at localhost.
@@ -74,7 +79,8 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
 Roughly in the suggested order:
 
 - [x] **Next.js upgrade** (section 1).
-- [ ] **Database security fixes:** one small migration, applied via the dashboard.
+- [x] **Database security fixes:** written into `20261011000000_timer_round.sql` (branch
+      `timer-page`). Still needs applying on the dashboard, see section 2.
   - Give `is_admin()` a fixed `search_path`.
   - Revoke public `EXECUTE` on the trigger functions `maintain_average_pbs_on_insert`,
     `recompute_pb_on_solve_delete` and `recompute_pb_on_solve_update`. They're only meant to

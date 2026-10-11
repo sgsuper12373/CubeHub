@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 
 const ORDER: { category: PbCategory; label: string }[] = [
   { category: "single", label: "Single" },
+  { category: "mean3", label: "Mo3" },
   { category: "ao5", label: "Ao5" },
   { category: "ao12", label: "Ao12" },
   { category: "ao50", label: "Ao50" },
@@ -49,7 +50,7 @@ export function PbRow({
         </p>
       </header>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
         {ORDER.map(({ category, label }) => {
           const best = byCategory.get(category);
           const isSingle = category === "single";

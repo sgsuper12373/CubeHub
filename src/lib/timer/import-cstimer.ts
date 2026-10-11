@@ -1,3 +1,4 @@
+import { eventLabel, isTimerEvent, TIMER_EVENTS } from "./events";
 import type { Penalty, Session, Solve, TimerPuzzle } from "./types";
 
 /**
@@ -84,21 +85,13 @@ function readSessionNames(properties: unknown): Map<string, string> {
   return names;
 }
 
-const SUPPORTED_PUZZLES: ReadonlySet<string> = new Set(["333", "222"]);
-
-function isSupportedPuzzle(v: unknown): v is TimerPuzzle {
-  return typeof v === "string" && SUPPORTED_PUZZLES.has(v);
-}
+const isSupportedPuzzle = isTimerEvent;
 
 function isValidUuid(v: unknown): v is string {
   return typeof v === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
 }
 
-function puzzleLabel(p: string): string {
-  if (p === "333") return "3x3";
-  if (p === "222") return "2x2";
-  return p;
-}
+const puzzleLabel = eventLabel;
 
 function isCubeHubExport(root: Record<string, unknown>): boolean {
   return typeof root.version === "number" && Array.isArray(root.sessions) && Array.isArray(root.solves);
@@ -118,7 +111,7 @@ function parseCubeHubExport(root: Record<string, unknown>, activePuzzle?: TimerP
 
   if (rootPuzzle && !isSupportedPuzzle(rootPuzzle)) {
     warnings.push(
-      `This backup is for an unsupported puzzle (${rootPuzzle}). Only 3x3 and 2x2 are currently supported, so these entries cannot be stored.`,
+      `This backup is for an unsupported puzzle (${rootPuzzle}). Only ${TIMER_EVENTS.map((e) => e.label).join(", ")} are supported, so these entries cannot be stored.`,
     );
   } else if (rootPuzzle && activePuzzle && rootPuzzle !== activePuzzle && isSupportedPuzzle(rootPuzzle)) {
     warnings.push(

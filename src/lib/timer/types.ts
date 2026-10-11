@@ -1,17 +1,20 @@
+import type { TimerEventId } from "./events";
+
 /**
  * Shared types for the timer module. Kept dependency-free so the stores,
  * repositories and pure stat helpers can all import from here without
  * pulling React, Zustand or Supabase into each other's bundles.
  *
  * DB mapping notes (see docs/database.md):
- * - `TimerPuzzle` is the Phase-1 subset of the DB `puzzle_type` enum.
+ * - `TimerPuzzle` is the subset of the DB `puzzle_type` enum the timer offers
+ *   (see events.ts).
  * - `Penalty` mirrors the DB `penalty_type` enum exactly.
  * - `InspectionMode` is a UI concept; it maps to `user_settings` as
  *   off → inspection_type 'none', 8s → 'custom' + custom_inspection_secs 8,
  *   15s → 'wca_15s'.
  */
 
-export type TimerPuzzle = "333" | "222";
+export type TimerPuzzle = TimerEventId;
 
 export type Penalty = "none" | "plus2" | "dnf";
 
@@ -109,7 +112,7 @@ export interface SolveMetric {
 }
 
 /** Categories `personal_bests.category` accepts that the timer produces. */
-export type PbCategory = "single" | "ao5" | "ao12" | "ao50" | "ao100";
+export type PbCategory = "single" | "mean3" | "ao5" | "ao12" | "ao50" | "ao100";
 
 /**
  * An all-time personal best. Cloud users read these from `personal_bests`,

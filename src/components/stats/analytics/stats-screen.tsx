@@ -11,6 +11,7 @@ import { ConsistencyCard } from "@/components/stats/analytics/consistency-card";
 import { DataSection } from "@/components/stats/analytics/data-section";
 import { PbRow } from "@/components/stats/analytics/pb-row";
 import { CubeLoader } from "@/components/ui/cube-loader";
+import { isTimerEvent, TIMER_EVENTS } from "@/lib/timer/events";
 import { formatMs } from "@/lib/timer/format";
 import { localRepo } from "@/lib/timer/repo-local";
 import type { SolveRepository } from "@/lib/timer/repo";
@@ -45,11 +46,6 @@ const RANGES = [
 ] as const;
 
 type RangeKey = (typeof RANGES)[number]["key"];
-
-const PUZZLES: { key: TimerPuzzle; label: string }[] = [
-  { key: "333", label: "3x3" },
-  { key: "222", label: "2x2" },
-];
 
 /**
  * Ceiling on one page load. Generous — a cuber doing 100 solves a day reaches
@@ -147,12 +143,22 @@ export function StatsScreen({ userId }: { userId: string | null }) {
 
       {/* ── Filters: one row, above everything they affect ── */}
       <div className="flex flex-wrap items-center gap-2">
-        <SegmentedControl
-          label="Puzzle"
-          options={PUZZLES.map((p) => ({ key: p.key, label: p.label }))}
-          value={puzzle}
-          onChange={(v) => setPuzzle(v as TimerPuzzle)}
-        />
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="sr-only">Event</span>
+          <select
+            value={puzzle}
+            onChange={(e) => {
+              if (isTimerEvent(e.target.value)) setPuzzle(e.target.value);
+            }}
+            className="rounded-md border border-border bg-card px-2 py-1.5 text-xs font-medium text-foreground"
+          >
+            {TIMER_EVENTS.map((ev) => (
+              <option key={ev.id} value={ev.id}>
+                {ev.label}
+              </option>
+            ))}
+          </select>
+        </label>
         <SegmentedControl
           label="Range"
           options={RANGES.map((r) => ({ key: r.key, label: r.label }))}

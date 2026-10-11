@@ -22,6 +22,7 @@ import { LayoutShell } from "@/components/timer/layout-shell";
 import type { PanelId } from "@/lib/timer/layout";
 import { useLayoutStore } from "@/stores/layout-store";
 import { generateScramble } from "@/lib/timer/scrambler";
+import { loadLastEvent, saveLastEvent } from "@/lib/timer/events";
 import { bestSingle } from "@/lib/timer/stats";
 import { loadClientSettings, saveSettings } from "@/lib/timer/settings-persistence";
 import type { ServerTimerSettings } from "@/lib/auth/dal";
@@ -100,6 +101,12 @@ export function TimerScreen(props: {
   };
 
   useEffect(() => {
+    // First visit this page load: open on the event used last on this device.
+    // Coming back to the page keeps whatever the stores already hold.
+    const sessionState = useSessionStore.getState();
+    const event = sessionState.hydrated ? sessionState.puzzle : loadLastEvent();
+    if (!sessionState.hydrated) useSessionStore.setState({ puzzle: event });
+    useTimerStore.getState().setPuzzle(event);
     void useSessionStore.getState().hydrate(props.userId);
   }, [props.userId]);
 
@@ -212,6 +219,7 @@ export function TimerScreen(props: {
   };
 
   const changePuzzle = (p: typeof puzzle) => {
+    saveLastEvent(p);
     useTimerStore.getState().setPuzzle(p);
     void useSessionStore.getState().setPuzzle(p);
   };
@@ -289,7 +297,7 @@ export function TimerScreen(props: {
     switch (id) {
       case "scramble":
         return (
-          <div className={cn("flex flex-col items-center", fadeWhileSolving)}>
+          <div className={cn("flex min-h-0 flex-1 flex-col items-center", fadeWhileSolving)}>
             <ScrambleBar
               alg={scramble.alg}
               generating={scramble.generating}

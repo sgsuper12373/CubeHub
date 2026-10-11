@@ -108,6 +108,30 @@ export function wcaAverage(
 }
 
 /**
+ * WCA mean of the most recent `n` solves (list is newest-first): the plain mean
+ * with nothing trimmed, rounded to the nearest centisecond. Any DNF makes the
+ * mean "DNF". Returns null while fewer than `n` solves exist.
+ */
+export function meanOfN(solves: SolveTimes[], n: 3): number | "DNF" | null {
+  if (solves.length < n) return null;
+  let sum = 0;
+  for (const s of solves.slice(0, n)) {
+    const t = effectiveMs(s);
+    if (t === null) return "DNF";
+    sum += t;
+  }
+  return Math.round(sum / n / 10) * 10;
+}
+
+/** The window sizes the timer reports. 3 is a mean, the rest are trimmed averages. */
+export type WindowSize = 3 | 5 | 12 | 50 | 100;
+
+/** Mo3 for n = 3, the WCA trimmed AoN otherwise. */
+export function windowStat(solves: SolveTimes[], n: WindowSize): number | "DNF" | null {
+  return n === 3 ? meanOfN(solves, 3) : wcaAverage(solves, n);
+}
+
+/**
  * The current Ao5 alongside the Ao5 as it stood one solve ago, so the UI can
  * show which way the average is trending.
  *
@@ -155,8 +179,8 @@ export function rollingAverages(
 }
 
 /**
- * Best AoN ever completed, with the solve that completed it — or null if no
- * full window exists.
+ * Best AoN (or Mo3, for n = 3) ever completed, with the solve that completed
+ * it — or null if no full window exists.
  *
  * Windows never span a session boundary. A rolling average across two sittings
  * is meaningless to a cuber, and per-session is what csTimer does, which is what
@@ -168,7 +192,7 @@ export function rollingAverages(
  */
 export function bestAverageOfN(
   solves: SolveMetric[],
-  n: 5 | 12 | 50 | 100,
+  n: WindowSize,
 ): { timeMs: number; solveId: string; achievedAt: string } | null {
   const bySession = new Map<string, SolveMetric[]>();
   for (const s of solves) {
@@ -180,7 +204,7 @@ export function bestAverageOfN(
   let best: { timeMs: number; solveId: string; achievedAt: string } | null = null;
   for (const list of bySession.values()) {
     for (let i = 0; i + n <= list.length; i++) {
-      const avg = wcaAverage(list.slice(i), n);
+      const avg = windowStat(list.slice(i), n);
       if (typeof avg !== "number") continue;
 
       // The window runs backwards from solve `i`, so `i` is the solve that

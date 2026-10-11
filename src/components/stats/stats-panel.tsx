@@ -8,7 +8,7 @@ import { SessionTrend } from "@/components/stats/session-trend";
 import { SolveList } from "@/components/stats/solve-list";
 import { StatTiles } from "@/components/stats/stat-tiles";
 import { Button } from "@/components/ui/button";
-import { bestSingle, sessionMean, wcaAverage } from "@/lib/timer/stats";
+import { bestSingle, meanOfN, sessionMean, wcaAverage } from "@/lib/timer/stats";
 import type { Penalty, Solve } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +34,7 @@ export function StatsPanel({
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const best = bestSingle(solves);
+  const mo3 = meanOfN(solves, 3);
   const ao5 = wcaAverage(solves, 5);
   const ao12 = wcaAverage(solves, 12);
   const ao50 = wcaAverage(solves, 50);
@@ -44,6 +45,7 @@ export function StatsPanel({
     <>
       <StatTiles
         best={best}
+        mo3={mo3}
         ao5={ao5}
         ao12={ao12}
         ao50={ao50}

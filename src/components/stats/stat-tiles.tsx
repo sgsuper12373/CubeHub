@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
  */
 export function StatTiles({
   best,
+  mo3,
   ao5,
   ao12,
   ao50,
@@ -27,6 +28,7 @@ export function StatTiles({
   count,
 }: {
   best: number | null;
+  mo3: number | "DNF" | null;
   ao5: number | "DNF" | null;
   ao12: number | "DNF" | null;
   ao50: number | "DNF" | null;
@@ -48,6 +50,7 @@ export function StatTiles({
   return (
     <div className="hide-scrollbar flex w-full snap-x snap-mandatory gap-2 overflow-x-auto px-2 pb-1">
       <Tile label="Best" value={best !== null ? formatMs(best) : "—"} pb />
+      <Tile label="Mo3" value={formatAverage(mo3)} />
       <Tile label="Ao5" value={formatAverage(ao5)} />
       <Tile label="Ao12" value={formatAverage(ao12)} />
       <Tile label="Ao50" value={formatAverage(ao50)} />

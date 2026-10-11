@@ -1,5 +1,6 @@
 import { loadScramble } from "@/lib/cubing/runtime";
 
+import { timerEvent } from "./events";
 import type { TimerPuzzle } from "./types";
 
 /**
@@ -12,9 +13,9 @@ import type { TimerPuzzle } from "./types";
  * WCA-compliant random-state scrambles.
  */
 
-/** TimerPuzzle values are WCA event IDs, which is what cubing.js expects. */
+/** cubing.js names events by WCA id, which differs from ours for mega/pyra. */
 export async function generateScramble(puzzle: TimerPuzzle): Promise<string> {
   const { randomScrambleForEvent } = await loadScramble();
-  const alg = await randomScrambleForEvent(puzzle);
+  const alg = await randomScrambleForEvent(timerEvent(puzzle).cubingEvent);
   return alg.toString();
 }

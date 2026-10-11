@@ -192,7 +192,6 @@ export function createSupabaseRepo(userId: string): SolveRepository {
         .eq("puzzle_type", puzzle);
 
       if (error) throw error;
-      // `category` also permits 'mean3', which the timer never produces.
       return (data ?? [])
         .filter((row) => CATEGORIES.includes(row.category as PbCategory))
         .map(mapPersonalBest);
@@ -264,7 +263,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
 
 const IMPORT_CHUNK = 500;
 
-const CATEGORIES: PbCategory[] = ["single", "ao5", "ao12", "ao50", "ao100"];
+const CATEGORIES: PbCategory[] = ["single", "mean3", "ao5", "ao12", "ao50", "ao100"];
 
 // ── Row → domain mappers ──
 

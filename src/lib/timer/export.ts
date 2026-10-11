@@ -1,4 +1,5 @@
 import { formatResult } from "./format";
+import { eventLabel } from "./events";
 import type { Session, Solve, TimerPuzzle } from "./types";
 
 /**
@@ -101,7 +102,7 @@ export function downloadFile(
 
 /** `cubehub-3x3-2026-07-25.csv` — sorts chronologically in a downloads folder. */
 export function exportFilename(puzzle: TimerPuzzle, extension: string): string {
-  const label = puzzle === "333" ? "3x3" : "2x2";
+  const label = eventLabel(puzzle).toLowerCase().replace(/\s+/g, "-");
   const day = new Date().toISOString().slice(0, 10);
   return `cubehub-${label}-${day}.${extension}`;
 }

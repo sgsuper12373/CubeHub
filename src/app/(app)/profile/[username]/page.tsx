@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPublicProfile } from "@/lib/profile/dal";
+import { eventLabel } from "@/lib/timer/events";
 import { formatMs } from "@/lib/timer/format";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,10 +33,7 @@ function getEloTier(rating: number) {
 }
 
 function formatPuzzle(p: string) {
-  if (p === "333") return "3x3";
-  if (p === "222") return "2x2";
-  if (p === "444") return "4x4";
-  return p;
+  return eventLabel(p);
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

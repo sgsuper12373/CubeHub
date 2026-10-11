@@ -5,6 +5,50 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-11 — Timer round, step 1: event dropdown and Mo3, branch `timer-page`
+
+**Request:** Step 1 of `docs/timer-plan.md`. Popular events in a dropdown, and Mo3 for every event.
+
+**Changed**
+- **New `lib/timer/events.ts`**: the registry for 3x3, 2x2, 4x4, 5x5, 3x3 OH, Pyraminx, Skewb and Megaminx.
+  - Each event has its label, cubing.js event id (`mega`→`minx`, `pyra`→`pyram`) and twisty puzzle.
+  - It also holds the last-used event in localStorage (`cubehub.timer.event`).
+  - `TimerPuzzle` is now the registry's id union.
+- **`scrambler.ts`** maps to the cubing.js event id.
+- **`session-switcher.tsx`**: the 3×3/2×2 buttons became an "Event" `<select>`. `timer-screen.tsx` restores the last event on first load and saves it on change.
+- **Labels from the registry:** `/stats` (its toggle is now a select too), profile page, export filename, the scramble button label, and the csTimer/backup importer. The importer needed no `scrType` mapping: the user picks the event before importing.
+- **`scramble-bar.tsx`**:
+  - Megaminx scrambles keep their 7 WCA lines.
+  - Scrambles over 30 moves use a smaller size.
+  - The move list scrolls inside the panel, so the shuffle and copy buttons are never pushed out (the panel previously overflowed on Megaminx).
+- **Mo3:**
+  - `stats.ts` gains `meanOfN`, `windowStat` and Mo3 support in `bestAverageOfN`.
+  - Mo3 is shown in the session stats, mobile tiles and `/stats` PB row.
+  - `PbCategory` gains `mean3`, read from the cloud and computed locally.
+- **New migration `20261011000000_timer_round.sql`**:
+  - `mean3` in `best_average_of_n`, `recompute_average_pbs` and `ratchet_average_pbs_for_solve` (n = 3 means a plain mean; any DNF means no PB), plus a backfill.
+  - `'manual'` added to `solves.source`.
+  - `is_admin()` gets `search_path = ''`.
+  - `EXECUTE` revoked on the three PB trigger functions.
+- **Tests**:
+  - New `supabase/tests/timer_round_test.sql` (rolls back; safe on production).
+  - New `tests/unit/timer-events.test.ts`, using the same numbers as the SQL test.
+  - New `tests/e2e/timer.spec.ts`: Pyraminx scrambles and is remembered after a reload; Megaminx has 7 lines and a visible shuffle button.
+
+**Kept on purpose**
+- `/stats` still opens on 3x3. Reading localStorage there would cause a hydration mismatch.
+- Ao5 stays the headline average. None of the chosen events uses mo3 as its WCA format.
+
+**Founder action:** apply the migration on the dashboard, then run `timer_round_test.sql` (see `docs/todo.md`).
+
+**Verified**
+- Migrations: all 10 applied in order on a throwaway `supabase/postgres:15.8.1.060` container. `timer_round_test.sql` passed 12 of 12, and the existing `pb_lifecycle_test.sql` passed 8 of 8.
+- `npm run validate`: tsc, lint (the one pre-existing warning), and 260 of 260 unit tests. `check:colors` is OK.
+- `npm run build` passes. `npm run test:e2e:prod` passed 23 of 23.
+- In the browser, every event produced a real scramble (4x4 took about 1.5 s, the others under 0.1 s) and a preview, with no page errors. Megaminx and 5x5 were checked at 1280px and 390px.
+
+---
+
 ## 2026-10-11 — Merge `ci/drill-e2e-data`; yellow-on-top case cards; "System" as default theme
 
 **Request:** Merge the CI branch (the fast-forward was failing). Founder decisions: case cards

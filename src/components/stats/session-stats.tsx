@@ -6,6 +6,7 @@ import { formatAverage, formatMs } from "@/lib/timer/format";
 import {
   bestSingle,
   effectiveMs,
+  meanOfN,
   sessionMean,
   wcaAverage,
   worstSingle,
@@ -55,6 +56,7 @@ export function SessionStats({ solves }: { solves: Solve[] }) {
       />
       <Row label="Worst" value={worst !== null ? formatMs(worst) : "—"} />
       <div className="my-1.5 border-t border-border/60" />
+      <Row label="Mo3" value={formatAverage(meanOfN(solves, 3))} />
       <Row label="Ao5" value={formatAverage(wcaAverage(solves, 5))} accent />
       <Row label="Ao12" value={formatAverage(wcaAverage(solves, 12))} />
       <Row label="Ao50" value={formatAverage(wcaAverage(solves, 50))} />

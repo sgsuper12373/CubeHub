@@ -228,6 +228,7 @@ function computePersonalBests(metrics: SolveMetric[]): PersonalBest[] {
   }
 
   for (const [category, n] of [
+    ["mean3", 3],
     ["ao5", 5],
     ["ao12", 12],
     ["ao50", 50],

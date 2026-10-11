@@ -32,7 +32,8 @@ Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Dri
 - Scramble preview as a 2D net or a 3D cube.
 
 ### Puzzles and sessions
-- 3x3 and 2x2.
+- 3x3, 2x2, 4x4, 5x5, 3x3 OH, Pyraminx, Skewb and Megaminx, picked from a dropdown and
+  remembered on this device. Megaminx scrambles keep their WCA line breaks.
 - Named sessions per puzzle: create, rename, switch, clear and delete.
 - Clearing a session and deleting a solve are soft deletes, with an Undo toast that still
   works after a reload.
@@ -44,7 +45,7 @@ Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Dri
   `1` toggle +2, `2` toggle DNF, `?` shortcuts list.
 
 ### Stats (on the timer page)
-- Best, mean, Ao5, Ao12, Ao50 and Ao100 (WCA trimmed averages).
+- Best, mean, Mo3, Ao5, Ao12, Ao50 and Ao100 (WCA mean and trimmed averages).
 - A trend sparkline with the Ao5 change.
 - A solve list with notes, penalties and per-solve details (including copy scramble).
 - On mobile, a stats drawer.
@@ -74,8 +75,10 @@ Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Dri
 
 The full plan is in [`timer-plan.md`](timer-plan.md). Tick each item as it ships.
 
-- [ ] **1. More events.** A dropdown with 3x3, 2x2, 4x4, 5x5, 3x3 OH, Pyraminx, Skewb and
-      Megaminx. The last event is remembered.
+- [x] **1. More events.** A dropdown with 3x3, 2x2, 4x4, 5x5, 3x3 OH, Pyraminx, Skewb and
+      Megaminx. The last event is remembered. Done 2026-10-11.
+      ⚠️ Mo3 PBs for signed-in users need `20261011000000_timer_round.sql` applied on the
+      dashboard; until then the cloud shows Mo3 in the session but no all-time Mo3 PB.
   - **Mo3** is added to the stats for every event (Ao5 stays the headline average).
   - **Mo3 personal bests** in the database. The same migration also carries the pending
     security fix (`is_admin()` search_path, and trigger-function `EXECUTE` revokes).

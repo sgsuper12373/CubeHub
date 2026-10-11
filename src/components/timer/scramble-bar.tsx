@@ -4,6 +4,7 @@ import { Check, Copy, Shuffle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { eventLabel } from "@/lib/timer/events";
 import type { TimerPuzzle } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
 
@@ -24,35 +25,47 @@ const GROUP = 4;
  * disconnected fragments.
  */
 function ScrambleTokens({ alg }: { alg: string }) {
-  const moves = alg.trim().split(/\s+/);
+  // Megaminx scrambles arrive as seven lines (WCA notation: each ends in U or
+  // U'), and cubers read them line by line, so line breaks are kept.
+  const lines = alg.trim().split(/\n+/).map((line) => line.trim().split(/\s+/));
+  const moveCount = lines.reduce((n, line) => n + line.length, 0);
+  // 4x4 and bigger run 40+ moves; a smaller size keeps them on a few rows.
+  const long = moveCount > 30;
 
   return (
-    <p
+    <div
       aria-label={`Scramble: ${alg}`}
-      className="flex max-w-2xl flex-wrap items-center justify-center gap-y-1 text-center font-mono text-base leading-relaxed text-foreground md:text-lg"
+      className={cn(
+        "flex min-h-0 flex-col items-center gap-y-1 overflow-y-auto text-center font-mono leading-relaxed text-foreground",
+        long ? "max-w-3xl text-sm md:text-base" : "max-w-2xl text-base md:text-lg",
+      )}
     >
-      {moves.map((move, i) => {
-        const face = move[0];
-        const modifier = move.slice(1);
-        return (
-          <span
-            key={`${i}-${move}`}
-            aria-hidden
-            className={cn(
-              "inline-flex min-w-[2.5ch] justify-center tabular-nums",
-              // A wider gap every fourth move chunks the line without
-              // introducing a second visual element to parse.
-              i > 0 && i % GROUP === 0 ? "ml-3" : "ml-0.5",
-            )}
-          >
-            {face}
-            {modifier && (
-              <span className="text-muted-foreground">{modifier}</span>
-            )}
-          </span>
-        );
-      })}
-    </p>
+      {lines.map((moves, l) => (
+        <p key={l} className="flex flex-wrap items-center justify-center gap-y-1">
+          {moves.map((move, i) => {
+            const face = move[0];
+            const modifier = move.slice(1);
+            return (
+              <span
+                key={`${i}-${move}`}
+                aria-hidden
+                className={cn(
+                  "inline-flex min-w-[2.5ch] justify-center tabular-nums",
+                  // A wider gap every fourth move chunks the line without
+                  // introducing a second visual element to parse.
+                  i > 0 && i % GROUP === 0 ? "ml-3" : "ml-0.5",
+                )}
+              >
+                {face}
+                {modifier && (
+                  <span className="text-muted-foreground">{modifier}</span>
+                )}
+              </span>
+            );
+          })}
+        </p>
+      ))}
+    </div>
   );
 }
 
@@ -84,7 +97,9 @@ export function ScrambleBar({
   }, []);
 
   return (
-    <div className="flex min-h-20 flex-col items-center justify-center gap-2 px-4 pt-6">
+    // max-h-full + a scrolling token list keep the buttons reachable when a
+    // long scramble (5x5, Megaminx) is taller than the panel.
+    <div className="flex max-h-full min-h-20 flex-col items-center justify-center gap-2 px-4 pt-6">
       {alg === null ? (
         <div
           role="status"
@@ -94,11 +109,11 @@ export function ScrambleBar({
       ) : (
         <ScrambleTokens alg={alg} />
       )}
-      <div className="flex items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1">
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label={`New ${puzzle === "222" ? "2x2" : "3x3"} scramble`}
+          aria-label={`New ${eventLabel(puzzle)} scramble`}
           disabled={alg === null && generating}
           onClick={onNext}
         >
