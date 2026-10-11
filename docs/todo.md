@@ -41,7 +41,7 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
 - [ ] **Before ever running `supabase link` + `supabase db push`,** mark the existing migrations
       as applied. The live migration history is empty, because every migration was applied by hand:
       ```
-      supabase migration repair --status applied 20260718000000 20260721000000 20260726000000 20260726000100 20260730000000 20260805000000 20260814210434 20260914000000 20260930000000 20261011000000 20261012000000 20261013000000 20261013000100 20261014000000
+      supabase migration repair --status applied 20260718000000 20260721000000 20260726000000 20260726000100 20260730000000 20260805000000 20260814210434 20260914000000 20260930000000 20261011000000 20261012000000 20261013000000 20261013000100 20261014000000 20261015000000
       ```
 
 - [x] **Apply `supabase/migrations/20261011000000_timer_round.sql`** (applied 2026-10-11) in the dashboard SQL
@@ -73,10 +73,15 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
       404s). Then run `supabase/tests/profile_progress_test.sql` (14 rows, all PASS) and add
       `20261014000000` to the `migration repair` list. (Applied 2026-10-12.)
 
-- [ ] **Profile step 4: apply `supabase/migrations/20261015000000_achievements.sql`**, then run
+- [x] **Profile step 4: apply `supabase/migrations/20261015000000_achievements.sql`** (applied 2026-10-12), then run
       `supabase/tests/achievements_test.sql` (10 rows, all PASS) and add `20261015000000` to the
       `migration repair` list. Safe to deploy before or after: until it's applied the badge
       section stays hidden and the award check quietly finds nothing.
+
+- [ ] **Apply `supabase/migrations/20261015000100_remove_legacy_achievements.sql`**: deletes the
+      14 hand-made June achievement rows (duplicates and Compete/club/tutorial badges), keeping
+      any that someone has unlocked. Afterwards Authentication isn't affected; the profile shows
+      20 badges. Add `20261015000100` to the `migration repair` list.
 
 ### Vercel
 - [x] Build command is `npm run build`, with no override pinning `--webpack`.

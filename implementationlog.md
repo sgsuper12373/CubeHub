@@ -5,6 +5,22 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-12 — Remove the legacy hand-made achievements
+
+**Found:** after the founder applied the achievements migration, the live catalogue had 34 rows. 14 were hand-made on 2026-06-26, before the repo's migrations:
+- 7 duplicated the new badges under older slugs
+- 7 were for Compete, clubs and tutorials, which don't exist yet
+
+None could be earned: their condition formats aren't read by `award_achievements`. The profile grid would have shown duplicates and impossible badges.
+
+**Founder decision:** delete them.
+
+**Changed:** new migration `20261015000100_remove_legacy_achievements.sql` deletes those 14 slugs, but only rows with no `user_achievements`, because a delete would cascade the unlock away.
+
+**Verified** on a throwaway DB with three legacy rows, one of them unlocked: 23 rows before, 21 after. The unlocked one stays.
+
+---
+
 ## 2026-10-12 — Profile step 4: achievements
 
 **Request:** Step 4 (C9) of `docs/profile.md`, planned in `~/.claude/plans/spicy-jumping-feather.md`.
