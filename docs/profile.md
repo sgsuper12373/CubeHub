@@ -130,17 +130,23 @@ The owner-only RLS on `solves` and `user_algorithm_bookmarks` stays exactly as i
   - The unlock toast has no "View" button: the timer's store has no router.
   - A private profile's badges are hidden by RLS.
 
-## Step 5: C11 and C12, setup, method and level
+## Step 5: C11 and C12, setup, method and level (built 2026-10-12; migration `20261016000000_profile_setup.sql`)
 
-- [ ] **C11. My setup:** a new table `user_setups (user_id, puzzle_type, cube_name, product_id
+- [x] **C11. My setup:** a new table `user_setups (user_id, puzzle_type, cube_name, product_id
       null → products, note)`, with one main cube per event.
   - Edited in Edit profile, and shown on the event tab ("Main: GAN 12 Maglev").
   - The link to the Shop product appears once `products` has entries; until then it's free text.
-- [ ] **C12. Method and level:**
+- [x] **C12. Method and level:**
   - `profiles.main_method` (Beginner, CFOP, Roux, ZZ, Petrus, Other) and an optional short
     `learning_now` line ("full OLL").
   - A **level badge** per event, worked out from the best Ao12 (sub-60 → sub-40 → sub-30 →
     sub-20 → sub-15 → sub-10 → sub-8). It updates by itself and can't be typed in.
+  - *As built:*
+    - Every timer event has its own ladder (e.g. 2x2: sub-20 down to sub-3; 4x4: sub-3:00 down
+      to sub-30), in `src/lib/profile/level.ts`.
+    - The level uses the best **timer-only** Ao12; typed times don't count, as for the speed
+      badges.
+    - The main cube is free text only (no note); `product_id` waits for the Shop.
 
 ---
 

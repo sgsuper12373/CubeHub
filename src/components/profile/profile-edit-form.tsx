@@ -9,7 +9,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { saveProfileDetails, type ProfileEditState } from "@/lib/profile/actions";
 import type { EditableProfile } from "@/lib/profile/dal";
-import { BIO_MAX, countryFlag, countryOptions, DISPLAY_NAME_MAX } from "@/lib/profile/validate";
+import { METHODS } from "@/lib/profile/level";
+import {
+  BIO_MAX,
+  countryFlag,
+  countryOptions,
+  CUBE_NAME_MAX,
+  DISPLAY_NAME_MAX,
+  LEARNING_NOW_MAX,
+} from "@/lib/profile/validate";
+import { TIMER_EVENTS } from "@/lib/timer/events";
 import { cn } from "@/lib/utils";
 
 import { AvatarUploader } from "./avatar-uploader";
@@ -107,6 +116,67 @@ export function ProfileEditForm({ profile }: { profile: EditableProfile }) {
             />
           </Field>
         </div>
+
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-foreground">How I cube</h2>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <Field id="main_method" label="Method" error={fieldError("mainMethod")}>
+              <select
+                id="main_method"
+                name="main_method"
+                defaultValue={profile.mainMethod ?? ""}
+                className="h-9 w-full rounded-lg border border-border bg-background px-2 text-sm text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                <option value="">Not set</option>
+                {METHODS.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field id="learning_now" label="Learning now" hint="Optional" error={fieldError("learningNow")}>
+              <Input
+                id="learning_now"
+                name="learning_now"
+                defaultValue={profile.learningNow ?? ""}
+                maxLength={LEARNING_NOW_MAX}
+                placeholder="e.g. full OLL"
+                aria-invalid={!!fieldError("learningNow")}
+              />
+            </Field>
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">My setup</h2>
+            <p className="text-xs text-muted-foreground">
+              Your main cube for each event. Leave an event empty to hide it.
+            </p>
+          </div>
+          <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+            {TIMER_EVENTS.map((e) => (
+              <div key={e.id} className="flex items-center gap-3">
+                <Label htmlFor={`cube_${e.id}`} className="w-20 shrink-0 text-muted-foreground">
+                  {e.label}
+                </Label>
+                <Input
+                  id={`cube_${e.id}`}
+                  name={`cube_${e.id}`}
+                  defaultValue={profile.setups[e.id] ?? ""}
+                  maxLength={CUBE_NAME_MAX}
+                  placeholder={e.id === "333" ? "e.g. GAN 12 Maglev" : "Main cube"}
+                />
+              </div>
+            ))}
+          </div>
+          {state?.field === "setups" && (
+            <p role="alert" className="text-xs font-medium text-destructive">
+              {state.error}
+            </p>
+          )}
+        </section>
 
         <section className="space-y-2">
           <h2 className="text-sm font-semibold text-foreground">Privacy</h2>

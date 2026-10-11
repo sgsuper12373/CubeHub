@@ -1,3 +1,7 @@
+import { eventLabel, TIMER_EVENTS, type TimerEventId } from "@/lib/timer/events";
+
+import { isMethod, type MethodValue } from "./level";
+
 /**
  * Validation for profile edits. Pure, so it runs the same in the form (for
  * instant feedback) and in the server action (which is what actually guards
@@ -64,6 +68,8 @@ export type ProfileInput = {
   isPublic: boolean;
   showActivity: boolean;
   showLearning: boolean;
+  mainMethod: string;
+  learningNow: string;
 };
 
 export type ProfileUpdate = {
@@ -74,6 +80,8 @@ export type ProfileUpdate = {
   is_public: boolean;
   show_activity: boolean;
   show_learning: boolean;
+  main_method: MethodValue | null;
+  learning_now: string | null;
 };
 
 /** Trim, normalise and check the edit form; returns the row update or the first error. */
@@ -101,6 +109,16 @@ export function validateProfileInput(
     return { ok: false, field: "wcaId", error: "A WCA ID looks like 2019SING01." };
   }
 
+  const mainMethod = input.mainMethod.trim();
+  if (mainMethod && !isMethod(mainMethod)) {
+    return { ok: false, field: "mainMethod", error: "Choose a method from the list." };
+  }
+
+  const learningNow = input.learningNow.trim().replace(/\s+/g, " ");
+  if (learningNow.length > LEARNING_NOW_MAX) {
+    return { ok: false, field: "learningNow", error: `Keep it under ${LEARNING_NOW_MAX} characters.` };
+  }
+
   return {
     ok: true,
     update: {
@@ -111,8 +129,33 @@ export function validateProfileInput(
       is_public: input.isPublic,
       show_activity: input.showActivity,
       show_learning: input.showLearning,
+      main_method: mainMethod ? (mainMethod as MethodValue) : null,
+      learning_now: learningNow || null,
     },
   };
+}
+
+export const LEARNING_NOW_MAX = 80;
+export const CUBE_NAME_MAX = 80;
+
+/**
+ * Main cubes from the edit form, one per timer event: names to save, and
+ * events whose name was cleared (their row is deleted).
+ */
+export function validateSetups(
+  names: Partial<Record<TimerEventId, string>>,
+): { ok: true; save: { puzzle_type: TimerEventId; cube_name: string }[]; cleared: TimerEventId[] } | { ok: false; error: string } {
+  const save: { puzzle_type: TimerEventId; cube_name: string }[] = [];
+  const cleared: TimerEventId[] = [];
+  for (const { id } of TIMER_EVENTS) {
+    const name = (names[id] ?? "").trim().replace(/\s+/g, " ");
+    if (name.length > CUBE_NAME_MAX) {
+      return { ok: false, error: `Keep the ${eventLabel(id)} cube name under ${CUBE_NAME_MAX} characters.` };
+    }
+    if (name) save.push({ puzzle_type: id, cube_name: name });
+    else cleared.push(id);
+  }
+  return { ok: true, save, cleared };
 }
 
 /**

@@ -5,6 +5,41 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-12 — Profile step 5: main cube per event, method, level
+
+**Request:** Step 5 (C11 and C12) of `docs/profile.md`, the last profile step. Planned in `~/.claude/plans/spicy-jumping-feather.md`.
+
+**Changed**
+- **New migration `20261016000000_profile_setup.sql`**:
+  - `profiles.main_method` (checked against six methods) and `profiles.learning_now` (≤ 80 characters).
+  - New table `user_setups` (one main cube per event; `product_id` for later). RLS: read through `profile_visible`; write own rows only.
+  - `get_profile_stats` gains `levels`: the best timer-only Ao12 per event, via `best_timer_average`. The rest of the function is unchanged.
+- **New `lib/profile/level.ts`**: a level ladder for each of the 8 events, `levelFor` ("Sub-20", minutes past 60 s such as "Sub-1:30"), and `METHODS`.
+- **`validate.ts`**: method and learning line, plus `validateSetups` (name or clear; an over-long name gives an error naming the event).
+- **`actions.ts`**: saves the method and learning line with the profile, then upserts named cubes and deletes cleared ones.
+- **`dal.ts`**: `mainMethod`, `learningNow`, `stats.levels`, `getSetups()`; `EditableProfile.setups`.
+- **Edit profile**: new "How I cube" (method select, learning now) and "My setup" (a main-cube input per event) sections.
+- **Profile page**:
+  - The header shows a method chip and "Learning: …".
+  - The selected event shows a level chip ("Sub-20 · Ao12", with a tooltip giving the Ao12 and the rung) and "Main cube: …".
+  - All of it is hidden for a private profile's visitors.
+
+**Tests**
+- New `supabase/tests/profile_setup_test.sql`, 11 of 11:
+  - the owner adds, changes and removes cubes; another user's update and delete change nothing, and their insert is refused
+  - hidden when private
+  - method and learning checks
+  - the level ignores a typed 9.00 and equals the timer-only Ao12 (18.00)
+  - no Ao12 means no level
+- All 17 migrations apply on the throwaway DB, and every earlier test still passes (10, 14, 11, 7, 3).
+- New `tests/unit/profile-level.test.ts`: ladder boundaries (20.00 isn't sub-20), minute labels, null cases, every event's ladder strictly falling. Validation tests extended.
+
+**Verified:** `npm run validate` (357 of 357), `check:colors`, `npm run build`, `npm run test:e2e:prod` (34 of 34).
+
+**Not yet verified:** the live page, which needs the migration. Apply it BEFORE deploying, because the page reads the new columns.
+
+---
+
 ## 2026-10-12 — Remove the legacy hand-made achievements
 
 **Found:** after the founder applied the achievements migration, the live catalogue had 34 rows. 14 were hand-made on 2026-06-26, before the repo's migrations:

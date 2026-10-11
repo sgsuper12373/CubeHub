@@ -8,6 +8,7 @@ import {
   isOwnAvatarUrl,
   isReservedUsername,
   validateProfileInput,
+  validateSetups,
 } from "@/lib/profile/validate";
 
 const base = {
@@ -18,6 +19,8 @@ const base = {
   isPublic: true,
   showActivity: true,
   showLearning: true,
+  mainMethod: "",
+  learningNow: "",
 };
 
 describe("validateProfileInput", () => {
@@ -31,6 +34,8 @@ describe("validateProfileInput", () => {
         isPublic: false,
         showActivity: false,
         showLearning: true,
+        mainMethod: "cfop",
+        learningNow: "  full   OLL ",
       }),
     ).toEqual({
       ok: true,
@@ -42,6 +47,8 @@ describe("validateProfileInput", () => {
         is_public: false,
         show_activity: false,
         show_learning: true,
+        main_method: "cfop",
+        learning_now: "full OLL",
       },
     });
   });
@@ -58,8 +65,29 @@ describe("validateProfileInput", () => {
     [{ country: "" }, "country"],
     [{ wcaId: "2019SIN01" }, "wcaId"],
     [{ wcaId: "SING201901" }, "wcaId"],
+    [{ mainMethod: "magic" }, "mainMethod"],
+    [{ learningNow: "x".repeat(81) }, "learningNow"],
   ])("rejects %j", (patch, field) => {
     expect(validateProfileInput({ ...base, ...patch })).toMatchObject({ ok: false, field });
+  });
+});
+
+describe("validateSetups", () => {
+  it("saves named cubes, clears empty ones, and tidies spacing", () => {
+    const r = validateSetups({ "333": "  GAN   12 Maglev ", pyra: "" });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.save).toEqual([{ puzzle_type: "333", cube_name: "GAN 12 Maglev" }]);
+    expect(r.cleared).toContain("pyra");
+    expect(r.cleared).toContain("222");
+    expect(r.cleared).toHaveLength(7);
+  });
+
+  it("refuses a name over 80 characters, naming the event", () => {
+    expect(validateSetups({ skewb: "x".repeat(81) })).toEqual({
+      ok: false,
+      error: "Keep the Skewb cube name under 80 characters.",
+    });
   });
 });
 

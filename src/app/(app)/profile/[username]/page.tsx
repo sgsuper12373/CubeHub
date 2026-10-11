@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   Activity,
+  Box,
   Calendar,
   ChevronLeft,
   ExternalLink,
@@ -26,10 +27,12 @@ import { getUser } from "@/lib/auth/dal";
 import {
   getAchievements,
   getPbProgression,
+  getSetups,
   getPublicProfile,
   type PbProgression,
   type PublicProfile,
 } from "@/lib/profile/dal";
+import { levelFor, methodLabel } from "@/lib/profile/level";
 import { countryFlag, countryName } from "@/lib/profile/validate";
 import { eventLabel, isTimerEvent, TIMER_EVENTS, type TimerEventId } from "@/lib/timer/events";
 import { formatMs } from "@/lib/timer/format";
@@ -73,11 +76,12 @@ export default async function ProfilePage({ params, searchParams }: Props) {
   const hidden = profile.stats.hidden;
   const events = practisedEvents(profile);
   const selected = pickEvent(profile, events, event);
-  const [progression, achievements] = hidden
-    ? [null, []]
+  const [progression, achievements, setups] = hidden
+    ? [null, [], {} as Record<string, string>]
     : await Promise.all([
         selected ? getPbProgression(profile.id, selected) : null,
         getAchievements(profile.id),
+        getSetups(profile.id),
       ]);
   const { activity, learning } = profile.stats;
 
@@ -119,6 +123,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
             <ActivitySection activity={activity} hiddenNote={isOwner && !profile.showActivity} />
           )}
           <EventSection
+            mainCube={selected ? (setups[selected] ?? null) : null}
             profile={profile}
             events={events}
             selected={selected}
@@ -150,6 +155,7 @@ function ProfileHeader({
   hidden: boolean;
 }) {
   const name = profile.displayName || profile.username;
+  const method = methodLabel(profile.mainMethod);
   return (
     <header className="flex flex-col gap-5 rounded-3xl border border-border bg-card/60 p-5 sm:flex-row sm:items-start sm:p-6">
       <ProfileAvatar url={profile.avatarUrl} name={name} size="lg" />
@@ -176,6 +182,20 @@ function ProfileHeader({
             </a>
           )}
         </div>
+        {!hidden && (method || profile.learningNow) && (
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            {method && (
+              <span className="rounded-full border border-border bg-muted/50 px-2.5 py-0.5 font-medium text-foreground">
+                {method}
+              </span>
+            )}
+            {profile.learningNow && (
+              <span className="text-muted-foreground">
+                Learning: <span className="text-foreground">{profile.learningNow}</span>
+              </span>
+            )}
+          </div>
+        )}
         {!hidden && profile.bio && (
           <p className="max-w-prose text-sm whitespace-pre-line text-foreground/90">{profile.bio}</p>
         )}
@@ -240,12 +260,14 @@ function pickEvent(
 }
 
 function EventSection({
+  mainCube,
   profile,
   events,
   selected,
   progression,
   isOwner,
 }: {
+  mainCube: string | null;
   profile: PublicProfile;
   events: TimerEventId[];
   selected: TimerEventId | null;
@@ -270,6 +292,7 @@ function EventSection({
     profile.personalBests.filter((pb) => pb.puzzleType === selected).map((pb) => [pb.category, pb]),
   );
   const solves = byEvent[selected] ?? 0;
+  const level = levelFor(selected, profile.stats.levels[selected]);
 
   return (
     <section className="space-y-4" aria-labelledby="pbs-title">
@@ -299,9 +322,25 @@ function EventSection({
         </ul>
       </nav>
 
-      <p className="text-sm text-muted-foreground">
-        {eventLabel(selected)} · {solves.toLocaleString("en-IN")} {solves === 1 ? "solve" : "solves"}
-      </p>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-muted-foreground">
+        <span>
+          {eventLabel(selected)} · {solves.toLocaleString("en-IN")} {solves === 1 ? "solve" : "solves"}
+        </span>
+        {level && (
+          <span
+            className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary"
+            title={`From the best Ao12 timed on CubeHub (${formatMs(profile.stats.levels[selected])}), level ${level.tier} of ${level.of}`}
+          >
+            {level.label} · Ao12
+          </span>
+        )}
+        {mainCube && (
+          <span className="flex items-center gap-1.5">
+            <Box className="size-3.5" aria-hidden />
+            Main cube: <span className="text-foreground">{mainCube}</span>
+          </span>
+        )}
+      </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {PB_CATEGORIES.map(({ category, label }) => {

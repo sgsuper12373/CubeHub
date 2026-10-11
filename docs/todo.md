@@ -83,6 +83,11 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
       any that someone has unlocked. Afterwards the profile shows
       20 badges. Add `20261015000100` to the `migration repair` list.
 
+- [ ] **Profile step 5: apply `supabase/migrations/20261016000000_profile_setup.sql`, BEFORE
+      deploying** (the page reads `main_method` / `learning_now`; without them every profile
+      404s). Then run `supabase/tests/profile_setup_test.sql` (11 rows, all PASS) and add
+      `20261016000000` to the `migration repair` list.
+
 ### Vercel
 - [x] Build command is `npm run build`, with no override pinning `--webpack`.
 - [ ] `NEXT_PUBLIC_SITE_URL` is set to the live domain. Without it, share-preview (Open Graph) links point at localhost.

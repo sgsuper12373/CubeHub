@@ -18,6 +18,8 @@ export type ProfileStats = {
   activity: ProfileActivity | null;
   /** Null when the cuber hides their learning from others. */
   learning: LearningProgress[] | null;
+  /** Best timer-only Ao12 per event, for the level badge. */
+  levels: Record<string, number>;
 };
 
 export type ProfileActivity = {
@@ -44,6 +46,7 @@ const EMPTY_STATS: ProfileStats = {
   lastSolveOn: null,
   activity: null,
   learning: null,
+  levels: {},
 };
 
 export type PublicProfile = {
@@ -55,6 +58,8 @@ export type PublicProfile = {
   isPublic: boolean;
   showActivity: boolean;
   showLearning: boolean;
+  mainMethod: string | null;
+  learningNow: string | null;
   country: string | null;
   wcaId: string | null;
   createdAt: string;
@@ -74,7 +79,7 @@ export const getPublicProfile = cache(
     // 1. Fetch profile by case-insensitive username match
     const { data: profile, error } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio, is_public, show_activity, show_learning, country, wca_id, created_at")
+      .select("id, username, display_name, avatar_url, bio, is_public, show_activity, show_learning, main_method, learning_now, country, wca_id, created_at")
       .ilike("username", username)
       .maybeSingle();
 
@@ -107,6 +112,8 @@ export const getPublicProfile = cache(
       isPublic: profile.is_public ?? true,
       showActivity: profile.show_activity ?? true,
       showLearning: profile.show_learning ?? true,
+      mainMethod: profile.main_method ?? null,
+      learningNow: profile.learning_now ?? null,
       country: profile.country ?? "IN",
       wcaId: profile.wca_id ?? null,
       createdAt: profile.created_at,
@@ -139,10 +146,18 @@ function toStats(raw: unknown): ProfileStats {
     lastSolveOn: typeof r.last_solve_on === "string" ? r.last_solve_on : null,
     activity: toActivity(r.activity),
     learning: toLearning(r.learning),
+    levels: toLevels(r.levels),
   };
 }
 
 const num = (v: unknown) => (typeof v === "number" ? v : 0);
+
+function toLevels(raw: unknown): Record<string, number> {
+  if (typeof raw !== "object" || raw === null) return {};
+  return Object.fromEntries(
+    Object.entries(raw as Record<string, unknown>).filter((e): e is [string, number] => typeof e[1] === "number"),
+  );
+}
 
 function toActivity(raw: unknown): ProfileActivity | null {
   if (typeof raw !== "object" || raw === null) return null;
@@ -229,6 +244,10 @@ export type EditableProfile = {
   isPublic: boolean;
   showActivity: boolean;
   showLearning: boolean;
+  mainMethod: string | null;
+  learningNow: string | null;
+  /** Main cube per event, keyed by event id. */
+  setups: Record<string, string>;
 };
 
 export const getEditableProfile = cache(async (): Promise<EditableProfile | null> => {
@@ -240,7 +259,7 @@ export const getEditableProfile = cache(async (): Promise<EditableProfile | null
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, username, display_name, avatar_url, bio, country, wca_id, is_public, show_activity, show_learning")
+    .select("id, username, display_name, avatar_url, bio, country, wca_id, is_public, show_activity, show_learning, main_method, learning_now")
     .eq("id", user.id)
     .single();
   if (!data) return null;
@@ -256,7 +275,20 @@ export const getEditableProfile = cache(async (): Promise<EditableProfile | null
     isPublic: data.is_public ?? true,
     showActivity: data.show_activity ?? true,
     showLearning: data.show_learning ?? true,
+    mainMethod: data.main_method ?? null,
+    learningNow: data.learning_now ?? null,
+    setups: await getSetups(data.id),
   };
+});
+
+/** Main cube per event (RLS hides a private profile's from others). */
+export const getSetups = cache(async (profileId: string): Promise<Record<string, string>> => {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("user_setups")
+    .select("puzzle_type, cube_name")
+    .eq("user_id", profileId);
+  return Object.fromEntries((data ?? []).map((row) => [row.puzzle_type, row.cube_name]));
 });
 
 export type Achievement = {

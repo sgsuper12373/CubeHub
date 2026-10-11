@@ -5,10 +5,12 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
-import { isOwnAvatarUrl, validateProfileInput, type ProfileInput } from "./validate";
+import { TIMER_EVENTS } from "@/lib/timer/events";
+
+import { isOwnAvatarUrl, validateProfileInput, validateSetups, type ProfileInput } from "./validate";
 
 export type ProfileEditState =
-  | { error?: string; field?: keyof ProfileInput }
+  | { error?: string; field?: keyof ProfileInput | "setups" }
   | undefined;
 
 /**
@@ -28,8 +30,15 @@ export async function saveProfileDetails(
     isPublic: formData.get("is_public") === "on",
     showActivity: formData.get("show_activity") === "on",
     showLearning: formData.get("show_learning") === "on",
+    mainMethod: String(formData.get("main_method") ?? ""),
+    learningNow: String(formData.get("learning_now") ?? ""),
   });
   if (!result.ok) return { error: result.error, field: result.field };
+
+  const setups = validateSetups(
+    Object.fromEntries(TIMER_EVENTS.map((e) => [e.id, String(formData.get(`cube_${e.id}`) ?? "")])),
+  );
+  if (!setups.ok) return { error: setups.error, field: "setups" };
 
   const supabase = await createClient();
   const {
@@ -49,6 +58,24 @@ export async function saveProfileDetails(
       return { error: "That WCA ID is already linked to another profile.", field: "wcaId" };
     }
     return { error: "Couldn't save your profile. Please try again." };
+  }
+
+  // Main cubes: save the named ones, delete the cleared ones. RLS limits both
+  // to the caller's own rows.
+  const updatedAt = new Date().toISOString();
+  const [saved, removed] = await Promise.all([
+    setups.save.length > 0
+      ? supabase.from("user_setups").upsert(
+          setups.save.map((row) => ({ ...row, user_id: user.id, updated_at: updatedAt })),
+          { onConflict: "user_id,puzzle_type" },
+        )
+      : Promise.resolve({ error: null }),
+    setups.cleared.length > 0
+      ? supabase.from("user_setups").delete().eq("user_id", user.id).in("puzzle_type", setups.cleared)
+      : Promise.resolve({ error: null }),
+  ]);
+  if (saved.error || removed.error) {
+    return { error: "Your profile was saved, but your cubes weren't. Please try again.", field: "setups" };
   }
 
   revalidatePath("/", "layout");
