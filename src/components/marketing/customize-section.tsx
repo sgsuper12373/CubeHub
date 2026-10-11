@@ -16,7 +16,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 
 import { SectionHeading } from "@/components/marketing/section-heading";
 import { formatMs } from "@/lib/timer/format";
-import { loadClientSettings, saveClientSettings } from "@/lib/timer/settings-persistence";
+import { CLIENT_DEFAULTS, loadClientSettings, saveClientSettings } from "@/lib/timer/settings-persistence";
 import {
   getThemeServerSnapshot,
   getThemeSnapshot,
@@ -50,7 +50,8 @@ const subscribeSettings = (cb: () => void) => {
   };
 };
 const settingsSnapshot = () => JSON.stringify(loadClientSettings());
-const SERVER_SETTINGS = JSON.stringify({ holdMs: 300, precision: 2, voiceEnabled: true, previewDimension: "2D" });
+// The defaults, as the server sees them (no localStorage there).
+const SERVER_SETTINGS = JSON.stringify(CLIENT_DEFAULTS);
 
 function useClientSettings(): [ClientSettings, (patch: Partial<ClientSettings>) => void] {
   const raw = useSyncExternalStore(subscribeSettings, settingsSnapshot, () => SERVER_SETTINGS);

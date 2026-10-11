@@ -20,6 +20,8 @@ export type Penalty = "none" | "plus2" | "dnf";
 
 export type InspectionMode = "off" | "8s" | "15s";
 
+export type InspectionAlert = "voice" | "beep" | "off";
+
 export type TimerPhase =
   | "idle"
   | "inspecting"
@@ -38,8 +40,11 @@ export interface TimerSettings {
   holdMs: number;
   /** Decimal places in time display. Client-only (localStorage). */
   precision: 2 | 3;
-  /** Whether inspection voice callouts are enabled. Client-only (localStorage). */
-  voiceEnabled: boolean;
+  /**
+   * How inspection calls out the 8s/12s marks (4s/6s with 8s inspection):
+   * spoken, beeps, or not at all. Client-only (localStorage).
+   */
+  inspectionAlert: InspectionAlert;
   /**
    * 2D net or a 3D cube. 3D costs a WebGL context, so 2D is the default.
    * Placement and size are not settings — the preview is a panel in the
@@ -61,7 +66,7 @@ export const DEFAULT_TIMER_SETTINGS: TimerSettings = {
   trigger: "spacebar",
   holdMs: 300,
   precision: 2,
-  voiceEnabled: true,
+  inspectionAlert: "voice",
   previewDimension: "2D",
   timerFontSize: 100,
   disableMouseClick: false,

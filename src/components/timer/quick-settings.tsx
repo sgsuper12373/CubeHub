@@ -4,7 +4,7 @@ import { Settings, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import type { InspectionMode, TimerSettings } from "@/lib/timer/types";
+import type { InspectionAlert, InspectionMode, TimerSettings } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
 
 /**
@@ -205,13 +205,19 @@ export function QuickSettings({
               </SettingRow>
             )}
 
-            {/* Voice callouts (only relevant when inspection is on) */}
+            {/* Inspection callouts (only relevant when inspection is on) */}
             {settings.inspectionMode !== "off" && (
-              <SettingRow label="Voice">
-                <ToggleSwitch
-                  checked={settings.voiceEnabled}
-                  onChange={(v) => onChange({ voiceEnabled: v })}
-                  label="Voice callouts during inspection"
+              <SettingRow label="Inspection alert">
+                <SegmentedControl
+                  options={[
+                    { value: "voice", label: "Voice" },
+                    { value: "beep", label: "Beep" },
+                    { value: "off", label: "Off" },
+                  ]}
+                  value={settings.inspectionAlert}
+                  onChange={(v) =>
+                    onChange({ inspectionAlert: v as InspectionAlert })
+                  }
                 />
               </SettingRow>
             )}

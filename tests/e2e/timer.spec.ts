@@ -227,3 +227,33 @@ test("recently deleted restores a solve, or deletes it forever", async ({ page }
   await expect(dialog.getByText(/Nothing deleted/)).toBeVisible();
   await expect.poll(stored).toEqual(["live"]);
 });
+
+test("inspection beeps once at the first warning and twice at the last", async ({ page }) => {
+  // Count the tones the page asks Web Audio for.
+  await page.addInitScript(() => {
+    const w = window as unknown as { __tones: number[] };
+    w.__tones = [];
+    const create = AudioContext.prototype.createOscillator;
+    AudioContext.prototype.createOscillator = function (this: AudioContext) {
+      w.__tones.push(Math.round(performance.now()));
+      return create.call(this);
+    };
+  });
+  const tones = () => page.evaluate(() => (window as unknown as { __tones: number[] }).__tones.length);
+
+  await page.goto("/timer");
+  await expect(scramble(page)).toBeVisible({ timeout: 60_000 });
+  await page.getByRole("button", { name: "Timer settings" }).click();
+  await page.getByRole("radio", { name: "8s" }).click();
+  await page.getByRole("radio", { name: "Beep" }).click();
+  await page.keyboard.press("Escape");
+
+  // Start inspection; 8s inspection warns at 4s and 6s.
+  await page.keyboard.down("Space");
+  await page.keyboard.up("Space");
+  await page.waitForTimeout(3_000);
+  expect(await tones()).toBe(0);
+  await expect.poll(tones, { timeout: 2_000 }).toBe(1);
+  await expect.poll(tones, { timeout: 3_000 }).toBe(3);
+  await page.keyboard.press("Escape");
+});

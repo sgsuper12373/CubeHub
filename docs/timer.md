@@ -3,8 +3,8 @@
 The timer is the heart of CubeHub: it should be usable within seconds of landing, on a phone or
 a keyboard. This page lists what the timer does today and what is planned.
 
-**Status:** one last feature round is in progress on branch `timer-page` (plan below). After it
-ships, the timer page is closed to new features. Changes after that happen only when users ask.
+**Status:** the final feature round (branch `timer-page`, plan below) is complete as of
+2026-10-11. The timer page is now closed to new features; changes happen only when users ask.
 
 Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Drill Lab in
 `roadmap.md` → Phase 3.
@@ -27,7 +27,8 @@ Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Dri
 ### Inspection
 - Off, 8s or 15s (WCA).
 - An automatic +2 after 15s and DNF after 17s, as in WCA rules.
-- Spoken callouts at 8s and 12s.
+- An inspection alert at 8s and 12s (4s and 6s in 8s mode): a **voice** callout, **beeps**
+  (one at the first warning, two at the last, synthesised with Web Audio), or **off**.
 
 ### Scrambles and preview
 - WCA random-state scrambles from cubing.js, generated in a worker. The next scramble is
@@ -109,7 +110,7 @@ The full plan is in [`timer-plan.md`](timer-plan.md). Tick each item as it ships
       your own. Custom scrambles are saved with `scramble_type = 'custom'`.
 - [x] **6. Recently deleted.** Done 2026-10-11. Restore or permanently delete soft-deleted solves from the
       last 30 days.
-- [ ] **7. Inspection beeps.** The inspection alert can be voice, beep or off.
+- [x] **7. Inspection beeps.** Done 2026-10-11. The inspection alert can be voice, beep or off.
 
 ---
 

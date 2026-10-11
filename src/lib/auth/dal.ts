@@ -60,7 +60,7 @@ export const requireAdmin = cache(async () => {
 
 /**
  * The subset of TimerSettings that is actually persisted server-side.
- * `holdMs`, `precision` and `voiceEnabled` are deliberately client-only
+ * `holdMs`, `precision`, `inspectionAlert`, `previewDimension` and `inputMode` are client-only
  * (localStorage) — see `lib/timer/settings-persistence.ts`. Keeping this a
  * Pick<> rather than the full TimerSettings is what stops the server from
  * having to invent values it doesn't store.

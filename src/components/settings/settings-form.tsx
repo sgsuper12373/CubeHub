@@ -18,6 +18,7 @@ import { updateProfile, type ProfileState } from "@/lib/auth/actions";
 import { toast } from "@/stores/toast-store";
 import {
   DEFAULT_TIMER_SETTINGS,
+  type InspectionAlert,
   type InspectionMode,
   type TimerSettings,
 } from "@/lib/timer/types";
@@ -205,10 +206,15 @@ export function SettingsForm({
           </SettingRow>
 
           {settings.inspectionMode !== "off" && (
-            <SettingRow label="Voice Callouts" description="Announce 8s and 12s warnings during inspection.">
-              <ToggleSwitch
-                checked={settings.voiceEnabled}
-                onChange={(v) => handleChange({ voiceEnabled: v })}
+            <SettingRow label="Inspection Alert" description="Call out the 8s and 12s warnings with a voice or beeps.">
+              <SegmentedControl
+                options={[
+                  { value: "voice", label: "Voice" },
+                  { value: "beep", label: "Beep" },
+                  { value: "off", label: "Off" },
+                ]}
+                value={settings.inspectionAlert}
+                onChange={(v) => handleChange({ inspectionAlert: v as InspectionAlert })}
               />
             </SettingRow>
           )}

@@ -5,6 +5,31 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-11 — Timer round, step 7: inspection beeps (round complete)
+
+**Request:** Step 7 of `docs/timer-plan.md`, the last one.
+
+**Changed**
+- **`TimerSettings.voiceEnabled` is now `inspectionAlert: "voice" | "beep" | "off"`** (client-only).
+  - `loadClientSettings` migrates old saves (`voiceEnabled: true` becomes voice, `false` becomes off), and the old key drops away on the next save.
+  - `CLIENT_DEFAULTS` is exported, so the landing page's server snapshot can't drift from it again (it was a hand-written copy).
+- **New `lib/timer/beep.ts`**: an 880 Hz sine beep with a short fade, made with Web Audio.
+  - The audio context is unlocked on the first tap or key press (capture phase), because iOS refuses audio that doesn't start in a gesture, and the 8s beep fires from an animation frame.
+- **`time-display.tsx`**: at the existing callout marks (8s/12s, or 4s/6s in 8s mode), it either speaks or beeps once for the first warning and twice for the last.
+  - The plan said 15s and 17s. I kept the same marks as the voice instead, so the two alert types stay comparable.
+- **Quick settings and `/settings`**: the voice switch is now an Inspection alert control (Voice / Beep / Off).
+- **Tests:**
+  - New `tests/unit/inspection-alert.test.ts`: the migration, junk values, the old key dropping on save, beeps staying silent until unlocked, and two beeps 0.2 s apart (fake AudioContext).
+  - New e2e test: 8s inspection with Beep. Counting real Chromium oscillators gives 0 at 3 s, 1 by 4 s and 3 by 6 s.
+
+**Verified**
+- `npm run validate`: 323 of 323 unit tests; lint has the one pre-existing warning. `check:colors` is OK.
+- `npm run build` passes. `npm run test:e2e:prod` passed 30 of 30.
+
+**The timer round is complete** (`docs/timer.md`: all 7 items ticked).
+
+---
+
 ## 2026-10-11 — Timer round, step 6: recently deleted
 
 **Request:** Step 6 of `docs/timer-plan.md`.

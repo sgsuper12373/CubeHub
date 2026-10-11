@@ -11,6 +11,7 @@ import {
   useTimerStore,
 } from "@/stores/timer-store";
 import { announce, cancelAnnounce } from "@/lib/timer/voice";
+import { beep } from "@/lib/timer/beep";
 
 /**
  * The big digits. All time-varying content is written imperatively into a
@@ -84,11 +85,15 @@ export function TimeDisplay({
             el.textContent = String(remaining);
             if (remaining <= 3) el.style.color = "var(--timer-hold)";
 
-            if (s.settings.voiceEnabled) {
+            const alert = s.settings.inspectionAlert;
+            if (alert !== "off") {
+              // 8s/12s in WCA inspection, 4s/6s in the 8s mode: one beep for
+              // the first warning, two for the last.
               const mark = duration === 15_000 ? (remaining === 7 ? 8 : remaining === 3 ? 12 : null) : (remaining === 4 ? 4 : remaining === 2 ? 6 : null);
               if (mark && !announcedMarksRef.current.has(mark)) {
                 announcedMarksRef.current.add(mark);
-                announce(`${mark} seconds`);
+                if (alert === "voice") announce(`${mark} seconds`);
+                else beep(mark === 8 || mark === 4 ? 1 : 2);
               }
             }
           }

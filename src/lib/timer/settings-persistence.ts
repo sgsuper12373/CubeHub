@@ -1,4 +1,4 @@
-import type { TimerSettings } from "./types";
+import type { InspectionAlert, TimerSettings } from "./types";
 import { DEFAULT_TIMER_SETTINGS } from "./types";
 
 /**
@@ -9,7 +9,7 @@ import { DEFAULT_TIMER_SETTINGS } from "./types";
  *   → saved via server action, loaded via getTimerSettings() in dal.ts
  *
  * Client-only fields (localStorage for everyone):
- *   holdMs, precision, voiceEnabled, previewDimension, inputMode
+ *   holdMs, precision, inspectionAlert, previewDimension, inputMode
  *   → never synced to the cloud; these are per-device preferences
  *
  * `previewDimension` is deliberately client-only. `show_scramble_preview`
@@ -22,18 +22,29 @@ const CLIENT_SETTINGS_KEY = "cubehub.settings.v1";
 interface ClientOnlySettings {
   holdMs: number;
   precision: 2 | 3;
-  voiceEnabled: boolean;
+  inspectionAlert: InspectionAlert;
   previewDimension: "2D" | "3D";
   inputMode: "timer" | "typing";
 }
 
-const CLIENT_DEFAULTS: ClientOnlySettings = {
+export const CLIENT_DEFAULTS: ClientOnlySettings = {
   holdMs: DEFAULT_TIMER_SETTINGS.holdMs,
   precision: DEFAULT_TIMER_SETTINGS.precision,
-  voiceEnabled: DEFAULT_TIMER_SETTINGS.voiceEnabled,
+  inspectionAlert: DEFAULT_TIMER_SETTINGS.inspectionAlert,
   previewDimension: DEFAULT_TIMER_SETTINGS.previewDimension,
   inputMode: DEFAULT_TIMER_SETTINGS.inputMode,
 };
+
+/**
+ * Settings saved before beeps existed have `voiceEnabled: boolean` instead;
+ * true carries over as "voice" and false as "off".
+ */
+function readInspectionAlert(parsed: Record<string, unknown>): InspectionAlert {
+  const v = parsed.inspectionAlert;
+  if (v === "voice" || v === "beep" || v === "off") return v;
+  if (typeof parsed.voiceEnabled === "boolean") return parsed.voiceEnabled ? "voice" : "off";
+  return CLIENT_DEFAULTS.inspectionAlert;
+}
 
 /** Read client-only settings from localStorage. */
 export function loadClientSettings(): ClientOnlySettings {
@@ -53,10 +64,7 @@ export function loadClientSettings(): ClientOnlySettings {
         parsed.precision === 2 || parsed.precision === 3
           ? parsed.precision
           : CLIENT_DEFAULTS.precision,
-      voiceEnabled:
-        typeof parsed.voiceEnabled === "boolean"
-          ? parsed.voiceEnabled
-          : CLIENT_DEFAULTS.voiceEnabled,
+      inspectionAlert: readInspectionAlert(parsed),
       previewDimension:
         parsed.previewDimension === "2D" || parsed.previewDimension === "3D"
           ? parsed.previewDimension
@@ -116,8 +124,8 @@ export function saveSettings(
   const clientFields: Partial<ClientOnlySettings> = {};
   if (partial.holdMs !== undefined) clientFields.holdMs = partial.holdMs;
   if (partial.precision !== undefined) clientFields.precision = partial.precision;
-  if (partial.voiceEnabled !== undefined)
-    clientFields.voiceEnabled = partial.voiceEnabled;
+  if (partial.inspectionAlert !== undefined)
+    clientFields.inspectionAlert = partial.inspectionAlert;
   if (partial.previewDimension !== undefined)
     clientFields.previewDimension = partial.previewDimension;
   if (partial.inputMode !== undefined) clientFields.inputMode = partial.inputMode;
