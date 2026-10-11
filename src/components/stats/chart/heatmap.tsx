@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 
 import { ChartTooltip, TooltipRow } from "@/components/stats/chart/tooltip";
 import { formatMs } from "@/lib/timer/format";
-import { dailyCounts } from "@/lib/timer/stats";
-import type { SolveMetric } from "@/lib/timer/types";
+/** One day's practice. `bestMs` is optional: public profiles only get counts. */
+export type HeatmapDay = { day: string; count: number; bestMs?: number | null };
 
 /**
  * Practice heatmap — a year of days, coloured by how much was solved.
@@ -51,16 +51,17 @@ function weekdayIndex(d: Date): number {
 }
 
 export function Heatmap({
-  metrics,
+  days,
   weeks = 53,
 }: {
-  metrics: SolveMetric[];
+  /** `YYYY-MM-DD` days with practice; /stats builds them with `dailyCounts()`. */
+  days: HeatmapDay[];
   weeks?: number;
 }) {
   const [hover, setHover] = useState<Cell | null>(null);
 
   const { cells, monthLabels, width } = useMemo(() => {
-    const counts = new Map(dailyCounts(metrics).map((d) => [d.day, d]));
+    const counts = new Map(days.map((d) => [d.day, d]));
 
     // Anchor on today in the viewer's own timezone, then walk back to the
     // Monday that starts the earliest column so the grid is never ragged.
@@ -109,7 +110,7 @@ export function Heatmap({
 
     const totalCols = cells.length === 0 ? 0 : cells[cells.length - 1].col + 1;
     return { cells, monthLabels, width: totalCols * (CELL + GAP) };
-  }, [metrics, weeks]);
+  }, [days, weeks]);
 
   const colorFor = (count: number) => {
     if (count === 0) return "var(--chart-seq-0)";

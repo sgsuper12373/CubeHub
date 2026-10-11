@@ -62,6 +62,8 @@ export type ProfileInput = {
   country: string;
   wcaId: string;
   isPublic: boolean;
+  showActivity: boolean;
+  showLearning: boolean;
 };
 
 export type ProfileUpdate = {
@@ -70,6 +72,8 @@ export type ProfileUpdate = {
   country: string;
   wca_id: string | null;
   is_public: boolean;
+  show_activity: boolean;
+  show_learning: boolean;
 };
 
 /** Trim, normalise and check the edit form; returns the row update or the first error. */
@@ -105,6 +109,8 @@ export function validateProfileInput(
       country,
       wca_id: wcaId || null,
       is_public: input.isPublic,
+      show_activity: input.showActivity,
+      show_learning: input.showLearning,
     },
   };
 }

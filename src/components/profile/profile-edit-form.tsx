@@ -26,6 +26,8 @@ export function ProfileEditForm({ profile }: { profile: EditableProfile }) {
   );
   const [bio, setBio] = useState(profile.bio ?? "");
   const [isPublic, setIsPublic] = useState(profile.isPublic);
+  const [showActivity, setShowActivity] = useState(profile.showActivity);
+  const [showLearning, setShowLearning] = useState(profile.showLearning);
   const countries = useMemo(() => countryOptions(), []);
   const fieldError = (field: NonNullable<ProfileEditState>["field"]) =>
     state?.field === field ? state?.error : undefined;
@@ -108,23 +110,33 @@ export function ProfileEditForm({ profile }: { profile: EditableProfile }) {
 
         <section className="space-y-2">
           <h2 className="text-sm font-semibold text-foreground">Privacy</h2>
-          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card/60 p-4">
-            <input
-              type="checkbox"
-              name="is_public"
-              checked={isPublic}
-              onChange={(e) => setIsPublic(e.target.checked)}
-              className="mt-0.5 size-4 accent-primary"
-            />
-            <span className="space-y-0.5">
-              <span className="block text-sm font-medium text-foreground">Public profile</span>
-              <span className="block text-xs text-muted-foreground">
-                {isPublic
-                  ? "Anyone can see your stats and personal bests."
-                  : "Others see only your name and photo. You still see everything."}
-              </span>
-            </span>
-          </label>
+          <Toggle
+            name="is_public"
+            checked={isPublic}
+            onChange={setIsPublic}
+            title="Public profile"
+            hint={
+              isPublic
+                ? "Anyone can see your stats and personal bests."
+                : "Others see only your name and photo. You still see everything."
+            }
+          />
+          <Toggle
+            name="show_activity"
+            checked={showActivity}
+            onChange={setShowActivity}
+            disabled={!isPublic}
+            title="Show my practice activity"
+            hint="The calendar of days you practised, and your streaks."
+          />
+          <Toggle
+            name="show_learning"
+            checked={showLearning}
+            onChange={setShowLearning}
+            disabled={!isPublic}
+            title="Show my learning progress"
+            hint="Which algorithm sets you've learned, from Learn."
+          />
         </section>
 
         {state?.error && !state.field && (
@@ -143,6 +155,50 @@ export function ProfileEditForm({ profile }: { profile: EditableProfile }) {
         </div>
       </form>
     </div>
+  );
+}
+
+/**
+ * A labelled checkbox. When disabled (a private profile hides everything
+ * anyway) the box stays submitted with its value, so turning the profile
+ * public again restores the previous choices.
+ */
+function Toggle({
+  name,
+  checked,
+  onChange,
+  disabled = false,
+  title,
+  hint,
+}: {
+  name: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+  title: string;
+  hint: string;
+}) {
+  return (
+    <label
+      className={cn(
+        "flex items-start gap-3 rounded-xl border border-border bg-card/60 p-4",
+        disabled ? "opacity-60" : "cursor-pointer",
+      )}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        disabled={disabled}
+        className="mt-0.5 size-4 accent-primary"
+      />
+      {/* Disabled inputs aren't submitted, so the value travels in a hidden one. */}
+      {checked && <input type="hidden" name={name} value="on" />}
+      <span className="space-y-0.5">
+        <span className="block text-sm font-medium text-foreground">{title}</span>
+        <span className="block text-xs text-muted-foreground">{hint}</span>
+      </span>
+    </label>
   );
 }
 

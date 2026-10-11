@@ -5,6 +5,44 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-11 — Profile step 3: PB timeline, activity and streaks, learning progress, latest records
+
+**Request:** Step 3 (Group B) of `docs/profile.md`, planned in `~/.claude/plans/spicy-jumping-feather.md`.
+
+**Changed**
+- **New migration `20261014000000_profile_progress.sql`**:
+  - `profiles.show_activity` and `profiles.show_learning` (default true).
+  - `profile_visible(p_user)` is now the single privacy check.
+  - `get_profile_stats` gains `activity` (IST day counts for the last 371 days; current streak, which survives until a full day passes without a solve; longest streak by gaps-and-islands; active days) and `learning` (published sets with at least one learned case; a case counts as learned when any of its algorithms is, as in Learn). Each is `null` for a non-owner when hidden.
+  - New `get_pb_progression(p_user, p_puzzle)`: the single running min plus Ao5/Ao12 improvements. The averages come from `average_progression`, which uses the same session-window maths as `best_average_of_n`. That helper is not callable through the API.
+- **`lib/profile/dal.ts`**: `activity`, `learning`, `showActivity`/`showLearning`, and `getPbProgression()` (React `cache`, run only for the selected event).
+- **`stats/chart/heatmap.tsx`** now takes `days` (day counts) instead of solves. `/stats` passes `dailyCounts(filtered)` and looks the same.
+- **New `lib/profile/timeline.ts`** (pure): `stepPath`, `timelineExtent`, `improvement`.
+- **New components in `components/profile/`:**
+  - `pb-timeline.tsx`: a step chart in the `/stats` chart style, with a legend, a table view, point tooltips and a "from → to since" summary. It ends at the cuber's last active IST day; React's purity rule rejects `Date.now()` in render.
+  - `activity-section.tsx`: three streak cards plus the heatmap.
+  - `learning-section.tsx`: progress bars that link to each set.
+  - `latest-records.tsx`.
+- **Profile page** section order: header, stats, Activity, Personal bests (tabs, cards, timeline), Latest records, Learning. The owner sees "Hidden from others" on hidden sections.
+- **Edit profile**: "Show my practice activity" and "Show my learning progress". They're disabled while the profile is private, and a hidden input keeps their values.
+
+**Tests**
+- New `supabase/tests/profile_progress_test.sql`, 14 of 14 on the throwaway DB:
+  - single and Ao5 progressions match hand-computed values, and their last points equal the stored PBs; Ao12 is empty with too few solves
+  - streaks across the IST date line; an ended streak
+  - learning 1/3 via a second algorithm, with an untouched set left out
+  - toggles hide sections from others but not the owner
+  - a private profile has no progression for visitors
+  - the helper isn't exposed
+- The earlier profile tests still pass (7, 11, 3).
+- New `tests/unit/profile-progress.test.tsx` (timeline maths, and the Heatmap rendered from counts).
+
+**Verified:** `npm run validate` (343 of 343), `check:colors`, `npm run build`, `npm run test:e2e:prod` (34 of 34).
+
+**Not yet verified:** the page with real data, which needs the migration live first.
+
+---
+
 ## 2026-10-11 — Profile step 2 checked on live data; phone stat-card fix
 
 **Live checks** (after the founder applied both migrations and the tests passed in the SQL editor):

@@ -68,6 +68,11 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
          expression `bucket_id = 'avatars' and (storage.foldername(name))[1] = (select auth.uid())::text`.
       Then add `20261013000000 20261013000100` to the `migration repair` list.
 
+- [ ] **Profile step 3: apply `supabase/migrations/20261014000000_profile_progress.sql`, BEFORE
+      deploying** (the page reads `show_activity` / `show_learning`; without them every profile
+      404s). Then run `supabase/tests/profile_progress_test.sql` (14 rows, all PASS) and add
+      `20261014000000` to the `migration repair` list.
+
 ### Vercel
 - [x] Build command is `npm run build`, with no override pinning `--webpack`.
 - [ ] `NEXT_PUBLIC_SITE_URL` is set to the live domain. Without it, share-preview (Open Graph) links point at localhost.

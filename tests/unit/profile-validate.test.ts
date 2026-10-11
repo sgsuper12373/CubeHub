@@ -10,7 +10,15 @@ import {
   validateProfileInput,
 } from "@/lib/profile/validate";
 
-const base = { displayName: "Sumit", bio: "", country: "IN", wcaId: "", isPublic: true };
+const base = {
+  displayName: "Sumit",
+  bio: "",
+  country: "IN",
+  wcaId: "",
+  isPublic: true,
+  showActivity: true,
+  showLearning: true,
+};
 
 describe("validateProfileInput", () => {
   it("trims, normalises and maps to columns", () => {
@@ -21,6 +29,8 @@ describe("validateProfileInput", () => {
         country: "in",
         wcaId: " 2019sing01 ",
         isPublic: false,
+        showActivity: false,
+        showLearning: true,
       }),
     ).toEqual({
       ok: true,
@@ -30,6 +40,8 @@ describe("validateProfileInput", () => {
         country: "IN",
         wca_id: "2019SING01",
         is_public: false,
+        show_activity: false,
+        show_learning: true,
       },
     });
   });

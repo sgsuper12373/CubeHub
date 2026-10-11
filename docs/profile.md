@@ -85,23 +85,24 @@ The owner-only RLS on `solves` and `user_algorithm_bookmarks` stays exactly as i
   - The owner always sees everything, with a note about what others see.
   - The toggles live in Edit profile.
 
-## Step 3: Group B, show progress
+## Step 3: Group B, show progress (built 2026-10-11; migration `20261014000000_profile_progress.sql`)
 
-- [ ] **B5. PB timeline:** per event, a step chart of single, Ao5 and Ao12 over time, plus how
+- [x] **B5. PB timeline:** per event, a step chart of single, Ao5 and Ao12 over time, plus how
       much each improved. `get_profile_stats` builds it from the running best over the
       cuber's solves (averages use per-session windows, as the PB triggers do). That means no
       new history table, and deleted solves drop out on their own.
-- [ ] **B6. Activity heatmap and streaks:**
+- [x] **B6. Activity heatmap and streaks:**
   - A calendar of the last 12 months, with current and longest streak and the number of
     active days.
   - Days are counted in India time (`Asia/Kolkata`) for now. A per-user timezone is listed
     under Later.
   - Hidden when `show_activity` is off.
-- [ ] **B7. Learning progress:** learned/total per algorithm set (e.g. "PLL 21/21 · OLL 34/57
+- [x] **B7. Learning progress:** learned/total per algorithm set (e.g. "PLL 21/21 · OLL 34/57
       · CLL 12/42"), from `user_algorithm_bookmarks.learned`. Only sets with progress are
       shown. Hidden when `show_learning` is off.
-- [ ] **B8. Recent PBs:** the last 5 records across events, with dates, taken from the same
-      progression data.
+- [x] **B8. Recent PBs:** the last 5 records across events, with dates. *As built:* "Latest
+      records" lists the 5 most recently set PBs that still stand, from the `personal_bests`
+      rows the page already loads, so it needs no extra query.
 
 ## Step 4: C9, achievements
 

@@ -131,6 +131,7 @@ export function StatsScreen({ userId }: { userId: string | null }) {
     if (sessionId === "all") return metrics;
     return metrics.filter((m) => m.sessionId === sessionId);
   }, [metrics, sessionId]);
+  const practiceDays = useMemo(() => (filtered ? dailyCounts(filtered) : []), [filtered]);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-4">
@@ -237,7 +238,7 @@ export function StatsScreen({ userId }: { userId: string | null }) {
             emptyMessage="Your practice days will show up here."
             table={<PracticeTable metrics={filtered} />}
           >
-            <Heatmap metrics={filtered} />
+            <Heatmap days={practiceDays} />
           </ChartFrame>
 
           <DataSection

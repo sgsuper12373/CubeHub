@@ -26,6 +26,8 @@ export async function saveProfileDetails(
     country: String(formData.get("country") ?? ""),
     wcaId: String(formData.get("wca_id") ?? ""),
     isPublic: formData.get("is_public") === "on",
+    showActivity: formData.get("show_activity") === "on",
+    showLearning: formData.get("show_learning") === "on",
   });
   if (!result.ok) return { error: result.error, field: result.field };
 

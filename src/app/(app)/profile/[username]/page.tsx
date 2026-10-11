@@ -14,10 +14,19 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { ActivitySection } from "@/components/profile/activity-section";
+import { LatestRecords } from "@/components/profile/latest-records";
+import { LearningSection } from "@/components/profile/learning-section";
+import { PbTimeline } from "@/components/profile/pb-timeline";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import { Button } from "@/components/ui/button";
 import { getUser } from "@/lib/auth/dal";
-import { getPublicProfile, type PublicProfile } from "@/lib/profile/dal";
+import {
+  getPbProgression,
+  getPublicProfile,
+  type PbProgression,
+  type PublicProfile,
+} from "@/lib/profile/dal";
 import { countryFlag, countryName } from "@/lib/profile/validate";
 import { eventLabel, isTimerEvent, TIMER_EVENTS, type TimerEventId } from "@/lib/timer/events";
 import { formatMs } from "@/lib/timer/format";
@@ -59,6 +68,10 @@ export default async function ProfilePage({ params, searchParams }: Props) {
   const isOwner = user?.id === profile.id;
   // The stats function withholds everything from non-owners of a private profile.
   const hidden = profile.stats.hidden;
+  const events = practisedEvents(profile);
+  const selected = pickEvent(profile, events, event);
+  const progression = !hidden && selected ? await getPbProgression(profile.id, selected) : null;
+  const { activity, learning } = profile.stats;
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-8">
@@ -93,7 +106,24 @@ export default async function ProfilePage({ params, searchParams }: Props) {
       ) : (
         <>
           <PublicStats profile={profile} />
-          <EventSection profile={profile} requested={event} isOwner={isOwner} />
+          {activity && (
+            <ActivitySection activity={activity} hiddenNote={isOwner && !profile.showActivity} />
+          )}
+          <EventSection
+            profile={profile}
+            events={events}
+            selected={selected}
+            progression={progression}
+            isOwner={isOwner}
+          />
+          <LatestRecords personalBests={profile.personalBests} />
+          {learning && (learning.length > 0 || isOwner) && (
+            <LearningSection
+              learning={learning}
+              isOwner={isOwner}
+              hiddenNote={isOwner && !profile.showLearning}
+            />
+          )}
         </>
       )}
     </div>
@@ -179,22 +209,41 @@ function PublicStats({ profile }: { profile: PublicProfile }) {
   );
 }
 
+/** Events the cuber has solves or PBs on, in registry order. */
+function practisedEvents(profile: PublicProfile): TimerEventId[] {
+  const { byEvent } = profile.stats;
+  return TIMER_EVENTS.filter(
+    (e) => (byEvent[e.id] ?? 0) > 0 || profile.personalBests.some((pb) => pb.puzzleType === e.id),
+  ).map((e) => e.id);
+}
+
+/** The asked-for event if it has data, otherwise the one practised most. */
+function pickEvent(
+  profile: PublicProfile,
+  events: TimerEventId[],
+  requested: string | undefined,
+): TimerEventId | null {
+  if (events.length === 0) return null;
+  if (requested && isTimerEvent(requested) && events.includes(requested)) return requested;
+  const { byEvent } = profile.stats;
+  return events.reduce((a, b) => ((byEvent[b] ?? 0) > (byEvent[a] ?? 0) ? b : a));
+}
+
 function EventSection({
   profile,
-  requested,
+  events,
+  selected,
+  progression,
   isOwner,
 }: {
   profile: PublicProfile;
-  requested: string | undefined;
+  events: TimerEventId[];
+  selected: TimerEventId | null;
+  progression: PbProgression | null;
   isOwner: boolean;
 }) {
   const { byEvent } = profile.stats;
-  // Tabs for every event the cuber has solves or PBs on, in registry order.
-  const events: TimerEventId[] = TIMER_EVENTS.filter(
-    (e) => (byEvent[e.id] ?? 0) > 0 || profile.personalBests.some((pb) => pb.puzzleType === e.id),
-  ).map((e) => e.id);
-
-  if (events.length === 0) {
+  if (!selected) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-12 text-center">
         <p className="text-sm text-muted-foreground">No solves yet.</p>
@@ -207,11 +256,6 @@ function EventSection({
     );
   }
 
-  // The asked-for event if it has data, otherwise the one practised most.
-  const selected: TimerEventId =
-    requested && isTimerEvent(requested) && events.includes(requested)
-      ? requested
-      : events.reduce((a, b) => ((byEvent[b] ?? 0) > (byEvent[a] ?? 0) ? b : a));
   const pbs = new Map(
     profile.personalBests.filter((pb) => pb.puzzleType === selected).map((pb) => [pb.category, pb]),
   );
@@ -274,6 +318,14 @@ function EventSection({
           );
         })}
       </div>
+
+      {progression && (
+        <PbTimeline
+          progression={progression}
+          eventName={eventLabel(selected)}
+          lastActiveOn={profile.stats.lastSolveOn}
+        />
+      )}
     </section>
   );
 }
