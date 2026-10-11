@@ -80,7 +80,7 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
 
 - [ ] **Apply `supabase/migrations/20261015000100_remove_legacy_achievements.sql`**: deletes the
       14 hand-made June achievement rows (duplicates and Compete/club/tutorial badges), keeping
-      any that someone has unlocked. Afterwards Authentication isn't affected; the profile shows
+      any that someone has unlocked. Afterwards the profile shows
       20 badges. Add `20261015000100` to the `migration repair` list.
 
 ### Vercel
