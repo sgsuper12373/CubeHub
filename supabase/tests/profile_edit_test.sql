@@ -7,6 +7,15 @@
 
 begin;
 
+-- This is the TEST. Its migration must be applied first.
+do $$
+begin
+  if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'is_public') then
+    raise exception 'Apply supabase/migrations/20261013000000_profile_edit.sql first, then run this test.';
+  end if;
+end;
+$$;
+
 create temp table results (step text, expected text, actual text, verdict text)
 on commit drop;
 grant all on results to anon, authenticated;

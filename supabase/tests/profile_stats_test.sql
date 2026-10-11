@@ -8,6 +8,15 @@
 
 begin;
 
+-- This is the TEST. Its migration must be applied first.
+do $$
+begin
+  if not exists (select 1 from pg_proc where proname = 'get_profile_stats') then
+    raise exception 'Apply supabase/migrations/20261012000000_profile_stats.sql first, then run this test.';
+  end if;
+end;
+$$;
+
 create temp table results (step text, expected text, actual text, verdict text)
 on commit drop;
 grant all on results to anon, authenticated;
