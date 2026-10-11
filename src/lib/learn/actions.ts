@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/auth/dal";
 import { revalidatePath } from "next/cache";
 
-export async function toggleAlgorithmBookmark(algorithmId: string, learned: boolean) {
+/** Mark a case learned (or not); returns any achievements this earned. */
+export async function toggleAlgorithmBookmark(algorithmId: string, learned: boolean): Promise<unknown[]> {
   const user = await getUser();
   if (!user) {
     throw new Error("Must be logged in to track progress");
@@ -29,6 +30,11 @@ export async function toggleAlgorithmBookmark(algorithmId: string, learned: bool
   }
 
   revalidatePath("/learn", "layout");
+
+  // Finishing a set can earn a badge (PLL Master, 2x2 Specialist…).
+  if (!learned) return [];
+  const { data: unlocks } = await supabase.rpc("award_achievements");
+  return Array.isArray(unlocks) ? unlocks : [];
 }
 
 export async function toggleTutorialStepProgress(stepId: string, completed: boolean) {

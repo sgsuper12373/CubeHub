@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { ACHIEVEMENT_ORDER } from "./achievement-icons";
 
 /**
  * Aggregates from `get_profile_stats`; dates are IST calendar dates
@@ -256,4 +257,40 @@ export const getEditableProfile = cache(async (): Promise<EditableProfile | null
     showActivity: data.show_activity ?? true,
     showLearning: data.show_learning ?? true,
   };
+});
+
+export type Achievement = {
+  slug: string;
+  title: string;
+  description: string;
+  hidden: boolean;
+  /** When this cuber unlocked it, or null. */
+  unlockedAt: string | null;
+};
+
+/**
+ * The badge catalogue with this cuber's unlocks, in display order. A private
+ * profile's unlocks are hidden by RLS, and the page doesn't show the section
+ * for one anyway.
+ */
+export const getAchievements = cache(async (profileId: string): Promise<Achievement[]> => {
+  const supabase = await createClient();
+  const [{ data: catalogue }, { data: mine }] = await Promise.all([
+    supabase.from("achievements").select("id, slug, title, description, is_hidden"),
+    supabase.from("user_achievements").select("achievement_id, unlocked_at").eq("user_id", profileId),
+  ]);
+  const unlocked = new Map((mine ?? []).map((u) => [u.achievement_id, u.unlocked_at as string]));
+  const order = (slug: string) => {
+    const i = ACHIEVEMENT_ORDER.indexOf(slug);
+    return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+  };
+  return (catalogue ?? [])
+    .map((a) => ({
+      slug: a.slug,
+      title: a.title,
+      description: a.description,
+      hidden: a.is_hidden,
+      unlockedAt: unlocked.get(a.id) ?? null,
+    }))
+    .sort((a, b) => order(a.slug) - order(b.slug) || a.slug.localeCompare(b.slug));
 });

@@ -104,9 +104,9 @@ The owner-only RLS on `solves` and `user_algorithm_bookmarks` stays exactly as i
       records" lists the 5 most recently set PBs that still stand, from the `personal_bests`
       rows the page already loads, so it needs no extra query.
 
-## Step 4: C9, achievements
+## Step 4: C9, achievements (built 2026-10-12; migration `20261015000000_achievements.sql`)
 
-- [ ] **Catalogue:** about 20 achievements seeded into `achievements` with a `condition_type`
+- [x] **Catalogue:** about 20 achievements seeded into `achievements` with a `condition_type`
       and `condition_value`.
   - **Milestones:** 1, 100, 1,000 and 10,000 solves.
   - **Sub-X singles for 3x3:** sub-60, sub-30, sub-20, sub-15, sub-10.
@@ -114,15 +114,21 @@ The owner-only RLS on `solves` and `user_algorithm_bookmarks` stays exactly as i
   - **Streaks:** 7 and 30 days.
   - **Learning:** all PLL, all OLL, all of a 2x2 set.
   - **Fun ones**, a few marked `is_hidden`.
-- [ ] **Awarding:** a `SECURITY DEFINER` function `award_achievements()` for `auth.uid()`.
+- [x] **Awarding:** a `SECURITY DEFINER` function `award_achievements()` for `auth.uid()`.
   - It checks every condition, inserts any new `user_achievements` rows, and returns the
     newly unlocked ones.
   - The timer calls it after a signed-in solve is saved, and Learn calls it after marking a
     set learned. A new unlock shows a toast: "Achievement unlocked: Sub-20".
   - The first call for an existing user backfills everything they already earned.
-- [ ] **On the profile:** a badge grid. Unlocked badges show their date. Locked ones are dimmed
+- [x] **On the profile:** a badge grid. Unlocked badges show their date. Locked ones are dimmed
       and show their description, and hidden ones show "???" until unlocked.
 - Signed-out cubers don't earn achievements. The sign-in nudge mentions them.
+- *As built:*
+  - 20 badges.
+  - Typed (manual) times don't count toward speed badges (founder's choice, 2026-10-12).
+  - Badges are permanent.
+  - The unlock toast has no "View" button: the timer's store has no router.
+  - A private profile's badges are hidden by RLS.
 
 ## Step 5: C11 and C12, setup, method and level
 

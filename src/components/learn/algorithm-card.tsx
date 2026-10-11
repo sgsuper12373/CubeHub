@@ -11,6 +11,7 @@ import { CaseViewer } from "@/components/learn/case-viewer";
 import { FaceletViewer } from "@/components/learn/facelet-viewer";
 import { AlgPlayer } from "@/components/learn/alg-player";
 import { toggleAlgorithmBookmark } from "@/lib/learn/actions";
+import { announceUnlocks, toUnlocks } from "@/lib/profile/achievements";
 import { caseDiagram, mainAlgorithm } from "@/lib/learn/case-diagram";
 import { isPlaygroundPuzzle } from "@/lib/playground/puzzles";
 import Link from "next/link";
@@ -30,8 +31,9 @@ export function AlgorithmCard({
 
   const handleToggleLearned = () => {
     if (!mainAlg) return;
-    startTransition(() => {
-      toggleAlgorithmBookmark(mainAlg.id, !algCase.learned);
+    startTransition(async () => {
+      const unlocks = await toggleAlgorithmBookmark(mainAlg.id, !algCase.learned);
+      announceUnlocks(toUnlocks(unlocks));
     });
   };
 

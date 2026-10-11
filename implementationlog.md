@@ -5,6 +5,52 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-12 — Profile step 4: achievements
+
+**Request:** Step 4 (C9) of `docs/profile.md`, planned in `~/.claude/plans/spicy-jumping-feather.md`.
+**Founder decision:** typed (manual) times don't count toward speed badges.
+
+**Changed**
+- **New migration `20261015000000_achievements.sql`**:
+  - The `user_achievements` read policy now goes through `profile_visible`.
+  - It seeds 20 badges: milestones, 3x3 sub-60/30/20/15/10 singles, Ao5 sub-20, Ao12 sub-15, 4 and 8 events, 7- and 30-day streaks, PLL and OLL Master, 2x2 Specialist, plus Night Owl and Marathon (hidden). The seed is an idempotent upsert.
+  - `award_achievements()` computes the caller's facts once, inserts every newly met badge and returns them.
+  - Internal helpers: `best_timer_average`, which works like `best_average_of_n` but skips `source = 'manual'`, and `learned_sets`. Neither is callable through the API.
+  - `award_achievements` is executable by `authenticated` only.
+- **New `lib/profile/achievements.ts`**:
+  - `checkAchievements()` shares one check between overlapping calls, and treats failures as "nothing new".
+  - `unlockMessage` and `announceUnlocks`: one badge is named, several are counted. There's no View button, because the store has no router.
+  - `toUnlocks`.
+- **New `lib/profile/achievement-icons.ts`**: lucide icons and the display order, by slug.
+- **`session-store.ts`**: after a signed-in solve is saved, the check runs without being awaited.
+- **`learn/actions.ts`**: `toggleAlgorithmBookmark` awards after marking a case learned and returns the unlocks, which `algorithm-card.tsx` announces.
+- **Profile:**
+  - `getAchievements()` in the DAL.
+  - New `achievements-section.tsx`: a grid with an "N/20" count; locked badges show their goal, hidden ones show "???". The section has the `#achievements` anchor.
+  - New `achievement-check.tsx` on the owner's profile awards anything already earned (the backfill) and refreshes the page.
+- **`sign-in-nudge.tsx`**: "…and earn achievements".
+
+**Tests**
+- New `supabase/tests/achievements_test.sql`, 10 of 10:
+  - one solve gives First Turn plus Sub-60, and nothing is awarded twice
+  - a typed 9.00 is ignored while a timed 18.00 gives Sub-30/20
+  - an Ao5 under 20 s, a 7-day IST streak and a 03:00 IST solve each award their badge
+  - a set gives nothing at half learned and its badge when complete
+  - anon can't call it; the helpers aren't exposed; badges are visible while public and hidden when private
+- Two wrong expectations in my first draft (alphabetical order, and 8 badges rather than 9) were corrected.
+- Every earlier profile test still passes.
+- New `tests/unit/achievements.test.ts`:
+  - every seeded slug, read from the migration file, has an icon and a place in the order
+  - toast wording
+  - parsing, which caught a crash on a `null` row (now fixed)
+  - throttle and failure handling
+
+**Verified:** `npm run validate` (348 of 348), `check:colors`, `npm run build`, `npm run test:e2e:prod` (34 of 34).
+
+**Not yet verified:** badges on the live profile, and the toasts signed in. Both need the migration applied.
+
+---
+
 ## 2026-10-12 — Profile step 3 checked on live data; timeline edge labels
 
 **Live check** (migration applied by the founder): `/profile/sgsueper12373` signed out at 1280px dark and 390px light shows:

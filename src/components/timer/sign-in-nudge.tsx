@@ -37,7 +37,8 @@ export function SignInNudge({
         >
           Sign in
         </Link>
-        {" "}to keep {solveCount === 1 ? "this solve" : `these ${solveCount} solves`}
+        {" "}to keep {solveCount === 1 ? "this solve" : `these ${solveCount} solves`} and earn
+        achievements
       </span>
       <button
         type="button"

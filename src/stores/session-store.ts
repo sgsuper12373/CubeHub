@@ -5,6 +5,7 @@ import type { SolveRepository } from "@/lib/timer/repo";
 import { createSupabaseRepo } from "@/lib/timer/repo-supabase";
 import { hasLocalData, syncLocalToCloud } from "@/lib/timer/sync";
 import { knownBestsFrom, type KnownBests } from "@/lib/timer/pb-detect";
+import { announceUnlocks, checkAchievements } from "@/lib/profile/achievements";
 import type {
   Penalty,
   Session,
@@ -166,6 +167,9 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
     set({ solves: [solve, ...get().solves].slice(0, SOLVE_LIMIT) });
     // Fire-and-forget repo write
     await repo.saveSolve(solve, activeUserId ?? undefined);
+    // Signed in: the solve is in the database now, so it can earn badges.
+    // Not awaited; achievements never hold up the timer.
+    if (get().backend === "cloud") void checkAchievements().then(announceUnlocks);
   },
 
   setPenalty: async (solveId, p) => {

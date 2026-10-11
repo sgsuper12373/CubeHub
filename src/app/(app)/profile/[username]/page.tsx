@@ -14,6 +14,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { AchievementCheck } from "@/components/profile/achievement-check";
+import { AchievementsSection } from "@/components/profile/achievements-section";
 import { ActivitySection } from "@/components/profile/activity-section";
 import { LatestRecords } from "@/components/profile/latest-records";
 import { LearningSection } from "@/components/profile/learning-section";
@@ -22,6 +24,7 @@ import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import { Button } from "@/components/ui/button";
 import { getUser } from "@/lib/auth/dal";
 import {
+  getAchievements,
   getPbProgression,
   getPublicProfile,
   type PbProgression,
@@ -70,7 +73,12 @@ export default async function ProfilePage({ params, searchParams }: Props) {
   const hidden = profile.stats.hidden;
   const events = practisedEvents(profile);
   const selected = pickEvent(profile, events, event);
-  const progression = !hidden && selected ? await getPbProgression(profile.id, selected) : null;
+  const [progression, achievements] = hidden
+    ? [null, []]
+    : await Promise.all([
+        selected ? getPbProgression(profile.id, selected) : null,
+        getAchievements(profile.id),
+      ]);
   const { activity, learning } = profile.stats;
 
   return (
@@ -87,6 +95,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
       </Button>
 
       <ProfileHeader profile={profile} isOwner={isOwner} hidden={hidden} />
+      {isOwner && <AchievementCheck />}
 
       {isOwner && !profile.isPublic && (
         <p className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
@@ -117,6 +126,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
             isOwner={isOwner}
           />
           <LatestRecords personalBests={profile.personalBests} />
+          <AchievementsSection achievements={achievements} />
           {learning && (learning.length > 0 || isOwner) && (
             <LearningSection
               learning={learning}

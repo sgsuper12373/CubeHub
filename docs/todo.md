@@ -73,6 +73,11 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
       404s). Then run `supabase/tests/profile_progress_test.sql` (14 rows, all PASS) and add
       `20261014000000` to the `migration repair` list. (Applied 2026-10-12.)
 
+- [ ] **Profile step 4: apply `supabase/migrations/20261015000000_achievements.sql`**, then run
+      `supabase/tests/achievements_test.sql` (10 rows, all PASS) and add `20261015000000` to the
+      `migration repair` list. Safe to deploy before or after: until it's applied the badge
+      section stays hidden and the award check quietly finds nothing.
+
 ### Vercel
 - [x] Build command is `npm run build`, with no override pinning `--webpack`.
 - [ ] `NEXT_PUBLIC_SITE_URL` is set to the live domain. Without it, share-preview (Open Graph) links point at localhost.
