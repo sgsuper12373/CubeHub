@@ -13,7 +13,7 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
 **16.3.8**, a minor release.
 
 - [x] Ask Claude: *"upgrade Next.js to 16.3.8"*. Done 2026-10-08 (see `implementationlog.md`).
-- [ ] Push and redeploy straight after.
+- [x] Push and redeploy straight after. (Pushed 2026-10-11.)
 
 `npm audit` still lists issues in dev tools only (`shadcn` and its `proxy-addr` critical,
 `braces`, `js-yaml`…). They don't ship to users, so they can wait for a routine `npm audit fix`.
@@ -36,7 +36,7 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
 ### Supabase dashboard
 - [ ] ~~**Turn on leaked-password protection.**~~ Needs a paid Supabase plan. Skipped for now;
       revisit if the project upgrades.
-- [ ] **Site URL and redirect allow-list:** Authentication → URL Configuration. Both must be
+- [x] **Site URL and redirect allow-list:** (redirect URLs set by the founder 2026-10-11; one Site URL is all Supabase allows.) Authentication → URL Configuration. Both must be
       the live domain, not `http://localhost:3000`, or sign-up confirmation links break.
 - [ ] **Before ever running `supabase link` + `supabase db push`,** mark the existing migrations
       as applied. The live migration history is empty, because every migration was applied by hand:
@@ -49,7 +49,7 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
       `supabase/tests/timer_round_test.sql` there: every row should say PASS. Add
       `20261011000000` to the `migration repair` list above.
 
-- [ ] **Apply `supabase/migrations/20261012000000_profile_stats.sql`** in the dashboard SQL
+- [x] **Apply `supabase/migrations/20261012000000_profile_stats.sql`** (applied 2026-10-11) in the dashboard SQL
       editor (public profile stats). Then run `supabase/tests/profile_stats_test.sql` there:
       every row should say PASS. Add `20261012000000` to the `migration repair` list above.
       Until it's applied, profiles show 0 total solves.
