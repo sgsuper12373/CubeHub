@@ -5,6 +5,20 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-12 — Profile steps 4–5 checked on live data
+
+**Live checks** (the founder applied `20261015000100` and `20261016000000`):
+- The catalogue now has 20 rows; the legacy rows are gone.
+- The founder holds 8 badges, awarded by the owner's-profile check: First Turn, Century, Sub-60/30/20/15, Consistent and Night Owl.
+- `get_profile_stats.levels` = `{"333": 20850}`.
+- `/profile/sgsueper12373` signed out at 1280px dark and 390px light shows the level chip "Sub-30 · Ao12" and Achievements 8/20.
+  - Unlocked badges are dated 12 Oct 2026.
+  - Marathon shows as "???".
+- No page errors and no sideways scroll.
+- Method and main cubes aren't set yet, so the page correctly shows nothing for them.
+
+---
+
 ## 2026-10-12 — Profile step 5: main cube per event, method, level
 
 **Request:** Step 5 (C11 and C12) of `docs/profile.md`, the last profile step. Planned in `~/.claude/plans/spicy-jumping-feather.md`.
