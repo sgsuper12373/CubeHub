@@ -94,9 +94,11 @@ function Chart({
   const yDown = linearScale(domain, [HEIGHT - PAD.bottom, PAD.top]);
   const x = linearScale([extent.startT, extent.endT], [PAD.left, width - PAD.right]);
 
-  const labels = [extent.startT, (extent.startT + extent.endT) / 2, extent.endT].map((t) => ({
+  const anchors = ["start", "middle", "end"] as const;
+  const labels = [extent.startT, (extent.startT + extent.endT) / 2, extent.endT].map((t, i) => ({
     x: x(t),
     text: month(t),
+    anchor: anchors[i],
   }));
 
   return (

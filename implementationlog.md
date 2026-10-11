@@ -5,6 +5,18 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-12 — Profile step 3 checked on live data; timeline edge labels
+
+**Live check** (migration applied by the founder): `/profile/sgsueper12373` signed out at 1280px dark and 390px light shows:
+- 446 solves; current streak 1 day, longest 6, 26 active days; the heatmap Jul–Oct
+- a timeline of Single 23.21 → 14.41, Ao5 26.02 → 19.34, Ao12 24.51 → 20.85
+- 5 latest records; Learning "3x3 OLL 1/57"
+- no page errors and no sideways scroll
+
+**Fixed:** the timeline's last x label ("Oct 26") was clipped at the right edge. `XLabels` (`stats/chart/axes.tsx`) takes an optional per-label `anchor`, and the timeline anchors its first label at start and its last at end. A check reports no `<text>` outside the chart at 390 or 1280px.
+
+---
+
 ## 2026-10-11 — Profile step 3: PB timeline, activity and streaks, learning progress, latest records
 
 **Request:** Step 3 (Group B) of `docs/profile.md`, planned in `~/.claude/plans/spicy-jumping-feather.md`.

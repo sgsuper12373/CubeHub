@@ -54,7 +54,8 @@ export function XLabels({
   labels,
   bottom,
 }: {
-  labels: { x: number; text: string }[];
+  /** `anchor` keeps a label at the plot's edge from spilling out of the SVG. */
+  labels: { x: number; text: string; anchor?: "start" | "middle" | "end" }[];
   bottom: number;
 }) {
   return (
@@ -64,7 +65,7 @@ export function XLabels({
           key={`${l.text}-${i}`}
           x={l.x}
           y={bottom + 14}
-          textAnchor="middle"
+          textAnchor={l.anchor ?? "middle"}
           className={AXIS_LABEL_CLASS}
         >
           {l.text}
