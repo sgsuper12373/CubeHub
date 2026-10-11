@@ -41,6 +41,9 @@ Note `solves.effective_time_ms` is a generated column that already applies +2/DN
 The full feature list, the final feature round, and what's deferred until users ask are in
 [`timer.md`](timer.md).
 
+User profiles (fixes, editing, event tabs, progress, achievements, setup and level) are
+planned in [`profile.md`](profile.md).
+
 ## Phase 2 — Analytics
 
 **Complete and verified** (merged into `main`).
