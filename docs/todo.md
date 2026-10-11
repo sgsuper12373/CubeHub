@@ -54,6 +54,13 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
       every row should say PASS. Add `20261012000000` to the `migration repair` list above.
       Until it's applied, profiles show 0 total solves.
 
+- [ ] **Apply `supabase/migrations/20261013000000_profile_edit.sql` BEFORE deploying the
+      `user_profile` branch.** It adds `profiles.is_public` (the new profile page reads it, so
+      without the column every profile 404s), private-profile rules, the WCA ID check and the
+      `avatars` Storage bucket. Then run `supabase/tests/profile_edit_test.sql` (all PASS) and
+      add `20261013000000` to the `migration repair` list.
+      In Storage, the `avatars` bucket should show as **public**, with a 2 MB limit.
+
 ### Vercel
 - [x] Build command is `npm run build`, with no override pinning `--webpack`.
 - [ ] `NEXT_PUBLIC_SITE_URL` is set to the live domain. Without it, share-preview (Open Graph) links point at localhost.

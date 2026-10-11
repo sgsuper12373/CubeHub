@@ -5,6 +5,63 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-11 — Profile step 2: edit profile, avatars, event tabs, public stats, privacy; session proxy switched on
+
+**Request:** Step 2 (Group A) of `docs/profile.md`.
+
+**Changed**
+- **New migration `20261013000000_profile_edit.sql`**:
+  - `profiles.is_public` (default true).
+  - The `pbs_read` policy now allows public profiles, or your own.
+  - `get_profile_stats` (now plpgsql) returns `{private: true}` with no numbers for someone else's private profile.
+  - A `profiles_wca_id_format` check (`NOT VALID`, so old rows aren't re-checked).
+  - The `avatars` bucket: public, 2 MB, webp/png/jpeg, where the columns exist; a bare bucket on older Storage schemas.
+  - Owner-only insert, update, delete and select policies on `storage.objects`, limited to `avatars/<uid>/…`.
+- **New `lib/profile/validate.ts`** (pure, shared by the form and the server action):
+  - Field rules (name ≤ 60, bio ≤ 500 with blank lines collapsed, ISO country, WCA ID `^\d{4}[A-Z]{4}\d{2}$`).
+  - Country options (India first, names from `Intl.DisplayNames`) and flag emoji.
+  - `isOwnAvatarUrl` (only a file in your own folder of the public bucket).
+  - Reserved usernames (`edit`, `settings`, `me`, `new`). They're now refused by `updateProfile`, which is used by onboarding and Settings, because `/profile/edit` would shadow them.
+- **New `lib/profile/actions.ts`**: `saveProfileDetails` (validates, updates and redirects to the profile; a duplicate WCA ID gets a clear error) and `setAvatarUrl`.
+- **New `lib/profile/avatar.ts`**: centre-crop to a 256px WebP in the browser (falling back to PNG where WebP can't be encoded). Raw photos over 15 MB are refused.
+- **New components** in `components/profile/`:
+  - `profile-avatar.tsx`.
+  - `avatar-uploader.tsx`: uploads straight to Storage, saves the URL, then deletes older files in the folder.
+  - `profile-edit-form.tsx`: photo, display name, bio with a counter, country select, WCA ID, and a Public profile toggle.
+- **New `(protected)/profile/edit/page.tsx`**.
+- **`profile/[username]/page.tsx` rebuilt**:
+  - Side padding; header with avatar, name, @username, flag and country, WCA link (marked unverified) and bio. The owner gets Edit profile and Settings buttons.
+  - A private-profile notice for the owner, and a "This profile is private" panel for others.
+  - Four stats: total solves, events, member since, last active.
+  - **Event tabs** (`?event=`, defaulting to the most-practised event) with Single, Mo3, Ao5, Ao12 and Ao100 PB cards and their IST dates. The old sideways-scrolling table is gone.
+- **`lib/profile/dal.ts`**: adds `bio` and `isPublic`, `stats.hidden`, and `getEditableProfile()`.
+
+**Found and fixed: the session proxy had never run.**
+- `proxy.ts` sat at the repo root since 2026-07-17. Next only picks it up beside `app/`, which here is `src/`, so the build's middleware manifest was empty.
+- **Effects:** Supabase sessions were only refreshed by the browser client, and the protected layout never received `x-pathname`, so every login from a protected page returned to `/settings`.
+- **Moved to `src/proxy.ts`.** `lib/supabase/proxy.ts` now forwards `x-pathname` on a fresh `Headers` object, as the Next 16 docs show. Mutating `request.headers` in place is not forwarded.
+- It uses `getClaims()` instead of `getUser()`: local verification with asymmetric keys, refreshing when the session is near expiry.
+- **Verified on `next start`:** `/profile/edit` → `/login?next=%2Fprofile%2Fedit`, and `/settings?x=1` keeps its query. Signed-out `/timer` stays at 10–14 ms, the same as before.
+
+**Tests**
+- New `supabase/tests/profile_edit_test.sql`, 14 of 14 on the throwaway DB:
+  - public by default
+  - another user sees PBs and stats of a public profile but not a private one; anon too
+  - the owner still sees everything
+  - the WCA ID format
+  - avatar writes limited to your own folder, and another user can't delete them
+- `profile_stats_test.sql` still passes 7 of 7.
+- `timer_round_test.sql` now SKIPs its source check on an empty DB, where it used to report a false FAIL.
+- New `tests/unit/profile-validate.test.ts` (13 tests).
+- An e2e test: `/profile/edit` signed out goes to login with the right `next`.
+
+**Verified**
+- `npm run validate`: 337 of 337 unit tests. `check:colors` is OK. `npm run build` lists the Proxy. `npm run test:e2e:prod` passed 34 of 34.
+
+**Not yet verified:** the page and the edit and avatar flow with real data. The live DB needs the migration first (see `docs/todo.md`; the page 404s without `is_public`).
+
+---
+
 ## 2026-10-11 — Profile step 1: real public stats, no ELO, "My profile" (branch `user_profile`)
 
 **Request:** Step 1 of `docs/profile.md`, planned in `~/.claude/plans/spicy-jumping-feather.md`.

@@ -57,9 +57,9 @@ The owner-only RLS on `solves` and `user_algorithm_bookmarks` stays exactly as i
   - The owner sees **Edit profile** and **Settings** buttons on their own page, so `/settings`
     stays one tap away.
 
-## Step 2: Group A, the basics
+## Step 2: Group A, the basics (built 2026-10-11; migration `20261013000000_profile_edit.sql`)
 
-- [ ] **A1. Edit profile** (`/profile/edit`, protected):
+- [x] **A1. Edit profile** (`/profile/edit`, protected):
   - display name (≤ 60) and bio (≤ 500, plain text)
   - country (a select, India first)
   - WCA ID: format check `^\d{4}[A-Z]{4}\d{2}$`, shown as a link to the WCA page and labelled
@@ -69,16 +69,18 @@ The owner-only RLS on `solves` and `user_algorithm_bookmarks` stays exactly as i
     256px square WebP before upload, with a 2 MB limit. A Google sign-in avatar keeps working
     until it's replaced.
   - Username changes stay with the existing username flow.
-- [ ] **A2. Event tabs:** one tab per timer event the cuber has solves for, chosen with
+- [x] **A2. Event tabs:** one tab per timer event the cuber has solves for, chosen with
       `?event=`. Each tab shows single, Mo3, Ao5, Ao12 and Ao100 PBs with their dates. It uses
       the event registry in `src/lib/timer/events.ts`.
-- [ ] **A3. Public stats:** total solves, solves on the selected event, events practised,
+- [x] **A3. Public stats:** total solves, solves on the selected event, events practised,
       member since, and last active (a date, never a time).
-- [ ] **A4. Privacy:** new `profiles` columns:
+- [x] **A4. Privacy:** new `profiles` columns:
   - `is_public` (default true)
   - `show_activity` and `show_learning` (both default true)
 
   The `personal_bests` read policy and `get_profile_stats` respect them.
+  - *As built:* only `is_public` was added in Step 2. `show_activity` and `show_learning`
+    move to Step 3, so their toggles arrive together with the sections they hide.
   - A private profile shows other people only the name, avatar and "This profile is private".
   - The owner always sees everything, with a note about what others see.
   - The toggles live in Edit profile.

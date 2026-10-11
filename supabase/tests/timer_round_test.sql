@@ -99,6 +99,10 @@ $$;
 -- ── 7. Unknown sources are still refused ──────────────────────────────────
 do $$
 begin
+  if not exists (select 1 from public.sessions) then
+    insert into results values ('source bogus refused', 'a session exists', 'none', 'SKIP');
+    return;
+  end if;
   begin
     insert into public.solves (user_id, session_id, puzzle_type, time_ms, scramble, source)
     select user_id, id, puzzle_type, 1000, 'R', 'bogus' from public.sessions limit 1;

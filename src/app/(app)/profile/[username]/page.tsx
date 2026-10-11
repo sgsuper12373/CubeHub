@@ -1,200 +1,292 @@
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { getUser } from "@/lib/auth/dal";
-import { getPublicProfile } from "@/lib/profile/dal";
-import { eventLabel } from "@/lib/timer/events";
-import { formatMs } from "@/lib/timer/format";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { notFound } from "next/navigation";
 import {
   Activity,
-  Trophy,
   Calendar,
-  ExternalLink,
-  Settings,
-  Zap,
-  Timer as TimerIcon,
   ChevronLeft,
+  ExternalLink,
+  Layers,
+  Lock,
+  Pencil,
+  Settings,
+  Timer as TimerIcon,
   type LucideIcon,
 } from "lucide-react";
 
+import { ProfileAvatar } from "@/components/profile/profile-avatar";
+import { Button } from "@/components/ui/button";
+import { getUser } from "@/lib/auth/dal";
+import { getPublicProfile, type PublicProfile } from "@/lib/profile/dal";
+import { countryFlag, countryName } from "@/lib/profile/validate";
+import { eventLabel, isTimerEvent, TIMER_EVENTS, type TimerEventId } from "@/lib/timer/events";
+import { formatMs } from "@/lib/timer/format";
+import { cn } from "@/lib/utils";
+
 interface Props {
-  params: Promise<{
-    username: string;
-  }>;
+  params: Promise<{ username: string }>;
+  searchParams: Promise<{ event?: string }>;
 }
 
-function formatPuzzle(p: string) {
-  return eventLabel(p);
-}
+/** The PB categories an event tab shows, in order. */
+const PB_CATEGORIES = [
+  { category: "single", label: "Single" },
+  { category: "mean3", label: "Mo3" },
+  { category: "ao5", label: "Ao5" },
+  { category: "ao12", label: "Ao12" },
+  { category: "ao100", label: "Ao100" },
+] as const;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const resolvedParams = await params;
-  const profile = await getPublicProfile(resolvedParams.username);
-
-  if (!profile) {
-    return { title: "User Not Found | CubeHub" };
-  }
+  const { username } = await params;
+  const profile = await getPublicProfile(username);
+  if (!profile) return { title: "User not found — CubeHub" };
 
   const name = profile.displayName || profile.username;
   return {
     title: `${name} (@${profile.username}) — CubeHub`,
-    description: `${name}'s solve stats and personal bests on CubeHub.`,
+    description: profile.isPublic
+      ? `${name}'s solve stats and personal bests on CubeHub.`
+      : `${name} on CubeHub.`,
   };
 }
 
-export default async function ProfilePage({ params }: Props) {
-  const resolvedParams = await params;
-  const [profile, user] = await Promise.all([
-    getPublicProfile(resolvedParams.username),
-    getUser(),
-  ]);
-
-  if (!profile) {
-    notFound();
-  }
+export default async function ProfilePage({ params, searchParams }: Props) {
+  const [{ username }, { event }] = await Promise.all([params, searchParams]);
+  const [profile, user] = await Promise.all([getPublicProfile(username), getUser()]);
+  if (!profile) notFound();
 
   const isOwner = user?.id === profile.id;
-  const lastActive = profile.stats.lastSolveOn
-    ? formatDay(profile.stats.lastSolveOn)
-    : "—";
-  const joinDate = new Date(profile.createdAt).toLocaleDateString("en-US", {
-    month: "short",
-    year: "numeric",
-  });
-
-  const singlePb333 = profile.personalBests.find(
-    (pb) => pb.puzzleType === "333" && pb.category === "single",
-  );
-  const ao5Pb333 = profile.personalBests.find(
-    (pb) => pb.puzzleType === "333" && pb.category === "ao5",
-  );
+  // The stats function withholds everything from non-owners of a private profile.
+  const hidden = profile.stats.hidden;
 
   return (
-    <div className="container max-w-5xl py-8 space-y-8">
-      {/* Back button */}
-      <div>
-        <Button
-          variant="ghost"
-          size="sm"
-          render={<Link href="/timer" />}
-          nativeButton={false}
-          className="-ml-3 text-muted-foreground"
-        >
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Back to Timer
-        </Button>
-      </div>
+    <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-8">
+      <Button
+        variant="ghost"
+        size="sm"
+        render={<Link href="/timer" />}
+        nativeButton={false}
+        className="-ml-3 text-muted-foreground"
+      >
+        <ChevronLeft />
+        Back to timer
+      </Button>
 
-      {/* Profile Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-6 rounded-3xl bg-card/60 border border-white/5 backdrop-blur-md">
-        {/* Avatar */}
-        <div className="flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 border border-primary/30 text-2xl font-bold text-primary shrink-0 shadow-lg">
-          {profile.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={profile.avatarUrl}
-              alt={profile.username}
-              className="w-full h-full object-cover rounded-2xl"
-            />
-          ) : (
-            (profile.displayName || profile.username).slice(0, 2).toUpperCase()
+      <ProfileHeader profile={profile} isOwner={isOwner} hidden={hidden} />
+
+      {isOwner && !profile.isPublic && (
+        <p className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+          <Lock className="size-4 shrink-0" aria-hidden />
+          Your profile is private. Others see only your name and photo.
+        </p>
+      )}
+
+      {hidden ? (
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border px-4 py-12 text-center">
+          <Lock className="size-6 text-muted-foreground" aria-hidden />
+          <p className="text-sm font-medium text-foreground">This profile is private</p>
+          <p className="text-xs text-muted-foreground">
+            {profile.displayName || profile.username} keeps their stats to themselves.
+          </p>
+        </div>
+      ) : (
+        <>
+          <PublicStats profile={profile} />
+          <EventSection profile={profile} requested={event} isOwner={isOwner} />
+        </>
+      )}
+    </div>
+  );
+}
+
+function ProfileHeader({
+  profile,
+  isOwner,
+  hidden,
+}: {
+  profile: PublicProfile;
+  isOwner: boolean;
+  hidden: boolean;
+}) {
+  const name = profile.displayName || profile.username;
+  return (
+    <header className="flex flex-col gap-5 rounded-3xl border border-border bg-card/60 p-5 sm:flex-row sm:items-start sm:p-6">
+      <ProfileAvatar url={profile.avatarUrl} name={name} size="lg" />
+
+      <div className="min-w-0 flex-1 space-y-2">
+        <h1 className="truncate text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">{name}</h1>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <span className="font-mono text-sm text-foreground/80">@{profile.username}</span>
+          {!hidden && profile.country && (
+            <span>
+              {countryFlag(profile.country)} {countryName(profile.country)}
+            </span>
+          )}
+          {!hidden && profile.wcaId && (
+            <a
+              href={`https://www.worldcubeassociation.org/persons/${profile.wcaId}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1 text-primary hover:underline"
+              title="Linked by the cuber; not verified by CubeHub"
+            >
+              <ExternalLink className="size-3" aria-hidden />
+              WCA {profile.wcaId}
+            </a>
           )}
         </div>
+        {!hidden && profile.bio && (
+          <p className="max-w-prose text-sm whitespace-pre-line text-foreground/90">{profile.bio}</p>
+        )}
+      </div>
 
-        {/* User Info */}
-        <div className="flex-1 space-y-2">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-              {profile.displayName || profile.username}
-            </h1>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-            <span className="font-mono text-sm text-foreground/80">
-              @{profile.username}
-            </span>
-            <span className="flex items-center gap-1">
-              <Calendar className="h-3.5 w-3.5" />
-              Joined {joinDate}
-            </span>
-            {profile.wcaId && (
-              <a
-                href={`https://www.worldcubeassociation.org/persons/${profile.wcaId}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1 text-primary hover:underline"
-              >
-                <ExternalLink className="h-3 w-3" />
-                WCA {profile.wcaId}
-              </a>
-            )}
-          </div>
-        </div>
-
-        {isOwner && (
+      {isOwner && (
+        <div className="flex shrink-0 gap-2">
+          <Button size="sm" render={<Link href="/profile/edit" />} nativeButton={false}>
+            <Pencil />
+            Edit profile
+          </Button>
           <Button
             variant="outline"
             size="sm"
             render={<Link href="/settings" />}
             nativeButton={false}
+            aria-label="Settings"
           >
             <Settings />
-            Settings
+          </Button>
+        </div>
+      )}
+    </header>
+  );
+}
+
+function PublicStats({ profile }: { profile: PublicProfile }) {
+  const { stats } = profile;
+  const events = Object.keys(stats.byEvent).length;
+  return (
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <StatCard icon={TimerIcon} label="Total solves" value={stats.totalSolves.toLocaleString("en-IN")} />
+      <StatCard icon={Layers} label="Events" value={String(events)} />
+      <StatCard icon={Calendar} label="Member since" value={formatMonth(profile.createdAt)} />
+      <StatCard
+        icon={Activity}
+        label="Last active"
+        value={stats.lastSolveOn ? formatDay(stats.lastSolveOn) : "—"}
+      />
+    </div>
+  );
+}
+
+function EventSection({
+  profile,
+  requested,
+  isOwner,
+}: {
+  profile: PublicProfile;
+  requested: string | undefined;
+  isOwner: boolean;
+}) {
+  const { byEvent } = profile.stats;
+  // Tabs for every event the cuber has solves or PBs on, in registry order.
+  const events: TimerEventId[] = TIMER_EVENTS.filter(
+    (e) => (byEvent[e.id] ?? 0) > 0 || profile.personalBests.some((pb) => pb.puzzleType === e.id),
+  ).map((e) => e.id);
+
+  if (events.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-12 text-center">
+        <p className="text-sm text-muted-foreground">No solves yet.</p>
+        {isOwner && (
+          <Button size="sm" render={<Link href="/timer" />} nativeButton={false}>
+            Start timing
           </Button>
         )}
       </div>
+    );
+  }
 
-      {/* Stats Summary Grid */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <StatCard icon={TimerIcon} label="Total solves" value={profile.stats.totalSolves.toLocaleString("en-IN")} />
-        <StatCard icon={Zap} label="3x3 best single" value={singlePb333 ? formatMs(singlePb333.timeMs) : "—"} />
-        <StatCard icon={Trophy} label="3x3 best Ao5" value={ao5Pb333 ? formatMs(ao5Pb333.timeMs) : "—"} />
-        <StatCard icon={Activity} label="Last active" value={lastActive} />
-      </div>
+  // The asked-for event if it has data, otherwise the one practised most.
+  const selected: TimerEventId =
+    requested && isTimerEvent(requested) && events.includes(requested)
+      ? requested
+      : events.reduce((a, b) => ((byEvent[b] ?? 0) > (byEvent[a] ?? 0) ? b : a));
+  const pbs = new Map(
+    profile.personalBests.filter((pb) => pb.puzzleType === selected).map((pb) => [pb.category, pb]),
+  );
+  const solves = byEvent[selected] ?? 0;
 
-      {/* Personal Bests Section */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold tracking-tight">Personal Bests</h2>
-        {profile.personalBests.length > 0 ? (
-          <div className="rounded-2xl border border-white/5 overflow-hidden bg-card/40 backdrop-blur-md">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground border-b border-white/5">
-                  <tr>
-                    <th className="px-6 py-3.5 font-semibold">Puzzle</th>
-                    <th className="px-6 py-3.5 font-semibold">Category</th>
-                    <th className="px-6 py-3.5 font-semibold">Time</th>
-                    <th className="px-6 py-3.5 font-semibold">Achieved</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 font-mono">
-                  {profile.personalBests.map((pb, idx) => (
-                    <tr key={idx} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4 font-sans font-medium text-foreground">
-                        {formatPuzzle(pb.puzzleType)}
-                      </td>
-                      <td className="px-6 py-4 text-muted-foreground uppercase text-xs">
-                        {pb.category}
-                      </td>
-                      <td className="px-6 py-4 font-semibold text-primary">
-                        {formatMs(pb.timeMs)}
-                      </td>
-                      <td className="px-6 py-4 text-xs font-sans text-muted-foreground">
-                        {new Date(pb.achievedAt).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+  return (
+    <section className="space-y-4" aria-labelledby="pbs-title">
+      <h2 id="pbs-title" className="text-lg font-bold tracking-tight text-foreground">
+        Personal bests
+      </h2>
+
+      <nav aria-label="Events" className="hide-scrollbar -mx-4 overflow-x-auto px-4">
+        <ul className="flex w-max gap-1 rounded-xl border border-border bg-card/60 p-1">
+          {events.map((id) => (
+            <li key={id}>
+              <Link
+                href={`?event=${id}`}
+                scroll={false}
+                aria-current={id === selected ? "page" : undefined}
+                className={cn(
+                  "block rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors",
+                  id === selected
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                {eventLabel(id)}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <p className="text-sm text-muted-foreground">
+        {eventLabel(selected)} · {solves.toLocaleString("en-IN")} {solves === 1 ? "solve" : "solves"}
+      </p>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        {PB_CATEGORIES.map(({ category, label }) => {
+          const pb = pbs.get(category);
+          return (
+            <div
+              key={category}
+              className={cn(
+                "rounded-xl border bg-card/60 px-4 py-3",
+                category === "single" ? "border-primary/40" : "border-border",
+              )}
+            >
+              <p className="text-[0.65rem] font-semibold tracking-wider text-muted-foreground uppercase">{label}</p>
+              <p
+                className={cn(
+                  "mt-1 font-mono text-xl font-semibold tabular-nums",
+                  pb ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {pb ? formatMs(pb.timeMs) : "—"}
+              </p>
+              <p className="mt-0.5 h-4 text-xs text-muted-foreground">{pb ? formatInstant(pb.achievedAt) : ""}</p>
             </div>
-          </div>
-        ) : (
-          <div className="text-center py-12 rounded-2xl border border-dashed border-white/10 bg-muted/5 text-muted-foreground">
-            <p className="text-sm">No recorded personal bests yet.</p>
-          </div>
-        )}
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function StatCard({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-border bg-card/60 p-4">
+      <div className="rounded-lg bg-primary/10 p-2.5 text-primary">
+        <Icon className="size-4" aria-hidden />
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <p className="truncate font-mono text-lg font-bold text-foreground">{value}</p>
       </div>
     </div>
   );
@@ -211,18 +303,16 @@ function formatDay(day: string): string {
   });
 }
 
-function StatCard({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
-  return (
-    <Card className="border-border bg-card/60">
-      <CardContent className="flex items-center gap-4 p-5">
-        <div className="rounded-xl bg-primary/10 p-3 text-primary">
-          <Icon className="h-5 w-5" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs font-medium text-muted-foreground">{label}</p>
-          <p className="truncate font-mono text-2xl font-bold text-foreground">{value}</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
+/** A timestamp as the India date it happened on. */
+function formatInstant(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "Asia/Kolkata",
+  });
+}
+
+function formatMonth(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-IN", { month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
 }

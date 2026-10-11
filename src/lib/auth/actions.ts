@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
+import { isReservedUsername } from "@/lib/profile/validate";
 
 export type AuthState = { error: string } | undefined;
 
@@ -112,6 +113,9 @@ export async function updateProfile(
   }
   if (!/^[A-Za-z0-9_]+$/.test(username)) {
     return { error: "Username can only contain letters, numbers, and underscores." };
+  }
+  if (isReservedUsername(username)) {
+    return { error: "That username is reserved. Please choose another." };
   }
 
   const supabase = await createClient();

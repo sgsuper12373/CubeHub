@@ -22,3 +22,8 @@ test("the nav's Profile tab goes to /profile", async ({ page }) => {
   await page.goto("/timer");
   await expect(page.getByRole("link", { name: "Profile" }).first()).toHaveAttribute("href", "/profile");
 });
+
+test("editing a profile needs an account", async ({ page }) => {
+  await page.goto("/profile/edit");
+  await expect(page).toHaveURL(/\/login\?next=%2Fprofile%2Fedit$/);
+});
