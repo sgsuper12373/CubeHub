@@ -5,6 +5,26 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-13 — Plan for next session: friends and follows (docs only)
+
+**Request:** Add the friends/follow decisions to `docs/todo.md` for the next session.
+
+**Live check (read-only)** after the founder enabled Analytics and Speed Insights:
+- `/sitemap.xml` has 233 URLs, all on `https://pre-cube-hub.vercel.app` (4 fixed, 2 puzzles, 9 series, 218 cases). The part 3 entry's "234" was a miscount.
+- `robots.txt` points to it.
+- `/learn/333/oll/27` has the title "OLL 27 (Sune) Algorithms · 3x3 Cube | CubeHub", and its share image is on the live origin.
+- `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js` return 200.
+
+**Changed: `docs/todo.md`**
+- "Next session" is now the social layer:
+  - four decisions: follows vs requests, private profiles, follower list visibility, first-version scope
+  - safety from day one: block, rate limits, no DMs
+  - order: test account first (two users), then follows, then friends tabs on later features
+- Sentry is marked deferred by the founder.
+- Vercel: site URL and analytics ticked, with what was checked. Search Console waits for an official domain.
+
+---
+
 ## 2026-10-13 — Session wrap-up: dead code and stale docs
 
 **Request:** Before ending the session, find dead code and docs that no longer match the code, and remove or fix them.

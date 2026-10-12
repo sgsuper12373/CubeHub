@@ -8,23 +8,53 @@ Written 2026-10-04. Tick items off or delete them as they're done.
 ## Next session: start here (suggested after 2026-10-13)
 
 Learn Phase 3 (case pages, sitemap, error pages, OLL categories) and Vercel Analytics are on
-`main` (see `roadmap.md` Phase 3 and `implementationlog.md`). Suggested next work, most valuable first:
+`main` and checked live (see `roadmap.md` Phase 3 and `implementationlog.md`).
 
-1. **Error tracking (Sentry, free tier)** before sharing the beta. Analytics is done; this is the
-   other half of section 5, idea 3.
-2. **Daily scramble with an India-wide leaderboard:** section 5, idea 5. Leave typed times out
-   (`solves.source = 'manual'`), as the speed badges and levels already do.
-3. **A sign-in test account for e2e tests:**
+**Planned focus: the social layer, friends and follows.**
+
+### Decisions to make first
+
+1. **One-way follows, or friend requests?** Suggested: one-way follows (Instagram/Strava style).
+   One `follows` table (follower, followed, date) covers it, and "friends" is simply mutual
+   follows. There are no requests, accept/decline screens or pending states.
+2. **Private profiles:** can they be followed at all, or only with the owner's approval?
+   Either way the rules should reuse the existing `profile_visible()` check.
+3. **Follower lists:** public to everyone, or only the counts public and the lists visible to
+   the owner?
+4. **What ships in the first version?** Suggested, all built from data that already exists:
+   - Follow/unfollow, and Followers / Following counts and lists on profiles
+   - **A "Friends" leaderboard:** best single, Ao5 and Ao12 among the people you follow
+   - "Recent PBs from people you follow" (a small list, not a full activity feed)
+   - Optional achievements: "First follower", "Followed by 10"
+
+### Safety, from day one (many users are school students)
+
+- **Block:** removes follows in both directions and hides each profile from the other.
+- **Rate limit** follows (a cap per hour) so spam accounts can't mass-follow.
+- **No direct messages yet:** they need moderation a solo founder can't give, and carry real
+  risk with minors.
+
+### Suggested order
+
+1. **A sign-in test account for e2e tests**, first, because every social flow is signed in:
    - Every signed-in flow is checked by hand today: profile editing, photo upload, privacy,
      achievements, typed solves in the cloud, Mark Learned on cards and case pages.
    - The fix is a dedicated test user, plus a Playwright setup that signs in once and reuses the
      session, with CI secrets for its email and password.
    - It needs its own throwaway data, cleaned up after each run, and must never use the
-     service-role key.
-4. **Links that read as buttons:** older Learn pages use `Button render={<Link/>}`, which exposes
-   links as `role="button"`. Switch them to `<Link className={buttonVariants(...)}>`.
+     service-role key. Following needs **two** test users.
+2. **Follows** (once the decisions above are made): migration + RLS + SQL tests, then the UI.
+3. **Later, built on follows:** a "Friends" tab on the daily scramble leaderboard (section 5,
+   idea 5), and private friend rooms in Compete (roadmap Phase 5).
 
-Before any of these, finish the post-deploy checks in section 2 (Vercel and "Check by hand").
+### Also open
+
+- **Links that read as buttons:** older Learn pages use `Button render={<Link/>}`, which exposes
+  links as `role="button"`. Switch them to `<Link className={buttonVariants(...)}>`.
+- **Error tracking (Sentry):** deferred by the founder on 2026-10-13. Until then, the error page's
+  "Ref" code can be searched in Vercel's runtime logs (about 1 hour of retention on Hobby).
+
+Before any of these, finish the "Check by hand" items in section 2.
 
 ---
 
@@ -116,15 +146,14 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
 
 ### Vercel
 - [x] Build command is `npm run build`, with no override pinning `--webpack`.
-- [ ] `NEXT_PUBLIC_SITE_URL` is set to the live domain. Without it, share-preview (Open Graph) links,
-      the sitemap and robots.txt all point at localhost. Set 2026-10-13 to `https://pre-cube-hub.vercel.app/`;
-      tick once the deploy from `main` shows that origin in `/sitemap.xml`.
-- [ ] After that deploy, submit `https://<domain>/sitemap.xml` in Google Search Console (optional).
+- [x] `NEXT_PUBLIC_SITE_URL` set to `https://pre-cube-hub.vercel.app/` (2026-10-13). Checked live:
+      `/sitemap.xml` has 233 URLs, all on that origin; `robots.txt` points to it; case pages'
+      titles and share images use it.
+- [ ] **When there's an official domain:** set `NEXT_PUBLIC_SITE_URL` to it, redeploy, and redirect
+      the `vercel.app` URL to it in Vercel. Submit `/sitemap.xml` in Google Search Console only
+      then, so it's set up once.
 - [ ] After a deploy, run `npm run check:chunks -- https://<your-domain>`.
-- [ ] **Turn on Web Analytics and Speed Insights** in the Vercel project (Analytics tab → Enable,
-      Speed Insights tab → Enable). The code is on `main`. Until they're enabled,
-      `/_vercel/insights/*` and `/_vercel/speed-insights/*` 404 on the live site. Data shows up
-      after a few visits.
+- [x] **Web Analytics and Speed Insights enabled** (2026-10-13). Both scripts load live (200).
 
 ### Check by hand on the live site (signed in)
 - [ ] Drill Lab: do a few reps → reload → they're still there. Mark a rep +2 and one DNF. Run
