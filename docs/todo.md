@@ -14,7 +14,7 @@ The timer round and all five profile steps are done and pushed (see `timer.md`,
    `/learn/333/oll/27`. Details in section 5, idea 1.
 2. **Error tracking and analytics before sharing the beta:** Vercel Analytics plus Sentry.
    Section 5, idea 3.
-3. **Error and 404 pages:** a themed `error.tsx` and `not-found.tsx`. Section 5, idea 2.
+3. ✅ **Error and 404 pages:** (done 2026-10-13) a themed `error.tsx` and `not-found.tsx`. Section 5, idea 2.
 4. **Daily scramble with an India-wide leaderboard:** section 5, idea 5. It can reuse the
    profile and achievement work. Leave typed times out with `solves.source = 'manual'`, as
    the speed badges and levels already do.
@@ -156,7 +156,7 @@ Roughly in the suggested order:
       follow OS changes mid-session.
 - [ ] **Theme follow-ups:**
   - sticker colours in the cubing.js 3D/2D players
-  - a themed `not-found.tsx`
+  - ~~a themed `not-found.tsx`~~ (done 2026-10-13, branch `feat/learn-phase3`)
   - remove the hardcoded colours on the stats and profile pages
 
 ---
@@ -171,7 +171,7 @@ Ordered by value for effort. Each is a separate piece of work: pick any.
    `/learn/333/oll/27` with their own title ("OLL 27 (Sune) algorithms").
    People search for exactly "OLL 27 algorithm".
 
-2. **Error and 404 pages.** There's no `error.tsx` or `not-found.tsx`. Today a crash or a
+2. ✅ **Error and 404 pages.** Done 2026-10-13. There's no `error.tsx` or `not-found.tsx`. Today a crash or a
    bad link shows Next.js's default page, which isn't themed and has no way back. These
    are small and make the site feel finished.
 

@@ -5,6 +5,30 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-13 — Learn Phase 3, part 4: themed 404 and error pages, branch `feat/learn-phase3`
+
+**Request:** Finish Learn Phase 3 (plan: `~/.claude/plans/steady-orbiting-sketch.md`). Part 4 of 5 is the themed `not-found.tsx` and `error.tsx`.
+
+**Added**
+- `components/layout/not-found-view.tsx`: "This page doesn't exist" with links to Home, Timer and Learn. Theme tokens only.
+- `components/layout/error-view.tsx`: "Something went wrong", **Try again** (`retry()`, stable since Next 16.3) and Home. It shows `error.digest` as "Ref: …" and never `error.message`.
+- `app/not-found.tsx`: unknown URLs, without the navbar (it sits outside the `(app)` group).
+- `app/(app)/not-found.tsx`: `notFound()` from learn and profile pages, with the navbar kept.
+- `app/error.tsx`, `app/(app)/error.tsx`: client boundaries that render `ErrorView`.
+- No `global-error.tsx`: it has to render its own `<html>` without the theme, and the root layout doesn't throw.
+
+**Found while testing:** the Base UI `Button` with `render={<Link/>}` gives the link `role="button"`, so it isn't exposed as a link. The navigation actions are plain `Link`s styled with `buttonVariants`.
+
+**Tests**
+- `tests/unit/error-view.test.tsx`: Try again calls `retry`, the digest shows, the message doesn't.
+- `tests/e2e/errors.spec.ts`: `/no-such-page` is a 404 with the heading, no sideways scroll at 390px, and Home works. `/learn/no-such-puzzle` is a 404 with the navbar.
+
+**Verified:** tsc, eslint, `check:colors`, `npm run test:e2e:prod` (36 of 36). By hand on `next dev`, with a temporary throwing route (deleted, not committed): the error boundary renders inside the navbar with a Ref. Screenshots of both pages in Slate and Paper at 390 and 1280px.
+
+**Noticed, not changed:** in Paper, the shared `outline` button variant has almost no visible border.
+
+---
+
 ## 2026-10-12 — PLL seed script moved into `supabase/DataSeeds/`
 
 **Request:** Move the PLL seed script into DataSeeds.
