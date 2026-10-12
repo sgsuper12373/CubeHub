@@ -23,17 +23,6 @@ export type LearnSeries = {
   learnedCount?: number;
 };
 
-export type AlgorithmSubset = {
-  id: string;
-  puzzleType: string;
-  slug: string;
-  name: string;
-  description: string | null;
-  accessTier: "public" | "free" | "premium";
-  isPublished: boolean;
-  orderIndex: number;
-};
-
 export type AlgorithmCase = {
   id: string;
   puzzle_type: string;
@@ -67,35 +56,6 @@ export type TutorialStep = {
   order_index: number;
   completed: boolean;
 };
-
-/**
- * Returns all published algorithm subsets for a given puzzle type.
- * Sourced from the algorithm_subsets table (20260914000000_access_tiers.sql).
- */
-export const getAlgorithmSubsets = cache(
-  async (puzzleType: string): Promise<AlgorithmSubset[]> => {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("algorithm_subsets")
-      .select("*")
-      .eq("puzzle_type", puzzleType)
-      .eq("is_published", true)
-      .order("order_index");
-
-    if (error || !data) return [];
-
-    return data.map((row) => ({
-      id: row.id,
-      puzzleType: row.puzzle_type,
-      slug: row.slug,
-      name: row.name,
-      description: row.description ?? null,
-      accessTier: row.access_tier as "public" | "free" | "premium",
-      isPublished: row.is_published,
-      orderIndex: row.order_index,
-    }));
-  },
-);
 
 /**
  * Returns a list of puzzles that have published series or algorithm cases.

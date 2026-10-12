@@ -5,6 +5,40 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-13 — Session wrap-up: dead code and stale docs
+
+**Request:** Before ending the session, find dead code and docs that no longer match the code, and remove or fix them.
+
+**Method:** `knip`, `tsc --noUnusedLocals --noUnusedParameters`, a reference count for every symbol knip flagged, and a sweep of `docs/` for claims today's work made false. Docs were checked against the code, the CI workflow and live data (read-only).
+
+**Removed**
+- `getAlgorithmSubsets()` and the `AlgorithmSubset` type (`lib/learn/dal.ts`). The 2026-09-30 cleanup kept them because the Phase 3 plan listed them as planned. Phase 3 is finished and nothing ever called them: `getPuzzles()` already carries each set's tier, and the sitemap reads subsets through `public-dal.ts`.
+
+**Fixed**
+- `package.json`: declared `react-resizable` (^3.2.0, the installed version). `layout-editor-inner.tsx` imports its CSS, but it was only present as a dependency of `react-grid-layout`. Same fix as `server-only` and `postcss` on 2026-10-04.
+- `docs/architecture.md`:
+  - The stack table had Next 16.2.10, "no test tooling", and cubing.js/zustand as "not yet added". Now: current versions, plus the cube engine, state and test rows, and the check commands.
+  - The repo layout and route tree were missing `/stats`, `/playground`, `/profile`, the Learn sub-routes, admin, the sitemap/robots and the 404/error files.
+  - Styling still said `<html>` is hardcoded dark with no theme switcher.
+  - Two Next 16 gotchas added: Base UI link-buttons are exposed as `role="button"`; a nested OG image needs `force-static` to be cached.
+- `docs/decisions.md`: the Base UI note points navigation at `Link` + `buttonVariants`.
+- `docs/access-control.md`: Status said the tier model was "designed, not yet applied". Live has `access_tier`, `algorithm_subsets` and `can_access()`; the tiered content policies are not applied (no policy calls `can_access()`).
+- `docs/Test_automation.md`: rewritten. It described 4 test files, a `test-suite-ci` branch and dev-server e2e. Now it covers the commands (including `test:e2e:prod`, `check:chunks`, `check:colors`), what's covered, the data-dependent tests and `E2E_REQUIRE_DATA`, the SQL tests, and the CI jobs as they are.
+- `docs/todo.md`:
+  - a new "Next session" list (Sentry, daily scramble, test account, link roles)
+  - done items no longer carry their original "there's no …" prose
+  - the OLL seed ticked as applied; the Vercel steps refer to `main`, not the feature branches
+  - a by-hand check for case pages
+
+**Kept on purpose (flagged by knip):**
+- `src/scripts/generate-seed-migration.ts` and `src/scripts/data/tutorial-data.ts`: a standalone CLI, not part of the app. The data files are also used by unit tests. Note that its OLL descriptions predate the categories seed.
+- About 30 exports used only inside their own file, and unused shadcn sub-exports, as in the 2026-09-30 cleanup.
+- The `_alg` placeholder in the admin case editor (the one lint warning).
+
+**Verified:** `npm run validate` (375 of 375), `check:colors`, `test:e2e:prod` (44 of 44). knip no longer reports the unlisted dependency.
+
+---
+
 ## 2026-10-13 — Vercel Web Analytics and Speed Insights, branch `feat/vercel-analytics`
 
 **Request:** Add `@vercel/analytics` and `@vercel/speed-insights` to the root layout. No custom events (Hobby plan). They must not run in local dev or Playwright.

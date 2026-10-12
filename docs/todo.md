@@ -5,27 +5,24 @@ Written 2026-10-04. Tick items off or delete them as they're done.
 
 ---
 
-## Next session: start here (suggested 2026-10-12)
+## Next session: start here (suggested after 2026-10-13)
 
-The timer round and all five profile steps are done and pushed (see `timer.md`,
-`profile.md`). Suggested next work, most valuable first:
+Learn Phase 3 (case pages, sitemap, error pages, OLL categories) and Vercel Analytics are on
+`main` (see `roadmap.md` Phase 3 and `implementationlog.md`). Suggested next work, most valuable first:
 
-1. ✅ **Make tutorials findable on Google:** (done 2026-10-13, branch `feat/learn-phase3`) a sitemap, plus one page per case such as
-   `/learn/333/oll/27`. Details in section 5, idea 1.
-2. **Error tracking and analytics before sharing the beta:** Vercel Analytics plus Sentry.
-   Analytics + Speed Insights done 2026-10-13 (branch `feat/vercel-analytics`); Sentry still to do.
-   Section 5, idea 3.
-3. ✅ **Error and 404 pages:** (done 2026-10-13) a themed `error.tsx` and `not-found.tsx`. Section 5, idea 2.
-4. **Daily scramble with an India-wide leaderboard:** section 5, idea 5. It can reuse the
-   profile and achievement work. Leave typed times out with `solves.source = 'manual'`, as
-   the speed badges and levels already do.
-5. **A sign-in test account for e2e tests:**
-   - Every signed-in flow (profile editing, photo upload, privacy, achievements, typed
-     solves in the cloud, Learn "mark learned") is checked by hand today.
-   - The fix is a dedicated test user, plus a Playwright setup that signs in once and
-     reuses the session, with CI secrets for its email and password.
+1. **Error tracking (Sentry, free tier)** before sharing the beta. Analytics is done; this is the
+   other half of section 5, idea 3.
+2. **Daily scramble with an India-wide leaderboard:** section 5, idea 5. Leave typed times out
+   (`solves.source = 'manual'`), as the speed badges and levels already do.
+3. **A sign-in test account for e2e tests:**
+   - Every signed-in flow is checked by hand today: profile editing, photo upload, privacy,
+     achievements, typed solves in the cloud, Mark Learned on cards and case pages.
+   - The fix is a dedicated test user, plus a Playwright setup that signs in once and reuses the
+     session, with CI secrets for its email and password.
    - It needs its own throwaway data, cleaned up after each run, and must never use the
      service-role key.
+4. **Links that read as buttons:** older Learn pages use `Button render={<Link/>}`, which exposes
+   links as `role="button"`. Switch them to `<Link className={buttonVariants(...)}>`.
 
 Before any of these, finish the post-deploy checks in section 2 (Vercel and "Check by hand").
 
@@ -114,18 +111,18 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
       404s). Then run `supabase/tests/profile_setup_test.sql` (11 rows, all PASS) and add
       `20261016000000` to the `migration repair` list.
 
-- [ ] **Apply `supabase/DataSeeds/20261017000000_oll_shape_categories.sql`** in the SQL editor
-      (OLL category chips). Its one result should be 15 rows adding up to 57, with
-      `left_alone` empty. It's a seed: no `migration repair` entry.
+- [x] **Apply `supabase/DataSeeds/20261017000000_oll_shape_categories.sql`** (applied 2026-10-13;
+      57 of 57 OLL cases have a category, in 15 groups). A seed: no `migration repair` entry.
 
 ### Vercel
 - [x] Build command is `npm run build`, with no override pinning `--webpack`.
 - [ ] `NEXT_PUBLIC_SITE_URL` is set to the live domain. Without it, share-preview (Open Graph) links,
-      the sitemap and robots.txt all point at localhost. **Set it before deploying `feat/learn-phase3`.**
+      the sitemap and robots.txt all point at localhost. Set 2026-10-13 to `https://pre-cube-hub.vercel.app/`;
+      tick once the deploy from `main` shows that origin in `/sitemap.xml`.
 - [ ] After that deploy, submit `https://<domain>/sitemap.xml` in Google Search Console (optional).
 - [ ] After a deploy, run `npm run check:chunks -- https://<your-domain>`.
 - [ ] **Turn on Web Analytics and Speed Insights** in the Vercel project (Analytics tab → Enable,
-      Speed Insights tab → Enable), then deploy `feat/vercel-analytics`. Until they're enabled,
+      Speed Insights tab → Enable). The code is on `main`. Until they're enabled,
       `/_vercel/insights/*` and `/_vercel/speed-insights/*` 404 on the live site. Data shows up
       after a few visits.
 
@@ -134,6 +131,8 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
       "weakest first" and check the slowest case comes up first.
 - [ ] Admin case editor: open a case, edit it, save, and check the Learn page shows the change.
 - [ ] Learn pages: the 2x2 Beginner, Ortega, CLL, EG-1 and EG-2 sets all appear under `/learn/222`.
+- [ ] Case pages: Mark Learned on `/learn/333/oll/27` while signed in, and a shared case link shows
+      its own preview image.
 
 ---
 
@@ -159,10 +158,8 @@ Roughly in the suggested order:
   - Revoke public `EXECUTE` on the trigger functions `maintain_average_pbs_on_insert`,
     `recompute_pb_on_solve_delete` and `recompute_pb_on_solve_update`. They're only meant to
     run as triggers, but the security advisor shows them as callable through the API.
-- [x] **Update `docs/roadmap.md` Phase 3.** Done 2026-10-13. It still says the live database has 1 case and no
-      `algorithm_subsets`. Both are out of date.
-- [x] **OLL shape categories.** Seed written 2026-10-13 (see §2 to apply it). Rewrite OLL descriptions as "Dot · Run", "Cross · Sune"… so
-      the new category chips appear on `/learn/333/oll` (Dot, Line, Small L, Cross…).
+- [x] **Update `docs/roadmap.md` Phase 3.** Done 2026-10-13.
+- [x] **OLL shape categories.** Seed written and applied 2026-10-13.
 - [ ] **Theme settings page (step 8).** Then delete the dev theme switcher, and make "System"
       follow OS changes mid-session.
 - [ ] **Theme follow-ups:**
@@ -176,21 +173,14 @@ Roughly in the suggested order:
 
 Ordered by value for effort. Each is a separate piece of work: pick any.
 
-1. ✅ **Make tutorials findable on Google (SEO).** Done 2026-10-13: `sitemap.ts`, `robots.ts`, a page per case. The roadmap calls tutorials "the main
-   organic-traffic and sign-up driver", but the site has no `sitemap.xml` or `robots.txt`,
-   and no page per case. Add `sitemap.ts` + `robots.ts`, and pages like
-   `/learn/333/oll/27` with their own title ("OLL 27 (Sune) algorithms").
-   People search for exactly "OLL 27 algorithm".
+1. ✅ **Make tutorials findable on Google (SEO).** Done 2026-10-13: `sitemap.ts`, `robots.ts`,
+   and a page per case such as `/learn/333/oll/27`.
 
-2. ✅ **Error and 404 pages.** Done 2026-10-13. There's no `error.tsx` or `not-found.tsx`. Today a crash or a
-   bad link shows Next.js's default page, which isn't themed and has no way back. These
-   are small and make the site feel finished.
+2. ✅ **Error and 404 pages.** Done 2026-10-13: themed `not-found.tsx` and `error.tsx`.
 
-3. **Know when things break (monitoring).** Vercel Analytics + Speed Insights added 2026-10-13;
-   error tracking (Sentry) still to do. Original note: there's no error tracking or analytics. Before
-   sharing the beta, add Vercel Analytics + Speed Insights (free, a few lines) and an error
-   tracker such as Sentry (free tier). Otherwise you only learn about bugs when someone
-   complains.
+3. **Know when things break (monitoring).** Vercel Analytics + Speed Insights are in
+   (2026-10-13). Still to do: an error tracker such as Sentry (free tier) before sharing the
+   beta. Otherwise you only learn about bugs when someone complains.
 
 4. **Installable app + offline timer (PWA).** It's in Phase 6, but cheap now. The timer
    already works signed out from local storage, so a manifest and a service worker would

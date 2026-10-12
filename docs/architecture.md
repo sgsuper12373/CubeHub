@@ -4,42 +4,53 @@
 
 | Layer | What | Version |
 |---|---|---|
-| Framework | Next.js, App Router | 16.2.10 |
+| Framework | Next.js, App Router | 16.3.8 |
 | UI | React | 19.2.4 |
-| Styling | Tailwind CSS | v4 |
+| Styling | Tailwind CSS | 4.3 |
 | Components | shadcn `base-nova` on Base UI (`@base-ui/react`) | shadcn 4.13, base-ui 1.6 |
 | Icons | lucide-react | 1.24 |
 | Backend | Supabase — Postgres, Auth, Realtime, Storage | `@supabase/ssr` 0.12, `supabase-js` 2.109 |
-| Language | TypeScript, `strict: true` | 5.x |
+| Language | TypeScript, `strict: true` | 5.9 |
+| Cube engine | cubing.js, served from `public/cubing/` at runtime (`lib/cubing/runtime.ts`) | 0.56.0 |
+| Client state | zustand | 5.0 |
+| Tests | Vitest + Testing Library (unit), Playwright (e2e) | vitest 4.1, playwright 1.62 |
 | Monitoring | Vercel Web Analytics + Speed Insights, rendered only on Vercel (see `decisions.md` → Monitoring) | `@vercel/analytics` 2.0.1, `@vercel/speed-insights` 2.0.0 |
 
-No test tooling and no Supabase CLI are installed yet.
+The Supabase CLI isn't used: migrations and seeds are applied by hand in the dashboard SQL
+editor (see `todo.md` for the `migration repair` list). Recharts was considered and not adopted
+(`decisions.md` → Analytics).
 
-**Not yet added**, but planned per the roadmap: `cubing.js` (3D cube), `recharts` (stats), `zustand` (timer state), `react-hook-form` + `zod`, `date-fns`.
+Checks: `npm run validate` (tsc, eslint, vitest), `npm run check:colors`, `npm run test:e2e:prod`
+(build, then Playwright against `next start`), and `npm run check:chunks -- <url>` after a deploy.
 
 ## Layout of the repo
 
 ```
 src/
   app/            routes (see below)
-    icon.tsx            favicon, generated via next/og
-    opengraph-image.tsx OG card, generated via next/og
-  components/
-    ui/           shadcn primitives — button, card, input, label, toast
-    auth/         auth-listener, google-button
-    layout/       navbar, bottom-nav, user-menu
-    marketing/    demo-timer, feature-grid, cta-band  (landing page only)
-    timer/        timer-screen (container) + presentational parts
-    stats/        stats-panel, stat-tiles, session-trend, sparkline, solve-*
-    settings/     settings-form
+    icon.tsx, opengraph-image.tsx   favicon and OG card, generated via next/og
+    sitemap.ts, robots.ts           /sitemap.xml, /robots.txt
+    not-found.tsx, error.tsx        themed 404 and error boundary (also inside (app)/)
+  components/     one folder per area: ui (shadcn primitives), layout, auth, marketing,
+                  timer, stats, learn, drill, playground, profile, settings, admin, dev
   lib/
     auth/         dal.ts (reads), actions.ts (writes)
-    supabase/     client.ts (browser), server.ts (RSC), proxy.ts (session refresh)
-    timer/        stores-free logic — stats, format, scrambler, repos, settings
+    supabase/     client.ts (browser), server.ts (RSC, cookies), proxy.ts (session
+                  refresh), public.ts (no cookies: sitemap, OG images)
+    learn/        dal.ts, public-dal.ts, case-route.ts (case URLs and titles), …
+    seo/          sitemap builder
+    cubing/       runtime.ts, the only way to load cubing.js
+    timer/ drill/ playground/ profile/ timer-background/   logic per area
+    site-url.ts   SITE_URL from NEXT_PUBLIC_SITE_URL
     navigation.ts single source of nav items
-    utils.ts      cn()
-  stores/         zustand — timer, session, toast, overlay
-proxy.ts          root — Next 16's middleware
+  stores/         zustand: timer, session, toast, overlay, drill, layout, …
+  themes/         theme tokens (Slate, Paper); the source of truth for colours
+proxy.ts          root, Next 16's middleware
+supabase/
+  migrations/     schema, applied by hand in order
+  DataSeeds/      content seeds (PLL, OLL, 2x2 sets, OLL categories), safe to re-run
+  tests/          SQL test scripts; each row should say PASS
+scripts/          build-cubing, check-chunks, check-colors
 docs/
 ```
 
@@ -72,15 +83,24 @@ Route groups (parenthesized folders) set **chrome**, not access. They do not app
 
 ```
 src/app/
-  layout.tsx              document shell only — html/body/fonts/AuthListener
+  layout.tsx              document shell only: html/body/fonts/theme/AuthListener,
+                          plus Vercel Analytics + Speed Insights on Vercel only
+  not-found.tsx error.tsx unknown URLs and errors outside (app); no navbar
+  sitemap.ts robots.ts    /sitemap.xml /robots.txt
   (marketing)/            navbar, no bottom nav
     page.tsx                        /
   (auth)/                 no chrome at all
     login/ signup/                  /login  /signup  /signup/check-email
-  (app)/                  navbar + bottom nav
-    timer/ learn/ compete/ shop/    /timer  /learn  /compete  /shop
+  (app)/                  navbar + bottom nav; own not-found.tsx and error.tsx
+    timer/ stats/ playground/       /timer  /stats  /playground
+    learn/                          /learn  /learn/[puzzle]  /learn/[puzzle]/drill
+      [puzzle]/[series]/            /learn/[puzzle]/[series]  (a tutorial or an algorithm set)
+        [case]/                     /learn/[puzzle]/[series]/[case]  + opengraph-image
+    profile/                        /profile (redirects to your own)  /profile/[username]
+    compete/ shop/                  stubs
+    master-access/                  admin case editor; requireAdmin() in its layout
     (protected)/          + requires an account
-      settings/                     /settings
+      settings/ profile/edit/       /settings  /profile/edit
   auth/                   route handlers, no UI
     callback/ confirm/ auth-code-error/
 ```
@@ -89,8 +109,11 @@ src/app/
 |---|---|---|
 | `/` | — | Landing |
 | `/login`, `/signup` | must be **logged out** | `(auth)` layout redirects signed-in users to `/timer` |
-| `/timer`, `/learn`, `/compete`, `/shop` | — | **Public by design.** Timer has a localStorage fallback; tutorials are meant to be shareable and indexable |
-| `/settings` | required | `(protected)` layout redirects to `/login` |
+| `/timer`, `/stats`, `/playground`, `/learn/**`, `/compete`, `/shop` | — | **Public by design.** Timer and stats have a localStorage fallback; tutorials and case pages are meant to be shareable and indexable (they're in the sitemap) |
+| `/profile/[username]` | — | Public unless the owner made it private (RLS `profile_visible`) |
+| `/profile` | required | Redirects to your own profile, or to `/login` |
+| `/settings`, `/profile/edit` | required | `(protected)` layout redirects to `/login` |
+| `/master-access/**` | admin | `requireAdmin()` in its layout; redirects others to `/` |
 
 Gated *content* inside the public routes is handled by RLS, not by routing. See `access-control.md`.
 
@@ -128,14 +151,15 @@ Each layer does one job. `proxy.ts` deliberately does **not** gate routes — ke
 Ones already hit:
 
 - `middleware.ts` → `proxy.ts` (above).
-- Base UI `Button` rendered as a link needs `nativeButton={false}` alongside `render={<Link/>}`, or it warns about lost button semantics.
+- Base UI `Button` rendered as a link needs `nativeButton={false}` alongside `render={<Link/>}`, or it warns about lost button semantics. Even then the link is exposed as `role="button"`. For navigation, prefer a plain `<Link className={buttonVariants(...)}>`, as the 404, error and case pages do. Older Learn pages still use the `render` form.
+- A metadata image under a dynamic segment (the case `opengraph-image.tsx`) builds as dynamic even with `revalidate`. `export const dynamic = "force-static"` makes it render on its first request and then cache.
 - An `async` layout that reads auth cookies makes every route below it dynamic (`ƒ` in the build output). Expected, not a bug.
 
 ## Styling
 
 **Tailwind v4 has no `tailwind.config` file.** Theme tokens live in `src/app/globals.css` (`@import "tailwindcss"`, `@custom-variant dark`, `@theme inline`). `components.json` has `"config": ""` for this reason.
 
-`<html>` is hardcoded `className="dark"` — dark-mode-first, no theme switcher yet, though `user_settings.theme` exists in the database.
+Themes (Slate dark, Paper light, or System) come from `src/themes/`. The `cubehub-theme` cookie is the source of truth, read in the root layout, and `THEME_INIT_SCRIPT` corrects "System" before first paint. See `design-tokens.md`. `npm run check:colors` fails on new hardcoded colours outside `src/themes/`, tests and the next/og image files.
 
 ## Environment
 
