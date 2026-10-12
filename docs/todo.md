@@ -113,6 +113,10 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
       404s). Then run `supabase/tests/profile_setup_test.sql` (11 rows, all PASS) and add
       `20261016000000` to the `migration repair` list.
 
+- [ ] **Apply `supabase/DataSeeds/20261017000000_oll_shape_categories.sql`** in the SQL editor
+      (OLL category chips). Its one result should be 15 rows adding up to 57, with
+      `left_alone` empty. It's a seed: no `migration repair` entry.
+
 ### Vercel
 - [x] Build command is `npm run build`, with no override pinning `--webpack`.
 - [ ] `NEXT_PUBLIC_SITE_URL` is set to the live domain. Without it, share-preview (Open Graph) links point at localhost.
@@ -150,7 +154,7 @@ Roughly in the suggested order:
     run as triggers, but the security advisor shows them as callable through the API.
 - [ ] **Update `docs/roadmap.md` Phase 3.** It still says the live database has 1 case and no
       `algorithm_subsets`. Both are out of date.
-- [ ] **OLL shape categories.** Rewrite OLL descriptions as "Dot · Run", "Cross · Sune"… so
+- [x] **OLL shape categories.** Seed written 2026-10-13 (see §2 to apply it). Rewrite OLL descriptions as "Dot · Run", "Cross · Sune"… so
       the new category chips appear on `/learn/333/oll` (Dot, Line, Small L, Cross…).
 - [ ] **Theme settings page (step 8).** Then delete the dev theme switcher, and make "System"
       follow OS changes mid-session.

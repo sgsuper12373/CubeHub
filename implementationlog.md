@@ -5,6 +5,40 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-13 — Learn Phase 3, part 1: OLL shape categories seed
+
+**Request:** OLL descriptions in the ` · ` form, so the category chips appear on `/learn/333/oll`.
+
+**Live check (read-only, public API):** all 57 OLL descriptions are still the seeded values (`Dot, Run`, `Kite`, `Square shape`…), with a comma instead of ` · `.
+
+**Checked on the cube before writing:** every case's main algorithm was run through cubing.js to read which top edges and corners are oriented. This found three errors in the old descriptions:
+- 9 and 10 ("Kite") are Fish cases.
+- 28 ("Arrow") and 57 ("Line") are the two cases with all corners oriented.
+- 21 is H, and 22 is Pi (21 was labelled Pi). 19 was labelled "Diagonal", but its oriented corners are adjacent.
+
+**Added**
+- `supabase/DataSeeds/20261017000000_oll_shape_categories.sql`:
+  - `Group · note` for all 57 cases, in the 15 standard groups.
+  - The note is a nickname when it starts with a capital letter (Sune, Pi, Kite, Zamboni…). Otherwise it's a fact: "mirror of OLL n", "symmetric", "all corners oriented"… I didn't write nicknames from memory where they weren't reliable.
+  - It only updates rows still holding the seeded text; hand edits are left alone.
+  - One check result (the SQL editor shows only the last one).
+- `tests/unit/oll-categories.test.ts`: parses the seed and checks:
+  - all 57 cases have a category, in the 15 groups
+  - each group's shape is true on a KPuzzle (Dot: no top edges oriented, OCLL: all four, …)
+  - every note is true ("mirror of OLL n" and "symmetric" compare patterns up to AUF; corner and edge counts)
+  - It uses the older algorithms in `src/scripts/data/oll-data.ts`, independent of the live ones I analysed, and agrees. A deliberately wrong note ("mirror of OLL 8" on OLL 5) makes it fail.
+
+**Verified on a throwaway Postgres** (all migrations, then the PLL and OLL refresh seeds, then this one):
+- 15 groups adding up to 57.
+- A hand-edited OLL 40 was left alone and listed under `left_alone`.
+- After resetting it: the first run updated 1 row, the second updated 0.
+
+**Not changed:** the descriptions in `src/scripts/data/oll-data.ts` (the generator's source for the 2026-07-30 baseline seed) keep the old text.
+
+**Founder action:** run the seed in the SQL editor (`docs/todo.md` §2).
+
+---
+
 ## 2026-10-13 — Learn Phase 3, part 4: themed 404 and error pages, branch `feat/learn-phase3`
 
 **Request:** Finish Learn Phase 3 (plan: `~/.claude/plans/steady-orbiting-sketch.md`). Part 4 of 5 is the themed `not-found.tsx` and `error.tsx`.
