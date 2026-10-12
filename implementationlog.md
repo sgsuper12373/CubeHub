@@ -5,6 +5,58 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-13 — Learn Phase 3, part 2: a page per case
+
+**Request:** A page for every case at `/learn/[puzzle]/[series]/[case]`, with its own metadata and OG image.
+
+**Live data (read-only):** 7 published sets with 218 cases (OLL 57, PLL 21, 2x2 Beginner 6, Ortega 12, CLL 42, EG-1 40, EG-2 40). None is missing a `case_number`.
+
+**Added**
+- `lib/learn/case-route.ts` (pure):
+  - `parseCaseNumber` (a positive whole number only), `casePath`, `adjacentCases`
+  - `caseNickname`: the ` · ` note when it starts with a capital
+  - `caseHeading`: a plain numbered name gains its nickname or group ("OLL 27 (Sune)", "OLL 5 (Square)"); names like "Aa Perm" or "Sune 1" stay as they are
+  - `caseMetaTitle`, e.g. "Aa Perm Algorithms · PLL · 3x3 Cube | CubeHub"
+- `lib/learn/dal.ts`: `getCase()`, built on the cached `getSeries()`, so the learned state comes along and the page and its metadata share one query. Puzzle names moved to `lib/learn/puzzle-names.ts`.
+- `lib/supabase/public.ts`: a Supabase client with no cookies or session, using the anon key only, for cacheable public output.
+- `lib/learn/public-dal.ts`: `getPublishedLearnIndex()` (for the sitemap) and `getPublicCase()` (for the OG image). Both return empty or null on failure rather than throwing.
+- `app/(app)/learn/[puzzle]/[series]/[case]/page.tsx`:
+  - title, description (main algorithm, move count, alternatives), canonical URL, Open Graph
+  - back link to the set, `CaseDetail`, previous/next links (`rel="prev"`/`"next"`)
+  - 404 for a bad number, a tutorial series or an unknown case
+- `.../[case]/opengraph-image.tsx`: case heading, set, main algorithm and move count, in the root OG image's style. Cookie-free data, refreshed daily.
+- `components/learn/case-detail.tsx`:
+  - a 280px 3D player; picking any algorithm plays it
+  - the recognition diagram
+  - every algorithm with its move count
+  - Mark Learned (with achievement toasts, as on the card), Try it, Drill this case
+
+**Changed**
+- `algorithm-card.tsx`: the case name links to its page, and `AlgLine` is exported for the case page.
+- `scripts/check-chunks.mjs`: `/learn/333/oll/27` added to the default pages.
+
+**Found while testing:** as in part 4, the case page's navigation actions are real `Link`s styled with `buttonVariants`. The existing Learn pages still use `Button render={<Link/>}`, which exposes their links as `role="button"`; that's a follow-up.
+
+**Tests**
+- `tests/unit/case-route.test.ts` (7 tests).
+- `tests/e2e/learn-case.spec.ts` (6 tests), with the drill tests' `E2E_REQUIRE_DATA` pattern:
+  - title, heading and canonical URL; the player loads; picking an algorithm
+  - the Drill link; previous/next
+  - a PLL card name opens its page
+  - 404s for `999`, `abc`, `0` and a tutorial series
+  - the OG image is a PNG
+  - no sideways scroll at 390px
+
+**Verified**
+- `npm run validate` (372 of 372; the one lint warning is the old `_alg` placeholder).
+- `check:colors`; `test:e2e:prod` (42 of 42).
+- `check:chunks` on `next start`: 72 files across 5 pages.
+- Screenshots: Slate at 1280px, Paper at 390px, and the PLL 1 share image.
+
+**Not verified:** Mark Learned while signed in on the case page (it needs an account; the action is the card's). The live OLL headings read "OLL 27" until the part 1 seed is applied, then "OLL 27 (Sune)".
+
+---
+
 ## 2026-10-13 — Learn Phase 3, part 1: OLL shape categories seed
 
 **Request:** OLL descriptions in the ` · ` form, so the category chips appear on `/learn/333/oll`.

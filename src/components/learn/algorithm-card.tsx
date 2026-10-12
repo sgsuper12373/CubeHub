@@ -13,6 +13,7 @@ import { AlgPlayer } from "@/components/learn/alg-player";
 import { toggleAlgorithmBookmark } from "@/lib/learn/actions";
 import { announceUnlocks, toUnlocks } from "@/lib/profile/achievements";
 import { caseDiagram, mainAlgorithm } from "@/lib/learn/case-diagram";
+import { casePath } from "@/lib/learn/case-route";
 import { isPlaygroundPuzzle } from "@/lib/playground/puzzles";
 import Link from "next/link";
 
@@ -85,7 +86,12 @@ export function AlgorithmCard({
 
           <div className="min-w-0 flex-1 space-y-1">
             <h3 className="text-xl font-bold tracking-tight text-foreground/90">
-              {algCase.name}
+              <Link
+                href={casePath(puzzle, algCase.subset, algCase.case_number)}
+                className="rounded-sm hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              >
+                {algCase.name}
+              </Link>
             </h3>
             {algCase.description && (
               <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
@@ -229,7 +235,7 @@ export function AlgorithmCard({
   );
 }
 
-function AlgLine({
+export function AlgLine({
   moves,
   label,
   emphasised = false,

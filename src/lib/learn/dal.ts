@@ -2,6 +2,8 @@ import "server-only";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/auth/dal";
+import { adjacentCases } from "@/lib/learn/case-route";
+import { getPuzzleDescription, getPuzzleName } from "@/lib/learn/puzzle-names";
 
 export type LearnPuzzle = {
   id: string;
@@ -65,18 +67,6 @@ export type TutorialStep = {
   order_index: number;
   completed: boolean;
 };
-
-function getPuzzleName(id: string) {
-  if (id === "333") return "3x3 Cube";
-  if (id === "222") return "2x2 Cube";
-  return id;
-}
-
-function getPuzzleDescription(id: string) {
-  if (id === "333") return "Learn how to solve the classic 3x3 Rubik's Cube.";
-  if (id === "222") return "Learn how to solve the pocket 2x2 cube.";
-  return "";
-}
 
 /**
  * Returns all published algorithm subsets for a given puzzle type.
@@ -288,6 +278,37 @@ export const getSeries = cache(
 
       return { series, cases: [], steps };
     }
+  },
+);
+
+/**
+ * One case of an algorithm set, by case number, for /learn/[puzzle]/[series]/[case].
+ * Built on the cached getSeries(), so the learned state comes with it and the
+ * page and its metadata share one query. Null for a tutorial series, an
+ * unpublished set or an unknown number.
+ */
+export const getCase = cache(
+  async (
+    puzzleId: string,
+    seriesSlug: string,
+    caseNumber: number,
+  ): Promise<{
+    puzzle: LearnPuzzle;
+    series: LearnSeries;
+    algCase: AlgorithmCase;
+    prev: AlgorithmCase | null;
+    next: AlgorithmCase | null;
+  } | null> => {
+    const [puzzle, data] = await Promise.all([
+      getPuzzle(puzzleId),
+      getSeries(puzzleId, seriesSlug),
+    ]);
+    if (!puzzle || !data || data.series.type !== "algorithms") return null;
+
+    const algCase = data.cases.find((c) => c.case_number === caseNumber);
+    if (!algCase) return null;
+
+    return { puzzle, series: data.series, algCase, ...adjacentCases(data.cases, caseNumber) };
   },
 );
 
