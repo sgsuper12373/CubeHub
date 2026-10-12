@@ -8,6 +8,7 @@ import { AuthListener } from "@/components/auth/auth-listener";
 import { ThemeSwitcher } from "@/components/dev/theme-switcher";
 import { ConfirmHost } from "@/components/ui/confirm-dialog";
 import { Toaster } from "@/components/ui/toast";
+import { SITE_URL } from "@/lib/site-url";
 import { THEME_INIT_SCRIPT } from "@/themes/init-script";
 import {
   parseThemePreference,
@@ -35,8 +36,6 @@ const jetbrainsMono = JetBrains_Mono({
   preload: false,
   display: "swap",
 });
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
   // Required, or Next warns at build and Open Graph URLs resolve relative.

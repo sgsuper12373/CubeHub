@@ -6,13 +6,15 @@ import { getPuzzleName } from "@/lib/learn/puzzle-names";
 /**
  * The share image for a case page, in the style of the root OG image
  * (src/app/opengraph-image.tsx): literal dark-theme colours, since Satori can't
- * read the stylesheet. Data comes from the cookie-free client, so the image is
- * cached and refreshed daily. An unknown case gets a generic image.
+ * read the stylesheet. Data comes from the cookie-free client, so each image
+ * is rendered on its first request, cached, and refreshed daily
+ * (`force-static` + `revalidate`). An unknown case gets a generic image.
  */
 
 export const alt = "A CubeHub algorithm case";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+export const dynamic = "force-static";
 export const revalidate = 86400;
 
 export default async function CaseOpengraphImage({

@@ -10,7 +10,7 @@ Written 2026-10-04. Tick items off or delete them as they're done.
 The timer round and all five profile steps are done and pushed (see `timer.md`,
 `profile.md`). Suggested next work, most valuable first:
 
-1. **Make tutorials findable on Google:** a sitemap, plus one page per case such as
+1. ✅ **Make tutorials findable on Google:** (done 2026-10-13, branch `feat/learn-phase3`) a sitemap, plus one page per case such as
    `/learn/333/oll/27`. Details in section 5, idea 1.
 2. **Error tracking and analytics before sharing the beta:** Vercel Analytics plus Sentry.
    Section 5, idea 3.
@@ -119,7 +119,9 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
 
 ### Vercel
 - [x] Build command is `npm run build`, with no override pinning `--webpack`.
-- [ ] `NEXT_PUBLIC_SITE_URL` is set to the live domain. Without it, share-preview (Open Graph) links point at localhost.
+- [ ] `NEXT_PUBLIC_SITE_URL` is set to the live domain. Without it, share-preview (Open Graph) links,
+      the sitemap and robots.txt all point at localhost. **Set it before deploying `feat/learn-phase3`.**
+- [ ] After that deploy, submit `https://<domain>/sitemap.xml` in Google Search Console (optional).
 - [ ] After a deploy, run `npm run check:chunks -- https://<your-domain>`.
 
 ### Check by hand on the live site (signed in)
@@ -169,7 +171,7 @@ Roughly in the suggested order:
 
 Ordered by value for effort. Each is a separate piece of work: pick any.
 
-1. **Make tutorials findable on Google (SEO).** The roadmap calls tutorials "the main
+1. ✅ **Make tutorials findable on Google (SEO).** Done 2026-10-13: `sitemap.ts`, `robots.ts`, a page per case. The roadmap calls tutorials "the main
    organic-traffic and sign-up driver", but the site has no `sitemap.xml` or `robots.txt`,
    and no page per case. Add `sitemap.ts` + `robots.ts`, and pages like
    `/learn/333/oll/27` with their own title ("OLL 27 (Sune) algorithms").

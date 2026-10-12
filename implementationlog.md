@@ -5,6 +5,32 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-13 — Learn Phase 3, part 3: sitemap.xml and robots.txt
+
+**Added**
+- `lib/site-url.ts`: `SITE_URL` (trailing slash removed), now shared with `app/layout.tsx`.
+- `lib/seo/sitemap.ts`: pure `buildSitemapEntries(index, siteUrl)`.
+  - Lists `/`, `/timer`, `/learn`, `/playground`, each puzzle, each published tutorial and set, and every case.
+  - Absolute URLs, no duplicates (a slug used by both a tutorial and a set is one page).
+  - Leaves out `/stats` (local data), `/compete` and `/shop` (stubs) and profiles (privacy).
+- `app/sitemap.ts`: built from `getPublishedLearnIndex()` (cookie-free). Prerendered and refreshed daily. If the database can't be reached it lists the fixed pages.
+- `app/robots.ts`: allows `/`, blocks `/settings`, `/profile/edit`, `/master-access` and `/auth/`, and links to the sitemap.
+
+**Changed:** the case OG image (part 2) now has `dynamic = "force-static"`. With only `revalidate` it built as dynamic (`ƒ`), so it was drawn on every request. Now each case is drawn on its first request and cached for a day. Checked on `next start`: OLL 27, PLL 1 and an unknown case each give a different PNG, with a cache MISS and then a HIT.
+
+**Tests**
+- `tests/unit/sitemap.test.ts` (3 tests): fixed pages only without data; puzzles, series and cases, absolute and unique; no tutorial "cases"; no private or stub pages.
+- e2e (in `learn-case.spec.ts`): `/sitemap.xml` has `<loc>`s including `/learn/333/oll/27` and no `/settings`; `/robots.txt` has the Sitemap line and `Disallow: /settings`.
+
+**Verified**
+- Build: `○ /sitemap.xml` (1d revalidate), `○ /robots.txt`, `○` case OG image.
+- `test:e2e:prod` (43 of 43).
+- On `next start`, the sitemap has 234 URLs: 4 fixed, 2 puzzles, 9 series, 218 cases.
+
+**Founder action:** set `NEXT_PUBLIC_SITE_URL` in Vercel before deploying. Until then every sitemap and OG URL says `http://localhost:3000`.
+
+---
+
 ## 2026-10-13 — Learn Phase 3, part 2: a page per case
 
 **Request:** A page for every case at `/learn/[puzzle]/[series]/[case]`, with its own metadata and OG image.

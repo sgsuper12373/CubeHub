@@ -82,3 +82,18 @@ test("a case page fits a phone", async ({ page }) => {
   );
   expect(overflow).toBe(false);
 });
+
+test("the sitemap lists case pages, and robots.txt points to it", async ({ request }) => {
+  const sitemap = await request.get("/sitemap.xml");
+  expect(sitemap.status()).toBe(200);
+  const xml = await sitemap.text();
+  expect(xml).toContain("<loc>");
+  expect(xml).not.toMatch(/\/settings</);
+  if (process.env.E2E_REQUIRE_DATA === "1" || xml.includes("/learn/333/oll/")) {
+    expect(xml).toMatch(/\/learn\/333\/oll\/27</);
+  }
+
+  const robots = await (await request.get("/robots.txt")).text();
+  expect(robots).toMatch(/Sitemap: .*\/sitemap\.xml/);
+  expect(robots).toContain("Disallow: /settings");
+});
