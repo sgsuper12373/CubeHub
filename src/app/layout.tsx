@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 import { cookies } from "next/headers";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { AuthListener } from "@/components/auth/auth-listener";
 import { ThemeSwitcher } from "@/components/dev/theme-switcher";
@@ -16,6 +18,14 @@ import {
   THEME_COOKIE,
   themeMode,
 } from "@/themes/preference";
+
+/**
+ * Vercel Web Analytics and Speed Insights run only on Vercel deployments
+ * (`VERCEL=1`, set at build and run time). Local dev, `next start`, Playwright
+ * and GitHub CI leave it unset, so they never load the scripts or request
+ * /_vercel/*, which would 404 off Vercel. No custom events: Hobby plan.
+ */
+const ON_VERCEL = process.env.VERCEL === "1";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -103,6 +113,8 @@ export default async function RootLayout({
         {/* TEMP(step 8): renders nothing unless enabled; see the component. */}
         <ThemeSwitcher />
         {children}
+        {ON_VERCEL && <Analytics />}
+        {ON_VERCEL && <SpeedInsights />}
       </body>
     </html>
   );

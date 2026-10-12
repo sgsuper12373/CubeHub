@@ -13,6 +13,7 @@ The timer round and all five profile steps are done and pushed (see `timer.md`,
 1. ✅ **Make tutorials findable on Google:** (done 2026-10-13, branch `feat/learn-phase3`) a sitemap, plus one page per case such as
    `/learn/333/oll/27`. Details in section 5, idea 1.
 2. **Error tracking and analytics before sharing the beta:** Vercel Analytics plus Sentry.
+   Analytics + Speed Insights done 2026-10-13 (branch `feat/vercel-analytics`); Sentry still to do.
    Section 5, idea 3.
 3. ✅ **Error and 404 pages:** (done 2026-10-13) a themed `error.tsx` and `not-found.tsx`. Section 5, idea 2.
 4. **Daily scramble with an India-wide leaderboard:** section 5, idea 5. It can reuse the
@@ -123,6 +124,10 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
       the sitemap and robots.txt all point at localhost. **Set it before deploying `feat/learn-phase3`.**
 - [ ] After that deploy, submit `https://<domain>/sitemap.xml` in Google Search Console (optional).
 - [ ] After a deploy, run `npm run check:chunks -- https://<your-domain>`.
+- [ ] **Turn on Web Analytics and Speed Insights** in the Vercel project (Analytics tab → Enable,
+      Speed Insights tab → Enable), then deploy `feat/vercel-analytics`. Until they're enabled,
+      `/_vercel/insights/*` and `/_vercel/speed-insights/*` 404 on the live site. Data shows up
+      after a few visits.
 
 ### Check by hand on the live site (signed in)
 - [ ] Drill Lab: do a few reps → reload → they're still there. Mark a rep +2 and one DNF. Run
@@ -181,7 +186,8 @@ Ordered by value for effort. Each is a separate piece of work: pick any.
    bad link shows Next.js's default page, which isn't themed and has no way back. These
    are small and make the site feel finished.
 
-3. **Know when things break (monitoring).** There's no error tracking or analytics. Before
+3. **Know when things break (monitoring).** Vercel Analytics + Speed Insights added 2026-10-13;
+   error tracking (Sentry) still to do. Original note: there's no error tracking or analytics. Before
    sharing the beta, add Vercel Analytics + Speed Insights (free, a few lines) and an error
    tracker such as Sentry (free tier). Otherwise you only learn about bugs when someone
    complains.

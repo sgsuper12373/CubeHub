@@ -11,6 +11,7 @@
 | Icons | lucide-react | 1.24 |
 | Backend | Supabase — Postgres, Auth, Realtime, Storage | `@supabase/ssr` 0.12, `supabase-js` 2.109 |
 | Language | TypeScript, `strict: true` | 5.x |
+| Monitoring | Vercel Web Analytics + Speed Insights, rendered only on Vercel (see `decisions.md` → Monitoring) | `@vercel/analytics` 2.0.1, `@vercel/speed-insights` 2.0.0 |
 
 No test tooling and no Supabase CLI are installed yet.
 
@@ -144,6 +145,12 @@ Ones already hit:
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 ```
+
+On Vercel, also set `NEXT_PUBLIC_SITE_URL` to the live origin (metadata, Open Graph images,
+`sitemap.xml` and `robots.txt` build absolute URLs from it; `src/lib/site-url.ts`). Vercel sets
+`VERCEL=1` itself, at build and run time. The root layout renders `<Analytics />` and
+`<SpeedInsights />` only when it is set, so local dev, `next start`, Playwright and CI never load
+them.
 
 The `service_role` key must **never** appear here. It bypasses RLS, and anything prefixed `NEXT_PUBLIC_` is shipped to the browser.
 

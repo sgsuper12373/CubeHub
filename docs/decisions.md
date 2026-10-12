@@ -54,6 +54,12 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **Personal bests ignore the filter bar.** A PB is all-time by definition; showing a "best of the last 30 days" under the same word would quietly redefine the number cubers care most about.
 
+## Monitoring
+
+**Vercel Web Analytics and Speed Insights, page views only.** Both are free on the Hobby plan, cookie-less, and two components in the root layout. No custom events: the Hobby plan doesn't include them. Error tracking (Sentry or similar) is still to come.
+
+**They render only when `VERCEL=1`.** Off Vercel the scripts at `/_vercel/*` don't exist, so they would 404 in `next start` and in Playwright. The e2e tests check that no request fails, and test traffic would count as visits. The components have no "off" setting (`mode` is `auto`, `development` or `production`, and development fetches a debug script from `va.vercel-scripts.com`), so the layout doesn't render them at all off Vercel. `tests/e2e/analytics.spec.ts` checks that they stay off.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.

@@ -5,6 +5,35 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-13 — Vercel Web Analytics and Speed Insights, branch `feat/vercel-analytics`
+
+**Request:** Add `@vercel/analytics` and `@vercel/speed-insights` to the root layout. No custom events (Hobby plan). They must not run in local dev or Playwright.
+
+**Before starting:** the OLL categories seed is applied. Read-only check: 57 of 57 cases have a category in 15 groups ("OCLL · H", "OCLL · Sune"…).
+
+**Changed**
+- `package.json`: `@vercel/analytics` ^2.0.1, `@vercel/speed-insights` ^2.0.0 (stable releases from March 2026).
+- `src/app/layout.tsx`: `<Analytics />` and `<SpeedInsights />` (from the `/next` entry points) at the end of `<body>`, rendered only when `process.env.VERCEL === "1"`.
+  - Vercel sets that at build and run time; local dev, `next start`, Playwright and GitHub CI don't.
+  - The packages have no "off" mode: in dev they fetch a debug script from `va.vercel-scripts.com`, and in production they request `/_vercel/*`, which 404s off Vercel.
+  - The root layout is already dynamic (it reads the theme cookie), so the check runs per request.
+- Docs:
+  - `architecture.md`: stack row, plus `VERCEL` / `NEXT_PUBLIC_SITE_URL` in Environment.
+  - `decisions.md`: a new Monitoring section.
+  - `todo.md`: the dashboard step, and the monitoring items updated (Sentry still to do).
+
+**Tests:** `tests/e2e/analytics.spec.ts`. `/`, `/timer` and `/learn` have no `/_vercel/` script tags and make no `/_vercel/*` requests.
+
+**Verified**
+- `npm run validate`, `check:colors`, `test:e2e:prod` (44 of 44).
+- The opposite case: the same build started with `VERCEL=1 next start` renders and requests `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js`.
+
+**Founder action:** enable Web Analytics and Speed Insights in the Vercel project dashboard, then deploy. Until then those two scripts 404 on the live site.
+
+**Noted:** the Vercel build log warns that npm skipped the `postinstall` scripts of `esbuild` and `unrs-resolver` (npm's install-scripts allowlist). The builds still pass: esbuild's binary comes from its platform package, and `prebuild` (`build-cubing.mjs`) uses it. Worth revisiting only if a build starts failing on esbuild.
+
+---
+
 ## 2026-10-13 — Learn Phase 3, part 5: roadmap Phase 3 matches the live data
 
 **Live check (read-only, public API):**
