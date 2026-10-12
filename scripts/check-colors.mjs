@@ -18,9 +18,9 @@
 // transparent). Canvas code: readTokenRgb() in src/lib/token-color.ts.
 //
 // Exempt: src/themes/** (where raw values belong), tests, and ImageResponse
-// files (src/app/icon.tsx, src/app/opengraph-image.tsx), which cannot read
-// CSS variables. For a genuine one-off, put `color-guard-allow: <reason>` in
-// a comment on the same line or the line above.
+// files (icon.tsx, opengraph-image.tsx and twitter-image.tsx at any depth
+// under src/app), which cannot read CSS variables. For a genuine one-off, put
+// `color-guard-allow: <reason>` in a comment on the same line or the line above.
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
@@ -65,8 +65,7 @@ const RULES = [
 const EXEMPT = [
   /^src\/themes\//,
   /^tests\//,
-  /^src\/app\/icon\.tsx$/,
-  /^src\/app\/opengraph-image\.tsx$/,
+  /^src\/app\/(?:.+\/)?(?:icon|opengraph-image|twitter-image)\.tsx$/,
 ];
 
 const ALLOW = "color-guard-allow";

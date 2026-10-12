@@ -43,6 +43,10 @@ describe("isExempt", () => {
     expect(isExempt("src/themes/paper.ts")).toBe(true);
     expect(isExempt("tests/unit/x.test.ts")).toBe(true);
     expect(isExempt("src/app/opengraph-image.tsx")).toBe(true);
+    expect(isExempt("src/app/icon.tsx")).toBe(true);
+    expect(isExempt("src/app/(app)/learn/[puzzle]/[series]/[case]/opengraph-image.tsx")).toBe(true);
+    expect(isExempt("src/components/opengraph-image.tsx")).toBe(false);
+    expect(isExempt("src/app/learn/opengraph-image-helpers.tsx")).toBe(false);
     expect(isExempt("src/app/globals.css")).toBe(true);
     expect(isExempt("src/components/learn/puzzle-card.tsx")).toBe(false);
     expect(isExempt("src/lib/token-color.ts")).toBe(false);

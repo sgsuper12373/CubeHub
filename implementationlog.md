@@ -27,6 +27,8 @@ Newest entries at the top.
 - `test:e2e:prod` (43 of 43).
 - On `next start`, the sitemap has 234 URLs: 4 fixed, 2 puzzles, 9 series, 218 cases.
 
+**Colour guard fix (follow-up commit):** `check:colors` flagged the case OG image's literal colours. It passed in part 2 only because the guard reads git diffs and the file was still untracked. The guard exempted just `src/app/icon.tsx` and `src/app/opengraph-image.tsx`; it now exempts `icon`, `opengraph-image` and `twitter-image` `.tsx` at any depth under `src/app`, since none of them can read CSS variables. `tests/unit/color-guard.test.ts` covers the nested path and two near-misses.
+
 **Founder action:** set `NEXT_PUBLIC_SITE_URL` in Vercel before deploying. Until then every sitemap and OG URL says `http://localhost:3000`.
 
 ---
