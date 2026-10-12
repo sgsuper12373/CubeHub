@@ -154,7 +154,7 @@ Roughly in the suggested order:
   - Revoke public `EXECUTE` on the trigger functions `maintain_average_pbs_on_insert`,
     `recompute_pb_on_solve_delete` and `recompute_pb_on_solve_update`. They're only meant to
     run as triggers, but the security advisor shows them as callable through the API.
-- [ ] **Update `docs/roadmap.md` Phase 3.** It still says the live database has 1 case and no
+- [x] **Update `docs/roadmap.md` Phase 3.** Done 2026-10-13. It still says the live database has 1 case and no
       `algorithm_subsets`. Both are out of date.
 - [x] **OLL shape categories.** Seed written 2026-10-13 (see §2 to apply it). Rewrite OLL descriptions as "Dot · Run", "Cross · Sune"… so
       the new category chips appear on `/learn/333/oll` (Dot, Line, Small L, Cross…).

@@ -5,6 +5,25 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-13 — Learn Phase 3, part 5: roadmap Phase 3 matches the live data
+
+**Live check (read-only, public API):**
+- 7 published sets, 218 cases, 658 approved algorithms. Per set: OLL 57/225, PLL 21/97, 2x2 Beginner 6/20, Ortega 12/47, CLL 42/146, EG-1 40/68, EG-2 40/55.
+- Tutorials: 3x3 Beginner (7 steps), CFOP (1 step).
+- The Drill Lab tables exist.
+- Stored tiers: OLL, PLL, CLL and EG are `free`; 2x2 Beginner and Ortega are `public`.
+- RLS on `algorithms` is still the baseline `using (is_approved)`, so tiers are not enforced.
+
+**Changed**
+- `docs/roadmap.md` Phase 3: replaced the out-of-date "Live data is behind the code" paragraph and the Drill Lab "migration not yet applied" note with:
+  - a live content table
+  - the tier status (stored, not enforced, decision on hold)
+  - this round's work
+  - what's still open (tier enforcement, more CFOP content)
+- `docs/todo.md`: ticked the roadmap item.
+
+---
+
 ## 2026-10-13 — Learn Phase 3, part 3: sitemap.xml and robots.txt
 
 **Added**

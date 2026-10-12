@@ -82,9 +82,32 @@ Launch content: 3x3 beginner LBL, CFOP intro, all 57 OLL, all 21 PLL; 2x2 beginn
 
 **This phase applies the access-control migration** — `access_tier`, `algorithm_subsets`, `can_access()`, and the tiered policies. Read `access-control.md` first; the paid-content boundary is set here and is expensive to move later.
 
-**Drill Lab (2026-09-30): built, migration not yet applied to live.** `/learn/[puzzle]/drill` shows each case from the inverse of its algorithm (no solver, no hand-entered setup), times reps against the specific algorithm variant, orders cases weakest-first with spaced repetition, and recommends a variant switch when the per-variant medians support it. Schema in `database.md` → Drill Lab. The timer's old `?train=` mode is retired and redirects here.
+**Drill Lab (2026-09-30), live.** `/learn/[puzzle]/drill` shows each case from the inverse of its algorithm (no solver, no hand-entered setup), times reps against the specific algorithm variant, orders cases weakest-first with spaced repetition, and recommends a variant switch when the per-variant medians support it. Schema in `database.md` → Drill Lab. The timer's old `?train=` mode is retired and redirects here. Its e2e tests run in CI against live data.
 
-**Live data is behind the code (found 2026-09-30):** `20260914000000_access_tiers.sql` is not applied to live, so `algorithm_subsets` does not exist there and `getPuzzles()` lists no algorithm sets at all; and live holds 1 algorithm case, not the seeded 57 OLL / 21 PLL. Apply the pending migrations (and the seed) before either the series pages or the Drill Lab can show OLL/PLL.
+**Live content (checked read-only 2026-10-13):**
+
+| Puzzle | Set | Cases | Approved algorithms | Stored tier |
+|---|---|---|---|---|
+| 3x3 | OLL | 57 | 225 | free |
+| 3x3 | PLL | 21 | 97 | free |
+| 2x2 | Beginner | 6 | 20 | public |
+| 2x2 | Ortega | 12 | 47 | public |
+| 2x2 | CLL | 42 | 146 | free |
+| 2x2 | EG-1 | 40 | 68 | free |
+| 2x2 | EG-2 | 40 | 55 | free |
+| | **Total** | **218** | **658** | |
+
+Tutorials: 3x3 Beginner (7 steps) and CFOP (1 step, an intro). The access-tier migration (`algorithm_subsets`, `access_tier`) is applied, but **tiers are not enforced**: RLS on `algorithms` still checks only `is_approved`, so a tier is just a badge. Which content needs an account is an open decision (`access-control.md`).
+
+**Finishing round (2026-10-13, branch `feat/learn-phase3`):**
+- A page per case, e.g. `/learn/333/oll/27`, with its own title, description, canonical URL and share image. Card names link to it.
+- `sitemap.xml` (every published set and case, refreshed daily) and `robots.txt`.
+- Themed 404 and error pages.
+- OLL shape categories: a seed (`supabase/DataSeeds/20261017000000_oll_shape_categories.sql`) that writes the 57 descriptions as `Group · note` so the category chips appear. It needs applying in the SQL editor.
+
+Still open in this phase:
+- Enforce access tiers, once that decision is made.
+- More tutorial content: CFOP has one step.
 
 *Deliverable: shareable tutorials — the main organic-traffic and sign-up driver.*
 
