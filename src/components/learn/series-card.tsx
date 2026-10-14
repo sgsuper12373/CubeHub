@@ -7,6 +7,8 @@ import { LearnSeries } from "@/lib/learn/dal";
 import { useMousePosition } from "@/hooks/use-mouse-position";
 import { cn } from "@/lib/utils";
 
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
 export function SeriesCard({ puzzleId, series }: { puzzleId: string, series: LearnSeries }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const mousePosition = useMousePosition(cardRef);
@@ -120,7 +122,11 @@ export function SeriesCard({ puzzleId, series }: { puzzleId: string, series: Lea
       <div className="relative z-10 border-t border-border bg-foreground/[0.02] px-6 py-4 flex items-center justify-between gap-4 pointer-events-none group-hover:bg-foreground/[0.04] transition-colors mt-auto">
         <div className="flex items-center gap-2 text-sm text-muted-foreground group-hover:text-foreground transition-colors">
            {theme.icon}
-           <span className="font-medium">{isAlg ? "57 Algorithms" : "12 Tutorials"}</span>
+           <span className="font-medium">
+             {isAlg
+               ? plural(series.casesCount ?? 0, "Case")
+               : plural(series.stepsCount ?? 0, "Step")}
+           </span>
         </div>
         
         <div className="flex items-center gap-2">

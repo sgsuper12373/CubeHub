@@ -21,6 +21,10 @@ export type LearnSeries = {
   accessTier?: "public" | "free" | "premium";
   casesCount?: number;
   learnedCount?: number;
+  /** Approved algorithms across the set's cases (algorithm sets only). */
+  algorithmsCount?: number;
+  /** Published steps (tutorial series only). */
+  stepsCount?: number;
 };
 
 export type AlgorithmCase = {
@@ -65,19 +69,46 @@ export type TutorialStep = {
 export const getPuzzles = cache(async (): Promise<LearnPuzzle[]> => {
   const supabase = await createClient();
 
-  // 1. Fetch published tutorial series
-  const { data: tutorialSeries } = await supabase
-    .from("tutorial_series")
-    .select("*")
-    .eq("is_published", true)
-    .order("order_index");
+  // Published series and subsets, plus the rows the cards and hero count, so
+  // no number on the Learn pages is made up.
+  const [
+    { data: tutorialSeries },
+    { data: algSubsets },
+    { data: caseRows },
+    { data: stepRows },
+  ] = await Promise.all([
+    supabase
+      .from("tutorial_series")
+      .select("*")
+      .eq("is_published", true)
+      .order("order_index"),
+    supabase
+      .from("algorithm_subsets")
+      .select("*")
+      .eq("is_published", true)
+      .order("order_index"),
+    supabase
+      .from("algorithm_cases")
+      .select("puzzle_type, subset, algorithms(is_approved)"),
+    supabase
+      .from("tutorial_steps")
+      .select("series_id")
+      .eq("is_published", true),
+  ]);
 
-  // 2. Fetch published algorithm subsets
-  const { data: algSubsets } = await supabase
-    .from("algorithm_subsets")
-    .select("*")
-    .eq("is_published", true)
-    .order("order_index");
+  const caseCounts = new Map<string, { cases: number; algorithms: number }>();
+  for (const c of caseRows ?? []) {
+    const key = `${c.puzzle_type}/${c.subset}`;
+    const entry = caseCounts.get(key) ?? { cases: 0, algorithms: 0 };
+    entry.cases += 1;
+    entry.algorithms += (c.algorithms ?? []).filter((a) => a.is_approved).length;
+    caseCounts.set(key, entry);
+  }
+
+  const stepCounts = new Map<string, number>();
+  for (const s of stepRows ?? []) {
+    stepCounts.set(s.series_id, (stepCounts.get(s.series_id) ?? 0) + 1);
+  }
 
   const puzzlesMap = new Map<string, LearnPuzzle>();
 
@@ -100,6 +131,9 @@ export const getPuzzles = cache(async (): Promise<LearnPuzzle[]> => {
         description: subset.description ?? `Algorithm subset: ${subset.name}`,
         type: "algorithms",
         accessTier: subset.access_tier as "public" | "free" | "premium",
+        casesCount: caseCounts.get(`${puzzleId}/${subset.slug}`)?.cases ?? 0,
+        algorithmsCount:
+          caseCounts.get(`${puzzleId}/${subset.slug}`)?.algorithms ?? 0,
       });
     }
   }
@@ -123,6 +157,7 @@ export const getPuzzles = cache(async (): Promise<LearnPuzzle[]> => {
         type: "tutorial",
         accessTier:
           (s.access_tier as "public" | "free" | "premium") ?? "public",
+        stepsCount: stepCounts.get(s.id) ?? 0,
       });
     }
   }

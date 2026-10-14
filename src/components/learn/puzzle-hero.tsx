@@ -4,7 +4,7 @@ import { useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "motion/react";
-import { ChevronLeft, BookOpen, Code2, BarChart2, Star } from "lucide-react";
+import { ChevronLeft, BookOpen, Code2, BarChart2, Shapes } from "lucide-react";
 import { useMousePosition } from "@/hooks/use-mouse-position";
 import { Button } from "@/components/ui/button";
 import { LearnPuzzle } from "@/lib/learn/dal";
@@ -13,9 +13,10 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mousePosition = useMousePosition(containerRef);
 
-  // Mock stats
-  const tutorialsCount = puzzle.series.find(s => s.type === "tutorial") ? "20+" : "12";
-  const algsCount = puzzle.series.find(s => s.type === "algorithms") ? "58" : "34";
+  const tutorialsCount = puzzle.series.filter((s) => s.type === "tutorial").length;
+  const algSets = puzzle.series.filter((s) => s.type === "algorithms");
+  const casesCount = algSets.reduce((n, s) => n + (s.casesCount ?? 0), 0);
+  const algsCount = algSets.reduce((n, s) => n + (s.algorithmsCount ?? 0), 0);
   const difficulty = puzzle.id === "333" ? "Beginner to Adv." : "Beginner Friendly";
   
   // Choose the same image as the home page based on puzzle id
@@ -78,35 +79,41 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex flex-wrap gap-4 pt-4"
         >
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-foreground/[0.03] border border-border shadow-lg backdrop-blur-md">
-            <BookOpen className="w-6 h-6 text-primary" />
-            <div>
-              <div className="text-xl font-bold text-foreground leading-none">{tutorialsCount}</div>
-              <div className="text-sm text-muted-foreground mt-1">Tutorials</div>
+          {tutorialsCount > 0 && (
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-foreground/[0.03] border border-border shadow-lg backdrop-blur-md">
+              <BookOpen className="w-6 h-6 text-primary" />
+              <div>
+                <div className="text-xl font-bold text-foreground leading-none">{tutorialsCount}</div>
+                <div className="text-sm text-muted-foreground mt-1">{tutorialsCount === 1 ? "Tutorial" : "Tutorials"}</div>
+              </div>
             </div>
-          </div>
-          
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-foreground/[0.03] border border-border shadow-lg backdrop-blur-md">
-            <Code2 className="w-6 h-6 text-accent-2" />
-            <div>
-              <div className="text-xl font-bold text-foreground leading-none">{algsCount}</div>
-              <div className="text-sm text-muted-foreground mt-1">Algorithms</div>
+          )}
+
+          {casesCount > 0 && (
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-foreground/[0.03] border border-border shadow-lg backdrop-blur-md">
+              <Shapes className="w-6 h-6 text-accent-2" />
+              <div>
+                <div className="text-xl font-bold text-foreground leading-none">{casesCount}</div>
+                <div className="text-sm text-muted-foreground mt-1">{casesCount === 1 ? "Case" : "Cases"}</div>
+              </div>
             </div>
-          </div>
+          )}
+
+          {algsCount > 0 && (
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-foreground/[0.03] border border-border shadow-lg backdrop-blur-md">
+              <Code2 className="w-6 h-6 text-accent-2" />
+              <div>
+                <div className="text-xl font-bold text-foreground leading-none">{algsCount}</div>
+                <div className="text-sm text-muted-foreground mt-1">{algsCount === 1 ? "Algorithm" : "Algorithms"}</div>
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center gap-4 p-4 rounded-2xl bg-foreground/[0.03] border border-border shadow-lg backdrop-blur-md">
             <BarChart2 className="w-6 h-6 text-warning" />
             <div>
               <div className="text-lg font-bold text-foreground leading-none">{difficulty}</div>
               <div className="text-sm text-muted-foreground mt-1">Difficulty</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-foreground/[0.03] border border-border shadow-lg backdrop-blur-md">
-            <Star className="w-6 h-6 text-warning fill-warning/20" />
-            <div>
-              <div className="text-xl font-bold text-foreground leading-none">4.8</div>
-              <div className="text-sm text-muted-foreground mt-1">Avg. Rating</div>
             </div>
           </div>
         </motion.div>
