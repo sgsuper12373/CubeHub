@@ -16,7 +16,7 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
 - [x] **Create the two e2e test accounts.** Done 2026-10-14 via Supabase → Authentication → Add
       user (Auto Confirm; signing up hit the email rate limit): `testuser1@cubehub.com`,
       `testuser2@cubehub.com`. Credentials are in `.env.local` (gitignored).
-- [ ] **Add the same four as GitHub Actions secrets** (`E2E_USER_A_EMAIL`, `E2E_USER_A_PASSWORD`,
+- [x] **Add the same four as GitHub Actions secrets** (done 2026-10-14) (`E2E_USER_A_EMAIL`, `E2E_USER_A_PASSWORD`,
       `E2E_USER_B_EMAIL`, `E2E_USER_B_PASSWORD`) so CI runs the signed-in specs. Never the
       service-role key.
 - [x] **Apply the migrations** (the CLI is linked). Done 2026-10-14: both pushed; `social_test.sql`
@@ -29,8 +29,9 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
       Then re-run `profile_progress_test.sql`, `achievements_test.sql` and
       `profile_setup_test.sql` the same way: `profile_visible()` changed under them.
       **Before deploying the branch:** the profile page calls the new RPCs.
-- [ ] **Run the signed-in e2e locally:** `npm run test:e2e:prod` (social spec included).
-- [ ] **Merge, push, deploy,** then `npm run check:chunks -- https://pre-cube-hub.vercel.app`.
+- [x] **Run the signed-in e2e locally:** `npm run test:e2e:prod` (social spec included). 49/49 on 2026-10-14.
+- [x] **Merge, push, deploy,** then `npm run check:chunks -- https://pre-cube-hub.vercel.app`.
+      Done 2026-10-14: deployed in ~70s, chunk check OK (63 files, 5 pages).
 - [ ] **Check by hand:** the bell on desktop; the Profile-tab dot on a phone; `/friends` at
       phone width; a private profile's request → accept → stats visible.
 - [ ] **Read reports** in the Supabase dashboard (`profile_reports`) until there's an admin
