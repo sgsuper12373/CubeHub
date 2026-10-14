@@ -152,7 +152,8 @@
     opacity 300ms ease-out,
     visibility 300ms,
     background-color 300ms ease-out,
-    border-color 300ms ease-out;
+    border-color 300ms ease-out,
+    box-shadow 300ms ease-out;
 }
 
 [data-focus-solving] [data-focus-hide],
@@ -163,10 +164,16 @@
   transition-duration: 150ms;
 }
 
-/* The timer panel stays, minus its card chrome: just the digits. */
+/* The timer panel stays, minus its card chrome: just the digits. Over a
+   background image that chrome is liquid glass, so its gradient, blur and
+   shadows go too (this rule is unlayered, so it beats the md:timer-glass
+   utility). Dropping the blur also spares the GPU for the whole solve. */
 [data-focus-solving] .layout-grid > [data-panel="timer"] {
-  background-color: transparent;
+  background: transparent;
   border-color: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   transition-duration: 150ms;
 }
 
@@ -183,6 +190,65 @@
    value so the reduced-motion rule below has something stable to target. */
 .timer-ready-pulse {
   transform: scale(1.02);
+}
+
+/* Liquid glass over the timer's background image (experiment, 2026-10-15):
+   the image behind is blurred and saturated, with a bright top edge, a soft
+   sheen and a faint lift underneath. Built from theme tokens so Slate and Paper
+   both get it. Only used while a background image is set.
+
+   Two sets of knobs:
+   - `--glass-*`      the timer panels and the "hold, then release" pill
+                      (`timer-glass`, from md up via `md:timer-glass`);
+   - `--glass-bar-*`  the navbar and the timer's controls row
+                      (`timer-glass timer-glass-bar`). Small icons and labels
+                      need more frosting than big panels to stay readable. */
+:root {
+  /* ── Panels: change these ─────────────────────────────────────────────── */
+  --glass-tint: 0%;        /* fill colour over the glass: 0% clear, ~15% frosted, 72% = old box */
+  --glass-blur: 0px;       /* how blurred the image behind is: 0px none, 8px light, 30px heavy */
+  --glass-saturate: 170%;  /* colour boost behind the glass: 100% none */
+  --glass-sheen: 0%;       /* diagonal shine in the top-left corner: 0% off */
+  --glass-edge: 10%;       /* border strength */
+  --glass-highlight: 35%;  /* bright line along the top edge */
+  --glass-shadow: 60%;     /* shadow underneath */
+
+  /* ── Bars (navbar, controls row): change these ────────────────────────── */
+  --glass-bar-tint: 55%;   /* keep icons readable: below ~40% they start to blend in */
+  --glass-bar-blur: 18px;
+  /* ─────────────────────────────────────────────────────────────────────── */
+}
+
+@utility timer-glass {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in oklch, var(--foreground) var(--glass-sheen), transparent) 0%,
+      transparent 38%,
+      transparent 62%,
+      color-mix(in oklch, var(--foreground) 6%, transparent) 100%
+    ),
+    color-mix(in oklch, var(--background) var(--glass-tint), transparent);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid color-mix(in oklch, var(--foreground) var(--glass-edge), transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, var(--foreground) var(--glass-highlight), transparent),
+    inset 0 -1px 0 color-mix(in oklch, var(--foreground) 8%, transparent),
+    0 12px 40px -12px color-mix(in oklch, var(--background) var(--glass-shadow), transparent);
+}
+
+/* The bar version: same glass, frostier, by swapping in the bar knobs. */
+@utility timer-glass-bar {
+  --glass-tint: var(--glass-bar-tint);
+  --glass-blur: var(--glass-bar-blur);
+}
+
+/* No blur available: fall back to the old tinted scrim, so digits stay readable. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .timer-glass {
+    background: var(--timer-scrim);
+  }
 }
 
 /* Personal-best celebration: one short bloom of the primary colour behind the

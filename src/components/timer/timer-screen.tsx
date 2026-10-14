@@ -34,6 +34,7 @@ import type { ServerTimerSettings } from "@/lib/auth/dal";
 import type { Penalty, TimerPuzzle, TimerSettings } from "@/lib/timer/types";
 import { useSessionStore } from "@/stores/session-store";
 import { useTimerStore } from "@/stores/timer-store";
+import { useTimerBackgroundStore } from "@/stores/timer-background-store";
 import { toast } from "@/stores/toast-store";
 import { confirm } from "@/stores/confirm-store";
 import { formatMs } from "@/lib/timer/format";
@@ -79,6 +80,7 @@ export function TimerScreen(props: {
     solveId: string;
   } | null>(null);
   const scrim = useTimerScrim();
+  const hasBackground = useTimerBackgroundStore((s) => s.url !== null);
   const editingLayout = useLayoutStore((s) => s.editing);
   const isZenMode = useLayoutStore((s) => s.isZenMode);
   const isFocusMode = useLayoutStore((s) => s.isFocusMode);
@@ -426,13 +428,12 @@ export function TimerScreen(props: {
               <TimeDisplay
                 hideWhileSolving={settings.hideTimeWhileSolving}
                 celebrate={celebrating}
-                scrim={scrim}
               />
               <p
                 className={cn(
                   "absolute bottom-[15%] w-full text-center h-5 text-sm transition-opacity duration-150",
                   // Over a busy background the hint needs the scrim too.
-                  scrim && "mx-auto w-fit rounded-full bg-timer-scrim px-3 inset-x-0",
+                  scrim && "timer-glass mx-auto w-fit rounded-full px-3 inset-x-0",
                   phase === "holding"
                     ? "text-timer-holding opacity-100"
                     : phase === "ready"
@@ -505,7 +506,14 @@ export function TimerScreen(props: {
       {/* Session controls stay outside the grid — they're chrome, and letting
           the user bury their own settings button would be a trap. */}
       <div className={fadeWhileSolving} data-focus-hide>
-        <div className="flex items-center justify-between px-4 py-2 relative z-20">
+        {/* Over a background image the controls get the frostier bar glass,
+            so their small icons don't blend into the picture. */}
+        <div
+          className={cn(
+            "flex items-center justify-between px-4 py-2 relative z-20",
+            hasBackground && "timer-glass timer-glass-bar",
+          )}
+        >
           <SessionSwitcher
               sessions={sessions}
               activeId={activeSessionId}

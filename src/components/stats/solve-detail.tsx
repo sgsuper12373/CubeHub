@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 function formatRelative(date: Date): string {
   const diff = Date.now() - date.getTime();
@@ -59,7 +60,11 @@ export function SolveDetailModal({
   const displayTime = formatMs(solve.effectiveTimeMs ?? solve.timeMs, 3);
   const date = new Date(solve.createdAt);
 
-  return (
+  // Rendered into <body>: a panel with backdrop-filter (the timer's liquid
+  // glass) becomes the containing block for `position: fixed`, which would
+  // trap the modal inside the Recent Solves panel. Only mounted on click, so
+  // document.body always exists here.
+  return createPortal(
     <>
       {/* Backdrop */}
       <div 
@@ -198,7 +203,8 @@ export function SolveDetailModal({
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body,
   );
 }
 

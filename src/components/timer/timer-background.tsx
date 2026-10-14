@@ -21,6 +21,17 @@ export function TimerBackground() {
     void useTimerBackgroundStore.getState().init();
   }, []);
 
+  // Flag the page while an image shows, so the navbar can turn to glass with
+  // CSS alone instead of importing this store into every page's bundle.
+  useEffect(() => {
+    if (!url) return;
+    const root = document.documentElement;
+    root.dataset.timerBg = "";
+    return () => {
+      delete root.dataset.timerBg;
+    };
+  }, [url]);
+
   if (!url) return null;
 
   return (

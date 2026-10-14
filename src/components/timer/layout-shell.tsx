@@ -16,6 +16,7 @@ import {
 } from "@/lib/timer/layout";
 import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout-store";
+import { useTimerBackgroundStore } from "@/stores/timer-background-store";
 
 const LayoutEditorInner = dynamic(
   () => import("./layout-editor-inner").then((m) => m.LayoutEditorInner),
@@ -105,6 +106,7 @@ export function LayoutShell({
 }) {
   const cells = useLayoutStore((s) => s.cells);
   const editing = useLayoutStore((s) => s.editing);
+  const hasBackground = useTimerBackgroundStore((s) => s.url !== null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
 
@@ -155,8 +157,12 @@ export function LayoutShell({
                   // them in the stack too would duplicate them.
                   !MOBILE_PANELS.includes(cell.i) && "hidden md:flex",
                   // Titled card chrome from md up; mobile stays full-bleed so
-                  // its flex layout is untouched.
-                  "md:rounded-xl md:border md:border-border md:bg-card/40",
+                  // its flex layout is untouched. Over a background image the
+                  // cards turn to liquid glass (the same knobs as the digits,
+                  // in globals.css).
+                  hasBackground
+                    ? "md:timer-glass md:rounded-xl"
+                    : "md:rounded-xl md:border md:border-border md:bg-card/40",
                 )}
               >
                 {/* The scramble reads for itself; every other panel is titled. */}
