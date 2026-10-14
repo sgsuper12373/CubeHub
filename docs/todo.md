@@ -58,8 +58,14 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
    - [ ] Supabase → Authentication → Rate Limits: raise "emails sent per hour" (e.g. 30–100).
    - [ ] Sign up with a fresh address and check the confirmation arrives (and isn't in spam),
          then a password reset.
-2. **Beta with 10–15 real users.** Access tiers and the domain are decided after it.
-3. **Social, later** (roadmap): daily scramble with a Friends tab, share cards, clubs, friend
+2. **Before the beta: build Clubs** from the spec in `docs/clubs.md` (agreed 2026-10-14).
+   Next session starts with the database migration (founder pushes it).
+3. **Before the beta: check every page for correctness** (founder, 2026-10-14). Go page by page
+   and fix wrong numbers, labels and hardcoded values. Known so far:
+   - [ ] Learn cards: the algorithm count is wrong (e.g. "All methods" for 2x2 says 57
+         algorithms), and the difficulty badge is hardcoded instead of coming from the content.
+4. **Beta with 10–15 real users.** Access tiers and the domain are decided after it.
+5. **Social, later** (roadmap): daily scramble with a Friends tab, share cards, friend
    rooms in Compete, social achievements, PB notifications, an admin report queue.
 
 ### Also open

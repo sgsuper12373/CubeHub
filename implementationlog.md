@@ -5,6 +5,23 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-14 — Clubs requirements; pre-beta page check in the to-do
+
+**Request:** Gather requirements for clubs (built before the beta; tournaments after it), and
+note that every page must be checked for correctness before the beta.
+
+- `docs/clubs.md` (new): founder decisions (type + tags, anyone creates up to 3, public /
+  private / invite links, text / algorithm / video-link posts, reactions and comments, no
+  location, no uploads in v1), Claude's defaults, database plan, estimate, build order.
+- `docs/todo.md`: "Before the beta: check every page for correctness" with the first known bug
+  (Learn cards: wrong algorithm count, e.g. 2x2 "All methods" shows 57; hardcoded difficulty).
+- Follow-up: founder approved all defaults; Clubs gets its own desktop navbar section (phone
+  bar unchanged). Roadmap: clubs moved before the beta. To-do: "build Clubs" added. Estimate
+  restated as about two working sessions with Claude, not 9–11 hours.
+- No code changes yet.
+
+---
+
 ## 2026-10-14 — Compete and Shop out of the nav for the beta
 
 **Request:** Hide unbuilt sections so beta testers don't land on empty tabs.

@@ -189,7 +189,7 @@ records, 20 achievements awarded after solves and learning, main cube per event,
 
 ### Social, later
 
-**Decided with beta feedback, not before** (founder, 2026-10-14): clubs and tournaments in
+**Decided with beta feedback, not before** (founder, 2026-10-14): tournaments in
 particular wait for what 10–15 real users ask for. Anything ranked waits for **solve
 verification** (camera, timer-only times, or results from real competitions), because a tapped
 0.02 single can top any table today.
@@ -202,8 +202,10 @@ In rough order of value; each builds on follows.
    tab. Cheap (a table and a page), and a reason to come back daily.
 3. **Share cards**: "new 12.3 Ao5" images for Instagram and WhatsApp, extending the profile's
    existing share images.
-4. **Clubs** (after beta feedback): school or city groups with a club leaderboard. `clubs`, `club_members` and
-   `club_join_requests` already exist (unused); needs moderation tools first.
+4. **Clubs**: **moved before the beta** (founder, 2026-10-14). Spec: `docs/clubs.md`
+   (type + tags, public / private / invite links, text, algorithm and video-link posts with
+   reactions and comments, its own desktop nav section). A club leaderboard waits for
+   verification.
 5. **Private friend rooms** in Compete (Phase 5).
 6. **Tournaments** (after beta feedback and verification): online events with rounds and
    brackets; needs verified solves and enough active users to fill them.
