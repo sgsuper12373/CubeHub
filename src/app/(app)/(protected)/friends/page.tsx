@@ -8,35 +8,30 @@ import { RequestActions } from "@/components/social/row-actions";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  getFriendsLeaderboard,
   getFriendsRecentPbs,
   getPendingRequests,
   getSuggestions,
   searchProfiles,
 } from "@/lib/social/dal";
-import { eventLabel, isTimerEvent, TIMER_EVENTS } from "@/lib/timer/events";
+import { eventLabel, isTimerEvent } from "@/lib/timer/events";
 import { formatMs } from "@/lib/timer/format";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Friends — CubeHub", robots: { index: false } };
 
 interface Props {
-  searchParams: Promise<{ tab?: string; event?: string; cat?: string; q?: string }>;
+  searchParams: Promise<{ tab?: string; q?: string }>;
 }
 
+// No Friends leaderboard for now (founder, 2026-10-14): times can be faked by
+// tapping the timer, so ranking waits for verified solves. The
+// `get_friends_leaderboard` RPC stays in the database for that version.
 const TABS = [
-  { id: "leaderboard", label: "Leaderboard" },
   { id: "pbs", label: "Recent PBs" },
   { id: "requests", label: "Requests" },
   { id: "find", label: "Find people" },
 ] as const;
 type Tab = (typeof TABS)[number]["id"];
-
-const CATEGORIES = [
-  { id: "single", label: "Single" },
-  { id: "ao5", label: "Ao5" },
-  { id: "ao12", label: "Ao12" },
-] as const;
 
 const CATEGORY_LABEL: Record<string, string> = {
   single: "single",
@@ -48,7 +43,7 @@ const CATEGORY_LABEL: Record<string, string> = {
 
 export default async function FriendsPage({ searchParams }: Props) {
   const sp = await searchParams;
-  const tab: Tab = TABS.some((t) => t.id === sp.tab) ? (sp.tab as Tab) : "leaderboard";
+  const tab: Tab = TABS.some((t) => t.id === sp.tab) ? (sp.tab as Tab) : "pbs";
   const requests = await getPendingRequests();
 
   return (
@@ -87,82 +82,10 @@ export default async function FriendsPage({ searchParams }: Props) {
         </ul>
       </nav>
 
-      {tab === "leaderboard" && <Leaderboard event={sp.event} cat={sp.cat} />}
       {tab === "pbs" && <RecentPbs />}
       {tab === "requests" && <Requests requests={requests} />}
       {tab === "find" && <FindPeople query={sp.q ?? ""} />}
     </div>
-  );
-}
-
-async function Leaderboard({ event, cat }: { event?: string; cat?: string }) {
-  const selected = event && isTimerEvent(event) ? event : "333";
-  const category = CATEGORIES.some((c) => c.id === cat) ? (cat as string) : "single";
-  const rows = await getFriendsLeaderboard(selected, category);
-  const href = (e: string, c: string) => `/friends?tab=leaderboard&event=${e}&cat=${c}`;
-
-  return (
-    <section className="space-y-4" aria-label="Friends leaderboard">
-      <nav aria-label="Events" className="hide-scrollbar -mx-4 overflow-x-auto px-4">
-        <ul className="flex w-max gap-1">
-          {TIMER_EVENTS.map((e) => (
-            <li key={e.id}>
-              <Link
-                href={href(e.id, category)}
-                scroll={false}
-                aria-current={e.id === selected ? "page" : undefined}
-                className={cn(
-                  "block rounded-lg border px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors",
-                  e.id === selected
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {eventLabel(e.id)}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      <div className="flex gap-1">
-        {CATEGORIES.map((c) => (
-          <Link
-            key={c.id}
-            href={href(selected, c.id)}
-            scroll={false}
-            aria-current={c.id === category ? "page" : undefined}
-            className={cn(
-              "rounded-lg px-3 py-1 text-sm font-medium transition-colors",
-              c.id === category ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {c.label}
-          </Link>
-        ))}
-      </div>
-
-      {rows.length === 0 ? (
-        <EmptyState title={`No ${eventLabel(selected)} ${CATEGORY_LABEL[category]} times yet`}>
-          You and the cubers you follow show up here.{" "}
-          <Link href="/friends?tab=find" className="text-primary hover:underline">
-            Find people
-          </Link>
-        </EmptyState>
-      ) : (
-        <ol className="divide-y divide-border rounded-2xl border border-border bg-card/60 px-4">
-          {rows.map((r, i) => (
-            <li key={r.id} className={cn("flex items-center gap-3 py-2.5", r.isMe && "font-semibold")}>
-              <span className="w-6 text-right font-mono text-sm text-muted-foreground tabular-nums">{i + 1}</span>
-              <Link href={`/profile/${r.username}`} className="min-w-0 flex-1 truncate text-sm text-foreground hover:underline">
-                {r.displayName || r.username}
-                {r.isMe && <span className="ml-1.5 text-xs font-medium text-primary">You</span>}
-              </Link>
-              <span className="font-mono text-base font-semibold text-foreground tabular-nums">{formatMs(r.timeMs)}</span>
-            </li>
-          ))}
-        </ol>
-      )}
-    </section>
   );
 }
 

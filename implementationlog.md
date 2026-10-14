@@ -5,6 +5,32 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-14 — Quick fixes: no Friends leaderboard, Drill Lab says if reps are saved, private test accounts
+
+**Request:** Remove the Friends leaderboard (fakeable by tapping), look into Drill Lab reps
+"erased after reload", tidy the test accounts. Clubs and tournaments wait for beta feedback.
+
+### Changed
+
+- `/friends`: Leaderboard tab removed; Recent PBs is the default tab. `getFriendsLeaderboard`
+  removed from `src/lib/social/dal.ts`. The `get_friends_leaderboard` RPC is kept in the
+  database for a verified-solves version (no migration).
+- Drill Lab: "This session" now says "Saved. This list clears on reload; your totals stay in
+  the variants above" (signed in) or "Not saved: you're signed out…" (guest), and the guest
+  sign-in prompt shows from the first rep instead of the third.
+- New `tests/e2e/drill-signed-in.spec.ts`: two reps on Ua Perm as test account A, reload, the
+  variant still counts them. It passed, so the reported bug didn't reproduce signed in.
+- Test accounts `testbot1` / `testbot2` set private through the app (Find people only suggests
+  public profiles). The social spec covers the request → accept path that follows.
+- Docs: roadmap (no leaderboard; verification gates anything ranked; clubs and tournaments
+  after beta feedback), to-do.
+
+### Verification
+
+- tsc, eslint, 388 unit tests, check:colors. Fresh build + full e2e: 50/50.
+
+---
+
 ## 2026-10-14 — Social v1: follows, requests, block, report, Friends hub, notifications, compare (branch `feat/social-v1`)
 
 **Request:** Build the founder's picks: A1–4 (follows, counts and lists, friends = mutual,

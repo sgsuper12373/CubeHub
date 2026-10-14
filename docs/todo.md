@@ -34,6 +34,12 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
       Done 2026-10-14: deployed in ~70s, chunk check OK (63 files, 5 pages).
 - [ ] **Check by hand:** the bell on desktop; the Profile-tab dot on a phone; `/friends` at
       phone width; a private profile's request → accept → stats visible.
+- [x] **Quick fixes (2026-10-14):** Friends leaderboard removed (fakeable); Drill Lab now says
+      whether reps are saved (the reported "erased after reload" didn't reproduce signed in, see
+      `tests/e2e/drill-signed-in.spec.ts`; most likely a signed-out session); test accounts
+      `testbot1`/`testbot2` made private so Find people doesn't suggest them.
+- [ ] **Old test account `#2nd User`** (`user_89946160417c`, made 2026-07-17, tap-tested PBs
+      like a 0.02 single): delete or make private in Supabase before the beta.
 - [ ] **Read reports** in the Supabase dashboard (`profile_reports`) until there's an admin
       queue (roadmap → Social, later).
 
@@ -169,11 +175,10 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
 ### Check by hand on the live site (signed in)
 - [ ] Drill Lab: do a few reps → reload → they're still there. Mark a rep +2 and one DNF. Run
       "weakest first" and check the slowest case comes up first.
-      **2026-10-14: reported "reps erased after reload". Under investigation.** The
-      "This session" list is in-memory by design and always empties on reload; saved reps show
-      in the per-case table (rep count, median) instead. The live DB holds 46 attempts, the
-      newest from 2026-10-11 18:41 UTC, so nothing has been saved since. Recheck signed in,
-      watching for a "Couldn't save that attempt" toast.
+      **2026-10-14: reported "reps erased after reload"; not reproduced signed in.** The new
+      `tests/e2e/drill-signed-in.spec.ts` saves reps and finds them after a reload. Most likely
+      the session was signed out (guest reps live in memory only). The page now says whether
+      reps are saved. Recheck +2/DNF and "weakest first" by hand when convenient.
 - [ ] Admin case editor: open a case, edit it, save, and check the Learn page shows the change.
       To get there: sign in as `CubeHub_Admin` (the only `is_admin` account) and open
       `/master-access/algorithms`. There is no nav link.

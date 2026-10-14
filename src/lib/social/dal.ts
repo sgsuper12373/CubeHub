@@ -79,32 +79,6 @@ export const getPendingRequests = cache(async (): Promise<FollowRequest[]> => {
   );
 });
 
-export interface LeaderboardRow extends PersonRow {
-  timeMs: number;
-  achievedAt: string;
-  isMe: boolean;
-}
-
-export async function getFriendsLeaderboard(puzzle: string, category: string): Promise<LeaderboardRow[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_friends_leaderboard", {
-    p_puzzle: puzzle,
-    p_category: category,
-  });
-  if (error) {
-    console.error("get_friends_leaderboard failed", error);
-    return [];
-  }
-  return ((data ?? []) as (ProfileJoin & { user_id: string; time_ms: number; achieved_at: string; is_me: boolean })[]).map(
-    (r) => ({
-      ...toPerson({ ...r, id: r.user_id }),
-      timeMs: r.time_ms,
-      achievedAt: r.achieved_at,
-      isMe: r.is_me,
-    }),
-  );
-}
-
 export interface RecentPb extends PersonRow {
   puzzleType: string;
   category: string;

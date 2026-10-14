@@ -433,7 +433,7 @@ export function DrillLab({
             onSelect={(id) => setVariantChoice((prev) => ({ ...prev, [drillCase.id]: id }))}
           />
 
-          {!isAuthed && attempts.length >= 3 && (
+          {!isAuthed && attempts.length >= 1 && (
             <p className="flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm">
               <LogIn className="size-4 shrink-0 text-primary" />
               <span>
@@ -445,7 +445,7 @@ export function DrillLab({
             </p>
           )}
 
-          <SessionList attempts={attempts} caseNames={caseNames} />
+          <SessionList attempts={attempts} caseNames={caseNames} saved={isAuthed} />
 
           <section className="rounded-lg border border-border bg-card p-4" aria-label="Cases in this set">
             <div className="flex items-center justify-between gap-2">

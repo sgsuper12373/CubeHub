@@ -108,14 +108,22 @@ export function VariantPicker({
 export function SessionList({
   attempts,
   caseNames,
+  saved,
 }: {
   attempts: readonly DrillAttempt[];
   caseNames: ReadonlyMap<string, string>;
+  /** Signed in: each rep is stored. Either way this list itself is in memory only. */
+  saved: boolean;
 }) {
   if (attempts.length === 0) return null;
   return (
     <section className="rounded-lg border border-border bg-card p-4" aria-label="This session">
       <h2 className="text-sm font-semibold text-foreground">This session · {attempts.length}</h2>
+      <p className="mt-0.5 text-xs text-muted-foreground">
+        {saved
+          ? "Saved. This list clears on reload; your totals stay in the variants above."
+          : "Not saved: you're signed out, so these reps disappear on reload."}
+      </p>
       <ol className="mt-2 divide-y divide-border/60 text-sm" data-testid="drill-session-list">
         {attempts.slice(0, 12).map((a) => (
           <li key={a.id} className="flex items-center justify-between py-1.5">

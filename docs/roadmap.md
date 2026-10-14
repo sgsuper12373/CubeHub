@@ -171,9 +171,11 @@ records, 20 achievements awarded after solves and learning, main cube per event,
 - **Safety:** block (removes follows both ways, hides each profile from the other, managed in
   Settings), 50 follows per hour, report a profile (10 per day; admins read reports).
   No direct messages.
-- **Friends hub** at `/friends`: leaderboard (you + people you follow, per event, Single /
-  Ao5 / Ao12), recent PBs from people you follow (14 days), follow requests, and find people
-  (search + suggestions near your 3x3 Ao12).
+- **Friends hub** at `/friends`: recent PBs from people you follow (14 days), follow
+  requests, and find people (search + suggestions near your 3x3 Ao12).
+- **No Friends leaderboard** (removed 2026-10-14, founder): times can be faked by tapping the
+  timer, so nothing is ranked until solves can be verified. The `get_friends_leaderboard` RPC
+  stays in the database for that version.
 - **Notifications:** new follower, follow request, request accepted. A bell beside your name
   on desktop; on phones a dot on the Profile tab and the bell on your own profile. No new nav
   tab: the navbar already has eight.
@@ -182,19 +184,28 @@ records, 20 achievements awarded after solves and learning, main cube per event,
 
 ### Social, later
 
+**Decided with beta feedback, not before** (founder, 2026-10-14): clubs and tournaments in
+particular wait for what 10–15 real users ask for. Anything ranked waits for **solve
+verification** (camera, timer-only times, or results from real competitions), because a tapped
+0.02 single can top any table today.
+
 In rough order of value; each builds on follows.
 
-1. **Daily scramble**: one scramble for everyone each day, ranked India-wide with a Friends
+1. **Solve verification**: the gate for leaderboards, the daily scramble ranking, tournaments
+   and Compete.
+2. **Daily scramble**: one scramble for everyone each day, ranked India-wide with a Friends
    tab. Cheap (a table and a page), and a reason to come back daily.
-2. **Share cards**: "new 12.3 Ao5" images for Instagram and WhatsApp, extending the profile's
+3. **Share cards**: "new 12.3 Ao5" images for Instagram and WhatsApp, extending the profile's
    existing share images.
-3. **Clubs**: school or city groups with a club leaderboard. `clubs`, `club_members` and
+4. **Clubs** (after beta feedback): school or city groups with a club leaderboard. `clubs`, `club_members` and
    `club_join_requests` already exist (unused); needs moderation tools first.
-4. **Private friend rooms** in Compete (Phase 5).
-5. **Social achievements** ("First follower", "Followed by 10").
-6. **PB notifications** ("a friend broke their PB"). Left out of v1 because the PB recompute
+5. **Private friend rooms** in Compete (Phase 5).
+6. **Tournaments** (after beta feedback and verification): online events with rounds and
+   brackets; needs verified solves and enough active users to fill them.
+7. **Social achievements** ("First follower", "Followed by 10").
+8. **PB notifications** ("a friend broke their PB"). Left out of v1 because the PB recompute
    triggers can rewrite rows and would spam; recent PBs on `/friends` cover it for now.
-7. **Admin report queue** under `/master-access` (unlinked). Until then, read
+9. **Admin report queue** under `/master-access` (unlinked). Until then, read
    `profile_reports` in the Supabase dashboard.
 
 ## Beta

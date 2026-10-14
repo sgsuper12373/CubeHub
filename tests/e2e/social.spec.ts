@@ -86,11 +86,10 @@ test("block hides each profile from the other; unblock in Settings", async ({ br
   expect(again?.status()).toBe(200);
 });
 
-test("the Friends hub opens its four tabs and finds the other account", async ({ browser }) => {
+test("the Friends hub opens its three tabs and finds the other account", async ({ browser }) => {
   const a = await signedIn(browser, "a");
   const b = await signedIn(browser, "b");
   for (const [tab, text] of [
-    ["leaderboard", /Leaderboard/],
     ["pbs", /Recent PBs/],
     ["requests", /Requests/],
     ["find", /Find people/],
