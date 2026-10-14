@@ -13,6 +13,7 @@ import { PbRow } from "@/components/stats/analytics/pb-row";
 import { CubeLoader } from "@/components/ui/cube-loader";
 import { isTimerEvent, TIMER_EVENTS } from "@/lib/timer/events";
 import { formatMs } from "@/lib/timer/format";
+import { countedSolves } from "@/lib/timer/misfire";
 import { localRepo } from "@/lib/timer/repo-local";
 import type { SolveRepository } from "@/lib/timer/repo";
 import { createSupabaseRepo } from "@/lib/timer/repo-supabase";
@@ -126,11 +127,13 @@ export function StatsScreen({ userId }: { userId: string | null }) {
 
   // Session filtering is client-side — the metrics already carry sessionId, so
   // narrowing costs nothing and never re-hits the network.
+  // Misfires and solves the cuber left out don't count here, as on the timer.
   const filtered = useMemo(() => {
     if (!metrics) return null;
-    if (sessionId === "all") return metrics;
-    return metrics.filter((m) => m.sessionId === sessionId);
-  }, [metrics, sessionId]);
+    const counted = countedSolves(puzzle, metrics);
+    if (sessionId === "all") return counted;
+    return counted.filter((m) => m.sessionId === sessionId);
+  }, [metrics, sessionId, puzzle]);
   const practiceDays = useMemo(() => (filtered ? dailyCounts(filtered) : []), [filtered]);
 
   return (
@@ -238,7 +241,7 @@ export function StatsScreen({ userId }: { userId: string | null }) {
             emptyMessage="Your practice days will show up here."
             table={<PracticeTable metrics={filtered} />}
           >
-            <Heatmap days={practiceDays} />
+            <Heatmap days={practiceDays} since={practiceDays[0]?.day ?? null} />
           </ChartFrame>
 
           <DataSection

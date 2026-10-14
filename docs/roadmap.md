@@ -176,8 +176,11 @@ records, 20 achievements awarded after solves and learning, main cube per event,
 - **Safety:** block (removes follows both ways, hides each profile from the other, managed in
   Settings), 50 follows per hour, report a profile (10 per day; admins read reports).
   No direct messages.
-- **Friends hub** at `/friends`: recent PBs from people you follow (14 days), follow
-  requests, and find people (search + suggestions near your 3x3 Ao12).
+- **People** at `/people` (was "Friends hub" at `/friends`, renamed 2026-10-15 because the
+  system is follow/followers): an activity feed (PBs, practice days, badges, learned cases;
+  30 days; "following" falls back to "everyone" when quiet), find people (search as you type,
+  suggestions: followers first, same country, nearest 3x3 Ao12, recently active), and
+  follow requests (tab shown only for a private profile or while requests wait).
 - **No Friends leaderboard** (removed 2026-10-14, founder): times can be faked by tapping the
   timer, so nothing is ranked until solves can be verified. The `get_friends_leaderboard` RPC
   stays in the database for that version.

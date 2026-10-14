@@ -15,6 +15,7 @@ import { copyAverage } from "@/lib/timer/copy-text";
 import type { WindowSize } from "@/lib/timer/stats";
 import type { Solve } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
+import { useSessionStore } from "@/stores/session-store";
 
 /**
  * The session's stats as a vertical list — the tall left column of the default
@@ -26,6 +27,10 @@ import { cn } from "@/lib/utils";
  * a wide-and-short shape fits better.
  */
 export function SessionStats({ solves }: { solves: Solve[] }) {
+  // Until the session has loaded, an empty list means "not yet", not "none".
+  const hydrated = useSessionStore((s) => s.hydrated);
+  if (!hydrated) return <StatsSkeleton />;
+
   if (solves.length === 0) {
     return (
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 px-4 py-6 text-center">
@@ -140,5 +145,19 @@ function Row({
         {valueEl}
       </span>
     </button>
+  );
+}
+
+/** Placeholder rows while the session's solves load. */
+export function StatsSkeleton({ rows = 6 }: { rows?: number }) {
+  return (
+    <div className="flex flex-col gap-2 px-3 py-2" aria-busy="true" aria-label="Loading stats">
+      {Array.from({ length: rows }, (_, i) => (
+        <div key={i} className="flex items-center justify-between gap-4">
+          <span className="h-3 w-12 animate-pulse rounded bg-muted" />
+          <span className="h-3 w-16 animate-pulse rounded bg-muted" />
+        </div>
+      ))}
+    </div>
   );
 }

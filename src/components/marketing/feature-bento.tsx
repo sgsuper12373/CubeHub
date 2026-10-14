@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, Boxes, GraduationCap, ShoppingCart, Swords, Target, Timer } from "lucide-react";
+import { ArrowRight, Boxes, GraduationCap, Target, Timer, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-import { SectionHeading, SoonTag } from "@/components/marketing/section-heading";
+import { SectionHeading } from "@/components/marketing/section-heading";
 import { Sparkline } from "@/components/stats/sparkline";
 import { ScramblePreview } from "@/components/timer/scramble-preview";
 import { cn } from "@/lib/utils";
@@ -10,7 +10,8 @@ import { cn } from "@/lib/utils";
 /**
  * The product, one tile per surface. Each tile shows a small, honest slice of
  * the real UI (stats rows, a drill table, a 3D case) rather than a generic
- * icon card, and surfaces that haven't shipped yet say so.
+ * icon card. Only what ships today; what's next is one strip at the bottom
+ * of the page (coming-next.tsx).
  */
 
 const TREND = [11.42, 10.87, 12.03, 10.21, 9.94, 10.66, 9.71, 10.12, 9.42, 9.18, 9.86, 8.74];
@@ -19,12 +20,6 @@ const DRILL_ROWS = [
   { name: "OLL 33", tag: "due", median: "2.41" },
   { name: "PLL Gb", tag: "due", median: "3.07" },
   { name: "OLL 45", tag: "new", median: "—" },
-] as const;
-
-const FEATURED_CUBES = [
-  { name: "QiYi MS 3×3", price: "₹449" },
-  { name: "MoYu RS3 M V5", price: "₹649" },
-  { name: "GAN 356 M", price: "₹2,499" },
 ] as const;
 
 export function FeatureBento() {
@@ -120,48 +115,22 @@ export function FeatureBento() {
           </table>
         </Tile>
 
-        {/* Compete */}
+        {/* Profiles */}
         <Tile
-          icon={Swords}
-          title="Compete"
-          soon
-          body="Race other cubers on the same scramble with ELO ranking — or warm up against bots from beginner to sub-10."
+          href="/profile"
+          icon={Users}
+          title="Profiles"
+          body="A public page for your PBs, progress and badges. Follow other cubers and compare head-to-head, event by event."
+          className="lg:col-span-1"
         >
-          <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-surface-raised/50 px-4 py-3 font-mono text-xs">
-            <span className="flex flex-col">
-              <span className="text-foreground-subtle">You</span>
-              <span className="text-base font-semibold text-foreground tabular-nums">9.81</span>
-            </span>
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">VS</span>
-            <span className="flex flex-col text-right">
-              <span className="text-foreground-subtle">Bot · Sub-12</span>
-              <span className="text-base font-semibold text-muted-foreground tabular-nums">11.37</span>
-            </span>
-          </div>
-        </Tile>
-
-        {/* Shop */}
-        <Tile
-          icon={ShoppingCart}
-          title="Buy cubes in ₹"
-          soon
-          body="Tell us your level and budget, get three cubes that suit you — from sellers who actually ship in India."
-          className="md:col-span-2 lg:col-span-3"
-          horizontal
-        >
-          <ul className="grid gap-2 sm:grid-cols-3 lg:min-w-[30rem]">
-            {FEATURED_CUBES.map((cube) => (
-              <li
-                key={cube.name}
-                className="flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-surface-raised/50 px-4 py-3"
-              >
-                <span className="text-sm font-medium text-foreground">{cube.name}</span>
-                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 font-mono text-xs font-bold text-primary tabular-nums">
-                  {cube.price}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <dl className="mt-5 grid grid-cols-[1fr_auto_auto] items-baseline gap-x-4 gap-y-2 rounded-2xl border border-border/70 bg-surface-raised/50 px-4 py-3 font-mono text-xs tabular-nums">
+            <dt className="text-foreground-subtle">3x3</dt>
+            <dd className="font-semibold text-primary">10.14</dd>
+            <dd className="text-muted-foreground">11.02</dd>
+            <dt className="text-foreground-subtle">2x2</dt>
+            <dd className="text-muted-foreground">4.87</dd>
+            <dd className="font-semibold text-primary">4.31</dd>
+          </dl>
         </Tile>
       </div>
     </section>
@@ -173,36 +142,30 @@ function Tile({
   icon: Icon,
   title,
   body,
-  soon = false,
-  horizontal = false,
   className,
   children,
 }: {
-  /** Omitted for "soon" tiles: their pages are empty until the feature ships. */
   href?: string;
   icon: LucideIcon;
   title: string;
   body: string;
-  soon?: boolean;
-  horizontal?: boolean;
   className?: string;
   children?: React.ReactNode;
 }) {
   // The whole tile is clickable through the title link's ::after overlay, not
   // by wrapping it in <a>: a tile can then hold interactive content (the 3D
   // cube) that sits above the overlay without a drag turning into a click.
-  const linked = href !== undefined && !soon;
+  const linked = href !== undefined;
   return (
     <div
       className={cn(
         "reveal group relative flex flex-col overflow-hidden rounded-3xl border border-border bg-card p-6",
         linked &&
           "transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 has-[a:focus-visible]:ring-3 has-[a:focus-visible]:ring-ring/50",
-        horizontal && "lg:flex-row lg:items-center lg:justify-between lg:gap-10",
         className,
       )}
     >
-      <div className={cn(horizontal && "lg:max-w-sm")}>
+      <div>
         <div className="flex items-center gap-3">
           <span
             className={cn(
@@ -221,7 +184,6 @@ function Tile({
               title
             )}
           </h3>
-          {soon && <SoonTag />}
           {linked && (
             <ArrowRight
               className="ml-auto size-4 text-foreground-subtle transition-[color,transform] group-hover:translate-x-0.5 group-hover:text-primary"
@@ -231,7 +193,7 @@ function Tile({
         </div>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{body}</p>
       </div>
-      {horizontal ? <div className="mt-5 lg:mt-0">{children}</div> : children}
+      {children}
     </div>
   );
 }

@@ -32,7 +32,7 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
 - [x] **Run the signed-in e2e locally:** `npm run test:e2e:prod` (social spec included). 49/49 on 2026-10-14.
 - [x] **Merge, push, deploy,** then `npm run check:chunks -- https://pre-cube-hub.vercel.app`.
       Done 2026-10-14: deployed in ~70s, chunk check OK (63 files, 5 pages).
-- [ ] **Check by hand:** the bell on desktop; the Profile-tab dot on a phone; `/friends` at
+- [ ] **Check by hand:** the bell on desktop; the Profile-tab dot on a phone; `/people` at
       phone width; a private profile's request → accept → stats visible.
 - [x] **Quick fixes (2026-10-14):** Friends leaderboard removed (fakeable); Drill Lab now says
       whether reps are saved (the reported "erased after reload" didn't reproduce signed in, see
@@ -62,8 +62,26 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
    Next session starts with the database migration (founder pushes it).
 3. **Before the beta: check every page for correctness** (founder, 2026-10-14). Go page by page
    and fix wrong numbers, labels and hardcoded values. Known so far:
-   - [ ] Learn cards: the algorithm count is wrong (e.g. "All methods" for 2x2 says 57
-         algorithms), and the difficulty badge is hardcoded instead of coming from the content.
+   - [x] Learn cards and puzzle hero: counts were hardcoded (57 algorithms, 12 tutorials, 58
+         algorithms, 20+ tutorials, a made-up 4.8 rating). Now counted from the database;
+         rating removed (2026-10-15).
+   - [ ] Learn: the difficulty badge (cards and hero) is still hardcoded, not from the content.
+   - [x] Pre-beta review (2026-10-15): misfires out of records, achievements on the server
+         with real dates, landing "Soon" cards → one "Coming next" strip, WCA IDs hidden from
+         others, Friends → People with a feed, as-you-type search, list rows with Follow and
+         a time, Compare tidy-up, chart outliers, timer skeleton, heatmap, Settings/Edit
+         profile merge, Drill hide-alg / learned-first / misfire guard. See implementationlog.
+   - [ ] **Apply `20261019000000_solve_sanity.sql` BEFORE deploying this code**, then run
+         `supabase/tests/solve_sanity_test.sql` (expect 22 PASS). The timer and Stats read the
+         new `solves.excluded` column, so the old database breaks the new app.
+   - [ ] After applying: check by hand that Ganesh's 0.65 and #2nd User's 0.02 PBs are gone,
+         and that Ganesh's badges are dated 8 Oct.
+   - [ ] Check by hand signed out: a public profile, and the misfire prompt on the guest timer.
+   - [ ] Check by hand on a real phone (the desktop browser couldn't resize; a 390 px frame
+         showed no sideways scrolling on the pages changed here).
+   - [ ] **Challenge on the same scramble** from Compare: the first slice of Compete
+         (founder, 2026-10-15: later). Shared scramble link + a notification with both times.
+   - [ ] **WCA ID verification** (WCA OAuth). Until then IDs are shown only to their owner.
 4. **Beta with 10–15 real users.** Access tiers and the domain are decided after it.
 5. **Social, later** (roadmap): daily scramble with a Friends tab, share cards, friend
    rooms in Compete, social achievements, PB notifications, an admin report queue.

@@ -108,6 +108,11 @@ export interface Solve {
    * filter it out; the DB PB-recompute trigger treats a set value as gone.
    */
   deletedAt?: string | null;
+  /**
+   * Left out of records by its owner (DB `solves.excluded`). Absent = false.
+   * See misfire.ts for which solves count.
+   */
+  excluded?: boolean;
 }
 
 /**
@@ -127,6 +132,7 @@ export interface SolveMetric {
   penalty: Penalty;
   effectiveTimeMs: number | null;
   createdAt: string;
+  excluded?: boolean;
 }
 
 /** Categories `personal_bests.category` accepts that the timer produces. */

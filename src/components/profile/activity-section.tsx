@@ -19,7 +19,7 @@ export function ActivitySection({ activity, hiddenNote }: { activity: ProfileAct
       </div>
       <div className="rounded-xl border border-border bg-card/60 p-4">
         {activity.days.length > 0 ? (
-          <Heatmap days={activity.days} />
+          <Heatmap days={activity.days} since={activity.days[0]?.day ?? null} />
         ) : (
           <p className="py-6 text-center text-sm text-muted-foreground">No solves in the last year.</p>
         )}

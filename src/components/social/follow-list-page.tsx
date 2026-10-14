@@ -3,11 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { EmptyState, PersonList, PersonRow } from "@/components/social/person-row";
+import { FollowButton } from "@/components/social/follow-button";
 import { RemoveFollowerButton } from "@/components/social/row-actions";
 import { buttonVariants } from "@/components/ui/button";
 import { getUser } from "@/lib/auth/dal";
 import { getPublicProfile } from "@/lib/profile/dal";
-import { getFollowers, getFollowing } from "@/lib/social/dal";
+import { getFollowers, getFollowing, withFollowAndStat } from "@/lib/social/dal";
+import { followButtonState } from "@/lib/social/types";
 import { cn } from "@/lib/utils";
 
 /**
@@ -21,11 +23,13 @@ export async function FollowListPage({ username, kind }: { username: string; kin
 
   const name = profile.displayName || profile.username;
   const isOwner = user?.id === profile.id;
-  const people = profile.stats.hidden
-    ? []
-    : kind === "followers"
-      ? await getFollowers(profile.id)
-      : await getFollowing(profile.id);
+  const people = await withFollowAndStat(
+    profile.stats.hidden
+      ? []
+      : kind === "followers"
+        ? await getFollowers(profile.id)
+        : await getFollowing(profile.id),
+  );
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-5 px-4 py-8">
@@ -66,7 +70,7 @@ export async function FollowListPage({ username, kind }: { username: string; kin
       ) : people.length === 0 ? (
         <EmptyState title={kind === "followers" ? "No followers yet" : "Not following anyone yet"}>
           {isOwner && (
-            <Link href="/friends?tab=find" className="text-primary hover:underline">
+            <Link href="/people?tab=find" className="text-primary hover:underline">
               Find cubers to follow
             </Link>
           )}
@@ -74,7 +78,16 @@ export async function FollowListPage({ username, kind }: { username: string; kin
       ) : (
         <PersonList>
           {people.map((p) => (
-            <PersonRow key={p.id} person={p}>
+            <PersonRow key={p.id} person={p} detail={p.headline ?? undefined}>
+              {user && p.id !== user.id && (
+                <FollowButton
+                  targetId={p.id}
+                  name={p.displayName || p.username}
+                  initial={followButtonState(p, { signedIn: true, isOwner: false })}
+                  isPrivate={!p.isPublic}
+                  size="xs"
+                />
+              )}
               {isOwner && kind === "followers" && (
                 <RemoveFollowerButton followerId={p.id} name={p.displayName || p.username} />
               )}

@@ -9,6 +9,7 @@ import { SolveList } from "@/components/stats/solve-list";
 import { StatTiles } from "@/components/stats/stat-tiles";
 import { Button } from "@/components/ui/button";
 import { copyAverage } from "@/lib/timer/copy-text";
+import { countedSessionSolves } from "@/lib/timer/misfire";
 import { bestSingle, meanOfN, sessionMean, wcaAverage } from "@/lib/timer/stats";
 import type { Penalty, Solve } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
@@ -34,13 +35,15 @@ export function StatsPanel({
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const best = bestSingle(solves);
-  const mo3 = meanOfN(solves, 3);
-  const ao5 = wcaAverage(solves, 5);
-  const ao12 = wcaAverage(solves, 12);
-  const ao50 = wcaAverage(solves, 50);
-  const ao100 = wcaAverage(solves, 100);
-  const mean = sessionMean(solves);
+  // Stats leave out misfires and excluded solves; the list shows them all.
+  const counted = countedSessionSolves(solves);
+  const best = bestSingle(counted);
+  const mo3 = meanOfN(counted, 3);
+  const ao5 = wcaAverage(counted, 5);
+  const ao12 = wcaAverage(counted, 12);
+  const ao50 = wcaAverage(counted, 50);
+  const ao100 = wcaAverage(counted, 100);
+  const mean = sessionMean(counted);
 
   const content = (
     <>
@@ -52,10 +55,10 @@ export function StatsPanel({
         ao50={ao50}
         ao100={ao100}
         mean={mean}
-        count={solves.length}
-        onCopy={(n) => copyAverage(solves, n)}
+        count={counted.length}
+        onCopy={(n) => copyAverage(counted, n)}
       />
-      <SessionTrend solves={solves} />
+      <SessionTrend solves={counted} />
       <SolveList
         solves={solves} 
         onPenalty={onPenalty} 

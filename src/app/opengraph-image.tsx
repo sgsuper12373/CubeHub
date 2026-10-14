@@ -7,7 +7,7 @@ import { ImageResponse } from "next/og";
  * the stylesheet, so they cannot be referenced as variables here.
  */
 
-export const alt = "CubeHub — Speedcubing Timer, Tutorials & Competitions";
+export const alt = "CubeHub — Speedcubing Timer, Tutorials & Stats";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

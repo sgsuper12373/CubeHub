@@ -129,6 +129,11 @@ The owner-only RLS on `solves` and `user_algorithm_bookmarks` stays exactly as i
   - Badges are permanent.
   - The unlock toast has no "View" button: the timer's store has no router.
   - A private profile's badges are hidden by RLS.
+  - *Changed 2026-10-15 (`20261019000000_solve_sanity.sql`):* badges are awarded by triggers
+    on `solves` and `user_algorithm_bookmarks` for whoever's rows changed, and dated by when the
+    condition was first met. `award_achievements()` now returns the badges not yet shown in a
+    toast. Misfires and left-out solves earn nothing; badges earned only by misfires were
+    removed once.
 
 ## Step 5: C11 and C12, setup, method and level (built 2026-10-12; migration `20261016000000_profile_setup.sql`)
 
@@ -164,7 +169,7 @@ The owner-only RLS on `solves` and `user_algorithm_bookmarks` stays exactly as i
     follower sees the whole profile.
   - city or state leaderboards
   - clubs (the tables already exist)
-- **WCA ID verification:** today the ID is only labelled as not verified.
+- **WCA ID verification:** until then (founder, 2026-10-15) only the owner sees their ID.
 - **Per-user timezone** for streaks and the heatmap.
 
 ## How each step is checked

@@ -5,6 +5,7 @@ import { BarChart3, Star } from "lucide-react";
 import { formatAverage, formatMs } from "@/lib/timer/format";
 import type { WindowSize } from "@/lib/timer/stats";
 import { cn } from "@/lib/utils";
+import { useSessionStore } from "@/stores/session-store";
 
 /**
  * The headline session metrics as a row of distinct, elevated cards (design
@@ -40,8 +41,19 @@ export function StatTiles({
   /** Copy an average as text; offered on tiles whose window is full. */
   onCopy?: (n: WindowSize) => void;
 }) {
+  const hydrated = useSessionStore((s) => s.hydrated);
   const copy = (n: WindowSize, value: number | "DNF" | null) =>
     onCopy && value !== null ? () => onCopy(n) : undefined;
+
+  if (!hydrated) {
+    return (
+      <div className="flex w-full gap-2 overflow-hidden px-2 pb-1" aria-busy="true" aria-label="Loading stats">
+        {Array.from({ length: 4 }, (_, i) => (
+          <div key={i} className="h-14 w-24 shrink-0 animate-pulse rounded-lg bg-muted" />
+        ))}
+      </div>
+    );
+  }
 
   if (count === 0) {
     return (

@@ -7,7 +7,7 @@ import { linearScale } from "@/components/stats/chart/scale";
 import { ChartTooltip, TooltipRow } from "@/components/stats/chart/tooltip";
 import { useMeasuredWidth } from "@/components/stats/chart/use-measured-width";
 import { formatMs } from "@/lib/timer/format";
-import { histogramBuckets } from "@/lib/timer/stats";
+import { histogramBuckets, slowOutlierCeiling } from "@/lib/timer/stats";
 import type { SolveMetric } from "@/lib/timer/types";
 
 /**
@@ -29,7 +29,10 @@ export function Histogram({ metrics }: { metrics: SolveMetric[] }) {
   const { ref, width } = useMeasuredWidth<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
 
-  const { buckets } = useMemo(() => histogramBuckets(metrics), [metrics]);
+  const { buckets, over, cap } = useMemo(() => {
+    const cap = slowOutlierCeiling(metrics);
+    return { ...histogramBuckets(metrics, 14, cap), cap };
+  }, [metrics]);
 
   const innerW = Math.max(0, width - MARGIN.left - MARGIN.right);
   const innerH = HEIGHT - MARGIN.top - MARGIN.bottom;
@@ -144,6 +147,13 @@ export function Histogram({ metrics }: { metrics: SolveMetric[] }) {
             color="var(--chart-1)"
           />
         </ChartTooltip>
+      )}
+
+      {over > 0 && cap !== null && (
+        <p className="mt-1 text-xs text-muted-foreground">
+          {over} slower solve{over === 1 ? "" : "s"} (over {formatMs(cap)}) not shown, so the
+          rest stay readable.
+        </p>
       )}
     </div>
   );

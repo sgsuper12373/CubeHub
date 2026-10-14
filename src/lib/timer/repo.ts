@@ -31,6 +31,8 @@ export interface SolveRepository {
   saveSolve(s: Solve, userId?: string): Promise<void>;
   updatePenalty(id: string, p: Penalty): Promise<void>;
   updateNotes(id: string, notes: string): Promise<void>;
+  /** Leave a solve out of records, or put it back. The DB recomputes PBs. */
+  updateExcluded(id: string, excluded: boolean): Promise<void>;
   /** Soft delete — sets deleted_at. Reversible via restoreSolves. */
   deleteSolve(id: string): Promise<void>;
   upsertSession(s: Session, userId?: string): Promise<void>;

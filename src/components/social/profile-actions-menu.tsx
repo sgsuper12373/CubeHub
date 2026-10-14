@@ -35,7 +35,7 @@ export function ProfileActionsMenu({ targetId, name }: { targetId: string; name:
         return;
       }
       toast({ kind: "info", message: `${name} is blocked`, durationMs: 3000 });
-      router.push("/friends");
+      router.push("/people");
     });
   }
 

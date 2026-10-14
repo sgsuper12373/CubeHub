@@ -14,6 +14,7 @@ import type { DrillCase, DrillSubset } from "@/lib/drill/dal";
 import { currentVariantId, nextCase, statsFromAttempts } from "@/lib/drill/order";
 import type { DrillAttempt, DrillOrder, VariantStats } from "@/lib/drill/types";
 import { formatMs, formatResult } from "@/lib/timer/format";
+import { drillMisfireLimitMs } from "@/lib/timer/misfire";
 import type { Penalty } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
 import { useDrillStore, type PressOutcome } from "@/stores/drill-store";
@@ -40,6 +41,25 @@ function isEditableTarget(target: EventTarget | null): boolean {
   return target.isContentEditable || target.tagName === "TEXTAREA" || target.tagName === "SELECT";
 }
 
+const HIDE_ALG_KEY = "cubehub.drill.hideAlg";
+
+/** The "hide algorithm" option, remembered per browser. On unless turned off. */
+function loadHideAlg(): boolean {
+  try {
+    return window.localStorage.getItem(HIDE_ALG_KEY) !== "0";
+  } catch {
+    return true;
+  }
+}
+
+function saveHideAlg(hide: boolean) {
+  try {
+    window.localStorage.setItem(HIDE_ALG_KEY, hide ? "1" : "0");
+  } catch {
+    // Private mode or blocked storage: the choice lasts for this visit only.
+  }
+}
+
 /** Replace one case's rows with the server's fresh ones. */
 function mergeCaseStats(
   prev: ReadonlyMap<string, VariantStats>,
@@ -61,6 +81,7 @@ export function DrillLab({
   initialAuf,
   initialOrder,
   isAuthed,
+  scopeInfo,
 }: {
   puzzle: string;
   subsets: DrillSubset[];
@@ -72,6 +93,8 @@ export function DrillLab({
   initialAuf: Auf;
   initialOrder: DrillOrder;
   isAuthed: boolean;
+  /** For one set: whether only learned cases are queued, and the counts. */
+  scopeInfo: { scope: "learned" | "all"; learned: number; total: number } | null;
 }) {
   const router = useRouter();
   const phase = useDrillStore((s) => s.phase);
@@ -91,6 +114,13 @@ export function DrillLab({
   const [randomizeAuf, setRandomizeAuf] = useState(true);
   const [visualization, setVisualization] = useState<"2D" | "3D">("3D");
   const [showSetup, setShowSetup] = useState(false);
+  // Recall, not reading: the moves stay hidden until the rep is done. Starts on
+  // for the server render, then follows the saved choice.
+  const [hideAlg, setHideAlg] = useState(true);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading browser storage after hydration
+    setHideAlg(loadHideAlg());
+  }, []);
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   // "Now" for due-date display, refreshed per case rather than per render.
@@ -123,33 +153,50 @@ export function DrillLab({
   // ── Side effects of a tap ────────────────────────────────────────────────
   const recordStop = useCallback(
     (timeMs: number, recognitionMs: number | null) => {
+      // Captured now: by the time "Save anyway" is tapped the drill has moved on.
       const { drillCase: c, algorithm: a } = latest.current;
-      const attempt: SessionAttempt = {
-        id: crypto.randomUUID(),
-        algorithmId: a.id,
-        caseId: c.id,
-        timeMs,
-        penalty: "none",
-        recognitionMs,
-        createdAt: new Date().toISOString(),
-        serverId: null,
-        saving: isAuthed,
-      };
-      setAttempts((prev) => [attempt, ...prev]);
-      if (!isAuthed) return;
 
-      recordDrillAttempt({ algorithmId: a.id, caseId: c.id, timeMs, penalty: "none", recognitionMs })
-        .then((res) => {
-          setAttempts((prev) =>
-            prev.map((x) => (x.id === attempt.id ? { ...x, serverId: res.id, saving: false } : x)),
-          );
-          setServerStats((prev) => mergeCaseStats(prev, c.id, res.stats));
-        })
-        .catch((err: unknown) => {
-          console.error(err);
-          setAttempts((prev) => prev.map((x) => (x.id === attempt.id ? { ...x, saving: false } : x)));
-          toast({ kind: "error", message: "Couldn't save that attempt", durationMs: 4000 });
+      const save = () => {
+        const attempt: SessionAttempt = {
+          id: crypto.randomUUID(),
+          algorithmId: a.id,
+          caseId: c.id,
+          timeMs,
+          penalty: "none",
+          recognitionMs,
+          createdAt: new Date().toISOString(),
+          serverId: null,
+          saving: isAuthed,
+        };
+        setAttempts((prev) => [attempt, ...prev]);
+        if (!isAuthed) return;
+
+        recordDrillAttempt({ algorithmId: a.id, caseId: c.id, timeMs, penalty: "none", recognitionMs })
+          .then((res) => {
+            setAttempts((prev) =>
+              prev.map((x) => (x.id === attempt.id ? { ...x, serverId: res.id, saving: false } : x)),
+            );
+            setServerStats((prev) => mergeCaseStats(prev, c.id, res.stats));
+          })
+          .catch((err: unknown) => {
+            console.error(err);
+            setAttempts((prev) => prev.map((x) => (x.id === attempt.id ? { ...x, saving: false } : x)));
+            toast({ kind: "error", message: "Couldn't save that attempt", durationMs: 4000 });
+          });
+      };
+
+      // Faster than anyone turns: a slip of the finger, not a rep. Not saved
+      // unless the cuber says it was real.
+      if (timeMs < drillMisfireLimitMs(a.move_count)) {
+        toast({
+          kind: "info",
+          message: `${formatMs(timeMs)} is too quick for ${a.move_count} moves, so it wasn't saved.`,
+          durationMs: 6000,
+          action: { label: "Save anyway", onAction: save },
         });
+        return;
+      }
+      save();
     },
     [isAuthed],
   );
@@ -300,6 +347,24 @@ export function DrillLab({
 
         <span className="mx-1 hidden h-5 w-px bg-border sm:block" />
 
+        {scopeInfo && scopeInfo.learned > 0 && (
+          <div className="flex items-center rounded-md border border-border p-0.5" role="group" aria-label="Which cases">
+            {(["learned", "all"] as const).map((s) => (
+              <Link
+                key={s}
+                href={`${setHref(activeSet)}&scope=${s}`}
+                aria-current={scopeInfo.scope === s ? "true" : undefined}
+                className={cn(
+                  "rounded px-2 py-0.5 text-xs",
+                  scopeInfo.scope === s ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {s === "learned" ? `Learned · ${scopeInfo.learned}` : `All · ${scopeInfo.total}`}
+              </Link>
+            ))}
+          </div>
+        )}
+
         <div className="flex items-center rounded-md border border-border p-0.5" role="group" aria-label="Case order">
           <span className="px-1.5 text-xs text-muted-foreground">Order</span>
           {(["weakest", "random"] as const).map((o) => (
@@ -340,7 +405,11 @@ export function DrillLab({
             {phase !== "hidden" && phase !== "recognising" && (
               <p className="font-mono text-xs text-muted-foreground">
                 {current.auf && <span className="text-primary">{current.auf} </span>}
-                {phase === "stopped" || phase === "idle" ? algorithm.moves : "…"}
+                {phase === "stopped" || (phase === "idle" && !hideAlg)
+                  ? algorithm.moves
+                  : phase === "idle"
+                    ? "algorithm hidden until you've done it"
+                    : "…"}
               </p>
             )}
           </div>
@@ -396,6 +465,18 @@ export function DrillLab({
                 onChange={(e) => useDrillStore.getState().setRecognitionMode(e.target.checked)}
               />
               Recognition split
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                className="size-4 accent-primary"
+                checked={hideAlg}
+                onChange={(e) => {
+                  setHideAlg(e.target.checked);
+                  saveHideAlg(e.target.checked);
+                }}
+              />
+              Hide algorithm until done
             </label>
             <label className="flex items-center gap-2">
               <input

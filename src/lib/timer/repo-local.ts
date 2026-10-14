@@ -1,4 +1,5 @@
 import { recentlyDeletedSince, type SolveRepository } from "./repo";
+import { countedSolves } from "./misfire";
 import { bestAverageOfN, effectiveMs } from "./stats";
 import type { PersonalBest, Session, Solve, SolveMetric } from "./types";
 
@@ -80,6 +81,14 @@ export const localRepo: SolveRepository = {
     }
   },
 
+  async updateExcluded(id, excluded) {
+    const solve = read().solves.find((s) => s.id === id);
+    if (solve) {
+      solve.excluded = excluded || undefined;
+      scheduleFlush();
+    }
+  },
+
   async updateNotes(id, notes) {
     const solve = read().solves.find((s) => s.id === id);
     if (solve) {
@@ -157,7 +166,7 @@ export const localRepo: SolveRepository = {
 
   async loadPersonalBests(puzzle) {
     const metrics = await localRepo.loadSolveMetrics(puzzle);
-    return computePersonalBests(metrics);
+    return computePersonalBests(countedSolves(puzzle, metrics));
   },
 
   async loadSolvesForExport(puzzle) {
@@ -201,6 +210,7 @@ function toMetric(s: Solve): SolveMetric {
     penalty: s.penalty,
     effectiveTimeMs: s.effectiveTimeMs,
     createdAt: s.createdAt,
+    ...(s.excluded && { excluded: true }),
   };
 }
 
@@ -213,7 +223,8 @@ function toMetric(s: Solve): SolveMetric {
  * per-session, WCA trim, ties to the earliest — so a cuber's numbers do not
  * change under them when they sign in and their solves sync.
  *
- * `metrics` arrives newest-first, which is the ordering the helpers expect.
+ * `metrics` arrives newest-first, which is the ordering the helpers expect,
+ * and holds only the solves that count (misfire.ts), as the triggers do.
  */
 function computePersonalBests(metrics: SolveMetric[]): PersonalBest[] {
   const bests: PersonalBest[] = [];

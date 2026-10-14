@@ -4,7 +4,17 @@ import { cache } from "react";
 import { getUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 
-import { toFollowSummary, type FollowSummary, type PersonRow } from "./types";
+import { formatMs } from "@/lib/timer/format";
+
+import {
+  toFollowSummary,
+  type FeedItem,
+  type FeedKind,
+  type FollowStatus,
+  type FollowSummary,
+  type PersonRow,
+  type PersonWithStat,
+} from "./types";
 
 /**
  * Reads for the social layer. RLS and the SECURITY DEFINER RPCs in
@@ -79,35 +89,100 @@ export const getPendingRequests = cache(async (): Promise<FollowRequest[]> => {
   );
 });
 
-export interface RecentPb extends PersonRow {
-  puzzleType: string;
-  category: string;
-  timeMs: number;
-  achievedAt: string;
-}
-
-export async function getFriendsRecentPbs(days = 14): Promise<RecentPb[]> {
+/**
+ * The People feed: PBs, practice days, badges and learned cases, newest
+ * first. "following" is the people you follow; "everyone" is every profile
+ * you can see, for when that's still quiet.
+ */
+export async function getActivityFeed(scope: "following" | "everyone", days = 30): Promise<FeedItem[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_friends_recent_pbs", { p_days: days });
+  const { data, error } = await supabase.rpc("get_activity_feed", { p_scope: scope, p_days: days });
   if (error) {
-    console.error("get_friends_recent_pbs failed", error);
+    console.error("get_activity_feed failed", error);
     return [];
   }
   return (
     (data ?? []) as (ProfileJoin & {
+      kind: FeedKind;
       user_id: string;
-      puzzle_type: string;
-      category: string;
-      time_ms: number;
-      achieved_at: string;
+      puzzle_type: string | null;
+      category: string | null;
+      time_ms: number | null;
+      n: number | null;
+      label: string | null;
+      at: string;
     })[]
   ).map((r) => ({
-    ...toPerson({ ...r, id: r.user_id }),
+    kind: r.kind,
+    person: toPerson({ ...r, id: r.user_id }),
     puzzleType: r.puzzle_type,
     category: r.category,
     timeMs: r.time_ms,
-    achievedAt: r.achieved_at,
+    n: r.n,
+    label: r.label,
+    at: r.at,
   }));
+}
+
+/**
+ * Follow state and a headline time for each row of a list, so the row can
+ * carry a Follow button and something worth comparing. Two small queries for
+ * the whole list; PBs come through RLS, so a private profile shows none.
+ */
+export async function withFollowAndStat(people: PersonRow[]): Promise<PersonWithStat[]> {
+  if (people.length === 0) return [];
+  const user = await getUser();
+  const supabase = await createClient();
+  const ids = people.map((p) => p.id);
+
+  const [profiles, pbs, mine, theirs] = await Promise.all([
+    supabase.from("profiles").select("id, is_public").in("id", ids),
+    supabase
+      .from("personal_bests")
+      .select("user_id, category, time_ms")
+      .in("user_id", ids)
+      .eq("puzzle_type", "333")
+      .in("category", ["ao12", "ao5", "single"]),
+    user
+      ? supabase.from("user_follows").select("following_id, status").eq("follower_id", user.id).in("following_id", ids)
+      : Promise.resolve({ data: [] as { following_id: string; status: string }[] }),
+    user
+      ? supabase
+          .from("user_follows")
+          .select("follower_id")
+          .eq("following_id", user.id)
+          .eq("status", "accepted")
+          .in("follower_id", ids)
+      : Promise.resolve({ data: [] as { follower_id: string }[] }),
+  ]);
+
+  const isPublic = new Map((profiles.data ?? []).map((p) => [p.id as string, p.is_public as boolean]));
+  const iFollow = new Map((mine.data ?? []).map((f) => [f.following_id as string, f.status as FollowStatus]));
+  const followsMe = new Set((theirs.data ?? []).map((f) => f.follower_id as string));
+  const best = new Map<string, Record<string, number>>();
+  for (const pb of pbs.data ?? []) {
+    const row = best.get(pb.user_id) ?? {};
+    row[pb.category as string] = pb.time_ms as number;
+    best.set(pb.user_id as string, row);
+  }
+
+  return people.map((p) => {
+    const b = best.get(p.id);
+    const headline = b?.ao12
+      ? `3x3 Ao12 ${formatMs(b.ao12)}`
+      : b?.ao5
+        ? `3x3 Ao5 ${formatMs(b.ao5)}`
+        : b?.single
+          ? `3x3 single ${formatMs(b.single)}`
+          : null;
+    return {
+      ...p,
+      isPublic: isPublic.get(p.id) ?? true,
+      iFollow: iFollow.get(p.id) ?? "none",
+      followsMe: followsMe.has(p.id),
+      headline,
+    };
+  });
 }
 
 export interface SearchResult extends PersonRow {
@@ -133,6 +208,7 @@ export async function searchProfiles(query: string): Promise<SearchResult[]> {
 
 export interface Suggestion extends PersonRow {
   ao12Ms: number | null;
+  followsMe: boolean;
 }
 
 export async function getSuggestions(): Promise<Suggestion[]> {
@@ -142,10 +218,13 @@ export async function getSuggestions(): Promise<Suggestion[]> {
     console.error("suggest_profiles failed", error);
     return [];
   }
-  return ((data ?? []) as (ProfileJoin & { user_id: string; ao12_ms: number | null })[]).map((r) => ({
-    ...toPerson({ ...r, id: r.user_id }),
-    ao12Ms: r.ao12_ms,
-  }));
+  return ((data ?? []) as (ProfileJoin & { user_id: string; ao12_ms: number | null; follows_me: boolean })[]).map(
+    (r) => ({
+      ...toPerson({ ...r, id: r.user_id }),
+      ao12Ms: r.ao12_ms,
+      followsMe: r.follows_me === true,
+    }),
+  );
 }
 
 export async function getMyBlocks(): Promise<PersonRow[]> {

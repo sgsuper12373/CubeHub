@@ -51,7 +51,7 @@ test("follow, get notified, compare, unfollow", async ({ browser }) => {
   await expect(b.page.getByText(/started following you|asked to follow you/).first()).toBeVisible();
 
   // A private B gets a request instead; accept it so the rest runs either way.
-  await b.page.goto("/friends?tab=requests");
+  await b.page.goto("/people?tab=requests");
   const accept = b.page.getByRole("button", { name: "Accept" });
   if (await accept.first().isVisible()) await accept.first().click();
 
@@ -86,18 +86,23 @@ test("block hides each profile from the other; unblock in Settings", async ({ br
   expect(again?.status()).toBe(200);
 });
 
-test("the Friends hub opens its three tabs and finds the other account", async ({ browser }) => {
+test("People opens its tabs and finds the other account as you type", async ({ browser }) => {
   const a = await signedIn(browser, "a");
   const b = await signedIn(browser, "b");
   for (const [tab, text] of [
-    ["pbs", /Recent PBs/],
-    ["requests", /Requests/],
+    ["feed", /Activity/],
     ["find", /Find people/],
   ] as const) {
-    await a.page.goto(`/friends?tab=${tab}`);
+    await a.page.goto(`/people?tab=${tab}`);
     await expect(a.page.getByRole("link", { name: text })).toHaveAttribute("aria-current", "page");
   }
+  // No Enter: results arrive a moment after typing stops.
   await a.page.getByLabel("Search cubers").fill(b.username);
-  await a.page.getByLabel("Search cubers").press("Enter");
   await expect(a.page.getByRole("link", { name: new RegExp(`@${b.username}`) })).toBeVisible();
+});
+
+test("the old /friends address lands on People", async ({ browser }) => {
+  const a = await signedIn(browser, "a");
+  await a.page.goto("/friends?tab=find");
+  await expect(a.page).toHaveURL(/\/people\?tab=find/);
 });

@@ -33,6 +33,8 @@ interface SessionStore {
   addSolve(s: Omit<Solve, "effectiveTimeMs" | "sessionId">): Promise<void>;
   setPenalty(solveId: string, p: Penalty): Promise<void>;
   setNotes(solveId: string, notes: string): Promise<void>;
+  /** Leave a solve out of records, or put it back. */
+  setExcluded(solveId: string, excluded: boolean): Promise<void>;
   deleteSolve(solveId: string): Promise<void>;
   createSession(name: string): Promise<void>;
   deleteSession(sessionId: string): Promise<void>;
@@ -185,6 +187,16 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
   deleteSolve: async (solveId) => {
     set({ solves: get().solves.filter((s) => s.id !== solveId) });
     await repo.deleteSolve(solveId);
+    await refreshKnownBests();
+  },
+
+  setExcluded: async (solveId, excluded) => {
+    set({
+      solves: get().solves.map((s) =>
+        s.id === solveId ? { ...s, excluded: excluded || undefined } : s,
+      ),
+    });
+    await repo.updateExcluded(solveId, excluded);
     await refreshKnownBests();
   },
 

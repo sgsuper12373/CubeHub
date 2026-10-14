@@ -13,7 +13,7 @@ import {
 import { ChartTooltip, TooltipRow } from "@/components/stats/chart/tooltip";
 import { useMeasuredWidth } from "@/components/stats/chart/use-measured-width";
 import { formatAverage, formatMs } from "@/lib/timer/format";
-import { effectiveMs, rollingAverages } from "@/lib/timer/stats";
+import { effectiveMs, rollingAverages, slowOutlierCeiling } from "@/lib/timer/stats";
 import type { SolveMetric } from "@/lib/timer/types";
 
 /**
@@ -51,6 +51,10 @@ export function TrendChart({ metrics }: { metrics: SolveMetric[] }) {
       singles: chrono.map(effectiveMs),
       ao5,
       ao12,
+      // One very slow solve would stretch the axis until everything else is
+      // a flat line, so the axis stops here and slower points sit on the top
+      // edge as markers. The tooltip still shows the real time.
+      cap: slowOutlierCeiling(metrics),
     };
   }, [metrics]);
 
@@ -59,17 +63,20 @@ export function TrendChart({ metrics }: { metrics: SolveMetric[] }) {
   const n = series.chrono.length;
 
   const geometry = useMemo(() => {
+    const cap = series.cap ?? Infinity;
     const finite: number[] = [];
-    for (const v of series.singles) if (v !== null) finite.push(v);
-    for (const v of series.ao5) if (typeof v === "number") finite.push(v);
-    for (const v of series.ao12) if (typeof v === "number") finite.push(v);
+    for (const v of series.singles) if (v !== null && v <= cap) finite.push(v);
+    for (const v of series.ao5) if (typeof v === "number" && v <= cap) finite.push(v);
+    for (const v of series.ao12) if (typeof v === "number" && v <= cap) finite.push(v);
     if (finite.length === 0) return null;
 
     const { ticks, domain } = timeTicks(
       Math.min(...finite),
       Math.max(...finite),
     );
-    const y = linearScale(domain, [MARGIN.top + innerH, MARGIN.top]);
+    const scale = linearScale(domain, [MARGIN.top + innerH, MARGIN.top]);
+    // Clamped: anything past the top of the axis is drawn on the top edge.
+    const y = (v: number) => scale(Math.min(v, domain[1]));
     const x = linearScale([0, Math.max(1, n - 1)], [
       MARGIN.left,
       MARGIN.left + innerW,
@@ -198,6 +205,18 @@ export function TrendChart({ metrics }: { metrics: SolveMetric[] }) {
           right={MARGIN.left + innerW}
         />
 
+        {/* ── Above the axis: a marker on the top edge per slow single ── */}
+        {series.cap !== null &&
+          series.singles.map((v, i) =>
+            v === null || v <= (series.cap ?? Infinity) ? null : (
+              <path
+                key={`over-${series.chrono[i].id}`}
+                d={`M ${x(i) - 4} ${MARGIN.top + 6} L ${x(i)} ${MARGIN.top} L ${x(i) + 4} ${MARGIN.top + 6} Z`}
+                fill="var(--muted-foreground)"
+              />
+            ),
+          )}
+
         {/* ── Singles: context, never a competing series ── */}
         {n > DOT_THRESHOLD
           ? columns.map((c) => (
@@ -311,6 +330,11 @@ export function TrendChart({ metrics }: { metrics: SolveMetric[] }) {
           { label: "Singles", color: "var(--chart-4)" },
         ]}
       />
+      {series.cap !== null && (
+        <p className="mt-1 text-xs text-muted-foreground">
+          ▲ marks a solve slower than {formatMs(series.cap)}, above the top of the chart.
+        </p>
+      )}
     </div>
   );
 }

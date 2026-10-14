@@ -28,21 +28,35 @@ export const navItems: NavItem[] = [
   { label: "Playground", href: "/playground", icon: Box },
   // Compete and Shop are left out until they exist (founder, 2026-10-14): an
   // empty tab disappoints beta testers. Their pages and the landing teasers stay.
-  // Your own public profile; Settings and Friends are reached from there, so they light it up too.
-  { label: "Profile", href: "/profile", icon: User, match: /^\/(profile|settings|friends)(\/|$)/ },
+  // Your own public profile; Settings and People are reached from there, so they light it up too.
+  // Someone else's profile doesn't (see activeNavHref).
+  { label: "Profile", href: "/profile", icon: User, match: /^\/(profile|settings|people|friends)(\/|$)/ },
 ];
 
 /**
  * The one tab to highlight for a path: a tab with its own `match` wins over a
  * plain prefix, so /learn/333/drill is Drill, not Learn.
  */
-export function activeNavHref(pathname: string, items: readonly NavItem[]): string | null {
+export function activeNavHref(
+  pathname: string,
+  items: readonly NavItem[],
+  /** The signed-in cuber's username; /profile/<anyone else> lights up no tab. */
+  ownUsername: string | null = null,
+): string | null {
   const specific = items.find((item) => item.match?.test(pathname));
+  if (specific?.href === "/profile" && isOtherProfile(pathname, ownUsername)) return null;
   if (specific) return specific.href;
   const prefix = items.find(
     (item) => !item.match && (pathname === item.href || pathname.startsWith(`${item.href}/`)),
   );
   return prefix?.href ?? null;
+}
+
+/** /profile/<username>[/…] for a username that isn't yours (edit is yours). */
+function isOtherProfile(pathname: string, ownUsername: string | null): boolean {
+  const m = /^\/profile\/([^/]+)/.exec(pathname);
+  if (!m || m[1] === "edit") return false;
+  return decodeURIComponent(m[1]).toLowerCase() !== ownUsername?.toLowerCase();
 }
 
 /**

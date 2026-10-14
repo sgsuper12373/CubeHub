@@ -4,6 +4,7 @@ import { Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { formatResult } from "@/lib/timer/format";
+import { isMisfire } from "@/lib/timer/misfire";
 import type { Penalty, Solve } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
 import { SolveDetailModal } from "@/components/stats/solve-detail";
@@ -29,6 +30,9 @@ export function SolveRow({
   const [detailOpen, setDetailOpen] = useState(false);
   const startXRef = useRef(0);
   const rowRef = useRef<HTMLDivElement>(null);
+
+  const misfire = isMisfire(solve.puzzle, solve.timeMs);
+  const leftOut = misfire || !!solve.excluded;
 
   const togglePenalty = (p: Exclude<Penalty, "none">) => {
     onPenalty(solve.id, solve.penalty === p ? "none" : p);
@@ -102,17 +106,29 @@ export function SolveRow({
         </span>
 
         {/* Time */}
-        <span
-          className={cn(
-            "flex-1 font-mono text-sm font-medium tabular-nums",
-            solve.penalty === "dnf"
-              ? "text-destructive"
-              : solve.penalty === "plus2"
-                ? "text-amber-400"
-                : "text-foreground",
+        <span className="flex flex-1 items-baseline gap-2">
+          <span
+            className={cn(
+              "font-mono text-sm font-medium tabular-nums",
+              leftOut
+                ? "text-muted-foreground line-through decoration-muted-foreground/50"
+                : solve.penalty === "dnf"
+                  ? "text-destructive"
+                  : solve.penalty === "plus2"
+                    ? "text-warning"
+                    : "text-foreground",
+            )}
+          >
+            {formatResult(solve.timeMs, solve.penalty)}
+          </span>
+          {leftOut && (
+            <span
+              className="text-[0.65rem] uppercase tracking-wide text-muted-foreground"
+              title="Doesn't count for stats or records"
+            >
+              {misfire ? "misfire" : "left out"}
+            </span>
           )}
-        >
-          {formatResult(solve.timeMs, solve.penalty)}
         </span>
 
         {/* Desktop hover actions */}

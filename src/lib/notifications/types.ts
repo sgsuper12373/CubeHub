@@ -32,9 +32,9 @@ export function notificationText(n: Pick<NotificationItem, "kind" | "title">): s
 
 /** Where tapping a notification goes. */
 export function notificationHref(n: Pick<NotificationItem, "kind" | "actor">): string {
-  if (n.kind === "follow_request") return "/friends?tab=requests";
+  if (n.kind === "follow_request") return "/people?tab=requests";
   if (n.actor) return `/profile/${n.actor.username}`;
-  return "/friends";
+  return "/people";
 }
 
 /** "now", "5m", "3h", "2d", then a date. */

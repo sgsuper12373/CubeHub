@@ -30,7 +30,7 @@ describe("validateProfileInput", () => {
         displayName: "  Sumit   Garad ",
         bio: "Main: 3x3\r\n\r\n\r\n\r\nGoal: sub-15  ",
         country: "in",
-        wcaId: " 2019sing01 ",
+        wcaId: " 2015abcd01 ",
         isPublic: false,
         showActivity: false,
         showLearning: true,
@@ -43,13 +43,22 @@ describe("validateProfileInput", () => {
         display_name: "Sumit Garad",
         bio: "Main: 3x3\n\nGoal: sub-15",
         country: "IN",
-        wca_id: "2019SING01",
+        wca_id: "2015ABCD01",
         is_public: false,
         show_activity: false,
         show_learning: true,
         main_method: "cfop",
         learning_now: "full OLL",
       },
+    });
+  });
+
+  it("changes the username only when one is given", () => {
+    expect(validateProfileInput(base)).toMatchObject({ ok: true });
+    expect("username" in (validateProfileInput(base) as { update: object }).update).toBe(false);
+    expect(validateProfileInput({ ...base, username: " new_name " })).toMatchObject({
+      ok: true,
+      update: { username: "new_name" },
     });
   });
 
@@ -65,6 +74,11 @@ describe("validateProfileInput", () => {
     [{ country: "" }, "country"],
     [{ wcaId: "2019SIN01" }, "wcaId"],
     [{ wcaId: "SING201901" }, "wcaId"],
+    // The form's own example is nobody's ID.
+    [{ wcaId: "2019sing01" }, "wcaId"],
+    [{ username: "ab" }, "username"],
+    [{ username: "has space" }, "username"],
+    [{ username: "edit" }, "username"],
     [{ mainMethod: "magic" }, "mainMethod"],
     [{ learningNow: "x".repeat(81) }, "learningNow"],
   ])("rejects %j", (patch, field) => {

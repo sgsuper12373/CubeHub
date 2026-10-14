@@ -104,7 +104,7 @@ src/app/
     master-access/                  admin case editor; requireAdmin() in its layout
     (protected)/          + requires an account
       settings/ profile/edit/       /settings (+ blocked accounts)  /profile/edit
-      friends/                      /friends  (?tab=leaderboard|pbs|requests|find)
+      people/                       /people   (?tab=feed|find|requests)  (friends/ redirects here)
   auth/                   route handlers, no UI
     callback/ confirm/ auth-code-error/
 ```
@@ -118,7 +118,7 @@ src/app/
 | `/profile` | required | Redirects to your own profile, or to `/login` |
 | `/profile/[username]/followers`, `/following` | — | Lists shown when the profile is visible to you |
 | `/profile/[username]/compare` | required | Redirects to `/login`; lock panel if their profile is hidden |
-| `/settings`, `/profile/edit`, `/friends` | required | `(protected)` layout redirects to `/login` |
+| `/settings`, `/profile/edit`, `/people` (`/friends` redirects) | required | `(protected)` layout redirects to `/login` |
 | `/master-access/**` | admin | `requireAdmin()` in its layout; redirects others to `/` |
 
 Gated *content* inside the public routes is handled by RLS, not by routing. See `access-control.md`.

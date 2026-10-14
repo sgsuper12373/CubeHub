@@ -269,6 +269,35 @@ export function stdDevMs(solves: SolveTimes[], n = 50): number | null {
   return Math.round(Math.sqrt(variance));
 }
 
+/**
+ * Where a chart's time axis should stop so one very slow solve (a 6:30 among
+ * 20s) doesn't flatten everything else onto one line. Tukey's far fence,
+ * Q3 + 3 × IQR, with the spread floored at a tenth of the median so a run of
+ * near-identical times doesn't fence off a perfectly normal slow one.
+ *
+ * Null when nothing is that slow, or with too few solves to judge (< 5).
+ * Charts clamp to this; tables and stats never do.
+ */
+export function slowOutlierCeiling(solves: SolveTimes[]): number | null {
+  const times: number[] = [];
+  for (const s of solves) {
+    const t = effectiveMs(s);
+    if (t !== null) times.push(t);
+  }
+  if (times.length < 5) return null;
+  times.sort((a, b) => a - b);
+  const q = (p: number) => {
+    const i = (times.length - 1) * p;
+    const lo = Math.floor(i);
+    return times[lo] + (times[Math.ceil(i)] - times[lo]) * (i - lo);
+  };
+  const q1 = q(0.25);
+  const q3 = q(0.75);
+  const spread = Math.max(q3 - q1, q(0.5) * 0.1);
+  const fence = q3 + 3 * spread;
+  return times[times.length - 1] > fence ? fence : null;
+}
+
 export interface HistogramBucket {
   /** Inclusive lower edge, in ms. */
   fromMs: number;
@@ -288,17 +317,22 @@ export interface HistogramBucket {
 export function histogramBuckets(
   solves: SolveTimes[],
   targetBuckets = 14,
-): { bucketMs: number; buckets: HistogramBucket[] } {
+  /** Times above this are left out and counted in `over` (slowOutlierCeiling). */
+  capMs: number | null = null,
+): { bucketMs: number; buckets: HistogramBucket[]; over: number } {
   const LADDER = [
     50, 100, 250, 500, 1000, 2000, 2500, 5000, 10_000, 15_000, 30_000, 60_000,
   ];
 
   const times: number[] = [];
+  let over = 0;
   for (const s of solves) {
     const t = effectiveMs(s);
-    if (t !== null) times.push(t);
+    if (t === null) continue;
+    if (capMs !== null && t > capMs) over += 1;
+    else times.push(t);
   }
-  if (times.length === 0) return { bucketMs: LADDER[0], buckets: [] };
+  if (times.length === 0) return { bucketMs: LADDER[0], buckets: [], over };
 
   const min = Math.min(...times);
   const max = Math.max(...times);
@@ -317,7 +351,7 @@ export function histogramBuckets(
     const i = Math.floor((t - first) / bucketMs);
     buckets[Math.min(i, buckets.length - 1)].count += 1;
   }
-  return { bucketMs, buckets };
+  return { bucketMs, buckets, over };
 }
 
 export interface DayCount {

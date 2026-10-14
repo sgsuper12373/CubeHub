@@ -48,7 +48,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
       const { data, error } = await getClient()
         .from("solves")
         .select(
-          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at",
+          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at, excluded",
         )
         .eq("session_id", sessionId)
         .eq("user_id", userId)
@@ -72,6 +72,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
           scramble: solve.scramble,
           source: solve.source ?? "web",
           scramble_type: solve.scrambleType ?? "random_state",
+          excluded: solve.excluded ?? false,
           created_at: solve.createdAt,
         },
         { onConflict: "id", ignoreDuplicates: true },
@@ -83,6 +84,15 @@ export function createSupabaseRepo(userId: string): SolveRepository {
       const { error } = await getClient()
         .from("solves")
         .update({ penalty })
+        .eq("id", id)
+        .eq("user_id", userId);
+      if (error) throw error;
+    },
+
+    async updateExcluded(id, excluded) {
+      const { error } = await getClient()
+        .from("solves")
+        .update({ excluded })
         .eq("id", id)
         .eq("user_id", userId);
       if (error) throw error;
@@ -170,7 +180,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
       const { data, error } = await getClient()
         .from("solves")
         .select(
-          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at, deleted_at",
+          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at, excluded, deleted_at",
         )
         .eq("user_id", userId)
         .eq("puzzle_type", puzzle)
@@ -199,7 +209,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
       // The select is deliberately narrow — no scramble, no notes.
       let query = getClient()
         .from("solves")
-        .select("id, session_id, time_ms, penalty, effective_time_ms, created_at")
+        .select("id, session_id, time_ms, penalty, effective_time_ms, created_at, excluded")
         .eq("user_id", userId)
         .eq("puzzle_type", puzzle)
         .is("deleted_at", null)
@@ -230,7 +240,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
       const { data, error } = await getClient()
         .from("solves")
         .select(
-          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at",
+          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at, excluded",
         )
         .eq("user_id", userId)
         .eq("puzzle_type", puzzle)
@@ -278,6 +288,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
             scramble: s.scramble,
             notes: s.notes,
             source: "import",
+            excluded: s.excluded ?? false,
             created_at: s.createdAt,
           })),
           { onConflict: "id", ignoreDuplicates: true },
@@ -319,6 +330,7 @@ function mapMetric(row: {
   penalty: string;
   effective_time_ms: number | null;
   created_at: string;
+  excluded: boolean;
 }): SolveMetric {
   return {
     id: row.id,
@@ -327,6 +339,7 @@ function mapMetric(row: {
     penalty: row.penalty as Penalty,
     effectiveTimeMs: row.effective_time_ms,
     createdAt: row.created_at,
+    ...(row.excluded && { excluded: true }),
   };
 }
 
@@ -354,6 +367,7 @@ function mapSolve(row: {
   scramble: string;
   notes: string | null;
   created_at: string;
+  excluded: boolean;
   deleted_at?: string | null;
 }): Solve {
   return {
@@ -366,6 +380,7 @@ function mapSolve(row: {
     scramble: row.scramble,
     notes: row.notes,
     createdAt: row.created_at,
+    ...(row.excluded && { excluded: true }),
     ...(row.deleted_at !== undefined && { deletedAt: row.deleted_at }),
   };
 }

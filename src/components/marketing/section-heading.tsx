@@ -68,17 +68,3 @@ export function Eyebrow({
     </span>
   );
 }
-
-/** "Soon" tag for surfaces that are still placeholders (Compete, Shop data). */
-export function SoonTag({ className }: { className?: string }) {
-  return (
-    <span
-      className={cn(
-        "rounded-full border border-border bg-surface-raised px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-muted-foreground uppercase",
-        className,
-      )}
-    >
-      Soon
-    </span>
-  );
-}

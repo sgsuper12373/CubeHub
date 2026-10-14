@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 
+import { searchProfiles, type SearchResult } from "./dal";
 import { isReportReason, REPORT_NOTE_MAX, type FollowStatus } from "./types";
 
 /**
@@ -35,7 +36,7 @@ async function signedIn(): Promise<string | null> {
 
 function refresh() {
   revalidatePath("/profile/[username]", "layout");
-  revalidatePath("/friends");
+  revalidatePath("/people");
 }
 
 /** Follows a cuber; returns the stored status (pending for a private profile). */
@@ -171,4 +172,10 @@ export async function reportProfile(targetId: string, reason: string, note: stri
     return { ok: false, error: friendly(error, "Couldn't send the report. Please try again.") };
   }
   return { ok: true, value: undefined };
+}
+
+/** Search for the People page's as-you-type box; same rules as search_profiles. */
+export async function searchPeople(query: string): Promise<SearchResult[]> {
+  if (typeof query !== "string") return [];
+  return searchProfiles(query);
 }

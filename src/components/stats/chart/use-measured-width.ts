@@ -20,7 +20,8 @@ export function useMeasuredWidth<T extends HTMLElement>() {
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    // No observer (an old browser, or jsdom in tests): stay unmeasured.
+    if (!el || typeof ResizeObserver === "undefined") return;
 
     const observer = new ResizeObserver(([entry]) => {
       // contentRect excludes padding, which is what the drawing area is.

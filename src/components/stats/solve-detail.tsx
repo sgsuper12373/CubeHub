@@ -18,6 +18,8 @@ import { Check, Copy, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScramblePreview } from "@/components/timer/scramble-preview";
 import { formatMs } from "@/lib/timer/format";
+import { isMisfire } from "@/lib/timer/misfire";
+import { useSessionStore } from "@/stores/session-store";
 import type { Penalty, Solve, TimerPuzzle } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
 import { useOverlayLock } from "@/stores/overlay-store";
@@ -53,6 +55,7 @@ export function SolveDetailModal({
   };
 
   const isDnf = solve.penalty === "dnf";
+  const misfire = isMisfire(puzzle, solve.timeMs);
   const displayTime = formatMs(solve.effectiveTimeMs ?? solve.timeMs, 3);
   const date = new Date(solve.createdAt);
 
@@ -110,6 +113,32 @@ export function SolveDetailModal({
               onClick={() => onPenalty("dnf")}
             />
           </div>
+
+          {/* Counting */}
+          {misfire ? (
+            <p className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-center text-xs text-muted-foreground">
+              Too fast to be a real solve, so it doesn&apos;t count for stats, records or
+              badges. Delete it if it was a misfire.
+            </p>
+          ) : (
+            <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm">
+              <input
+                type="checkbox"
+                className="mt-0.5 size-4 accent-primary"
+                checked={!!solve.excluded}
+                onChange={(e) =>
+                  void useSessionStore.getState().setExcluded(solve.id, e.target.checked)
+                }
+              />
+              <span>
+                <span className="font-medium text-foreground">Leave out of records</span>
+                <span className="block text-xs text-muted-foreground">
+                  Stays in this list, but not in your stats, personal bests, badges or
+                  profile.
+                </span>
+              </span>
+            </label>
+          )}
 
           {/* Scramble */}
           <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3">

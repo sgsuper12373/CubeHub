@@ -21,6 +21,11 @@ export function isReservedUsername(username: string): boolean {
 /** WCA IDs look like 2019SING01: year, four letters, two digits. */
 export const WCA_ID_PATTERN = /^\d{4}[A-Z]{4}\d{2}$/;
 
+/** The form's example ID: never a real cuber's, so never saved. */
+export const WCA_ID_EXAMPLE = "2019SING01";
+
+export const USERNAME_PATTERN = /^[A-Za-z0-9_]{3,24}$/;
+
 // ISO 3166-1 alpha-2. Names come from Intl.DisplayNames, so this is just codes.
 const COUNTRY_CODES = (
   "AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR " +
@@ -61,6 +66,8 @@ export function countryFlag(code: string): string {
 }
 
 export type ProfileInput = {
+  /** Absent: leave the username as it is. */
+  username?: string;
   displayName: string;
   bio: string;
   country: string;
@@ -73,6 +80,7 @@ export type ProfileInput = {
 };
 
 export type ProfileUpdate = {
+  username?: string;
   display_name: string | null;
   bio: string | null;
   country: string;
@@ -88,6 +96,20 @@ export type ProfileUpdate = {
 export function validateProfileInput(
   input: ProfileInput,
 ): { ok: true; update: ProfileUpdate } | { ok: false; field: keyof ProfileInput; error: string } {
+  const username = input.username?.trim();
+  if (username !== undefined) {
+    if (!USERNAME_PATTERN.test(username)) {
+      return {
+        ok: false,
+        field: "username",
+        error: "Use 3–24 letters, numbers or underscores.",
+      };
+    }
+    if (isReservedUsername(username)) {
+      return { ok: false, field: "username", error: "That username is reserved. Please choose another." };
+    }
+  }
+
   const displayName = input.displayName.trim().replace(/\s+/g, " ");
   if (displayName.length > DISPLAY_NAME_MAX) {
     return { ok: false, field: "displayName", error: `Keep your name under ${DISPLAY_NAME_MAX} characters.` };
@@ -108,6 +130,9 @@ export function validateProfileInput(
   if (wcaId && !WCA_ID_PATTERN.test(wcaId)) {
     return { ok: false, field: "wcaId", error: "A WCA ID looks like 2019SING01." };
   }
+  if (wcaId === WCA_ID_EXAMPLE) {
+    return { ok: false, field: "wcaId", error: "That's the example ID. Enter your own, or leave it empty." };
+  }
 
   const mainMethod = input.mainMethod.trim();
   if (mainMethod && !isMethod(mainMethod)) {
@@ -122,6 +147,7 @@ export function validateProfileInput(
   return {
     ok: true,
     update: {
+      ...(username !== undefined && { username }),
       display_name: displayName || null,
       bio: bio || null,
       country,

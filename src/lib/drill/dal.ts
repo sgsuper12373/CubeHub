@@ -34,6 +34,8 @@ export interface DrillData {
   cases: DrillCase[];
   /** Empty for guests. */
   stats: VariantStats[];
+  /** Cases the cuber marked learned in Learn (any variant). Empty for guests. */
+  learnedCaseIds: string[];
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -61,20 +63,20 @@ export const getDrillData = cache(
       .order("case_number");
 
     if (selection.kind === "subset") {
-      if (!known.has(selection.slug)) return { subsets, cases: [], stats: [] };
+      if (!known.has(selection.slug)) return { subsets, cases: [], stats: [], learnedCaseIds: [] };
       query = query.eq("subset", selection.slug);
     } else if (selection.kind === "all") {
       query = query.in("subset", [...known]);
     } else {
       const ids = selection.ids.filter((id) => UUID.test(id));
-      if (ids.length === 0) return { subsets, cases: [], stats: [] };
+      if (ids.length === 0) return { subsets, cases: [], stats: [], learnedCaseIds: [] };
       query = query.in("id", ids).in("subset", [...known]);
     }
 
     const { data, error } = await query;
     if (error || !data) {
       if (error) console.error("drill cases query failed", error);
-      return { subsets, cases: [], stats: [] };
+      return { subsets, cases: [], stats: [], learnedCaseIds: [] };
     }
 
     const cases: DrillCase[] = data
@@ -92,20 +94,36 @@ export const getDrillData = cache(
       .filter((c) => c.algorithms.length > 0);
 
     const user = await getUser();
-    if (!user || cases.length === 0) return { subsets, cases, stats: [] };
+    if (!user || cases.length === 0) return { subsets, cases, stats: [], learnedCaseIds: [] };
 
     const algorithmIds = cases.flatMap((c) => c.algorithms.map((a) => a.id));
-    const { data: rows, error: statsError } = await supabase
-      .from("v_drill_variant_stats")
-      .select(VARIANT_STATS_COLUMNS)
-      .eq("user_id", user.id)
-      .in("algorithm_id", algorithmIds);
+    const [{ data: rows, error: statsError }, { data: learned, error: learnedError }] = await Promise.all([
+      supabase
+        .from("v_drill_variant_stats")
+        .select(VARIANT_STATS_COLUMNS)
+        .eq("user_id", user.id)
+        .in("algorithm_id", algorithmIds),
+      supabase
+        .from("user_algorithm_bookmarks")
+        .select("algorithm_id")
+        .eq("user_id", user.id)
+        .eq("learned", true)
+        .in("algorithm_id", algorithmIds),
+    ]);
     if (statsError) console.error("drill stats query failed", statsError);
+    if (learnedError) console.error("drill learned query failed", learnedError);
+
+    // Same rule as Learn: a case is learned when any of its algorithms is.
+    const learnedAlgs = new Set((learned ?? []).map((b) => b.algorithm_id as string));
+    const learnedCaseIds = cases
+      .filter((c) => c.algorithms.some((a) => learnedAlgs.has(a.id)))
+      .map((c) => c.id);
 
     return {
       subsets,
       cases,
       stats: ((rows ?? []) as VariantStatsRow[]).map(toVariantStats),
+      learnedCaseIds,
     };
   },
 );

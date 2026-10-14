@@ -75,10 +75,14 @@ describe("head to head", () => {
     expect(compareTimes(12000, 9500).faster).toBe("them");
     expect(compareTimes(9000, 9000)).toMatchObject({ faster: "tie", gapMs: 0 });
     expect(compareTimes(null, 9000)).toMatchObject({ faster: null, gapMs: null });
+    // The gap is between the times as shown: 0.15 − 0.02 = 0.13, not 0.129.
+    expect(compareTimes(153, 24)).toMatchObject({ faster: "them", gapMs: 130 });
+    // Times that read the same are a tie.
+    expect(compareTimes(9001, 9009)).toMatchObject({ faster: "tie", gapMs: 0 });
   });
 
   it("tallies only decided cells", () => {
-    const cells = [compareTimes(1, 2), compareTimes(3, 2), compareTimes(5, 5), compareTimes(null, 1), compareTimes(1, 4)];
+    const cells = [compareTimes(1000, 2000), compareTimes(3000, 2000), compareTimes(5000, 5000), compareTimes(null, 1000), compareTimes(1000, 4000)];
     expect(tally(cells)).toEqual({ me: 2, them: 1 });
   });
 
@@ -101,9 +105,9 @@ describe("notifications", () => {
   });
 
   it("links requests to the inbox and the rest to the actor", () => {
-    expect(notificationHref({ kind: "follow_request", actor })).toBe("/friends?tab=requests");
+    expect(notificationHref({ kind: "follow_request", actor })).toBe("/people?tab=requests");
     expect(notificationHref({ kind: "follow", actor })).toBe("/profile/riya");
-    expect(notificationHref({ kind: "other", actor: null })).toBe("/friends");
+    expect(notificationHref({ kind: "other", actor: null })).toBe("/people");
   });
 
   it("says how long ago", () => {

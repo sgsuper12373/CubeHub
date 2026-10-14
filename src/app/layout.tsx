@@ -50,15 +50,15 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   // Required, or Next warns at build and Open Graph URLs resolve relative.
   metadataBase: new URL(SITE_URL),
-  title: "CubeHub — Speedcubing Timer, Tutorials & Competitions",
+  title: "CubeHub — Speedcubing Timer, Tutorials & Stats",
   description:
-    "The all-in-one speedcubing platform for the Indian cubing community — timer, tutorials, ranked matches, and cube recommendations.",
+    "The all-in-one speedcubing platform for the Indian cubing community — timer, stats, tutorials, algorithm drills and cuber profiles.",
   openGraph: {
     type: "website",
     siteName: "CubeHub",
-    title: "CubeHub — Speedcubing Timer, Tutorials & Competitions",
+    title: "CubeHub — Speedcubing Timer, Tutorials & Stats",
     description:
-      "The all-in-one speedcubing platform for the Indian cubing community — timer, tutorials, ranked matches, and cube recommendations.",
+      "The all-in-one speedcubing platform for the Indian cubing community — timer, stats, tutorials, algorithm drills and cuber profiles.",
     url: SITE_URL,
   },
   twitter: {

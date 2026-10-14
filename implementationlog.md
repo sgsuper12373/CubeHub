@@ -5,6 +5,92 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-15 — Pre-beta review fixes (misfires, achievements, People, landing, Drill)
+
+**Request:** Act on an outside review of the beta build. Founder decisions: a kept misfire is
+left out of records (not a DNF); Friends → People; hide WCA IDs from others until verified;
+"challenge on the same scramble" goes on the to-do.
+
+### Database: `supabase/migrations/20261019000000_solve_sanity.sql` (not applied yet)
+
+- `solves.excluded` (the owner's "leave out of records") and `misfire_limit_ms(event)`
+  (3x3 3.00, 2x2 0.40, Pyraminx/Skewb 0.70, 4x4 15.00, …, under each WR). `solve_counts()`
+  is the one rule; every PB function, the PB timeline, the level and achievements use it.
+  A left-out solve is skipped in average windows, not a DNF. The update trigger recomputes
+  PBs when `excluded` changes. All PBs are recomputed once.
+- Achievements: `achievement_earned_at()` dates each condition from the solves (nth solve,
+  first sub-X, the day a streak reached N, …); `award_achievements_for()` runs from statement
+  triggers on `solves` and `user_algorithm_bookmarks`; `award_achievements()` returns
+  unshown badges (`notified_at`). One-time: re-date existing badges, drop ones no longer met
+  (the misfire ones), award missing ones (Ganesh's 0/20), all marked shown.
+- `get_activity_feed(scope, days)`; `suggest_profiles()` rewritten (followers first, same
+  country, nearest Ao12, active in 90 days; needs no PB). Both revoked from `anon`.
+- Drill: `drill_misfire_limit_ms(moves)` = max(0.30, 60 ms a move); `v_drill_variant_stats`
+  medians skip those reps.
+- The form's example WCA ID ("2019SING01") is cleared where saved.
+
+### App
+
+- Timer: `src/lib/timer/misfire.ts` mirrors the SQL rule. PB detection, session stats, local
+  PBs and the Stats page skip misfires and left-out solves; the list still shows them, tagged.
+  A misfire toasts "… looks like a misfire … Delete it?". Solve detail: "Leave out of
+  records". Stats, tiles and the solve list show skeletons until the session loads.
+- Stats charts: `slowOutlierCeiling()` (Q3 + 3 IQR); the trend chart clamps above it with ▲
+  markers, the histogram leaves those out and says how many. The heatmap starts at the first
+  practice day (min 8 weeks) and sizes its squares to the card.
+- Landing: Compete and Shop tiles and the India section's Soon cards are gone; a Profiles tile
+  and one "Coming next" strip instead. Hero, page and site descriptions say only what ships.
+- People (`/people`, `/friends` redirects): Activity feed (following → everyone fallback),
+  search as you type (250 ms), suggestions with "Follows you", Requests tab only when private
+  or requests wait. Follower/following rows get a Follow button and a 3x3 headline time.
+- Profile: "Back" goes back (fallback /timer or /people); the nav lights Profile only on your
+  own profile; WCA ID shown only to its owner. Username moved into Edit profile (Settings now
+  links there); the example WCA ID is refused. Settings theme names match the landing page
+  (Slate/Paper) and the 2D/3D preview choice is there.
+- Compare: categories neither of you has are hidden; gaps and ties use the times as shown.
+- Drill: "Hide algorithm until done" (on, remembered per browser); sets start with the cases
+  marked learned (Learned · N / All · M); reps under the drill limit aren't saved unless the
+  cuber taps "Save anyway".
+
+### Verification
+
+- Throwaway `supabase/postgres:15.8.1.060`: every migration applies; every existing SQL test
+  passes (achievements 10, social 31, drill 22, pb_lifecycle 8, timer_round 12, …);
+  `solve_sanity_test.sql` 22/22; the migration re-runs cleanly. Backfill checked on
+  pre-migration data: misfire PBs gone, Ganesh-like user gets dated badges, misfire Sub-10 and
+  Night Owl revoked, real badges re-dated.
+- `npm run validate` (404 unit tests), `check:colors`, `npm run build`.
+- Dev server against the live DB (signed in, read-only pages only, as the new columns aren't
+  live yet): landing has no "Soon", own vs other profile nav/WCA/Back, follow-list rows,
+  Compare rows, Settings, Edit profile username, People tabs, /friends redirect. Every changed
+  page at 390 px in a frame: no sideways scroll. The window itself wouldn't resize.
+- Not checked: signed-in timer and Stats (need the migration), signed-out pages, a real phone.
+
+---
+
+## 2026-10-15 — Learn pages: real counts, no fake rating
+
+**Request:** Remove the made-up "4.8 Avg. Rating" and fix the hardcoded counts on the puzzle
+page (header "58 Algorithms" / "20+ Tutorials", every algorithm card "57 Algorithms", every
+tutorial card "12 Tutorials").
+
+- `src/lib/learn/dal.ts`: `getPuzzles()` now also fetches case rows (with each algorithm's
+  `is_approved`) and published step rows, in parallel with the series queries, and sets
+  `casesCount` and `algorithmsCount` on algorithm sets and `stepsCount` on tutorial series.
+- `src/components/learn/puzzle-hero.tsx`: the stats show tutorial series, total cases and total
+  approved algorithms, summed from the series; each tile is hidden at 0. Rating tile removed.
+- `src/components/learn/series-card.tsx`: footer shows "N Cases" for algorithm sets and
+  "N Steps" for tutorials, with singulars handled.
+- Kept: the difficulty label and bars are still hardcoded (left in `docs/todo.md`).
+
+### Verification
+
+- `tsc`, eslint on the changed files: clean.
+- Rendered `/learn/333` on a dev server: 2 Tutorials, 78 Cases, 322 Algorithms; OLL 57 Cases,
+  PLL 21 Cases, Beginner Method 7 Steps, CFOP 1 Step. `/learn/222`: 140 Cases, 336 Algorithms.
+
+---
+
 ## 2026-10-14 — Clubs requirements; pre-beta page check in the to-do
 
 **Request:** Gather requirements for clubs (built before the beta; tournaments after it), and

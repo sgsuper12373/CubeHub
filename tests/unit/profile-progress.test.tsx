@@ -58,4 +58,13 @@ describe("Heatmap from day counts", () => {
     expect(fills.filter((f) => f === "var(--chart-seq-3)")).toHaveLength(1);
     expect(fills.filter((f) => f !== "var(--chart-seq-0)")).toHaveLength(1);
   });
+
+  it("starts at the first practice day instead of a year back, but never under 8 weeks", () => {
+    const today = new Date();
+    const tenDaysAgo = new Date(today.getTime() - 10 * 86_400_000).toISOString();
+    const { container } = render(<Heatmap days={[]} since={tenDaysAgo} />);
+    const cells = container.querySelectorAll("rect").length;
+    expect(cells).toBeGreaterThanOrEqual(8 * 7 - 6);
+    expect(cells).toBeLessThanOrEqual(9 * 7);
+  });
 });

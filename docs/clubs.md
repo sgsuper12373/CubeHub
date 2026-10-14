@@ -123,7 +123,7 @@ No notification for reactions or new posts; they would be too noisy.
 - `/clubs/join/[token]`: an invite link landing page.
 - **Navigation:** Clubs is its **own section in the desktop navbar** (founder, 2026-10-14),
   `match` covering `/clubs/*`. The phone bar stays at five tabs (Timer, Stats, Learn, Drill,
-  Profile): phones reach Clubs from a Clubs tab in `/friends` and the Clubs row on profiles.
+  Profile): phones reach Clubs from a Clubs tab in `/people` and the Clubs row on profiles.
   Revisit after the beta if phone users can't find it.
 - **Profile:** a "Clubs" row with the public clubs the cuber is in. Private clubs show only to
   their members.

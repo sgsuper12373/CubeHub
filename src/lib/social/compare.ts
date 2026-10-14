@@ -11,10 +11,20 @@ export interface CompareCell {
   gapMs: number | null;
 }
 
+/** To the centisecond the page shows, truncated like formatMs. */
+const shown = (ms: number) => Math.floor(ms / 10) * 10;
+
+/**
+ * Judged on the times as displayed, so the gap is the difference of the two
+ * numbers on screen (0.15 vs 0.02 is 0.13, not 0.12 from the raw ms) and two
+ * times that read the same are a tie.
+ */
 export function compareTimes(mine: number | null, theirs: number | null): CompareCell {
   if (mine === null || theirs === null) return { mine, theirs, faster: null, gapMs: null };
-  if (mine === theirs) return { mine, theirs, faster: "tie", gapMs: 0 };
-  return { mine, theirs, faster: mine < theirs ? "me" : "them", gapMs: Math.abs(mine - theirs) };
+  const a = shown(mine);
+  const b = shown(theirs);
+  if (a === b) return { mine, theirs, faster: "tie", gapMs: 0 };
+  return { mine, theirs, faster: a < b ? "me" : "them", gapMs: Math.abs(a - b) };
 }
 
 /** "Head-to-head: you lead 3–2" tally over the cells both sides have. */

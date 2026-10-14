@@ -29,7 +29,7 @@ export default async function EditProfilePage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Edit profile</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Your username is changed in{" "}
+          Everything others see about you, and who can see it. Timer options are in{" "}
           <Link href="/settings" className="text-primary hover:underline">
             Settings
           </Link>

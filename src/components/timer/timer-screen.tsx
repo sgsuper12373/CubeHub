@@ -28,6 +28,7 @@ import { useLayoutStore } from "@/stores/layout-store";
 import { generateScramble } from "@/lib/timer/scrambler";
 import { loadLastEvent, saveLastEvent } from "@/lib/timer/events";
 import { detectRecords, RECORD_LABEL, type RecordHit } from "@/lib/timer/pb-detect";
+import { countedSessionSolves, isMisfire } from "@/lib/timer/misfire";
 import { loadClientSettings, saveSettings } from "@/lib/timer/settings-persistence";
 import type { ServerTimerSettings } from "@/lib/auth/dal";
 import type { Penalty, TimerPuzzle, TimerSettings } from "@/lib/timer/types";
@@ -60,6 +61,9 @@ export function TimerScreen(props: {
   const sessions = useSessionStore((s) => s.sessions);
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
   const solves = useSessionStore((s) => s.solves);
+  // Session stats leave out misfires and excluded solves, as records do; the
+  // solve list still shows every solve.
+  const counted = countedSessionSolves(solves);
   const backend = useSessionStore((s) => s.backend);
 
   const lastRecordedStopRef = useRef<number | null>(null);
@@ -81,7 +85,6 @@ export function TimerScreen(props: {
   const inInspection = useTimerStore((s) => s.inspectionStartedAt !== null);
   const setZenMode = useLayoutStore((s) => s.setZenMode);
   const celebrateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -172,6 +175,26 @@ export function TimerScreen(props: {
     }
   };
 
+  /** Delete a solve with an undo toast; the latest one also clears the result. */
+  const removeSolve = async (id: string) => {
+    const wasLatest = useSessionStore.getState().solves[0]?.id === id;
+    await useSessionStore.getState().deleteSolve(id);
+    toast({
+      kind: "undo",
+      message: "Solve deleted",
+      durationMs: 5000,
+      action: {
+        label: "Undo",
+        onAction: () => void useSessionStore.getState().restoreSolves([id]),
+      },
+    });
+    if (wasLatest) {
+      const timer = useTimerStore.getState();
+      timer.advanceScramble(); // a deleted scramble is spent — fresh one next (no-op unless stopped)
+      timer.clearResult();
+    }
+  };
+
   /**
    * Save a solve on the current scramble and announce any records. Shared by
    * the timer (on stop) and typing mode (on Enter).
@@ -197,8 +220,26 @@ export function TimerScreen(props: {
     // before the store adds it.
     const { hits, known } = detectRecords(sessionState.solves, solve, sessionState.knownBests);
     sessionState.setKnownBests(known);
-    void sessionState.addSolve(solve);
+    const saved = sessionState.addSolve(solve);
     announceRecords(hits, solve.id);
+
+    // Too fast to be real: it already doesn't count for records, and most
+    // cubers want it gone, so offer that on the spot.
+    if (isMisfire(solve.puzzle, solve.timeMs)) {
+      toast({
+        kind: "info",
+        message: `${formatMs(timeMs)} looks like a misfire, so it won't count for records. Delete it?`,
+        durationMs: 8000,
+        action: {
+          label: "Delete",
+          onAction: () =>
+            void (async () => {
+              await saved;
+              await removeSolve(solve.id);
+            })(),
+        },
+      });
+    }
   };
 
   // Record the solve exactly once per stop. `stoppedAt` is unique per solve,
@@ -243,20 +284,7 @@ export function TimerScreen(props: {
         destructive: true,
       });
       if (!ok) return;
-      const timer = useTimerStore.getState();
-      await useSessionStore.getState().deleteSolve(last.id);
-      toast({
-        kind: "undo",
-        message: "Solve deleted",
-        durationMs: 5000,
-        action: {
-          label: "Undo",
-          onAction: () =>
-            void useSessionStore.getState().restoreSolves([last.id]),
-        },
-      });
-      timer.advanceScramble(); // a deleted scramble is spent — fresh one next
-      timer.clearResult();
+      await removeSolve(last.id);
     })();
   };
 
@@ -446,12 +474,12 @@ export function TimerScreen(props: {
         );
 
       case "stats":
-        return <SessionStats solves={solves} />;
+        return <SessionStats solves={counted} />;
 
       case "trend":
         return (
           <div className="min-h-0 overflow-auto py-2">
-            <SessionTrend solves={solves} />
+            <SessionTrend solves={counted} />
           </div>
         );
 

@@ -1,3 +1,4 @@
+import { countedSolves, countsForRecords } from "./misfire";
 import { bestAverageOfN, bestSingle, effectiveMs, windowStat, type WindowSize } from "./stats";
 import { formatAverageText, formatSingleText } from "./share-text";
 import type { PbCategory, PersonalBest, Solve, TimerPuzzle } from "./types";
@@ -68,6 +69,11 @@ export function detectRecords(
   solve: Solve,
   known: KnownBests,
 ): { hits: RecordHit[]; known: KnownBests } {
+  // Records count only the solves that count, like the PB triggers: a
+  // misfire is never a record, and windows close over the solves around it.
+  if (!countsForRecords(solve.puzzle, solve)) return { hits: [], known };
+  previous = countedSolves(solve.puzzle, previous);
+
   const next = [solve, ...previous];
   const updated: KnownBests = { ...known };
   const hits: RecordHit[] = [];

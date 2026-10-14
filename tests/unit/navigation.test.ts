@@ -14,14 +14,21 @@ describe("nav active tab", () => {
     expect(activeNavHref("/learn/333/drills-intro", navItems)).toBe("/learn");
   });
 
-  it("Profile covers your profile, anyone's profile, Settings and Friends", () => {
+  it("Profile covers your own profile, Edit profile, Settings and People", () => {
     expect(navItems.find((i) => i.label === "Profile")?.href).toBe("/profile");
-    expect(activeNavHref("/profile", navItems)).toBe("/profile");
-    expect(activeNavHref("/profile/someone", navItems)).toBe("/profile");
-    expect(activeNavHref("/settings", navItems)).toBe("/profile");
-    expect(activeNavHref("/friends", navItems)).toBe("/profile");
-    expect(activeNavHref("/profile/someone/compare", navItems)).toBe("/profile");
+    expect(activeNavHref("/profile", navItems, "me_cubes")).toBe("/profile");
+    expect(activeNavHref("/profile/me_cubes", navItems, "me_cubes")).toBe("/profile");
+    expect(activeNavHref("/profile/Me_Cubes/followers", navItems, "me_cubes")).toBe("/profile");
+    expect(activeNavHref("/profile/edit", navItems, "me_cubes")).toBe("/profile");
+    expect(activeNavHref("/settings", navItems, "me_cubes")).toBe("/profile");
+    expect(activeNavHref("/people", navItems, "me_cubes")).toBe("/profile");
     expect(activeNavHref("/profiles-list", navItems)).toBeNull();
+  });
+
+  it("someone else's profile lights up no tab", () => {
+    expect(activeNavHref("/profile/someone", navItems, "me_cubes")).toBeNull();
+    expect(activeNavHref("/profile/someone/compare", navItems, "me_cubes")).toBeNull();
+    expect(activeNavHref("/profile/someone", navItems, null)).toBeNull();
   });
 
   it("the phone bar keeps five tabs, with Drill in it", () => {

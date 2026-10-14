@@ -23,6 +23,7 @@ export async function saveProfileDetails(
   formData: FormData,
 ): Promise<ProfileEditState> {
   const result = validateProfileInput({
+    username: String(formData.get("username") ?? ""),
     displayName: String(formData.get("display_name") ?? ""),
     bio: String(formData.get("bio") ?? ""),
     country: String(formData.get("country") ?? ""),
@@ -56,6 +57,9 @@ export async function saveProfileDetails(
   if (error) {
     if (error.code === "23505" && error.message.includes("wca_id")) {
       return { error: "That WCA ID is already linked to another profile.", field: "wcaId" };
+    }
+    if (error.code === "23505") {
+      return { error: "That username is already taken. Please choose another.", field: "username" };
     }
     return { error: "Couldn't save your profile. Please try again." };
   }

@@ -52,10 +52,16 @@ export default async function ComparePage({ params }: Props) {
         mine.personalBests,
         theirs.personalBests,
       );
-  const rows = events.map((event) => ({
-    event,
-    cells: CATEGORIES.map((c) => ({ ...c, cell: compareTimes(pbTime(mine, event, c.id), pbTime(theirs, event, c.id)) })),
-  }));
+  // Only the categories at least one of you has; an event with none drops out.
+  const rows = events
+    .map((event) => ({
+      event,
+      cells: CATEGORIES.map((c) => ({
+        ...c,
+        cell: compareTimes(pbTime(mine, event, c.id), pbTime(theirs, event, c.id)),
+      })).filter(({ cell }) => cell.mine !== null || cell.theirs !== null),
+    }))
+    .filter((r) => r.cells.length > 0);
   const score = tally(rows.flatMap((r) => r.cells.map((c) => c.cell)));
 
   return (

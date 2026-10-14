@@ -8,9 +8,9 @@ import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout-store";
 
 /** `unread` puts a dot on the Profile tab: phones have no top bar for the bell. */
-export function BottomNav({ unread = 0 }: { unread?: number }) {
+export function BottomNav({ unread = 0, username = null }: { unread?: number; username?: string | null }) {
   const pathname = usePathname();
-  const activeHref = activeNavHref(pathname, mobileNavItems);
+  const activeHref = activeNavHref(pathname, mobileNavItems, username);
   const isZenMode = useLayoutStore((s) => s.isZenMode);
 
   if (isZenMode) return null;

@@ -22,6 +22,32 @@ export interface PersonRow {
   avatarUrl: string | null;
 }
 
+/** A list row with what the viewer needs to act on it: follow state and one headline time. */
+export interface PersonWithStat extends PersonRow {
+  isPublic: boolean;
+  iFollow: FollowStatus;
+  followsMe: boolean;
+  /** "3x3 Ao12 12.34", or null when they have no 3x3 times you can see. */
+  headline: string | null;
+}
+
+export type FeedKind = "pb" | "practice" | "badge" | "learned";
+
+/** One line of the People feed (`get_activity_feed`). */
+export interface FeedItem {
+  kind: FeedKind;
+  person: PersonRow;
+  puzzleType: string | null;
+  /** PB category, badge slug or algorithm-set slug, by kind. */
+  category: string | null;
+  timeMs: number | null;
+  /** Solves that day (practice) or cases learned (learned). */
+  n: number | null;
+  /** Badge title or algorithm-set name. */
+  label: string | null;
+  at: string;
+}
+
 /** What the follow button shows. */
 export type FollowButtonState =
   | "hidden" // your own profile

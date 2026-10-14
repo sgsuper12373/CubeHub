@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { ChartTooltip, TooltipRow } from "@/components/stats/chart/tooltip";
+import { useMeasuredWidth } from "@/components/stats/chart/use-measured-width";
 import { formatMs } from "@/lib/timer/format";
 /** One day's practice. `bestMs` is optional: public profiles only get counts. */
 export type HeatmapDay = { day: string; count: number; bestMs?: number | null };
@@ -19,8 +20,12 @@ export type HeatmapDay = { day: string; count: number; bestMs?: number | null };
  * flatters you, and this is a chart about consistency.
  */
 
-const CELL = 11;
+/** Squares grow to fill the card, between these sizes. */
+const MIN_CELL = 9;
+const MAX_CELL = 20;
 const GAP = 3;
+/** Never fewer columns than this, so a new cuber still sees a calendar. */
+const MIN_WEEKS = 8;
 const WEEKDAYS = ["Mon", "", "Wed", "", "Fri", "", "Sun"];
 /** Colour steps, quietest first. Thresholds are solves-per-day. */
 const STEPS = [
@@ -52,13 +57,34 @@ function weekdayIndex(d: Date): number {
 
 export function Heatmap({
   days,
-  weeks = 53,
+  weeks: maxWeeks = 53,
+  since,
 }: {
   /** `YYYY-MM-DD` days with practice; /stats builds them with `dailyCounts()`. */
   days: HeatmapDay[];
   weeks?: number;
+  /**
+   * The first day worth drawing (`YYYY-MM-DD` or ISO), e.g. the first solve.
+   * The calendar starts there instead of months before the cuber joined.
+   */
+  since?: string | null;
 }) {
   const [hover, setHover] = useState<Cell | null>(null);
+  const { ref, width: available } = useMeasuredWidth<HTMLDivElement>();
+
+  let weeks = maxWeeks;
+  if (since) {
+    const first = new Date(since.length === 10 ? `${since}T00:00:00` : since);
+    if (!Number.isNaN(first.getTime())) {
+      const span = Math.ceil((Date.now() - first.getTime()) / (7 * 86_400_000)) + 1;
+      weeks = Math.min(maxWeeks, Math.max(MIN_WEEKS, span));
+    }
+  }
+
+  const LABEL_W = 30;
+  // As big as the card allows, so a short history doesn't sit in one corner.
+  const fit = available > 0 ? Math.floor((available - LABEL_W) / (weeks + 1)) - GAP : 11;
+  const CELL = Math.max(MIN_CELL, Math.min(MAX_CELL, fit));
 
   const { cells, monthLabels, width } = useMemo(() => {
     const counts = new Map(days.map((d) => [d.day, d]));
@@ -110,7 +136,7 @@ export function Heatmap({
 
     const totalCols = cells.length === 0 ? 0 : cells[cells.length - 1].col + 1;
     return { cells, monthLabels, width: totalCols * (CELL + GAP) };
-  }, [days, weeks]);
+  }, [days, weeks, CELL]);
 
   const colorFor = (count: number) => {
     if (count === 0) return "var(--chart-seq-0)";
@@ -119,12 +145,11 @@ export function Heatmap({
     return color;
   };
 
-  const LABEL_W = 30;
   const HEADER_H = 14;
   const height = HEADER_H + 7 * (CELL + GAP);
 
   return (
-    <div className="relative">
+    <div ref={ref} className="relative">
       {/* The year is wider than a phone. Let the grid scroll, never the page. */}
       <div className="overflow-x-auto pb-1">
         <svg

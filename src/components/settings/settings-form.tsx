@@ -1,11 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useSyncExternalStore, useTransition, useState } from "react";
-import { LogOut, Check } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useSyncExternalStore, useTransition } from "react";
+import { LogOut } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   type ThemePreference,
   setTheme,
@@ -14,8 +13,6 @@ import {
   getThemeServerSnapshot,
 } from "@/lib/theme";
 import type { CurrentProfile, ServerTimerSettings } from "@/lib/auth/dal";
-import { updateProfile, type ProfileState } from "@/lib/auth/actions";
-import { toast } from "@/stores/toast-store";
 import {
   DEFAULT_TIMER_SETTINGS,
   type InspectionAlert,
@@ -25,6 +22,7 @@ import {
 import { loadClientSettings, saveSettings } from "@/lib/timer/settings-persistence";
 import { cn } from "@/lib/utils";
 import { useTimerStore } from "@/stores/timer-store";
+import { THEMES } from "@/themes";
 import { createClient } from "@/lib/supabase/client";
 
 export function SettingsForm({
@@ -80,8 +78,8 @@ export function SettingsForm({
 
   return (
     <div className="w-full max-w-2xl space-y-12 pb-24">
-      {/* ── Profile / Account ── */}
-      <ProfileForm profile={profile} onSignOut={handleSignOut} />
+      {/* ── Account ── */}
+      <AccountSection profile={profile} onSignOut={handleSignOut} />
 
       {/* ── Timer ── */}
       <section className="space-y-4">
@@ -186,11 +184,10 @@ export function SettingsForm({
       <section className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight">Display</h2>
         <div className="rounded-xl border border-border bg-card divide-y divide-border/50">
-          <SettingRow label="Theme" description="Choose your preferred color scheme.">
+          <SettingRow label="Theme" description="Slate is dark, Paper is light. System follows your device.">
             <SegmentedControl
               options={[
-                { value: "paper", label: "Light" },
-                { value: "slate", label: "Dark" },
+                ...THEMES.map((t) => ({ value: t.id, label: t.name })),
                 { value: "system", label: "System" },
               ]}
               value={theme}
@@ -198,12 +195,25 @@ export function SettingsForm({
             />
           </SettingRow>
           
-          <SettingRow label="Scramble Preview" description="Show a 2D preview of the scramble.">
+          <SettingRow label="Scramble Preview" description="Show the scrambled puzzle next to the timer.">
             <ToggleSwitch
               checked={settings.showScramblePreview}
               onChange={(v) => handleChange({ showScramblePreview: v })}
             />
           </SettingRow>
+
+          {settings.showScramblePreview && (
+            <SettingRow label="Preview Style" description="A flat net, or a 3D cube you can spin.">
+              <SegmentedControl
+                options={[
+                  { value: "2D", label: "2D net" },
+                  { value: "3D", label: "3D cube" },
+                ]}
+                value={settings.previewDimension}
+                onChange={(v) => handleChange({ previewDimension: v === "3D" ? "3D" : "2D" })}
+              />
+            </SettingRow>
+          )}
 
           {settings.inspectionMode !== "off" && (
             <SettingRow label="Inspection Alert" description="Call out the 8s and 12s warnings with a voice or beeps.">
@@ -306,125 +316,38 @@ function ToggleSwitch({
   );
 }
 
-function ProfileForm({
+/**
+ * Who you're signed in as, and the way to everything profile-related. The
+ * username, name, photo and privacy all live together in Edit profile.
+ */
+function AccountSection({
   profile,
   onSignOut,
 }: {
   profile: CurrentProfile | null;
   onSignOut: () => void;
 }) {
-  const [state, formAction, pending] = useActionState<ProfileState, FormData>(
-    updateProfile,
-    undefined,
-  );
-  const [username, setUsername] = useState(profile?.username ?? "");
-  const [displayName, setDisplayName] = useState(profile?.display_name ?? "");
-
-  const isDefaultHandle = profile
-    ? /^user_[0-9a-f]{12}$/i.test(profile.username)
-    : false;
-  const isDirty = profile
-    ? username !== profile.username ||
-      displayName !== (profile.display_name ?? "")
-    : false;
-
-  useEffect(() => {
-    if (state?.success) {
-      toast({
-        kind: "info",
-        message: "Profile updated successfully!",
-        durationMs: 3500,
-      });
-    } else if (state?.error) {
-      toast({
-        kind: "error",
-        message: state.error,
-        durationMs: 5000,
-      });
-    }
-  }, [state]);
-
   return (
     <section className="space-y-4">
-      <h2 className="text-xl font-semibold tracking-tight">Account & Profile</h2>
-      <div className="rounded-xl border border-border bg-card p-4 sm:p-6 space-y-6">
-        {isDefaultHandle && (
-          <div className="rounded-lg bg-primary/10 border border-primary/20 p-4 text-sm text-primary flex items-center justify-between">
-            <span>
-              You currently have an auto-generated handle. Choose your permanent
-              username below!
-            </span>
-          </div>
-        )}
-
-        <form action={formAction} className="space-y-5">
-          <div className="grid gap-2 max-w-sm">
-            <Label htmlFor="settings-username">Username</Label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground text-sm font-mono">
-                @
-              </span>
-              <Input
-                id="settings-username"
-                name="username"
-                type="text"
-                required
-                minLength={3}
-                maxLength={24}
-                pattern="^[A-Za-z0-9_]+$"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="pl-7 font-mono text-sm"
-              />
+      <h2 className="text-xl font-semibold tracking-tight">Account</h2>
+      <div className="divide-y divide-border/50 rounded-xl border border-border bg-card">
+        {profile && (
+          <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div className="space-y-1">
+              <p className="font-medium leading-none">
+                {profile.display_name || profile.username}{" "}
+                <span className="font-mono text-sm font-normal text-muted-foreground">@{profile.username}</span>
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Username, name, photo and privacy are all in Edit profile.
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              3–24 characters. Letters, numbers, and underscores only.
-            </p>
-          </div>
-
-          <div className="grid gap-2 max-w-sm">
-            <Label htmlFor="settings-display-name">Display Name</Label>
-            <Input
-              id="settings-display-name"
-              name="display_name"
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Optional nickname"
-              maxLength={50}
-              className="text-sm"
-            />
-            <p className="text-xs text-muted-foreground">
-              Shown on profile cards and navigation menus.
-            </p>
-          </div>
-
-          {state?.error ? (
-            <p role="alert" className="text-sm text-destructive font-medium">
-              {state.error}
-            </p>
-          ) : null}
-
-          <div className="flex items-center gap-3 pt-2">
-            <Button
-              type="submit"
-              disabled={pending || !isDirty}
-              className="min-w-28"
-            >
-              {pending ? (
-                "Saving…"
-              ) : state?.success && !isDirty ? (
-                <span className="flex items-center gap-1.5">
-                  <Check className="size-4" /> Saved
-                </span>
-              ) : (
-                "Save Profile"
-              )}
+            <Button variant="outline" nativeButton={false} render={<Link href="/profile/edit" />} className="shrink-0">
+              Edit profile
             </Button>
           </div>
-        </form>
-
-        <div className="pt-4 border-t border-border flex items-center justify-between">
+        )}
+        <div className="flex items-center justify-between gap-4 p-4 sm:p-6">
           <div>
             <p className="text-sm font-medium">Sign out</p>
             <p className="text-xs text-muted-foreground">
@@ -434,7 +357,7 @@ function ProfileForm({
           <Button
             variant="outline"
             onClick={onSignOut}
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive shrink-0"
+            className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
           >
             <LogOut className="mr-2 size-4" />
             Sign Out

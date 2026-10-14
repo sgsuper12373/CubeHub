@@ -22,7 +22,7 @@ export default async function AppLayout({
     <>
       <Navbar profile={profile} notifications={notifications} />
       <main className="flex flex-1 flex-col pb-16 md:pb-0">{children}</main>
-      <BottomNav unread={notifications.unread} />
+      <BottomNav unread={notifications.unread} username={profile?.username ?? null} />
       <UsernameOnboarding profile={profile} />
     </>
   );

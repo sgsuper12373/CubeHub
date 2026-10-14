@@ -54,8 +54,8 @@ export function NotificationBell({ items, unread }: { items: NotificationItem[];
       <PopoverContent align="end" className="w-80 gap-1 p-1.5">
         <div className="flex items-center justify-between px-2 pt-1 pb-1.5">
           <p className="text-sm font-semibold text-foreground">Notifications</p>
-          <Link href="/friends" onClick={() => setOpen(false)} className="text-xs font-medium text-primary hover:underline">
-            Friends
+          <Link href="/people" onClick={() => setOpen(false)} className="text-xs font-medium text-primary hover:underline">
+            People
           </Link>
         </div>
         {items.length === 0 ? (

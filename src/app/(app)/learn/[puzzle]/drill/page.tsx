@@ -57,6 +57,14 @@ export default async function DrillPage({ params, searchParams }: Props) {
   const [data, user] = await Promise.all([getDrillData(puzzleId, selection), getUser()]);
   if (!data) notFound();
 
+  // A set starts with the cases marked learned in Learn, so Learn and Drill
+  // work as one; "All" drills the whole set. With nothing learned yet, all.
+  const learnedIds = new Set(data.learnedCaseIds);
+  const learnedHere = data.cases.filter((c) => learnedIds.has(c.id));
+  const scope: "learned" | "all" | null =
+    selection.kind !== "subset" ? null : param(sp.scope) === "all" || learnedHere.length === 0 ? "all" : "learned";
+  const cases = scope === "learned" ? learnedHere : data.cases;
+
   if (data.cases.length === 0) {
     return (
       <div className="mx-auto max-w-xl space-y-4 px-4 py-16 text-center">
@@ -89,22 +97,25 @@ export default async function DrillPage({ params, searchParams }: Props) {
   }
 
   const stats = new Map(data.stats.map((s) => [s.algorithmId, s]));
+  const scopeInfo =
+    scope === null ? null : { scope, learned: learnedHere.length, total: data.cases.length };
   // Weakest first once there is history to rank by; random until then.
   const order: DrillOrder =
     param(sp.order) === "random" ? "random" : param(sp.order) === "weakest" || stats.size > 0 ? "weakest" : "random";
   // Picked on the server so the first render is identical on both sides.
-  const first = nextCase(data.cases, stats, order, null) ?? data.cases[0];
+  const first = nextCase(cases, stats, order, null) ?? cases[0];
 
   return (
     <>
       <h1 className="sr-only">Drill Lab — {puzzle.name}</h1>
       <DrillLab
         // A new set is a new drill: remount rather than carry state across.
-        key={`${activeSet}:${data.cases.map((c) => c.id).join(",")}`}
+        key={`${activeSet}:${cases.map((c) => c.id).join(",")}`}
         puzzle={puzzleId}
         subsets={data.subsets}
         activeSet={activeSet}
-        cases={data.cases}
+        cases={cases}
+        scopeInfo={scopeInfo}
         initialStats={data.stats}
         initialCaseId={first.id}
         initialAuf={randomAuf()}

@@ -46,8 +46,8 @@ export function HeroSection() {
 
           <p className="mt-5 max-w-xl text-base text-pretty text-muted-foreground sm:text-lg md:text-xl md:leading-relaxed">
             Time a solve the moment you land. Then track every average, learn
-            OLL and PLL with 3D cases, drill your weakest algorithms, and find
-            your next cube in ₹ — all in one place.
+            OLL and PLL with 3D cases, drill your weakest algorithms, and
+            compare with friends — all in one place.
           </p>
 
           <div className="mt-8 flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">

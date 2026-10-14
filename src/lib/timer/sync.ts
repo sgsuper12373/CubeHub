@@ -92,6 +92,7 @@ export async function syncLocalToCloud(userId: string): Promise<number> {
       scramble: s.scramble,
       source: s.source ?? "web",
       scramble_type: s.scrambleType ?? "random_state",
+      excluded: s.excluded ?? false,
       created_at: s.createdAt,
     }));
 

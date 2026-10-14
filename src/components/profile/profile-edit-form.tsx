@@ -53,6 +53,32 @@ export function ProfileEditForm({ profile }: { profile: EditableProfile }) {
       </section>
 
       <form action={formAction} className="space-y-6">
+        <Field
+          id="username"
+          label="Username"
+          hint="Your profile link: /profile/username"
+          error={fieldError("username")}
+        >
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 font-mono text-sm text-muted-foreground">
+              @
+            </span>
+            <Input
+              id="username"
+              name="username"
+              defaultValue={profile.username}
+              required
+              minLength={3}
+              maxLength={24}
+              pattern="[A-Za-z0-9_]+"
+              autoCapitalize="none"
+              spellCheck={false}
+              className="pl-7 font-mono"
+              aria-invalid={!!fieldError("username")}
+            />
+          </div>
+        </Field>
+
         <Field id="display_name" label="Display name" error={fieldError("displayName")}>
           <Input
             id="display_name"
@@ -101,7 +127,7 @@ export function ProfileEditForm({ profile }: { profile: EditableProfile }) {
           <Field
             id="wca_id"
             label="WCA ID"
-            hint="Optional, e.g. 2019SING01"
+            hint="Optional. Only you see it until WCA IDs can be verified."
             error={fieldError("wcaId")}
           >
             <Input

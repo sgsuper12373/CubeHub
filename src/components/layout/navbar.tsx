@@ -21,7 +21,7 @@ export function Navbar({
   notifications: { items: NotificationItem[]; unread: number };
 }) {
   const pathname = usePathname();
-  const activeHref = activeNavHref(pathname, navItems);
+  const activeHref = activeNavHref(pathname, navItems, profile?.username ?? null);
   const isZenMode = useLayoutStore((s) => s.isZenMode);
 
   if (isZenMode) return null;

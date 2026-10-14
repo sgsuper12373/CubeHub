@@ -5,7 +5,6 @@ import {
   Activity,
   Box,
   Calendar,
-  ChevronLeft,
   ExternalLink,
   Layers,
   Lock,
@@ -17,6 +16,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { BackButton } from "@/components/layout/back-button";
 import { AchievementCheck } from "@/components/profile/achievement-check";
 import { AchievementsSection } from "@/components/profile/achievements-section";
 import { ActivitySection } from "@/components/profile/activity-section";
@@ -104,16 +104,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-8">
-      <Button
-        variant="ghost"
-        size="sm"
-        render={<Link href="/timer" />}
-        nativeButton={false}
-        className="-ml-3 text-muted-foreground"
-      >
-        <ChevronLeft />
-        Back to timer
-      </Button>
+      <BackButton fallback={isOwner ? "/timer" : "/people"} className="-ml-3 text-muted-foreground" />
 
       <ProfileHeader
         profile={profile}
@@ -204,16 +195,18 @@ function ProfileHeader({
               {countryFlag(profile.country)} {countryName(profile.country)}
             </span>
           )}
-          {!hidden && profile.wcaId && (
+          {/* Anyone can type any WCA ID, so until IDs are verified (WCA sign-in)
+              only the owner sees theirs (founder, 2026-10-15). */}
+          {isOwner && profile.wcaId && (
             <a
               href={`https://www.worldcubeassociation.org/persons/${profile.wcaId}`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-1 text-primary hover:underline"
-              title="Linked by the cuber; not verified by CubeHub"
+              title="Only you can see this until WCA IDs can be verified"
             >
               <ExternalLink className="size-3" aria-hidden />
-              WCA {profile.wcaId}
+              WCA {profile.wcaId} · only you see this
             </a>
           )}
         </div>
@@ -259,9 +252,9 @@ function ProfileHeader({
             <Pencil />
             Edit profile
           </Link>
-          <Link href="/friends" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          <Link href="/people" className={buttonVariants({ variant: "outline", size: "sm" })}>
             <Users />
-            Friends
+            People
           </Link>
           {/* Phones have no top bar, so the bell lives here too. */}
           {notifications && (
