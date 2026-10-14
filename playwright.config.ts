@@ -1,4 +1,11 @@
+import { existsSync } from "node:fs";
+
 import { defineConfig, devices } from "@playwright/test";
+
+// The e2e accounts' credentials (E2E_USER_A/B_*) live in .env.local locally
+// and in GitHub secrets in CI. Next loads .env.local for the app; the test
+// runner needs it too.
+if (!process.env.CI && existsSync(".env.local")) process.loadEnvFile(".env.local");
 
 /**
  * CI, and `npm run test:e2e:prod`, test the production build via `next start`,
@@ -23,9 +30,12 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   projects: [
+    // Signs the e2e accounts in once (tests/e2e/auth.setup.ts).
+    { name: "setup", testMatch: /auth\.setup\.ts/ },
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+      dependencies: ["setup"],
     },
   ],
   webServer: {

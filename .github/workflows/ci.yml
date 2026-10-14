@@ -125,6 +125,11 @@ jobs:
         run: npm run test:e2e
         env:
           CI: true
+          # Two ordinary test accounts for signed-in specs; they skip without these.
+          E2E_USER_A_EMAIL: ${{ secrets.E2E_USER_A_EMAIL }}
+          E2E_USER_A_PASSWORD: ${{ secrets.E2E_USER_A_PASSWORD }}
+          E2E_USER_B_EMAIL: ${{ secrets.E2E_USER_B_EMAIL }}
+          E2E_USER_B_PASSWORD: ${{ secrets.E2E_USER_B_PASSWORD }}
           NEXT_PUBLIC_SUPABASE_URL: "https://bmgupzbyzuxrdsqtiwli.supabase.co"
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'ey00000000000000000000000000000000000000000000000000000000000000000000000000000000' }}
           SUPABASE_SERVICE_ROLE_KEY: "ey00000000000000000000000000000000000000000000000000000000000000000000000000000000"
