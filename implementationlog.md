@@ -43,7 +43,11 @@ D ideas in the docs. No new nav tab; `/master-access` stays unlinked.
   pushed them. First test run: 4 FAILs, all the test's fault (`concat_ws` prints booleans as
   `t`/`f`); fixed with `::text`. Rerun: social 31/31, profile_progress 14/14, achievements
   10/10, profile_setup 11/11.
-- Signed-in e2e not run: the test accounts don't exist yet.
+- Signed-in e2e: the founder made two accounts via Supabase → Add user (signing up hit the
+  built-in email rate limit); credentials in `.env.local`, names in `.env.example`. Against a
+  production build: the full suite passes, 49/49, including setup + 3 social specs.
+- Before the beta: custom SMTP (added to `docs/todo.md`), since the built-in sender allows only
+  a few emails per hour.
 - PB notifications, social achievements, admin report queue: on the roadmap's "Social, later".
 
 ### Verification

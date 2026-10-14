@@ -13,10 +13,12 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
 
 ### Founder steps, in order
 
-- [ ] **Create the two e2e test accounts.** Sign up twice (e.g. `e2e_alpha`, `e2e_beta`) with
-      addresses you control, confirm both, finish onboarding. Then add to `.env.local` **and**
-      as GitHub Actions secrets: `E2E_USER_A_EMAIL`, `E2E_USER_A_PASSWORD`,
-      `E2E_USER_B_EMAIL`, `E2E_USER_B_PASSWORD`. Never the service-role key.
+- [x] **Create the two e2e test accounts.** Done 2026-10-14 via Supabase → Authentication → Add
+      user (Auto Confirm; signing up hit the email rate limit): `testuser1@cubehub.com`,
+      `testuser2@cubehub.com`. Credentials are in `.env.local` (gitignored).
+- [ ] **Add the same four as GitHub Actions secrets** (`E2E_USER_A_EMAIL`, `E2E_USER_A_PASSWORD`,
+      `E2E_USER_B_EMAIL`, `E2E_USER_B_PASSWORD`) so CI runs the signed-in specs. Never the
+      service-role key.
 - [x] **Apply the migrations** (the CLI is linked). Done 2026-10-14: both pushed; `social_test.sql`
       31/31 PASS, and `profile_progress` 14/14, `achievements` 10/10, `profile_setup` 11/11. Kept for the record:
       ```
@@ -36,8 +38,21 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
 
 ### Next after that
 
-1. **Beta with 10–15 real users.** Access tiers and the domain are decided after it.
-2. **Social, later** (roadmap): daily scramble with a Friends tab, share cards, clubs, friend
+1. **Before the beta: your own email sender (custom SMTP).** Supabase's built-in email is for
+   testing only and allows just a few emails per hour for the whole project (2/hour at the
+   time of writing). Sign-up confirmations and password resets past that fail with "email rate
+   limit exceeded" (hit on 2026-10-14 while making the test accounts). Beta testers signing up
+   together would hit it.
+   - [ ] Pick a sender with a free tier (e.g. Resend or Brevo) and verify a sending domain.
+         This needs a domain, so it ties into the domain decision; a temporary domain is fine
+         for the beta, but a real one keeps confirmation emails out of spam.
+   - [ ] Supabase → Authentication → Emails → SMTP Settings: enter the provider's host, port,
+         user, password, and the sender address/name ("CubeHub").
+   - [ ] Supabase → Authentication → Rate Limits: raise "emails sent per hour" (e.g. 30–100).
+   - [ ] Sign up with a fresh address and check the confirmation arrives (and isn't in spam),
+         then a password reset.
+2. **Beta with 10–15 real users.** Access tiers and the domain are decided after it.
+3. **Social, later** (roadmap): daily scramble with a Friends tab, share cards, clubs, friend
    rooms in Compete, social achievements, PB notifications, an admin report queue.
 
 ### Also open
