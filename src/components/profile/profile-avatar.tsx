@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 
 const SIZES = {
+  xs: "size-8 rounded-lg text-xs",
+  sm: "size-10 rounded-xl text-sm",
   md: "size-16 rounded-2xl text-xl",
   lg: "size-20 rounded-2xl text-2xl",
 } as const;

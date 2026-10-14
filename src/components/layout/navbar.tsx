@@ -5,13 +5,21 @@ import { usePathname } from "next/navigation";
 
 import { Logo } from "@/components/layout/logo";
 import { UserMenu } from "@/components/layout/user-menu";
+import { NotificationBell } from "@/components/social/notification-bell";
 import { Button } from "@/components/ui/button";
 import type { CurrentProfile } from "@/lib/auth/dal";
 import { activeNavHref, navItems } from "@/lib/navigation";
+import type { NotificationItem } from "@/lib/notifications/types";
 import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout-store";
 
-export function Navbar({ profile }: { profile: CurrentProfile | null }) {
+export function Navbar({
+  profile,
+  notifications,
+}: {
+  profile: CurrentProfile | null;
+  notifications: { items: NotificationItem[]; unread: number };
+}) {
   const pathname = usePathname();
   const activeHref = activeNavHref(pathname, navItems);
   const isZenMode = useLayoutStore((s) => s.isZenMode);
@@ -48,9 +56,12 @@ export function Navbar({ profile }: { profile: CurrentProfile | null }) {
             );
           })}
         </div>
-        <div className="ml-auto shrink-0">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           {profile ? (
-            <UserMenu profile={profile} />
+            <>
+              <NotificationBell items={notifications.items} unread={notifications.unread} />
+              <UserMenu profile={profile} />
+            </>
           ) : (
             <Button
               size="sm"

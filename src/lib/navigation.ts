@@ -30,8 +30,8 @@ export const navItems: NavItem[] = [
   { label: "Playground", href: "/playground", icon: Box },
   { label: "Compete", href: "/compete", icon: Swords },
   { label: "Shop", href: "/shop", icon: ShoppingCart },
-  // Your own public profile; Settings is reached from there, so it lights up too.
-  { label: "Profile", href: "/profile", icon: User, match: /^\/(profile|settings)(\/|$)/ },
+  // Your own public profile; Settings and Friends are reached from there, so they light it up too.
+  { label: "Profile", href: "/profile", icon: User, match: /^\/(profile|settings|friends)(\/|$)/ },
 ];
 
 /**

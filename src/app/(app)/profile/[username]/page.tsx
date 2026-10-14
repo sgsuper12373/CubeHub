@@ -11,7 +11,9 @@ import {
   Lock,
   Pencil,
   Settings,
+  Swords,
   Timer as TimerIcon,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -22,7 +24,10 @@ import { LatestRecords } from "@/components/profile/latest-records";
 import { LearningSection } from "@/components/profile/learning-section";
 import { PbTimeline } from "@/components/profile/pb-timeline";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
-import { Button } from "@/components/ui/button";
+import { FollowButton } from "@/components/social/follow-button";
+import { NotificationBell } from "@/components/social/notification-bell";
+import { ProfileActionsMenu } from "@/components/social/profile-actions-menu";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { getUser } from "@/lib/auth/dal";
 import {
   getAchievements,
@@ -32,7 +37,10 @@ import {
   type PbProgression,
   type PublicProfile,
 } from "@/lib/profile/dal";
+import { getNotifications } from "@/lib/notifications/dal";
 import { levelFor, methodLabel } from "@/lib/profile/level";
+import { getFollowSummary } from "@/lib/social/dal";
+import { countLabel, followButtonState, isFriend, type FollowSummary } from "@/lib/social/types";
 import { countryFlag, countryName } from "@/lib/profile/validate";
 import { eventLabel, isTimerEvent, TIMER_EVENTS, type TimerEventId } from "@/lib/timer/events";
 import { formatMs } from "@/lib/timer/format";
@@ -72,6 +80,15 @@ export default async function ProfilePage({ params, searchParams }: Props) {
   if (!profile) notFound();
 
   const isOwner = user?.id === profile.id;
+  const [summary, notifications] = await Promise.all([
+    getFollowSummary(profile.id),
+    isOwner ? getNotifications() : null,
+  ]);
+  const follow = {
+    summary,
+    state: followButtonState(summary, { signedIn: user !== null, isOwner }),
+    signedIn: user !== null,
+  };
   // The stats function withholds everything from non-owners of a private profile.
   const hidden = profile.stats.hidden;
   const events = practisedEvents(profile);
@@ -98,7 +115,13 @@ export default async function ProfilePage({ params, searchParams }: Props) {
         Back to timer
       </Button>
 
-      <ProfileHeader profile={profile} isOwner={isOwner} hidden={hidden} />
+      <ProfileHeader
+        profile={profile}
+        isOwner={isOwner}
+        hidden={hidden}
+        follow={follow}
+        notifications={notifications}
+      />
       {isOwner && <AchievementCheck />}
 
       {isOwner && !profile.isPublic && (
@@ -113,7 +136,9 @@ export default async function ProfilePage({ params, searchParams }: Props) {
           <Lock className="size-6 text-muted-foreground" aria-hidden />
           <p className="text-sm font-medium text-foreground">This profile is private</p>
           <p className="text-xs text-muted-foreground">
-            {profile.displayName || profile.username} keeps their stats to themselves.
+            {follow.state === "requested"
+              ? "Your follow request is waiting for approval."
+              : `Follow ${profile.displayName || profile.username} to see their stats once they approve.`}
           </p>
         </div>
       ) : (
@@ -149,10 +174,14 @@ function ProfileHeader({
   profile,
   isOwner,
   hidden,
+  follow,
+  notifications,
 }: {
   profile: PublicProfile;
   isOwner: boolean;
   hidden: boolean;
+  follow: { summary: FollowSummary | null; state: ReturnType<typeof followButtonState>; signedIn: boolean };
+  notifications: Awaited<ReturnType<typeof getNotifications>> | null;
 }) {
   const name = profile.displayName || profile.username;
   const method = methodLabel(profile.mainMethod);
@@ -164,6 +193,12 @@ function ProfileHeader({
         <h1 className="truncate text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">{name}</h1>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span className="font-mono text-sm text-foreground/80">@{profile.username}</span>
+          {isFriend(follow.summary) && (
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 font-semibold text-primary">Friends</span>
+          )}
+          {!isOwner && follow.summary?.followsMe && !isFriend(follow.summary) && (
+            <span className="rounded-full bg-muted px-2 py-0.5 font-medium">Follows you</span>
+          )}
           {!hidden && profile.country && (
             <span>
               {countryFlag(profile.country)} {countryName(profile.country)}
@@ -196,17 +231,44 @@ function ProfileHeader({
             )}
           </div>
         )}
+        {follow.summary && <FollowCounts username={profile.username} summary={follow.summary} linked={!hidden} />}
         {!hidden && profile.bio && (
           <p className="max-w-prose text-sm whitespace-pre-line text-foreground/90">{profile.bio}</p>
         )}
       </div>
 
+      {!isOwner && (
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <FollowButton targetId={profile.id} name={name} initial={follow.state} isPrivate={!profile.isPublic} />
+          {follow.signedIn && !hidden && (
+            <Link
+              href={`/profile/${profile.username}/compare`}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              <Swords />
+              Compare
+            </Link>
+          )}
+          {follow.signedIn && <ProfileActionsMenu targetId={profile.id} name={name} />}
+        </div>
+      )}
+
       {isOwner && (
-        <div className="flex shrink-0 gap-2">
-          <Button size="sm" render={<Link href="/profile/edit" />} nativeButton={false}>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <Link href="/profile/edit" className={buttonVariants({ size: "sm" })}>
             <Pencil />
             Edit profile
-          </Button>
+          </Link>
+          <Link href="/friends" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            <Users />
+            Friends
+          </Link>
+          {/* Phones have no top bar, so the bell lives here too. */}
+          {notifications && (
+            <div className="md:hidden">
+              <NotificationBell items={notifications.items} unread={notifications.unread} />
+            </div>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -219,6 +281,41 @@ function ProfileHeader({
         </div>
       )}
     </header>
+  );
+}
+
+function FollowCounts({ username, summary, linked }: { username: string; summary: FollowSummary; linked: boolean }) {
+  const followers = countLabel(summary.followers, "follower", "followers");
+  const following = `${summary.following.toLocaleString("en-IN")} following`;
+  const cls = "font-semibold text-foreground";
+  return (
+    <p className="flex gap-4 text-sm text-muted-foreground">
+      {linked ? (
+        <>
+          <Link href={`/profile/${username}/followers`} className="hover:underline">
+            <FollowCount text={followers} cls={cls} />
+          </Link>
+          <Link href={`/profile/${username}/following`} className="hover:underline">
+            <FollowCount text={following} cls={cls} />
+          </Link>
+        </>
+      ) : (
+        <>
+          <FollowCount text={followers} cls={cls} />
+          <FollowCount text={following} cls={cls} />
+        </>
+      )}
+    </p>
+  );
+}
+
+/** "12 followers" with the number emphasised. */
+function FollowCount({ text, cls }: { text: string; cls: string }) {
+  const [n, ...rest] = text.split(" ");
+  return (
+    <span>
+      <span className={cls}>{n}</span> {rest.join(" ")}
+    </span>
   );
 }
 

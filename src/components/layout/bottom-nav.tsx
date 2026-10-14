@@ -7,7 +7,8 @@ import { activeNavHref, mobileNavItems } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout-store";
 
-export function BottomNav() {
+/** `unread` puts a dot on the Profile tab: phones have no top bar for the bell. */
+export function BottomNav({ unread = 0 }: { unread?: number }) {
   const pathname = usePathname();
   const activeHref = activeNavHref(pathname, mobileNavItems);
   const isZenMode = useLayoutStore((s) => s.isZenMode);
@@ -31,8 +32,20 @@ export function BottomNav() {
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <Icon className="size-5" />
-              {label}
+              <span className="relative">
+                <Icon className="size-5" />
+                {href === "/profile" && unread > 0 && (
+                  <span className="absolute -top-0.5 -right-1 size-2 rounded-full bg-primary ring-2 ring-background" />
+                )}
+              </span>
+              {href === "/profile" && unread > 0 ? (
+                <>
+                  {label}
+                  <span className="sr-only">, {unread} unread notifications</span>
+                </>
+              ) : (
+                label
+              )}
             </Link>
           );
         })}

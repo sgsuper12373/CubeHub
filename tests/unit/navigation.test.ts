@@ -14,11 +14,13 @@ describe("nav active tab", () => {
     expect(activeNavHref("/learn/333/drills-intro", navItems)).toBe("/learn");
   });
 
-  it("Profile covers your profile, anyone's profile and Settings", () => {
+  it("Profile covers your profile, anyone's profile, Settings and Friends", () => {
     expect(navItems.find((i) => i.label === "Profile")?.href).toBe("/profile");
     expect(activeNavHref("/profile", navItems)).toBe("/profile");
     expect(activeNavHref("/profile/someone", navItems)).toBe("/profile");
     expect(activeNavHref("/settings", navItems)).toBe("/profile");
+    expect(activeNavHref("/friends", navItems)).toBe("/profile");
+    expect(activeNavHref("/profile/someone/compare", navItems)).toBe("/profile");
     expect(activeNavHref("/profiles-list", navItems)).toBeNull();
   });
 

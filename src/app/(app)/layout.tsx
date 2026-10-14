@@ -2,6 +2,7 @@ import { BottomNav } from "@/components/layout/bottom-nav";
 import { Navbar } from "@/components/layout/navbar";
 import { UsernameOnboarding } from "@/components/auth/username-onboarding";
 import { getProfile } from "@/lib/auth/dal";
+import { getNotifications } from "@/lib/notifications/dal";
 
 /**
  * The signed-in app shell: navbar + mobile bottom nav.
@@ -15,13 +16,13 @@ import { getProfile } from "@/lib/auth/dal";
 export default async function AppLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const profile = await getProfile();
+  const [profile, notifications] = await Promise.all([getProfile(), getNotifications()]);
 
   return (
     <>
-      <Navbar profile={profile} />
+      <Navbar profile={profile} notifications={notifications} />
       <main className="flex flex-1 flex-col pb-16 md:pb-0">{children}</main>
-      <BottomNav />
+      <BottomNav unread={notifications.unread} />
       <UsernameOnboarding profile={profile} />
     </>
   );

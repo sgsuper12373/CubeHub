@@ -4,6 +4,7 @@ import { Logo } from "@/components/layout/logo";
 import { Navbar } from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
 import { getProfile } from "@/lib/auth/dal";
+import { getNotifications } from "@/lib/notifications/dal";
 
 /**
  * Public marketing pages (landing). Gets the navbar so visitors can sign in,
@@ -18,11 +19,11 @@ import { getProfile } from "@/lib/auth/dal";
 export default async function MarketingLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const profile = await getProfile();
+  const [profile, notifications] = await Promise.all([getProfile(), getNotifications()]);
 
   return (
     <>
-      <Navbar profile={profile} />
+      <Navbar profile={profile} notifications={notifications} />
 
       <header className="sticky top-0 z-40 flex h-14 items-center border-b border-border bg-background/80 px-4 backdrop-blur-sm md:hidden">
         <Link href="/" aria-label="CubeHub home">
