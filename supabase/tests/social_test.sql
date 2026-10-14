@@ -105,7 +105,7 @@ select set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-00000000000a
 insert into results
 select 'A, an accepted follower, still sees private B', 'true|1',
        concat_ws('|',
-         public.profile_visible('b0000000-0000-4000-8000-00000000000b'),
+         public.profile_visible('b0000000-0000-4000-8000-00000000000b')::text,
          (select count(*) from public.personal_bests where user_id = 'b0000000-0000-4000-8000-00000000000b')), null;
 reset role;
 
@@ -248,7 +248,7 @@ insert into results
 select 'blocked B cannot see A (row, visibility, summary, search)', '0|false|null|0',
        concat_ws('|',
          (select count(*) from public.profiles where id = 'a0000000-0000-4000-8000-00000000000a'),
-         public.profile_visible('a0000000-0000-4000-8000-00000000000a'),
+         public.profile_visible('a0000000-0000-4000-8000-00000000000a')::text,
          coalesce(public.get_follow_summary('a0000000-0000-4000-8000-00000000000a')::text, 'null'),
          (select count(*) from public.search_profiles((select username from a_name)) s
           where s.user_id = 'a0000000-0000-4000-8000-00000000000a')), null;
@@ -286,13 +286,13 @@ select 'the report is stored', 'spam|open',
 insert into results
 select 'trigger functions are not callable through the API', 'false|false',
        concat_ws('|',
-         has_function_privilege('authenticated', 'public.before_follow_insert()', 'execute'),
-         has_function_privilege('anon', 'public.after_block_insert()', 'execute')), null;
+         has_function_privilege('authenticated', 'public.before_follow_insert()', 'execute')::text,
+         has_function_privilege('anon', 'public.after_block_insert()', 'execute')::text), null;
 insert into results
 select 'clients can update only the follow status column', 'false|true',
        concat_ws('|',
-         has_column_privilege('authenticated', 'public.user_follows', 'follower_id', 'update'),
-         has_column_privilege('authenticated', 'public.user_follows', 'status', 'update')), null;
+         has_column_privilege('authenticated', 'public.user_follows', 'follower_id', 'update')::text,
+         has_column_privilege('authenticated', 'public.user_follows', 'status', 'update')::text), null;
 
 update results
 set verdict = case when expected = actual then 'PASS' else 'FAIL' end

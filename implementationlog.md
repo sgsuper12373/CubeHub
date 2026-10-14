@@ -39,8 +39,10 @@ D ideas in the docs. No new nav tab; `/master-access` stays unlinked.
 
 ### Not done
 
-- Migrations not pushed: the auto-mode permission check stopped writes to the production
-  database (including a rolled-back rehearsal). Steps in `docs/todo.md` → Now.
+- Migrations: the auto-mode permission check stopped me writing to production, so the founder
+  pushed them. First test run: 4 FAILs, all the test's fault (`concat_ws` prints booleans as
+  `t`/`f`); fixed with `::text`. Rerun: social 31/31, profile_progress 14/14, achievements
+  10/10, profile_setup 11/11.
 - Signed-in e2e not run: the test accounts don't exist yet.
 - PB notifications, social achievements, admin report queue: on the roadmap's "Social, later".
 

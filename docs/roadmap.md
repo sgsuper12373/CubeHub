@@ -25,7 +25,7 @@ shop. This is the order things were actually built, and what comes next:
 | 8 | Profiles, steps 1–5 (stats, editing, progress, achievements, setup) | ✅ Done | Oct 11–12 |
 | 9 | Learn finishing round (case pages, SEO, error pages) + Vercel Analytics | ✅ Done | Oct 13 |
 | 10 | Signed-in e2e test accounts | 🔧 Built; accounts and secrets pending | Oct 14 |
-| 11 | Social v1: follows and requests, block, report, Friends hub, notifications, compare | 🔧 Built on `feat/social-v1`; migration not yet applied | Oct 14 |
+| 11 | Social v1: follows and requests, block, report, Friends hub, notifications, compare | 🔧 Built on `feat/social-v1`; migrations live, branch not yet deployed | Oct 14 |
 | 12 | **Beta with 10–15 real users** | Planned | |
 | 13 | Decide access tiers and the domain, using what the beta shows | After the beta | |
 | 14 | Phase 4 — Shop | Planned | |
@@ -158,8 +158,8 @@ records, 20 achievements awarded after solves and learning, main cube per event,
 ## Social layer
 
 **v1 built 2026-10-14 on `feat/social-v1`** (migrations `20261018000000_social_enums.sql` and
-`20261018000100_social.sql`, test `supabase/tests/social_test.sql`). Live once the migrations
-are pushed.
+`20261018000100_social.sql`, test `supabase/tests/social_test.sql`). Migrations applied
+2026-10-14 (31/31 PASS); the app goes live when the branch is merged and deployed.
 
 - **Follows:** one-way; mutual follows show as "Friends". Following a **private** profile
   sends a request the owner approves, and an approved follower can see the private profile

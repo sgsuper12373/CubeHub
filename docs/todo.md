@@ -17,7 +17,8 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
       addresses you control, confirm both, finish onboarding. Then add to `.env.local` **and**
       as GitHub Actions secrets: `E2E_USER_A_EMAIL`, `E2E_USER_A_PASSWORD`,
       `E2E_USER_B_EMAIL`, `E2E_USER_B_PASSWORD`. Never the service-role key.
-- [ ] **Apply the migrations** (the CLI is linked):
+- [x] **Apply the migrations** (the CLI is linked). Done 2026-10-14: both pushed; `social_test.sql`
+      31/31 PASS, and `profile_progress` 14/14, `achievements` 10/10, `profile_setup` 11/11. Kept for the record:
       ```
       supabase db push --dry-run   # should list 20261018000000 and 20261018000100
       supabase db push
