@@ -26,7 +26,7 @@ These hold regardless of the details below and are the parts worth internalising
 | Timer | `sessions`, `solves`, `personal_bests` |
 | Learn | `algorithm_cases`, `algorithms`, `tutorial_series`, `tutorial_steps`, `user_algorithm_bookmarks`, `user_tutorial_progress`, `drill_attempts`, `drill_state` |
 | Compete | `matches`, `match_games`, `elo_ratings`, `elo_history` |
-| Social | `clubs`, `club_members`, `club_join_requests`, `notifications` |
+| Social | `user_blocks`, `profile_reports`, `social_rate_events`, `notifications`; `clubs`, `club_members`, `club_join_requests` (unused) |
 | Commerce | `products` |
 | Meta | `achievements`, `user_achievements` |
 
@@ -108,6 +108,29 @@ Added in `20260930000000_drill_lab.sql`, tested by `supabase/tests/drill_lab_tes
 
 Scheduling (SM-2, adapted for drilling): a DNF is a lapse (ease −0.2, floor 1.3; due again in 10 minutes). A success only advances the schedule when it lands at or after `next_review_at`, because a drill sitting is many reps and each one counting as a review would push the next one months out. Review quality is 5 when faster than the median of earlier successes, else 4.
 
+## Social
+
+Added in `20261018000000_social_enums.sql` + `20261018000100_social.sql`, tested by
+`supabase/tests/social_test.sql`.
+
+**`profile_visible(p_user)` is the one privacy rule**: not blocked either way, and (public,
+or you, or you have an *accepted* follow). Stats, PB timeline, achievements, setups and
+`personal_bests` all read through it, so an approved follower sees a private profile with no
+per-feature code. `profiles_read` hides a profile row only between blocked users.
+
+| Object | What it is |
+|---|---|
+| `user_follows` | `(follower_id, following_id)` + `status` (`pending` / `accepted`) + `responded_at`. A BEFORE INSERT trigger rejects blocked pairs, applies the follow rate limit, and **forces** the status (pending when the target is private). Only the followed side may update, only `pending → accepted`, and clients hold `UPDATE` on `status` alone. Either side may delete (unfollow, cancel, decline, remove follower). Readable when you're on either side, or when accepted and either end is visible to you. |
+| `user_blocks` | `(blocker_id, blocked_id)`, owner-only. AFTER INSERT deletes follows both ways and the notifications between the pair. |
+| `profile_reports` | Insert-only for users (own `reporter_id`, status `open`); `is_admin()` reads and updates. 10 per reporter per day. |
+| `social_rate_events` | `(user_id, kind, created_at)`, written only by the follow and report triggers; no policies at all. Counting here, not live follows, is what stops unfollow-and-refollow from resetting the limit (50 follows per hour). |
+| `notifications` | Now written by triggers on `user_follows`: `follow`, `follow_request`, `follow_accepted`, with `data.actor_id`. One per actor and kind (re-following replaces it); accepting or cancelling a request removes it. Owner reads, marks read, deletes. |
+
+RPCs (SECURITY DEFINER, `search_path ''`): `get_follow_summary(user)` (counts + your
+relationship; null if they blocked you), `get_friends_leaderboard(puzzle, category)`,
+`get_friends_recent_pbs(days)`, `search_profiles(query)`, `suggest_profiles()`,
+`get_my_blocks()`, and `is_blocked_between(a, b)` (used by policies).
+
 ## Known gaps
 
 Things the schema does not yet support, each blocking specific roadmap work.
@@ -122,6 +145,6 @@ Things the schema does not yet support, each blocking specific roadmap work.
 
 **`products` is minimal.** No magnetic flag, skill level, community score, release year, tags, or per-retailer URLs; no `sponsors` table at all. *Blocks Phase 4.*
 
-**Migration history starts at the baseline.** `supabase/migrations/20260718000000_baseline.sql` is a `public`-only baseline generated from live on 2026-07-18; the historical dump (which mixed in `auth`/`storage`/`realtime` system schemas) is superseded and should not be replayed. The live project has no migration history recorded, so if you link it with the Supabase CLI, run `supabase migration repair --status applied 20260718000000` before pushing anything new. Note the Supabase MCP is configured read-only — future migrations (including the access-tier work, which changes policies deciding who reads paid content) are applied deliberately via the dashboard SQL editor or the CLI, not through an agent.
+**Migration history starts at the baseline.** `supabase/migrations/20260718000000_baseline.sql` is a `public`-only baseline generated from live on 2026-07-18; the historical dump (which mixed in `auth`/`storage`/`realtime` system schemas) is superseded and should not be replayed. Every migration up to `20261016000000` was applied by hand, then recorded with `supabase migration repair --status applied` on 2026-10-14 when the CLI was linked; `supabase db push` now reports the live database up to date. Note the Supabase MCP is configured read-only — future migrations (including the access-tier work, which changes policies deciding who reads paid content) are applied deliberately via the dashboard SQL editor or the CLI, not through an agent.
 
-**Undocumented surface.** `clubs`, `club_members`, `club_join_requests`, `user_follows`, `notifications`, `subscriptions`, `match_games` and `elo_history` exist in the database but appear in no product plan. Either they're intended and unplanned, or they're speculative and should be dropped.
+**Undocumented surface.** `clubs`, `club_members`, `club_join_requests`, `subscriptions`, `match_games` and `elo_history` exist in the database but appear in no product plan (`user_follows` and `notifications` are now in use: see **Social**; clubs are on the roadmap's "Social, later"). Either they're intended and unplanned, or they're speculative and should be dropped.

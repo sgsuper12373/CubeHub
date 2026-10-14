@@ -157,7 +157,11 @@ The owner-only RLS on `solves` and `user_algorithm_bookmarks` stays exactly as i
   real WCA competitors use CubeHub.
 - **Social (group D):**
   - a shareable profile card image (reusing the PB share-image code)
-  - follow friends, and compare PBs head-to-head
+  - ~~follow friends, and compare PBs head-to-head~~ built 2026-10-14 (social v1, see
+    `roadmap.md` → Social layer). On the profile: follower counts, Follow / Requested /
+    Following / Follow back, a "Friends" or "Follows you" chip, Compare, and a ⋯ menu with
+    Report and Block. Private profiles show a Follow button on the lock panel; an approved
+    follower sees the whole profile.
   - city or state leaderboards
   - clubs (the tables already exist)
 - **WCA ID verification:** today the ID is only labelled as not verified.

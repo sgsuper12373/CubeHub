@@ -16,8 +16,10 @@
 | Tests | Vitest + Testing Library (unit), Playwright (e2e) | vitest 4.1, playwright 1.62 |
 | Monitoring | Vercel Web Analytics + Speed Insights, rendered only on Vercel (see `decisions.md` → Monitoring) | `@vercel/analytics` 2.0.1, `@vercel/speed-insights` 2.0.0 |
 
-The Supabase CLI isn't used: migrations and seeds are applied by hand in the dashboard SQL
-editor (see `todo.md` for the `migration repair` list). Recharts was considered and not adopted
+The Supabase CLI is linked to the live project (2026-10-14) and its migration history matches
+`supabase/migrations/`, so new migrations can go through `supabase db push`. Until then they
+were applied by hand in the dashboard SQL editor. Seeds in `supabase/DataSeeds/` are still
+run by hand. Recharts was considered and not adopted
 (`decisions.md` → Analytics).
 
 Checks: `npm run validate` (tsc, eslint, vitest), `npm run check:colors`, `npm run test:e2e:prod`
@@ -97,10 +99,12 @@ src/app/
       [puzzle]/[series]/            /learn/[puzzle]/[series]  (a tutorial or an algorithm set)
         [case]/                     /learn/[puzzle]/[series]/[case]  + opengraph-image
     profile/                        /profile (redirects to your own)  /profile/[username]
+      [username]/followers/ following/ compare/   lists and head-to-head
     compete/ shop/                  stubs
     master-access/                  admin case editor; requireAdmin() in its layout
     (protected)/          + requires an account
-      settings/ profile/edit/       /settings  /profile/edit
+      settings/ profile/edit/       /settings (+ blocked accounts)  /profile/edit
+      friends/                      /friends  (?tab=leaderboard|pbs|requests|find)
   auth/                   route handlers, no UI
     callback/ confirm/ auth-code-error/
 ```
@@ -110,9 +114,11 @@ src/app/
 | `/` | — | Landing |
 | `/login`, `/signup` | must be **logged out** | `(auth)` layout redirects signed-in users to `/timer` |
 | `/timer`, `/stats`, `/playground`, `/learn/**`, `/compete`, `/shop` | — | **Public by design.** Timer and stats have a localStorage fallback; tutorials and case pages are meant to be shareable and indexable (they're in the sitemap) |
-| `/profile/[username]` | — | Public unless the owner made it private (RLS `profile_visible`) |
+| `/profile/[username]` | — | Public unless private (then owner and approved followers); 404 between blocked users (RLS `profile_visible`) |
 | `/profile` | required | Redirects to your own profile, or to `/login` |
-| `/settings`, `/profile/edit` | required | `(protected)` layout redirects to `/login` |
+| `/profile/[username]/followers`, `/following` | — | Lists shown when the profile is visible to you |
+| `/profile/[username]/compare` | required | Redirects to `/login`; lock panel if their profile is hidden |
+| `/settings`, `/profile/edit`, `/friends` | required | `(protected)` layout redirects to `/login` |
 | `/master-access/**` | admin | `requireAdmin()` in its layout; redirects others to `/` |
 
 Gated *content* inside the public routes is handled by RLS, not by routing. See `access-control.md`.

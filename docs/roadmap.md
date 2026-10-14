@@ -6,6 +6,34 @@ A single destination for speedcubers — timer, tutorials, competition, and buyi
 
 Design principles: the timer loads in under a second and works before anything else on the page; a new user can start timing within five seconds of landing; mobile-ready (many cubers practice with a phone on the desk); accessible by default.
 
+## Where we are (2026-10-14)
+
+The phase numbers below are the original plan. The build has not followed them strictly:
+Playground, Drill Lab and Profiles were added before the Shop, because they make the free core
+(timer, learning, practice) worth coming back to, and a beta needs that more than it needs a
+shop. This is the order things were actually built, and what comes next:
+
+| # | Work | Status | When |
+|---|---|---|---|
+| 1 | Phase 0 — Foundation (Supabase, auth, route groups) | ✅ Done | Jul 17–18 |
+| 2 | Phase 1 — Core timer, landing page | ✅ Done | Jul 18–19 |
+| 3 | Phase 2 — Stats page, csTimer import/export | ✅ Done | Jul 25 |
+| 4 | Phase 3 — Learn: content, tutorials, admin case editor | ✅ Done | Jul 30 – Sep 14 |
+| 5 | Drill Lab (spaced-repetition algorithm practice) | ✅ Done | Sep 30 |
+| 6 | Playground (virtual cube, first version) | ✅ Done | Oct 6 |
+| 7 | Timer final round (Mo3, typed solves, recently deleted, inspection alerts) | ✅ Done | Oct 11 |
+| 8 | Profiles, steps 1–5 (stats, editing, progress, achievements, setup) | ✅ Done | Oct 11–12 |
+| 9 | Learn finishing round (case pages, SEO, error pages) + Vercel Analytics | ✅ Done | Oct 13 |
+| 10 | Signed-in e2e test accounts | 🔧 Built; accounts and secrets pending | Oct 14 |
+| 11 | Social v1: follows and requests, block, report, Friends hub, notifications, compare | 🔧 Built on `feat/social-v1`; migration not yet applied | Oct 14 |
+| 12 | **Beta with 10–15 real users** | Planned | |
+| 13 | Decide access tiers and the domain, using what the beta shows | After the beta | |
+| 14 | Phase 4 — Shop | Planned | |
+| 15 | Phase 5 — Arena (bots first, then live races) | Planned | |
+| 16 | Phase 6 — Polish & scale | Planned | |
+
+Access tiers and the domain are deliberately **not** decided before the beta.
+
 ## Status
 
 **Phase 0 — Foundation: complete.**
@@ -32,7 +60,8 @@ Design principles: the timer loads in under a second and works before anything e
 | Floating draggable scramble preview (2D/3D, desktop) | 2026-07-19 |
 | Landing page at `/` with a live demo timer, OG image, favicon | 2026-07-19 |
 
-`/learn`, `/compete` and `/shop` remain **stub pages**.
+At the end of Phase 1, `/learn`, `/compete` and `/shop` were stub pages. Learn has since been
+built (Phase 3); `/compete` and `/shop` are still stubs.
 
 Note `solves.effective_time_ms` is a generated column that already applies +2/DNF. Never compute penalties in application code.
 
@@ -41,8 +70,8 @@ Note `solves.effective_time_ms` is a generated column that already applies +2/DN
 The full feature list, the final feature round, and what's deferred until users ask are in
 [`timer.md`](timer.md).
 
-User profiles (fixes, editing, event tabs, progress, achievements, setup and level) are
-planned in [`profile.md`](profile.md).
+User profiles (fixes, editing, event tabs, progress, achievements, setup and level) were
+planned in [`profile.md`](profile.md) and are built; see **Profiles** below.
 
 ## Phase 2 — Analytics
 
@@ -103,10 +132,10 @@ Tutorials: 3x3 Beginner (7 steps) and CFOP (1 step, an intro). The access-tier m
 - A page per case, e.g. `/learn/333/oll/27`, with its own title, description, canonical URL and share image. Card names link to it.
 - `sitemap.xml` (every published set and case, refreshed daily) and `robots.txt`.
 - Themed 404 and error pages.
-- OLL shape categories: a seed (`supabase/DataSeeds/20261017000000_oll_shape_categories.sql`) that writes the 57 descriptions as `Group · note` so the category chips appear. It needs applying in the SQL editor.
+- OLL shape categories: a seed (`supabase/DataSeeds/20261017000000_oll_shape_categories.sql`) that writes the 57 descriptions as `Group · note` so the category chips appear. Applied 2026-10-13 (57 of 57 cases, 15 groups).
 
 Still open in this phase:
-- Enforce access tiers, once that decision is made.
+- Enforce access tiers, once that decision is made (after the beta).
 - More tutorial content: CFOP has one step.
 
 *Deliverable: shareable tutorials — the main organic-traffic and sign-up driver.*
@@ -116,6 +145,63 @@ Still open in this phase:
 **Phase 1 built (2026-10-06):** `/playground`, a virtual 3x3/2x2 to turn with keys, the
 on-screen pad or clicks, scramble, undo/redo, with solved detection. Nothing is stored.
 Plan, decisions and later phases in `playground.md`.
+
+## Profiles
+
+**Built 2026-10-11 → 2026-10-12, all five steps checked on live data** (plan: `profile.md`).
+Public profile at `/profile/[username]` and `/profile` for your own: real solve stats per
+event, editing with avatar upload, privacy toggles (`is_public`, `show_activity`,
+`show_learning`), PB timeline, activity heatmap and streaks, learning progress, latest
+records, 20 achievements awarded after solves and learning, main cube per event, method,
+"learning now", and a level badge from the timer-only Ao12. The fake ELO is gone.
+
+## Social layer
+
+**v1 built 2026-10-14 on `feat/social-v1`** (migrations `20261018000000_social_enums.sql` and
+`20261018000100_social.sql`, test `supabase/tests/social_test.sql`). Live once the migrations
+are pushed.
+
+- **Follows:** one-way; mutual follows show as "Friends". Following a **private** profile
+  sends a request the owner approves, and an approved follower can see the private profile
+  (stats, PBs, timeline, achievements), because `profile_visible()` now counts accepted
+  follows. Making a profile public accepts every pending request.
+- **Counts and lists:** counts are always shown; the Followers / Following lists
+  (`/profile/[username]/followers`, `/following`) are visible to whoever can see the profile.
+  You can remove a follower.
+- **Safety:** block (removes follows both ways, hides each profile from the other, managed in
+  Settings), 50 follows per hour, report a profile (10 per day; admins read reports).
+  No direct messages.
+- **Friends hub** at `/friends`: leaderboard (you + people you follow, per event, Single /
+  Ao5 / Ao12), recent PBs from people you follow (14 days), follow requests, and find people
+  (search + suggestions near your 3x3 Ao12).
+- **Notifications:** new follower, follow request, request accepted. A bell beside your name
+  on desktop; on phones a dot on the Profile tab and the bell on your own profile. No new nav
+  tab: the navbar already has eight.
+- **Compare:** `/profile/[username]/compare`, you vs them per event and category, with the
+  gap and a head-to-head score.
+
+### Social, later
+
+In rough order of value; each builds on follows.
+
+1. **Daily scramble**: one scramble for everyone each day, ranked India-wide with a Friends
+   tab. Cheap (a table and a page), and a reason to come back daily.
+2. **Share cards**: "new 12.3 Ao5" images for Instagram and WhatsApp, extending the profile's
+   existing share images.
+3. **Clubs**: school or city groups with a club leaderboard. `clubs`, `club_members` and
+   `club_join_requests` already exist (unused); needs moderation tools first.
+4. **Private friend rooms** in Compete (Phase 5).
+5. **Social achievements** ("First follower", "Followed by 10").
+6. **PB notifications** ("a friend broke their PB"). Left out of v1 because the PB recompute
+   triggers can rewrite rows and would spam; recent PBs on `/friends` cover it for now.
+7. **Admin report queue** under `/master-access` (unlinked). Until then, read
+   `profile_reports` in the Supabase dashboard.
+
+## Beta
+
+Once the social layer is in: 10–15 real users. Their use decides the open product questions
+that are deliberately on hold until then: which content is free vs premium (access tiers),
+and the domain.
 
 ## Phase 4 — Shop
 
@@ -153,7 +239,8 @@ The database already supports premium: `subscriptions`, `profiles.premium_until`
 
 ## Carried-over technical work
 
-- **Deploy** — live on Vercel as of 2026-07-25. Since 2026-09-30 `npm run build` is plain `next build` (Turbopack), with `prebuild` generating `public/cubing/`; confirm the Vercel project uses `npm run build` and has no build-command override pinning `--webpack`. Two things to verify against the deployed origin: the Supabase **Site URL** and redirect allow-list (they were `http://localhost:3000`, and auth confirmation links break if they still are), and `NEXT_PUBLIC_SITE_URL` in the Vercel environment — it feeds `metadataBase`, so Open Graph URLs resolve against localhost without it. No CI/CD beyond Vercel's own git integration.
+- **Deploy** — live on Vercel (`https://pre-cube-hub.vercel.app`) since 2026-07-25. `npm run build` is plain `next build` (Turbopack), with `prebuild` generating `public/cubing/`; the Vercel project uses it with no `--webpack` override. The Supabase Site URL and redirect allow-list point at the live origin (2026-10-11), and `NEXT_PUBLIC_SITE_URL` is set in Vercel (2026-10-13). `npm run check:chunks` passed against the live site on 2026-10-14. GitHub Actions runs validate, the production build and Playwright.
+- **Supabase CLI** — linked to the live project on 2026-10-14. All 17 migrations were marked applied with `migration repair` (they had been applied by hand), and `supabase db push` reports the database up to date. New migrations can now go through `supabase db push`.
 - **GitHub OAuth** — planned, not built.
 - **`cubing.js` render test** — done 2026-09-30: `tests/e2e/cubing-runtime.spec.ts` (3D cube, 2D preview, worker-generated scramble), run against the production build in CI.
 
@@ -288,10 +375,10 @@ dependency) are still worth filing, but nothing here waits on them any more.
 
 ## Open questions
 
-1. **Domain** — `cubehub.in` or `cubehub.io`?
+1. **Domain** — `cubehub.in` or `cubehub.io`? *Decided after the beta.*
 2. **Tutorial authorship** — solo, or community contributions? *The schema has effectively answered this: `algorithms.submitted_by` + `is_approved` exist, i.e. moderated contributions.*
 3. **Algorithm sourcing** — SpeedSolving Wiki (check the licence) or an own curated set?
-4. **csTimer import format** — needs reverse-engineering.
+4. ~~**csTimer import format**~~ — *resolved in Phase 2: import works and was checked against a real export.*
 5. **WCA API terms** for pulling competitor profiles.
 6. **Cubelelo outreach timing** — best after a Phase 1/2 beta, with real traffic numbers.
 7. **Mobile** — PWA recommended over app stores.

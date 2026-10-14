@@ -5,47 +5,39 @@ Written 2026-10-04. Tick items off or delete them as they're done.
 
 ---
 
-## Next session: start here (suggested after 2026-10-13)
+## Now: social v1 is built, waiting to go live (2026-10-14)
 
-Learn Phase 3 (case pages, sitemap, error pages, OLL categories) and Vercel Analytics are on
-`main` and checked live (see `roadmap.md` Phase 3 and `implementationlog.md`).
+Branch `feat/social-v1`. What it is: `roadmap.md` → Social layer. Decided by the founder on
+2026-10-14: one-way follows; **private profiles approve requests**; lists visible to whoever
+can see the profile; block, rate limit and report from day one; no DMs; no new nav tab.
 
-**Planned focus: the social layer, friends and follows.**
+### Founder steps, in order
 
-### Decisions to make first
+- [ ] **Create the two e2e test accounts.** Sign up twice (e.g. `e2e_alpha`, `e2e_beta`) with
+      addresses you control, confirm both, finish onboarding. Then add to `.env.local` **and**
+      as GitHub Actions secrets: `E2E_USER_A_EMAIL`, `E2E_USER_A_PASSWORD`,
+      `E2E_USER_B_EMAIL`, `E2E_USER_B_PASSWORD`. Never the service-role key.
+- [ ] **Apply the migrations** (the CLI is linked):
+      ```
+      supabase db push --dry-run   # should list 20261018000000 and 20261018000100
+      supabase db push
+      supabase db query --linked -f supabase/tests/social_test.sql   # every row PASS; rolls back
+      ```
+      Then re-run `profile_progress_test.sql`, `achievements_test.sql` and
+      `profile_setup_test.sql` the same way: `profile_visible()` changed under them.
+      **Before deploying the branch:** the profile page calls the new RPCs.
+- [ ] **Run the signed-in e2e locally:** `npm run test:e2e:prod` (social spec included).
+- [ ] **Merge, push, deploy,** then `npm run check:chunks -- https://pre-cube-hub.vercel.app`.
+- [ ] **Check by hand:** the bell on desktop; the Profile-tab dot on a phone; `/friends` at
+      phone width; a private profile's request → accept → stats visible.
+- [ ] **Read reports** in the Supabase dashboard (`profile_reports`) until there's an admin
+      queue (roadmap → Social, later).
 
-1. **One-way follows, or friend requests?** Suggested: one-way follows (Instagram/Strava style).
-   One `follows` table (follower, followed, date) covers it, and "friends" is simply mutual
-   follows. There are no requests, accept/decline screens or pending states.
-2. **Private profiles:** can they be followed at all, or only with the owner's approval?
-   Either way the rules should reuse the existing `profile_visible()` check.
-3. **Follower lists:** public to everyone, or only the counts public and the lists visible to
-   the owner?
-4. **What ships in the first version?** Suggested, all built from data that already exists:
-   - Follow/unfollow, and Followers / Following counts and lists on profiles
-   - **A "Friends" leaderboard:** best single, Ao5 and Ao12 among the people you follow
-   - "Recent PBs from people you follow" (a small list, not a full activity feed)
-   - Optional achievements: "First follower", "Followed by 10"
+### Next after that
 
-### Safety, from day one (many users are school students)
-
-- **Block:** removes follows in both directions and hides each profile from the other.
-- **Rate limit** follows (a cap per hour) so spam accounts can't mass-follow.
-- **No direct messages yet:** they need moderation a solo founder can't give, and carry real
-  risk with minors.
-
-### Suggested order
-
-1. **A sign-in test account for e2e tests**, first, because every social flow is signed in:
-   - Every signed-in flow is checked by hand today: profile editing, photo upload, privacy,
-     achievements, typed solves in the cloud, Mark Learned on cards and case pages.
-   - The fix is a dedicated test user, plus a Playwright setup that signs in once and reuses the
-     session, with CI secrets for its email and password.
-   - It needs its own throwaway data, cleaned up after each run, and must never use the
-     service-role key. Following needs **two** test users.
-2. **Follows** (once the decisions above are made): migration + RLS + SQL tests, then the UI.
-3. **Later, built on follows:** a "Friends" tab on the daily scramble leaderboard (section 5,
-   idea 5), and private friend rooms in Compete (roadmap Phase 5).
+1. **Beta with 10–15 real users.** Access tiers and the domain are decided after it.
+2. **Social, later** (roadmap): daily scramble with a Friends tab, share cards, clubs, friend
+   rooms in Compete, social achievements, PB notifications, an admin report queue.
 
 ### Also open
 
@@ -91,8 +83,9 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
       revisit if the project upgrades.
 - [x] **Site URL and redirect allow-list:** (redirect URLs set by the founder 2026-10-11; one Site URL is all Supabase allows.) Authentication → URL Configuration. Both must be
       the live domain, not `http://localhost:3000`, or sign-up confirmation links break.
-- [ ] **Before ever running `supabase link` + `supabase db push`,** mark the existing migrations
-      as applied. The live migration history is empty, because every migration was applied by hand:
+- [x] **Before ever running `supabase link` + `supabase db push`,** mark the existing migrations
+      as applied. Done 2026-10-14: linked, repaired all 17, and `db push` reports "Remote
+      database is up to date". Kept for the record:
       ```
       supabase migration repair --status applied 20260718000000 20260721000000 20260726000000 20260726000100 20260730000000 20260805000000 20260814210434 20260914000000 20260930000000 20261011000000 20261012000000 20261013000000 20261013000100 20261014000000 20261015000000 20261015000100 20261016000000
       ```
@@ -152,28 +145,36 @@ include a middleware/proxy bypass and server-action denial-of-service. The fix i
 - [ ] **When there's an official domain:** set `NEXT_PUBLIC_SITE_URL` to it, redeploy, and redirect
       the `vercel.app` URL to it in Vercel. Submit `/sitemap.xml` in Google Search Console only
       then, so it's set up once.
-- [ ] After a deploy, run `npm run check:chunks -- https://<your-domain>`.
+- [x] After a deploy, run `npm run check:chunks -- https://<your-domain>`. Passed 2026-10-14
+      against `https://pre-cube-hub.vercel.app` (64 files across 5 pages). Repeat after future deploys.
 - [x] **Web Analytics and Speed Insights enabled** (2026-10-13). Both scripts load live (200).
 
 ### Check by hand on the live site (signed in)
 - [ ] Drill Lab: do a few reps → reload → they're still there. Mark a rep +2 and one DNF. Run
       "weakest first" and check the slowest case comes up first.
+      **2026-10-14: reported "reps erased after reload". Under investigation.** The
+      "This session" list is in-memory by design and always empties on reload; saved reps show
+      in the per-case table (rep count, median) instead. The live DB holds 46 attempts, the
+      newest from 2026-10-11 18:41 UTC, so nothing has been saved since. Recheck signed in,
+      watching for a "Couldn't save that attempt" toast.
 - [ ] Admin case editor: open a case, edit it, save, and check the Learn page shows the change.
-- [ ] Learn pages: the 2x2 Beginner, Ortega, CLL, EG-1 and EG-2 sets all appear under `/learn/222`.
-- [ ] Case pages: Mark Learned on `/learn/333/oll/27` while signed in, and a shared case link shows
+      To get there: sign in as `CubeHub_Admin` (the only `is_admin` account) and open
+      `/master-access/algorithms`. There is no nav link.
+- [x] Learn pages: the 2x2 Beginner, Ortega, CLL, EG-1 and EG-2 sets all appear under `/learn/222`.
+- [x] Case pages: Mark Learned on `/learn/333/oll/27` while signed in, and a shared case link shows
       its own preview image.
 
 ---
 
 ## 3. Decisions waiting on you
 
-- [ ] **Access tiers** (on hold). Which sets or tutorials are `free` (need an account) and which are
+- [ ] **Access tiers** (on hold until after a beta with 10–15 real users). Which sets or tutorials are `free` (need an account) and which are
       `premium`? Today the tier is only a badge. Once decided, Claude can make the
       database enforce it (RLS). See `docs/access-control.md`.
 - [x] **Case card colours.** Yellow on top everywhere, like the Drill Lab (white is the
       first layer, solved on the bottom). Done 2026-10-11.
 - [x] **Theme default.** "System". Done 2026-10-11.
-- [ ] **Domain** (on hold): `cubehub.in` or `cubehub.io` (roadmap open question 1).
+- [ ] **Domain** (on hold until after the beta): `cubehub.in` or `cubehub.io` (roadmap open question 1).
 
 ---
 

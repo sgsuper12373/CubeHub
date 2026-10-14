@@ -5,6 +5,88 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-14 — Social v1: follows, requests, block, report, Friends hub, notifications, compare (branch `feat/social-v1`)
+
+**Request:** Build the founder's picks: A1–4 (follows, counts and lists, friends = mutual,
+**private profiles approve requests**), B5–7 (block, rate limit, report), C8–11 + 13
+(Friends leaderboard, friends' recent PBs, notifications, find people, compare). Record the
+D ideas in the docs. No new nav tab; `/master-access` stays unlinked.
+
+### Database (not applied yet: needs the founder's go-ahead)
+
+- `20261018000000_social_enums.sql`: `follow_request`, `follow_accepted` notification types.
+- `20261018000100_social.sql`: reuses the baseline `user_follows` (adds `status`,
+  `responded_at`; trigger-forced status, block check, 50/hour limit; accept-only updates on the
+  `status` column), `user_blocks`, `profile_reports`, `social_rate_events`, notification
+  triggers, auto-accept on going public. **`profile_visible()` now counts accepted follows and
+  blocks**, and `personal_bests` / `profiles` read through it. Seven RPCs (summary,
+  leaderboard, recent PBs, search, suggestions, my blocks, `is_blocked_between`).
+- `supabase/tests/social_test.sql`: 31 checks, rolls back.
+
+### App
+
+- `src/lib/social/` (types + pure rules, DAL, actions returning results so rate-limit text
+  reaches the user, compare maths), `src/lib/notifications/`.
+- `src/components/social/`: follow button (optimistic), ⋯ menu with Block + Report dialog,
+  person rows, request/remove/unblock actions, notification bell.
+- Profile header: counts, chips, Follow, Compare, ⋯; owner gets Friends and (phones) the bell.
+  New pages: followers, following, compare, `/friends` (4 tabs). Settings: blocked accounts.
+- Bell in the desktop navbar (both layouts load notifications); a dot on the phones' Profile
+  tab; Profile tab also lights for `/friends`.
+- e2e: `auth.setup.ts` signs two accounts in once (`E2E_USER_A/B_*` from `.env.local` or CI
+  secrets; skips without them), `social.spec.ts` (follow → notify → compare → unfollow; block
+  → 404 → unblock; Friends tabs + search).
+
+### Not done
+
+- Migrations not pushed: the auto-mode permission check stopped writes to the production
+  database (including a rolled-back rehearsal). Steps in `docs/todo.md` → Now.
+- Signed-in e2e not run: the test accounts don't exist yet.
+- PB notifications, social achievements, admin report queue: on the roadmap's "Social, later".
+
+### Verification
+
+- `npm run validate`: tsc clean, eslint 0 errors (1 pre-existing warning), 388 unit tests pass
+  (new `tests/unit/social.test.ts`). `npm run check:colors` OK. `npm run build` OK.
+
+---
+
+## 2026-10-14 — Supabase CLI linked, deploy check, docs match the real build order
+
+**Request:** Run `supabase db push` and the post-deploy chunk check; update stale docs so the
+roadmap reflects the actual pace (Playground, Drill Lab and Profiles came before the Shop).
+
+### Done (live, no code changes)
+
+- `supabase link` to the live project. `migration list` showed an empty remote history, so a
+  bare `db push` would have replayed all 17 migrations. Ran `migration repair --status applied`
+  for all 17 first, then `db push --dry-run` and `db push`: "Remote database is up to date".
+- `npm run check:chunks -- https://pre-cube-hub.vercel.app`: OK, 64 files across 5 pages.
+
+### Docs
+
+- `docs/roadmap.md`: new "Where we are" table in actual build order, with what's next
+  (test accounts → follows → beta with 10–15 users → access tiers and domain → Shop → Arena).
+  New Profiles, Social layer and Beta sections. Fixed: `/learn` called a stub, the OLL seed
+  "needs applying", the stale deploy checklist, csTimer import listed as open.
+- `docs/todo.md`: migration repair and chunk check ticked; Learn and case-page checks ticked
+  (founder checked them); access tiers and domain wait for the beta; how to reach the admin
+  editor; the Drill Lab report; the existing `user_follows` table flagged for the follows work.
+- `docs/architecture.md`, `docs/database.md`: the CLI is now linked and history matches.
+
+### Investigated, not fixed
+
+- **Drill Lab reps "erased after reload"** (founder report). The "This session" list is
+  in-memory by design; saved reps show in the per-case table. Live `drill_attempts` has 46 rows,
+  newest 2026-10-11 18:41 UTC, so nothing has been saved since. No drill or auth code changed
+  after that besides the session proxy (`3fff703`). Needs a signed-in repro.
+
+### Verification
+
+- CLI output above. Docs only otherwise; no build needed.
+
+---
+
 ## 2026-10-13 — Plan for next session: friends and follows (docs only)
 
 **Request:** Add the friends/follow decisions to `docs/todo.md` for the next session.
