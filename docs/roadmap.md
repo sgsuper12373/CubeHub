@@ -34,6 +34,11 @@ shop. This is the order things were actually built, and what comes next:
 
 Access tiers and the domain are deliberately **not** decided before the beta.
 
+**Navigation for the beta (2026-10-14):** Compete and Shop are out of the navbar and the phone
+bar until they exist, and their landing-page tiles are "Soon" teasers without links. Desktop
+nav: Timer, Stats, Learn, Drill, Playground, Profile. Phone bar: Timer, Stats, Learn, Drill,
+Profile (Stats took Shop's slot).
+
 ## Status
 
 **Phase 0 — Foundation: complete.**

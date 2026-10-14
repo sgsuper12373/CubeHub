@@ -122,7 +122,6 @@ export function FeatureBento() {
 
         {/* Compete */}
         <Tile
-          href="/compete"
           icon={Swords}
           title="Compete"
           soon
@@ -143,7 +142,6 @@ export function FeatureBento() {
 
         {/* Shop */}
         <Tile
-          href="/shop"
           icon={ShoppingCart}
           title="Buy cubes in ₹"
           soon
@@ -180,7 +178,8 @@ function Tile({
   className,
   children,
 }: {
-  href: string;
+  /** Omitted for "soon" tiles: their pages are empty until the feature ships. */
+  href?: string;
   icon: LucideIcon;
   title: string;
   body: string;
@@ -192,29 +191,43 @@ function Tile({
   // The whole tile is clickable through the title link's ::after overlay, not
   // by wrapping it in <a>: a tile can then hold interactive content (the 3D
   // cube) that sits above the overlay without a drag turning into a click.
+  const linked = href !== undefined && !soon;
   return (
     <div
       className={cn(
-        "reveal group relative flex flex-col overflow-hidden rounded-3xl border border-border bg-card p-6 transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 has-[a:focus-visible]:ring-3 has-[a:focus-visible]:ring-ring/50",
+        "reveal group relative flex flex-col overflow-hidden rounded-3xl border border-border bg-card p-6",
+        linked &&
+          "transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 has-[a:focus-visible]:ring-3 has-[a:focus-visible]:ring-ring/50",
         horizontal && "lg:flex-row lg:items-center lg:justify-between lg:gap-10",
         className,
       )}
     >
       <div className={cn(horizontal && "lg:max-w-sm")}>
         <div className="flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+          <span
+            className={cn(
+              "flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20",
+              linked && "transition-colors group-hover:bg-primary group-hover:text-primary-foreground",
+            )}
+          >
             <Icon className="size-5" aria-hidden />
           </span>
           <h3 className="text-lg font-semibold text-foreground">
-            <Link href={href} className="outline-none after:absolute after:inset-0 after:content-['']">
-              {title}
-            </Link>
+            {linked ? (
+              <Link href={href} className="outline-none after:absolute after:inset-0 after:content-['']">
+                {title}
+              </Link>
+            ) : (
+              title
+            )}
           </h3>
           {soon && <SoonTag />}
-          <ArrowRight
-            className="ml-auto size-4 text-foreground-subtle transition-[color,transform] group-hover:translate-x-0.5 group-hover:text-primary"
-            aria-hidden
-          />
+          {linked && (
+            <ArrowRight
+              className="ml-auto size-4 text-foreground-subtle transition-[color,transform] group-hover:translate-x-0.5 group-hover:text-primary"
+              aria-hidden
+            />
+          )}
         </div>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{body}</p>
       </div>

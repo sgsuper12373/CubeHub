@@ -5,6 +5,19 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-14 — Compete and Shop out of the nav for the beta
+
+**Request:** Hide unbuilt sections so beta testers don't land on empty tabs.
+
+- `src/lib/navigation.ts`: Compete and Shop removed from `navItems`. Phone bar is now Timer,
+  Stats, Learn, Drill, Profile (Stats takes Shop's slot; only Playground is hidden on phones).
+- `feature-bento.tsx`: "Soon" tiles (Compete, Shop) no longer link to the stub pages and drop
+  the hover lift and arrow; `href` is optional. The `/compete` and `/shop` pages still exist.
+- Docs: roadmap (beta navigation), architecture. Unit test: no Compete/Shop, the exact phone bar.
+- Verification: tsc, eslint, 389 unit tests, check:colors, build + full e2e.
+
+---
+
 ## 2026-10-14 — Quick fixes: no Friends leaderboard, Drill Lab says if reps are saved, private test accounts
 
 **Request:** Remove the Friends leaderboard (fakeable by tapping), look into Drill Lab reps

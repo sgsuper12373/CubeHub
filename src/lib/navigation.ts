@@ -2,8 +2,6 @@ import {
   BarChart3,
   Box,
   GraduationCap,
-  ShoppingCart,
-  Swords,
   Target,
   Timer,
   User,
@@ -28,8 +26,8 @@ export const navItems: NavItem[] = [
   { label: "Learn", href: "/learn", icon: GraduationCap },
   { label: "Drill", href: "/learn/333/drill", icon: Target, match: /^\/learn\/[^/]+\/drill(\/|$)/ },
   { label: "Playground", href: "/playground", icon: Box },
-  { label: "Compete", href: "/compete", icon: Swords },
-  { label: "Shop", href: "/shop", icon: ShoppingCart },
+  // Compete and Shop are left out until they exist (founder, 2026-10-14): an
+  // empty tab disappoints beta testers. Their pages and the landing teasers stay.
   // Your own public profile; Settings and Friends are reached from there, so they light it up too.
   { label: "Profile", href: "/profile", icon: User, match: /^\/(profile|settings|friends)(\/|$)/ },
 ];
@@ -49,14 +47,10 @@ export function activeNavHref(pathname: string, items: readonly NavItem[]): stri
 
 /**
  * The bottom bar fits five tabs on a phone; a sixth makes every target too
- * narrow to hit reliably. Two drop:
- * - Stats, because it is reachable from the timer's own stats drawer, where a
- *   cuber is already looking at their numbers when they want more of them.
- * - Compete, which is still a placeholder page. Drill took its slot; Compete
- *   comes back when it has something to show.
- * - Playground, which is linked from the Learn page instead: it is a side
- *   trip from learning, not a daily destination like the timer.
+ * narrow to hit reliably. Playground drops: it is linked from the Learn page
+ * instead, a side trip from learning, not a daily destination like the timer.
+ * Stats took the slot Shop had (Shop is out of the nav until it exists).
  */
-const MOBILE_HIDDEN: ReadonlySet<string> = new Set(["/stats", "/compete", "/playground"]);
+const MOBILE_HIDDEN: ReadonlySet<string> = new Set(["/playground"]);
 
 export const mobileNavItems: NavItem[] = navItems.filter((item) => !MOBILE_HIDDEN.has(item.href));

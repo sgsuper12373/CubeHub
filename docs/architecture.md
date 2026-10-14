@@ -100,7 +100,7 @@ src/app/
         [case]/                     /learn/[puzzle]/[series]/[case]  + opengraph-image
     profile/                        /profile (redirects to your own)  /profile/[username]
       [username]/followers/ following/ compare/   lists and head-to-head
-    compete/ shop/                  stubs
+    compete/ shop/                  stubs, not in the nav (reachable by URL only)
     master-access/                  admin case editor; requireAdmin() in its layout
     (protected)/          + requires an account
       settings/ profile/edit/       /settings (+ blocked accounts)  /profile/edit

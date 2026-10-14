@@ -28,4 +28,11 @@ describe("nav active tab", () => {
     expect(mobileNavItems).toHaveLength(5);
     expect(mobileNavItems.map((i) => i.label)).toContain("Drill");
   });
+
+  it("leaves out Compete and Shop until they exist", () => {
+    const labels = navItems.map((i) => i.label);
+    expect(labels).not.toContain("Compete");
+    expect(labels).not.toContain("Shop");
+    expect(mobileNavItems.map((i) => i.label)).toEqual(["Timer", "Stats", "Learn", "Drill", "Profile"]);
+  });
 });
