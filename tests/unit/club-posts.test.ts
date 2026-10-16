@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { editTimeLeft, EDIT_WINDOW_MS, isAlgNotation, parseVideoUrl, validatePostInput, type PostInput } from "@/lib/clubs/posts";
+import {
+  editTimeLeft,
+  EDIT_WINDOW_MS,
+  isAlgNotation,
+  parseVideoUrl,
+  tallyReactions,
+  validatePostInput,
+  type PostInput,
+} from "@/lib/clubs/posts";
 
 const base: PostInput = { kind: "text", body: "Meetup Sunday", alg: "", puzzle: "333", setup: "", videoUrl: "" };
 
@@ -88,5 +96,28 @@ describe("editTimeLeft", () => {
     expect(editTimeLeft("2026-10-17T10:00:00Z", now)).toBe(EDIT_WINDOW_MS);
     expect(editTimeLeft("2026-10-17T09:50:00Z", now)).toBe(5 * 60 * 1000);
     expect(editTimeLeft("2026-10-17T09:40:00Z", now)).toBe(0);
+  });
+});
+
+describe("tallyReactions", () => {
+  it("counts per post and marks the viewer's own", () => {
+    const rows = [
+      { post_id: "p1", user_id: "me", reaction: "fire" },
+      { post_id: "p1", user_id: "you", reaction: "fire" },
+      { post_id: "p1", user_id: "you", reaction: "clap" },
+      { post_id: "p2", user_id: "you", reaction: "mind_blown" },
+      { post_id: "p2", user_id: "me", reaction: "heart" },
+    ];
+    const t = tallyReactions(rows, "me");
+    expect(t.get("p1")).toEqual({
+      fire: { count: 2, mine: true },
+      clap: { count: 1, mine: false },
+      mind_blown: { count: 0, mine: false },
+    });
+    // Unknown kinds are ignored.
+    expect(t.get("p2")?.mind_blown).toEqual({ count: 1, mine: false });
+  });
+  it("marks nothing as mine when signed out", () => {
+    expect(tallyReactions([{ post_id: "p", user_id: "x", reaction: "clap" }], null).get("p")?.clap.mine).toBe(false);
   });
 });

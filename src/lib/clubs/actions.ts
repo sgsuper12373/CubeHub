@@ -6,7 +6,9 @@ import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 
-import { validatePostInput, type PostField, type PostInput } from "./posts";
+import { isReportReason, REPORT_NOTE_MAX } from "@/lib/social/types";
+
+import { COMMENT_MAX, isReactionId, validatePostInput, type PostField, type PostInput } from "./posts";
 import {
   clubErrorMessage,
   REQUEST_MESSAGE_MAX,
@@ -20,6 +22,11 @@ import {
  * database is the real boundary (roles, bans, limits). Actions return a
  * result instead of throwing: a thrown error's message is hidden in
  * production, and the RPCs' messages are written for the cuber.
+ *
+ * Every successful write calls `revalidatePath`, so the action's own response
+ * carries the fresh page. Callers must not also `router.refresh()`: with two
+ * writes in quick succession, the first refresh can land after the second
+ * write and show stale data (seen with two quick comments).
  */
 
 export type ActionResult<T = undefined> = { ok: true; value: T } | { ok: false; error: string };
@@ -287,4 +294,92 @@ export async function setPostPinned(postId: string, pinned: boolean, slug: strin
     pinned ? "Couldn't pin the post." : "Couldn't unpin the post.",
     slug,
   );
+}
+
+// ── Reactions, comments, reports ──────────────────────────────────────────
+
+/** Members react (RLS); one of each kind per cuber per post (primary key). */
+export async function setReaction(postId: string, reaction: string, on: boolean, slug: string): Promise<ActionResult> {
+  const user = await getUser();
+  if (!user) return { ok: false, error: "Sign in to react." };
+  if (!UUID.test(postId) || !isReactionId(reaction)) return { ok: false, error: "Post not found." };
+  const supabase = await createClient();
+  const { error } = on
+    ? await supabase.from("club_post_reactions").insert({ post_id: postId, user_id: user.id, reaction })
+    : await supabase.from("club_post_reactions").delete().eq("post_id", postId).eq("user_id", user.id).eq("reaction", reaction);
+  // Already reacted (a double tap): the state the cuber wants is already there.
+  if (error && error.code !== "23505") {
+    console.error("reaction failed", error);
+    return { ok: false, error: error.code === "42501" ? "Join the club to react." : "Couldn't react. Please try again." };
+  }
+  refresh(slug);
+  return { ok: true, value: undefined };
+}
+
+/** Members comment (RLS); 60 an hour (trigger, `rate_limited`). */
+export async function addComment(postId: string, body: string, slug: string): Promise<ActionResult> {
+  const user = await getUser();
+  if (!user) return { ok: false, error: "Sign in to comment." };
+  if (!UUID.test(postId)) return { ok: false, error: "Post not found." };
+  const text = body.trim();
+  if (!text) return { ok: false, error: "Write a comment first." };
+  if (text.length > COMMENT_MAX) return { ok: false, error: `Keep it under ${COMMENT_MAX} characters.` };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("club_post_comments").insert({ post_id: postId, author_id: user.id, body: text });
+  if (error) {
+    console.error("comment failed", error);
+    if (error.code === "42501") return { ok: false, error: "Join the club to comment." };
+    return { ok: false, error: clubErrorMessage(error, "Couldn't comment. Please try again.") };
+  }
+  refresh(slug);
+  return { ok: true, value: undefined };
+}
+
+/** The comment's author, the club's owner/admins, or the platform admin (RLS). */
+export async function deleteComment(commentId: string, slug: string): Promise<ActionResult> {
+  if (!(await getUser())) return { ok: false, error: "Sign in first." };
+  if (!UUID.test(commentId)) return { ok: false, error: "Comment not found." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("club_post_comments").delete().eq("id", commentId).select("id");
+  if (error) {
+    console.error("delete comment failed", error);
+    return { ok: false, error: "Couldn't delete the comment." };
+  }
+  if (!data?.length) return { ok: false, error: "You can't delete this comment." };
+  refresh(slug);
+  return { ok: true, value: undefined };
+}
+
+/**
+ * A club, a post or a comment, to the platform admin. The trigger fills in
+ * the club and shares the 10-a-day limit with profile reports.
+ */
+export async function reportClubContent(
+  target: { clubId: string } | { postId: string } | { commentId: string },
+  reason: string,
+  note: string,
+): Promise<ActionResult> {
+  const user = await getUser();
+  if (!user) return { ok: false, error: "Sign in to report." };
+  const id = "clubId" in target ? target.clubId : "postId" in target ? target.postId : target.commentId;
+  if (!UUID.test(id)) return { ok: false, error: "Nothing to report." };
+  if (!isReportReason(reason)) return { ok: false, error: "Pick a reason." };
+  const text = note.trim();
+  if (text.length > REPORT_NOTE_MAX) return { ok: false, error: `Keep the note under ${REPORT_NOTE_MAX} characters.` };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("club_reports").insert({
+    reporter_id: user.id,
+    club_id: "clubId" in target ? target.clubId : null,
+    post_id: "postId" in target ? target.postId : null,
+    comment_id: "commentId" in target ? target.commentId : null,
+    reason,
+    note: text || null,
+  });
+  if (error) {
+    console.error("club report failed", error);
+    return { ok: false, error: clubErrorMessage(error, "Couldn't send the report. Please try again.") };
+  }
+  return { ok: true, value: undefined };
 }

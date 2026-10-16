@@ -1,22 +1,23 @@
 "use client";
 
 import { Menu } from "@base-ui/react/menu";
-import { Box, ExternalLink, MoreHorizontal, Pencil, Pin, PinOff, Play, Trash2 } from "lucide-react";
+import { Box, ExternalLink, Flag, MoreHorizontal, Pencil, Pin, PinOff, Play, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { AlgPlayer } from "@/components/learn/alg-player";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
+import { ReportDialog } from "@/components/social/report-dialog";
 import { Button } from "@/components/ui/button";
-import { deletePost, setPostPinned } from "@/lib/clubs/actions";
-import type { ClubPost } from "@/lib/clubs/dal";
-import { editTimeLeft, parseVideoUrl } from "@/lib/clubs/posts";
+import { deletePost, reportClubContent, setPostPinned } from "@/lib/clubs/actions";
+import type { ClubPost, PostExtras } from "@/lib/clubs/dal";
+import { CLUB_REPORT_REASONS, editTimeLeft, parseVideoUrl } from "@/lib/clubs/posts";
 import { timeAgo } from "@/lib/notifications/types";
 import { confirm } from "@/stores/confirm-store";
 import { toast } from "@/stores/toast-store";
 
 import { PostComposer } from "./post-composer";
+import { PostEngagement } from "./post-engagement";
 
 const ITEM = "flex cursor-default items-center gap-2 rounded-md px-2.5 py-1.5 outline-none data-highlighted:bg-muted";
 const DANGER_ITEM =
@@ -28,6 +29,8 @@ export function PostCard({
   slug,
   viewerId,
   canModerate,
+  isMember,
+  extras,
 }: {
   post: ClubPost;
   clubId: string;
@@ -35,9 +38,11 @@ export function PostCard({
   viewerId: string | null;
   /** The club's owner or an admin: may pin and delete any post. */
   canModerate: boolean;
+  isMember: boolean;
+  extras: PostExtras;
 }) {
-  const router = useRouter();
   const [editing, setEditing] = useState(false);
+  const [reporting, setReporting] = useState(false);
   const [pending, startTransition] = useTransition();
   const isAuthor = viewerId === post.author.id;
   // Read once per render; the server enforces the window anyway.
@@ -52,7 +57,6 @@ export function PostCard({
         return;
       }
       if (done) toast({ kind: "info", message: done, durationMs: 3000 });
-      router.refresh();
     });
   }
 
@@ -91,7 +95,8 @@ export function PostCard({
     );
   }
 
-  const showMenu = canEdit || isAuthor || canModerate;
+  const canReport = Boolean(viewerId) && !isAuthor;
+  const showMenu = canEdit || isAuthor || canModerate || canReport;
 
   return (
     <li className="space-y-3 rounded-2xl border border-border bg-card/60 p-4" aria-busy={pending || undefined}>
@@ -144,6 +149,12 @@ export function PostCard({
                       {post.pinnedAt ? "Unpin" : "Pin as announcement"}
                     </Menu.Item>
                   )}
+                  {canReport && (
+                    <Menu.Item className={ITEM} onClick={() => setReporting(true)}>
+                      <Flag className="size-4" aria-hidden />
+                      Report
+                    </Menu.Item>
+                  )}
                   {(isAuthor || canModerate) && (
                     <Menu.Item className={DANGER_ITEM} onClick={onDelete}>
                       <Trash2 className="size-4" aria-hidden />
@@ -161,6 +172,27 @@ export function PostCard({
       {post.body && <p className="text-sm break-words whitespace-pre-line text-foreground">{post.body}</p>}
       {post.kind === "alg" && post.alg && <AlgBlock alg={post.alg} setup={post.setup} puzzle={post.puzzle ?? "333"} />}
       {post.kind === "video" && post.videoUrl && <VideoBlock url={post.videoUrl} />}
+
+      <PostEngagement
+        postId={post.id}
+        slug={slug}
+        reactions={extras.reactions}
+        comments={extras.comments}
+        isMember={isMember}
+        viewerId={viewerId}
+        canModerate={canModerate}
+      />
+
+      {canReport && (
+        <ReportDialog
+          open={reporting}
+          onOpenChange={setReporting}
+          title="Report this post"
+          description="Reports are private and go to the CubeHub team, not the club."
+          reasons={CLUB_REPORT_REASONS}
+          onSubmit={(reason, note) => reportClubContent({ postId: post.id }, reason, note)}
+        />
+      )}
     </li>
   );
 }

@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { ClubBadge } from "@/components/clubs/club-badge";
 import { TagList } from "@/components/clubs/club-card";
 import { ClubJoinButton } from "@/components/clubs/club-join-button";
+import { ClubReportMenu } from "@/components/clubs/club-report-menu";
 import { PostCard } from "@/components/clubs/post-card";
 import { PostComposer } from "@/components/clubs/post-composer";
 import { FollowButton } from "@/components/social/follow-button";
@@ -17,6 +18,7 @@ import {
   getClubBySlug,
   getClubMembers,
   getClubPosts,
+  getPostExtras,
   getFollowRelations,
   getJoinRequests,
   getMembership,
@@ -109,6 +111,9 @@ export default async function ClubPage({ params, searchParams }: Props) {
               isPublic={club.isPublic}
               membership={membership}
             />
+            {membership.kind !== "signed-out" && !(isMember && membership.role === "owner") && (
+              <ClubReportMenu clubId={club.id} name={club.name} />
+            )}
           </div>
         </div>
         {club.description && <p className="text-sm whitespace-pre-line text-foreground/90">{club.description}</p>}
@@ -174,6 +179,7 @@ async function Posts({
 }) {
   const [{ pinned, posts, hasMore }, user] = await Promise.all([getClubPosts(clubId, before), getUser()]);
   const all = [...pinned, ...posts];
+  const extras = await getPostExtras(all.map((p) => p.id));
   const last = posts.at(-1);
 
   return (
@@ -200,6 +206,8 @@ async function Posts({
               slug={slug}
               viewerId={user?.id ?? null}
               canModerate={canModerate}
+              isMember={isMember}
+              extras={extras.get(p.id)!}
             />
           ))}
         </ul>

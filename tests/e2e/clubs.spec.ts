@@ -199,10 +199,10 @@ test("posts: text, algorithm and video; edit, pin, delete; outsiders read a publ
   await composer.getByLabel("Video link").fill("https://youtu.be/dQw4w9WgXcQ");
   await composer.getByRole("button", { name: "Post" }).click();
   await expect(feed.getByRole("button", { name: "Play YouTube video" })).toBeVisible();
-  // B can't edit or pin A's post: no menu on it.
-  await expect(
-    feed.getByRole("listitem").filter({ hasText: "Meetup on Sunday?" }).getByRole("button", { name: "Post actions" }),
-  ).toHaveCount(0);
+  // On A's post, B can only report: no edit, pin or delete.
+  await feed.getByRole("listitem").filter({ hasText: "Meetup on Sunday?" }).getByRole("button", { name: "Post actions" }).click();
+  await expect(b.getByRole("menuitem")).toHaveText(["Report"]);
+  await b.keyboard.press("Escape");
 
   // A edits the text post within 15 minutes.
   await a.reload();
@@ -220,6 +220,35 @@ test("posts: text, algorithm and video; edit, pin, delete; outsiders read a publ
   await expect(aFeed.getByRole("listitem").first()).toContainText("Pinned");
   await expect(aFeed.getByRole("listitem").first()).toContainText("Saturday instead");
 
+  // B reacts to A's post, takes one back, and comments.
+  await b.reload();
+  const bPinned = feed.getByRole("listitem").filter({ hasText: "Saturday instead" }).first();
+  await bPinned.getByRole("button", { name: /^Fire, 0$/ }).click();
+  await expect(bPinned.getByRole("button", { name: /^Fire, 1$/ })).toHaveAttribute("aria-pressed", "true");
+  await bPinned.getByRole("button", { name: /^Clap, 0$/ }).click();
+  await bPinned.getByRole("button", { name: /^Clap, 1$/ }).click();
+  await expect(bPinned.getByRole("button", { name: /^Clap, 0$/ })).toHaveAttribute("aria-pressed", "false");
+  await bPinned.getByLabel("Write a comment").fill("Count me in!");
+  await bPinned.getByLabel("Write a comment").press("Enter");
+  await expect(bPinned.getByRole("region", { name: "Comments" })).toContainText("Count me in!");
+
+  // B reports A's post (reports go with the club when it's deleted).
+  await bPinned.getByRole("button", { name: "Post actions" }).click();
+  await b.getByRole("menuitem", { name: "Report" }).click();
+  await b.getByRole("dialog").getByLabel("Spam or scam").check();
+  await b.getByRole("dialog").getByRole("button", { name: "Send report" }).click();
+  await expect(b.getByText("Thanks. We'll take a look.")).toBeVisible();
+
+  // A sees it all, is notified of the comment, and deletes it as the owner.
+  await a.reload();
+  const aPinned = aFeed.getByRole("listitem").filter({ hasText: "Saturday instead" }).first();
+  await expect(aPinned.getByRole("button", { name: /^Fire, 1$/ })).toHaveAttribute("aria-pressed", "false");
+  await expect(a.getByRole("button", { name: /Notifications, \d+ unread/ })).toBeVisible();
+  const comment = aPinned.getByRole("region", { name: "Comments" }).getByRole("listitem").filter({ hasText: "Count me in!" });
+  await comment.getByRole("button", { name: "Delete" }).click();
+  await confirmDialog(a, "Delete");
+  await expect(aPinned.getByRole("region", { name: "Comments" })).not.toContainText("Count me in!");
+
   await aFeed
     .getByRole("listitem")
     .filter({ has: a.getByRole("button", { name: "Play YouTube video" }) })
@@ -234,6 +263,9 @@ test("posts: text, algorithm and video; edit, pin, delete; outsiders read a publ
   await anon.goto(`/clubs/${slug}`);
   await expect(anon.getByText("Saturday instead")).toBeVisible();
   await expect(anon.getByRole("form", { name: "New post" })).toHaveCount(0);
+  // Counts are visible, but outsiders can't react or comment.
+  await expect(anon.getByRole("button", { name: /^Fire, 1$/ })).toBeDisabled();
+  await expect(anon.getByLabel("Write a comment")).toHaveCount(0);
 
   await deleteClub(a, slug, name);
 });

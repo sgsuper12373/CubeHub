@@ -134,3 +134,54 @@ export function parseVideoUrl(raw: string): VideoLink | null {
 export function editTimeLeft(createdAt: string, now = Date.now()): number {
   return Math.max(0, new Date(createdAt).getTime() + EDIT_WINDOW_MS - now);
 }
+
+// ── Reactions and comments ─────────────────────────────────────────────────
+
+export const REACTIONS = [
+  { id: "fire", emoji: "🔥", label: "Fire" },
+  { id: "clap", emoji: "👏", label: "Clap" },
+  { id: "mind_blown", emoji: "🤯", label: "Mind blown" },
+] as const;
+export type ReactionId = (typeof REACTIONS)[number]["id"];
+
+export function isReactionId(v: string): v is ReactionId {
+  return REACTIONS.some((r) => r.id === v);
+}
+
+export type ReactionCounts = Record<ReactionId, { count: number; mine: boolean }>;
+
+/** Rows from `club_post_reactions` → counts per post, and which are mine. */
+export function tallyReactions(
+  rows: readonly { post_id: string; user_id: string; reaction: string }[],
+  viewerId: string | null,
+): Map<string, ReactionCounts> {
+  const out = new Map<string, ReactionCounts>();
+  for (const r of rows) {
+    if (!isReactionId(r.reaction)) continue;
+    let counts = out.get(r.post_id);
+    if (!counts) {
+      counts = emptyReactions();
+      out.set(r.post_id, counts);
+    }
+    counts[r.reaction].count += 1;
+    if (r.user_id === viewerId) counts[r.reaction].mine = true;
+  }
+  return out;
+}
+
+export function emptyReactions(): ReactionCounts {
+  return { fire: { count: 0, mine: false }, clap: { count: 0, mine: false }, mind_blown: { count: 0, mine: false } };
+}
+
+export const COMMENT_MAX = 500;
+/** Comments shown under a post before "Show all". */
+export const COMMENTS_PREVIEW = 3;
+
+/** Same values as profile reports (the shared check), worded for club content. */
+export const CLUB_REPORT_REASONS = [
+  { value: "spam", label: "Spam or scam" },
+  { value: "harassment", label: "Harassment or bullying" },
+  { value: "inappropriate", label: "Inappropriate content" },
+  { value: "impersonation", label: "Pretending to be someone else" },
+  { value: "other", label: "Something else" },
+] as const;

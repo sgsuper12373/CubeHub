@@ -3,6 +3,7 @@ import { cache } from "react";
 
 import { getUser } from "@/lib/auth/dal";
 import type { PersonRow } from "@/lib/social/types";
+import { emptyReactions, tallyReactions, type ReactionCounts } from "./posts";
 import { createClient } from "@/lib/supabase/server";
 
 import {
@@ -363,4 +364,54 @@ export async function getClubPosts(
     posts: rows.slice(0, POSTS_PAGE).map(toPost),
     hasMore: rows.length > POSTS_PAGE,
   };
+}
+
+export interface ClubComment {
+  id: string;
+  postId: string;
+  body: string;
+  createdAt: string;
+  author: PersonRow;
+}
+
+export interface PostExtras {
+  reactions: ReactionCounts;
+  comments: ClubComment[];
+}
+
+/**
+ * Reactions and comments for the posts on one page, in two queries. RLS hides
+ * them for posts you can't see, and hides comments between blocked cubers.
+ */
+export async function getPostExtras(postIds: string[]): Promise<Map<string, PostExtras>> {
+  const out = new Map<string, PostExtras>();
+  for (const id of postIds) out.set(id, { reactions: emptyReactions(), comments: [] });
+  if (postIds.length === 0) return out;
+
+  const [user, supabase] = await Promise.all([getUser(), createClient()]);
+  const [reactions, comments] = await Promise.all([
+    supabase.from("club_post_reactions").select("post_id, user_id, reaction").in("post_id", postIds),
+    supabase
+      .from("club_post_comments")
+      .select("id, post_id, body, created_at, author_id, author:profiles!club_post_comments_author_id_fkey(id, username, display_name, avatar_url)")
+      .in("post_id", postIds)
+      .order("created_at")
+      .limit(1000),
+  ]);
+  if (reactions.error) console.error("reactions query failed", reactions.error);
+  if (comments.error) console.error("comments query failed", comments.error);
+
+  for (const [postId, counts] of tallyReactions(reactions.data ?? [], user?.id ?? null)) {
+    out.get(postId)!.reactions = counts;
+  }
+  for (const r of (comments.data ?? []) as Record<string, unknown>[]) {
+    out.get(r.post_id as string)?.comments.push({
+      id: r.id as string,
+      postId: r.post_id as string,
+      body: r.body as string,
+      createdAt: r.created_at as string,
+      author: personOrHidden(r.author_id as string, r.author as ProfileJoin | null).person,
+    });
+  }
+  return out;
 }

@@ -2,7 +2,6 @@
 
 import { Check, Clock, LogOut, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -29,7 +28,6 @@ export function ClubJoinButton({
   isPublic: boolean;
   membership: Membership;
 }) {
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [asking, setAsking] = useState(false);
   const [message, setMessage] = useState("");
@@ -43,7 +41,6 @@ export function ClubJoinButton({
       }
       if (done) toast({ kind: "info", message: done, durationMs: 3000 });
       setAsking(false);
-      router.refresh();
     });
   }
 

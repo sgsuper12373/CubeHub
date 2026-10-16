@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -60,7 +59,6 @@ export function PostComposer({
   edit?: { postId: string; values: PostInput };
   onDone?: () => void;
 }) {
-  const router = useRouter();
   const [input, setInput] = useState<PostInput>(edit?.values ?? EMPTY);
   const [error, setError] = useState<{ field?: PostField; error: string } | null>(null);
   const [checking, setChecking] = useState(false);
@@ -105,7 +103,6 @@ export function PostComposer({
       // Clear what was posted; the kind and puzzle stay for the next one.
       if (!edit) setInput((cur) => ({ ...EMPTY, kind: cur.kind, puzzle: cur.puzzle }));
       onDone?.();
-      router.refresh();
     });
   }
 

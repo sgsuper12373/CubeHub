@@ -5,6 +5,46 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-17 — Clubs v1, step 4: reactions, comments and reports
+
+**Request:** Proceed with step 4. No database changes.
+
+### Added
+
+- **Reactions** 🔥 👏 🤯 under every post. They're optimistic and roll back on failure.
+  Members toggle them; outsiders see only the used ones, as disabled counts.
+  `tallyReactions` builds the counts.
+- **Comments:** the latest 3 with "Show all N". Members get a comment box (Enter sends,
+  Shift+Enter makes a new line, 500 characters). The author deletes their own;
+  owners/admins delete any.
+- **Reports:** a post, a comment (from their menus) or a club (⋯ in the header), into
+  `club_reports`. The dialog is now shared: `ReportDialog` was lifted out of the profile
+  menu, with the wording and the action as props.
+- `getPostExtras`: reactions and comments for a page of posts in two queries.
+- Unit tests for `tallyReactions`. The posts e2e covers react and unreact, comment
+  (with the author's notification), owner deletes the comment, report, and
+  outsiders' disabled counts.
+
+### Fixed while testing
+
+- **Stale page after quick writes:** the club components called `router.refresh()` after
+  actions that already `revalidatePath`. With two comments sent quickly, the first
+  refresh landed after the second write and the second comment vanished until a reload.
+  The refresh calls are gone; the actions' own responses update the page. There's a note
+  in `src/lib/clubs/actions.ts`. Checked with three quick comments: all three stay.
+- B's menu on someone else's post now holds only Report (the e2e checks this).
+
+### Verification
+
+- `tsc`, eslint (one existing warning), `check:colors`, `npm test` (38 files, 459
+  tests), `npm run build`.
+- `clubs.spec.ts` posts test passed with reactions and comments (before the refresh fix).
+  After it, the private-club test passes, and the posts test is blocked by testbot2's
+  10-posts-a-day limit (hit by today's repeated runs; the limit and its message work).
+- No test clubs, comments or club reports left on live.
+
+---
+
 ## 2026-10-17 — Clubs v1, step 3: posts
 
 **Request:** Start step 3 (docs/clubs.md → Posts). No database changes: the step 1 tables,

@@ -23,7 +23,6 @@ import { toast } from "@/stores/toast-store";
 
 /** Runs a club action: toast on failure (or success text), then refresh the page. */
 function useClubAction() {
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   function run(action: () => Promise<ActionResult>, done?: string) {
     startTransition(async () => {
@@ -33,7 +32,6 @@ function useClubAction() {
         return;
       }
       if (done) toast({ kind: "info", message: done, durationMs: 3000 });
-      router.refresh();
     });
   }
   return { pending, run, startTransition };
