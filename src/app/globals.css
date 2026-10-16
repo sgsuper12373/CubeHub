@@ -272,6 +272,81 @@
   }
 }
 
+/* ── CubeHub brand mark + wordmark (src/components/layout/logo.tsx) ────────
+   Driven by --logo-c / --logo-h / --logo-wire, falling back to the theme's
+   --primary / --foreground. Shades are derived with color-mix() so any theme
+   gets a matching 3D look. data-logo="classic" on an ancestor gives the
+   original blue/orange. See docs/brand.md. */
+.chm {
+  --chm-c: var(--logo-c, var(--primary));
+  --chm-h: var(--logo-h, var(--foreground));
+  --chm-wire: var(--logo-wire, var(--chm-c));
+  overflow: visible;
+}
+
+/* Optional: the original Gemini-style blue/orange colouring. */
+[data-logo="classic"] {
+  --logo-c: oklch(0.62 0.16 250);
+  --logo-h: oklch(0.72 0.17 55);
+  --logo-wire: oklch(0.7 0.12 240);
+}
+
+.chm-wire { fill: none; stroke: var(--chm-wire); stroke-width: 1.3; stroke-linejoin: round; opacity: 0.5; }
+.chm-inner { opacity: 0.75; }
+.chm-nodes { fill: var(--chm-c); }
+.chm-letters path { stroke-width: 0.7; stroke-linejoin: round; }
+
+/* C: main faces point left (+y), so those get the full colour. */
+.chm-c.chm-py  { fill: var(--chm-c); stroke: color-mix(in oklch, var(--chm-c), white 35%); }
+.chm-c.chm-top { fill: color-mix(in oklch, var(--chm-c), white 32%); stroke: color-mix(in oklch, var(--chm-c), white 55%); }
+.chm-c.chm-px  { fill: color-mix(in oklch, var(--chm-c), black 45%); stroke: color-mix(in oklch, var(--chm-c), black 30%); }
+
+/* H: main faces point right (+x). */
+.chm-h.chm-px  { fill: color-mix(in oklch, var(--chm-h), black 6%); stroke: color-mix(in oklch, var(--chm-h), white 35%); }
+.chm-h.chm-top { fill: color-mix(in oklch, var(--chm-h), white 30%); stroke: color-mix(in oklch, var(--chm-h), white 55%); }
+.chm-h.chm-py  { fill: color-mix(in oklch, var(--chm-h), black 42%); stroke: color-mix(in oklch, var(--chm-h), black 28%); }
+
+/* Glow only in dark themes; it smudges on light backgrounds. */
+.dark .chm--glow .chm-letters { filter: drop-shadow(0 0 5px color-mix(in oklch, var(--chm-c), transparent 50%)); }
+.dark .chm--glow .chm-wire,
+.dark .chm--glow .chm-nodes { filter: drop-shadow(0 0 3px var(--chm-c)); }
+
+/* Wordmark */
+.chm-wordmark {
+  font-family: var(--font-brand, var(--font-sans));
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--foreground);
+}
+.chm-wordmark-hub { color: var(--logo-c, var(--primary)); }
+.dark .chm-lockup .chm-wordmark-hub {
+  text-shadow: 0 0 18px color-mix(in oklch, var(--logo-c, var(--primary)), transparent 55%);
+}
+
+/* Hero lockup */
+.chm-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2rem);
+}
+.chm-lockup--stacked { flex-direction: column; text-align: center; }
+.chm-lockup-mark { width: clamp(6rem, 18vw, 11rem); height: auto; flex: none; }
+.chm-lockup-text { display: flex; flex-direction: column; gap: clamp(0.4rem, 1vw, 0.75rem); }
+.chm-lockup-word { font-size: clamp(2.75rem, 8vw, 5.25rem); }
+.chm-tagline {
+  font-family: var(--font-brand, var(--font-sans));
+  font-weight: 500;
+  font-size: clamp(0.7rem, 1.6vw, 1rem);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+@media (forced-colors: active) {
+  .chm { --chm-c: CanvasText; --chm-h: CanvasText; --chm-wire: CanvasText; }
+}
+
 /* Reduced motion: disable timer scale pulse and shimmer animations */
 @media (prefers-reduced-motion: reduce) {
   .timer-ready-pulse {

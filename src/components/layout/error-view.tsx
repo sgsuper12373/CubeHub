@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { TriangleAlert } from "lucide-react";
+
+import { CubeMark } from "@/components/layout/logo";
 import { Button, buttonVariants } from "@/components/ui/button";
 
 /**
@@ -21,9 +22,7 @@ export function ErrorView({
       role="alert"
       className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-6 px-4 py-16 text-center"
     >
-      <div className="grid size-14 place-items-center rounded-2xl border border-border bg-muted/40 text-destructive">
-        <TriangleAlert className="size-7" aria-hidden />
-      </div>
+      <CubeMark title="CubeHub" className="size-20" />
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Something went wrong</h1>
         <p className="text-muted-foreground">

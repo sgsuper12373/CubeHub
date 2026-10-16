@@ -7,7 +7,8 @@
  *   "dark"/"light" values are still read.
  * - Server: layout.tsx renders `data-theme` and `.dark` from the cookie.
  * - "system" is resolved before first paint by the inline head script
- *   (src/themes/init-script.ts) and here on the client via matchMedia.
+ *   (src/themes/init-script.ts) and here on the client via matchMedia;
+ *   `followSystemTheme` re-resolves it when the OS scheme changes.
  * - `.dark` is derived from the theme's `mode` so shadcn `dark:` variants
  *   keep working; token values are keyed on `data-theme`.
  */
@@ -61,20 +62,36 @@ export function getThemeServerSnapshot(): ThemePreference {
   return DEFAULT_THEME_PREFERENCE;
 }
 
+const SYSTEM_LIGHT = "(prefers-color-scheme: light)";
+
+/** Resolve a preference against the OS scheme and apply it to <html>. */
+function applyTheme(pref: ThemePreference): void {
+  const id = resolveThemeId(pref, window.matchMedia(SYSTEM_LIGHT).matches ? "light" : "dark");
+  const root = document.documentElement;
+  root.dataset.theme = id;
+  root.classList.toggle("dark", themeMode(id) === "dark");
+}
+
 /** Set the preference — applies it to <html> and writes the cookie. Client-only. */
 export function setTheme(pref: ThemePreference): void {
   if (typeof document === "undefined") return;
 
-  const id = resolveThemeId(
-    pref,
-    window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark",
-  );
-
-  const root = document.documentElement;
-  root.dataset.theme = id;
-  root.classList.toggle("dark", themeMode(id) === "dark");
+  applyTheme(pref);
 
   document.cookie = `${THEME_COOKIE}=${pref}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
 
   for (const listener of listeners) listener();
+}
+
+/**
+ * While the preference is "system", follow the OS light/dark switch live
+ * instead of waiting for a reload. Returns the unsubscribe. Client-only.
+ */
+export function followSystemTheme(): () => void {
+  const query = window.matchMedia(SYSTEM_LIGHT);
+  const onChange = () => {
+    if (getThemeSnapshot() === "system") applyTheme("system");
+  };
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
 }

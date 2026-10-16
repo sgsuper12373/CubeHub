@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
+import { Geist, Geist_Mono, JetBrains_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 
 import { cookies } from "next/headers";
@@ -7,7 +7,9 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { AuthListener } from "@/components/auth/auth-listener";
+import { ThemeFavicon } from "@/components/brand/theme-favicon";
 import { ThemeSwitcher } from "@/components/dev/theme-switcher";
+import { SystemThemeSync } from "@/components/layout/system-theme-sync";
 import { ConfirmHost } from "@/components/ui/confirm-dialog";
 import { Toaster } from "@/components/ui/toast";
 import { SITE_URL } from "@/lib/site-url";
@@ -40,6 +42,16 @@ const geistMono = Geist_Mono({
 // Paper's timer font. preload: false keeps it out of the <head> preloads; the
 // @font-face is still declared, so the browser fetches the file only once an
 // element actually renders in it (Paper's --font-timer).
+// Brand font: only the logo wordmark and tagline use it (--font-brand in
+// globals.css; weights 500 and 700). Body text stays Geist. Outfit is a
+// variable font, so no `weight`: one file covers both, and Turbopack's
+// next/font fails the build on a multi-weight list for it.
+const outfit = Outfit({
+  variable: "--font-brand",
+  subsets: ["latin"],
+  display: "swap",
+});
+
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
@@ -97,7 +109,7 @@ export default async function RootLayout({
       lang="en"
       data-theme={themeId}
       suppressHydrationWarning
-      className={`${modeClass}${geistSans.variable} ${geistMono.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${modeClass}${geistSans.variable} ${geistMono.variable} ${jetbrainsMono.variable} ${outfit.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
@@ -108,6 +120,10 @@ export default async function RootLayout({
           diff for <body> only — child mismatches are still reported. */}
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <AuthListener />
+        {/* Both render nothing. They run after hydration, so THEME_INIT_SCRIPT
+            has already applied the theme the favicon reads. */}
+        <SystemThemeSync />
+        <ThemeFavicon />
         <Toaster />
         <ConfirmHost />
         {/* TEMP(step 8): renders nothing unless enabled; see the component. */}

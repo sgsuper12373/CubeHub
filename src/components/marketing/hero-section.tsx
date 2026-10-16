@@ -2,11 +2,11 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ArrowRight, IndianRupee, Pause, Play, ShieldCheck, Sparkles, WifiOff } from "lucide-react";
+import { ArrowRight, IndianRupee, Pause, Play, ShieldCheck, WifiOff } from "lucide-react";
 import { useState } from "react";
 
+import { BrandLockup } from "@/components/layout/logo";
 import { HeroTimerCard } from "@/components/marketing/hero-timer-card";
-import { Eyebrow } from "@/components/marketing/section-heading";
 import { Button } from "@/components/ui/button";
 
 // Client-only canvas; nothing for the server to render.
@@ -14,6 +14,12 @@ const ScrambleMatrix = dynamic(
   () => import("@/components/react-bits/scramble-matrix").then((m) => m.ScrambleMatrix),
   { ssr: false, loading: () => <div className="size-full" /> },
 );
+
+/**
+ * The hero lockup's palette. "classic" is the original blue C / orange H;
+ * "theme" follows the active theme like the logo everywhere else.
+ */
+const LANDING_LOGO_STYLE: "classic" | "theme" = "classic";
 
 const TRUST = [
   { icon: ShieldCheck, label: "WCA random-state scrambles" },
@@ -25,7 +31,10 @@ export function HeroSection() {
   const [paused, setPaused] = useState(false);
 
   return (
-    <section className="relative isolate overflow-hidden bg-background">
+    <section
+      data-logo={LANDING_LOGO_STYLE === "classic" ? "classic" : undefined}
+      className="relative isolate overflow-hidden bg-background"
+    >
       {/* Interactive notation field. Decorative and pointer-events-none, so it
           never eats a tap or a scroll; it fades out towards the copy. */}
       <div className="absolute inset-0 -z-10 opacity-80 [mask-image:radial-gradient(ellipse_at_70%_40%,black_35%,transparent_80%)] max-lg:[mask-image:radial-gradient(ellipse_at_50%_70%,black_25%,transparent_75%)]">
@@ -38,11 +47,8 @@ export function HeroSection() {
 
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 pt-12 pb-16 md:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-28">
         <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
-          <Eyebrow icon={Sparkles}>Free · No sign-up · Ready in seconds</Eyebrow>
-
-          <h1 className="mt-5 text-4xl font-bold tracking-tight text-balance text-foreground sm:text-6xl lg:text-[4.25rem] lg:leading-[1.02]">
-            Your cubing timer, <span className="text-primary">and everything after it.</span>
-          </h1>
+          {/* Stacks below sm: same as `stacked`, without a second copy in the DOM. */}
+          <BrandLockup as="h1" className="max-sm:flex-col max-sm:text-center" />
 
           <p className="mt-5 max-w-xl text-base text-pretty text-muted-foreground sm:text-lg md:text-xl md:leading-relaxed">
             Time a solve the moment you land. Then track every average, learn

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Compass } from "lucide-react";
+
+import { CubeMark } from "@/components/layout/logo";
 import { buttonVariants } from "@/components/ui/button";
 
 /**
@@ -9,9 +10,7 @@ import { buttonVariants } from "@/components/ui/button";
 export function NotFoundView() {
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-6 px-4 py-16 text-center">
-      <div className="grid size-14 place-items-center rounded-2xl border border-border bg-muted/40 text-primary">
-        <Compass className="size-7" aria-hidden />
-      </div>
+      <CubeMark title="CubeHub" className="size-20" />
       <div className="space-y-2">
         <p className="font-mono text-sm text-muted-foreground">404</p>
         <h1 className="text-3xl font-bold tracking-tight">This page doesn&apos;t exist</h1>

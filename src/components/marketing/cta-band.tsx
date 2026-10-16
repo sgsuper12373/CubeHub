@@ -56,7 +56,7 @@ export function SiteFooter() {
     <footer className="border-t border-border/60 bg-background">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-10 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1.5">
-          <Logo className="text-lg" />
+          <Logo className="opacity-80" />
           <p className="text-xs">Built with pride for the Indian speedcubing community.</p>
         </div>
         <p className="text-xs">

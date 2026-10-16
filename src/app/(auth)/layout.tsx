@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { CubeMark } from "@/components/layout/logo";
 import { getUser } from "@/lib/auth/dal";
 
 /**
@@ -18,11 +19,8 @@ export default async function AuthLayout({
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-4 py-12">
-      <Link
-        href="/"
-        className="mb-8 text-2xl font-semibold tracking-tight text-foreground"
-      >
-        CubeHub
+      <Link href="/" aria-label="CubeHub home" className="mb-8">
+        <CubeMark className="size-20" />
       </Link>
       <div className="w-full max-w-sm">{children}</div>
     </main>

@@ -5,6 +5,58 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-17 — CubeHub CH logo (kit v2), brand font and theme-aware favicon
+
+**Request:** Integrate `cubehub-logo-kit-v2/`: a themeable inline-SVG "CH" mark, a navbar
+`Logo`, a landing-page `BrandLockup`, the `data-logo="classic"` palette, a theme-aware
+favicon and static icons. Branch `feat/brand-logo`, cut from main. This supersedes the
+raster attempt and kit v1; neither was committed.
+
+### Changed
+
+- `src/components/layout/logo.tsx`: `CubeMark`, `Logo` and `BrandLockup` from the kit.
+  `BrandLockup` gained `as="div" | "h1"`, and its text wrapper became a `<span>` so it's
+  valid inside an `<h1>`.
+- Logo CSS is the "CubeHub brand mark + wordmark" section of `globals.css` (the kit's
+  `src/styles/logo.css`). It's a plain section, matching how the repo keeps component
+  classes.
+- Brand font: Outfit via `next/font/google` as `--font-brand`, used only by the wordmark
+  and tagline. It's a variable font, so `weight` is omitted. Turbopack fails the build on
+  `weight: ["500","700"]` with "next/font/google queries have exactly one entry".
+- Landing hero: `<BrandLockup as="h1" />` replaces the eyebrow and the "Your cubing timer…"
+  h1. It stacks below `sm` through `max-sm:flex-col`, so there's no second copy in the DOM.
+  `LANDING_LOGO_STYLE` in `hero-section.tsx` ("classic" | "theme") sets `data-logo` on the
+  hero section.
+- Favicon: `src/lib/brand/favicon.ts` and `ThemeFavicon`. These keep the round-one fixes
+  over the kit's copies:
+  - the `<head>` observer, because Next re-inserts the static icon link after hydration and
+    on client navigation
+  - fallback colours in `src/themes/brand.ts`, for the colour guard
+- `<SystemThemeSync />` plus `followSystemTheme()` in `src/lib/theme.ts`: the "system"
+  theme now follows OS light/dark changes live.
+- Static `src/app/icon.png`, `apple-icon.png`, and `opengraph-image.png` + `.alt.txt` (the
+  kit's `cubehub-og-slate.png`). Removed `icon.tsx`, `opengraph-image.tsx` and the default
+  `favicon.ico`.
+- `CubeMark title="CubeHub"` at `size-20` in `NotFoundView`, `ErrorView` and the auth
+  layout. `size-16` with a `motion-safe` pulse in `timer/loading.tsx`. Footer uses `<Logo />`
+  at `opacity-80`.
+- `public/brand/`: the kit's lockups, marks and OG images (SVG + PNG). The avatars and the
+  older raster set are in `docs/brand/`.
+- Docs: `docs/brand.md`.
+
+### Verification
+
+- `tsc`, eslint (one existing warning), `check:colors`, `npm test` (36 files, 412 tests),
+  and a clean `npm run build` (`.next` removed first).
+- Playwright: hero, navbar, timer, login, 404 and footer in Slate and Paper at 390px and
+  1280px, compared against `docs-brand-preview.html`.
+- Favicon: a themed data URL on load, after setTheme switches, after the OS scheme flips
+  under "system", and after client navigation.
+- First screenshot pass was invalid: a leftover server from the previous round was still
+  on the port and the build was stale. Redone after a clean build.
+
+---
+
 ## 2026-10-15 — Pre-beta review fixes (misfires, achievements, People, landing, Drill)
 
 **Request:** Act on an outside review of the beta build. Founder decisions: a kept misfire is
