@@ -1,6 +1,6 @@
 # Clubs (v1 requirements)
 
-Status: **requirements and defaults agreed 2026-10-14 (brainstorming session), not built yet.** Tournaments come after the beta;
+Status: **requirements and defaults agreed 2026-10-14 (brainstorming session). Step 1 (database) written and tested locally 2026-10-17; not yet applied to the live project.** Tournaments come after the beta;
 clubs are built before it.
 
 Groups of cubers (a school, a college, a city, an online crew) with a member list, weekly

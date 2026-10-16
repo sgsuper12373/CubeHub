@@ -26,7 +26,7 @@ These hold regardless of the details below and are the parts worth internalising
 | Timer | `sessions`, `solves`, `personal_bests` |
 | Learn | `algorithm_cases`, `algorithms`, `tutorial_series`, `tutorial_steps`, `user_algorithm_bookmarks`, `user_tutorial_progress`, `drill_attempts`, `drill_state` |
 | Compete | `matches`, `match_games`, `elo_ratings`, `elo_history` |
-| Social | `user_blocks`, `profile_reports`, `social_rate_events`, `notifications`; `clubs`, `club_members`, `club_join_requests` (unused) |
+| Social | `user_blocks`, `profile_reports`, `social_rate_events`, `notifications`; `clubs`, `club_members`, `club_join_requests`, `club_bans`, `club_invites`, `club_posts`, `club_post_reactions`, `club_post_comments`, `club_reports` (clubs v1, `20261020000100_clubs.sql`) |
 | Commerce | `products` |
 | Meta | `achievements`, `user_achievements` |
 

@@ -59,7 +59,12 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
    - [ ] Sign up with a fresh address and check the confirmation arrives (and isn't in spam),
          then a password reset.
 2. **Before the beta: build Clubs** from the spec in `docs/clubs.md` (agreed 2026-10-14).
-   Next session starts with the database migration (founder pushes it).
+   - [x] Step 1, database: `20261020000000_club_enums.sql` + `20261020000100_clubs.sql`,
+         test `supabase/tests/clubs_test.sql` (92 PASS on a local Supabase Postgres 17).
+   - [ ] **Founder: apply both migrations (enums first)**, then run `clubs_test.sql` on the
+         live project and expect every row PASS. Needs `20261019000000_solve_sanity.sql` applied.
+   - [ ] Steps 2–6: clubs pages, joining and manage; posts; reactions and comments; invite
+         links; notifications, navbar and docs.
 3. **Before the beta: check every page for correctness** (founder, 2026-10-14). Go page by page
    and fix wrong numbers, labels and hardcoded values. Known so far:
    - [x] Learn cards and puzzle hero: counts were hardcoded (57 algorithms, 12 tutorials, 58

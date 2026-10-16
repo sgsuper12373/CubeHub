@@ -5,6 +5,54 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-17 — Clubs v1, step 1: database
+
+**Request:** Start Clubs (docs/clubs.md), the next pre-beta item. Step 1 of 6 is the
+database. Branch `feat/clubs`.
+
+### Added
+
+- `20261020000000_club_enums.sql`: the `club_request_approved`, `club_comment` and
+  `club_post_pinned` notification types. They're in their own file because an enum value
+  can't be used in the transaction that adds it.
+- `20261020000100_clubs.sql`:
+  - **`clubs`:** gains `type`, `tags` (fixed list, at most 3) and a reserved
+    `post_policy`. Names are unique ignoring case; slugs are 3–40 characters with reserved
+    words refused.
+  - **New tables:** `club_bans`, `club_invites`, `club_posts` (text, alg, video, with checks
+    per kind), `club_post_reactions`, `club_post_comments` and `club_reports`.
+  - **Access rules rewritten:** the baseline let anyone add themselves as `owner`, and its
+    `club_members` read policy was recursive. Club rows are public. Members, posts,
+    reactions and comments need `club_visible_to_me()`. Blocked pairs don't see each
+    other's posts or comments.
+  - **RPCs:** every membership change goes through one: create, join, request and respond,
+    leave, remove/ban/unban, set role, transfer ownership, invite create/revoke/preview/use,
+    and pin. Plus `get_club_activity` (solves this IST week, counts only) and
+    `get_profile_clubs`.
+  - **Limits:** 3 owned clubs, 20 memberships, 3 pins per club. Through
+    `social_rate_events`: posts 10/day, comments 60/hour, join requests 20/hour, and
+    reports 10/day (shared with profile reports).
+  - **Notification triggers:** join requests, approvals, comments (one per post per hour)
+    and pins.
+- `supabase/tests/clubs_test.sql`: 92 checks.
+
+### Verification
+
+- The full migration chain applied to a fresh `supabase/postgres:17.11.0.004` container
+  (podman), skipping `avatars_storage`, which needs Supabase Storage.
+  `clubs_test.sql`: 92 PASS. `social_test.sql`: 31 PASS (regression).
+- Running the tests found one real issue, now fixed: `revoke … from public` doesn't remove
+  Supabase's direct `anon`/`authenticated` EXECUTE grants, so the club RPCs revoke from
+  all three roles.
+- `solve_sanity_test.sql` has one time-of-day failure locally: "night-owl" is earned
+  when run around 2 a.m. That's existing and unrelated.
+
+### Not done
+
+- Not applied to the live project; the founder pushes migrations.
+
+---
+
 ## 2026-10-17 — CubeHub CH logo (kit v2), brand font and theme-aware favicon
 
 **Request:** Integrate `cubehub-logo-kit-v2/`: a themeable inline-SVG "CH" mark, a navbar
