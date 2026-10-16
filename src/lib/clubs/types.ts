@@ -172,6 +172,8 @@ const USER_FACING_HINTS = new Set([
   "not_member",
   "not_found",
   "bad_role",
+  "pin_limit",
+  "admins_only",
 ]);
 
 export function clubErrorMessage(

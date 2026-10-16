@@ -5,6 +5,49 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-17 — Clubs v1, step 3: posts
+
+**Request:** Start step 3 (docs/clubs.md → Posts). No database changes: the step 1 tables,
+checks, RLS and pin RPC cover it.
+
+### Added
+
+- `src/lib/clubs/posts.ts`: the limits, `validatePostInput` (text 1000, caption 500,
+  algorithm 200 plus setup 200, 3x3/2x2 only, YouTube/Instagram only),
+  `parseVideoUrl` (YouTube id from youtu.be, watch, shorts and live) and
+  `editTimeLeft`. The notation and URL patterns match the table's checks; I compared
+  the same samples against Postgres.
+- `getClubPosts` (pinned first, then 20 per page with an "Older posts" cursor), and the
+  `createPost`, `editPost`, `deletePost` and `setPostPinned` actions.
+- `PostComposer`: Text, Algorithm or Video. Algorithms (and setups) are checked with
+  cubing.js before posting. The form is locked while posting.
+- `PostCard`: text with line breaks and no clickable links; the algorithm in monospace
+  with the 3D player on tap; YouTube thumbnail with the player on tap
+  (youtube-nocookie); an Instagram link card. The ⋯ menu offers Edit (the author,
+  15 minutes), Pin/Unpin (owner/admins) and Delete (the author or owner/admins). Shows
+  "edited" and "Pinned".
+- The club page's Posts tab: composer for members, then the feed. Signed-out visitors
+  read a public club's posts.
+- `tests/unit/club-posts.test.ts`: 28 tests.
+- `tests/e2e/clubs.spec.ts`: a posts test (text, bad then good algorithm, cube player,
+  refused then good video link, B can't edit A's post, edit, pin, delete, signed-out
+  read).
+
+### Fixed while testing
+
+- A race in the composer: after a post, the refreshed feed could arrive before the
+  form's reset, so switching to Algorithm and typing got wiped back to empty text mode.
+  The form is now disabled until the post is done, and the reset keeps the current kind.
+
+### Verification
+
+- `tsc`, eslint (one existing warning), `check:colors`, `npm test` (38 files, 457
+  tests), `npm run build`.
+- `clubs.spec.ts` (both tests) passes on the live project with `--workers=1`. Screenshots
+  of a feed with all three kinds, phone and desktop. All test clubs deleted.
+
+---
+
 ## 2026-10-17 — Clubs v1, step 2: clubs, joining and manage
 
 **Request:** Commit step 1, start step 2, and explain how to apply migrations with the CLI.

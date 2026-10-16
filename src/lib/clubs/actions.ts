@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 
+import { validatePostInput, type PostField, type PostInput } from "./posts";
 import {
   clubErrorMessage,
   REQUEST_MESSAGE_MAX,
@@ -213,4 +214,77 @@ export async function setClubMemberRole(
 export async function transferClubOwnership(clubId: string, userId: string, slug: string): Promise<ActionResult> {
   if (!UUID.test(clubId) || !UUID.test(userId)) return { ok: false, error: "Member not found." };
   return rpc("transfer_club_ownership", { p_club: clubId, p_user: userId }, "Couldn't transfer the club.", slug);
+}
+
+// ── Posts ─────────────────────────────────────────────────────────────────
+
+export type PostResult = { ok: true } | { ok: false; error: string; field?: PostField };
+
+/** Members post (RLS); 10 a day across clubs (trigger, `rate_limited`). */
+export async function createPost(clubId: string, slug: string, input: PostInput): Promise<PostResult> {
+  const user = await getUser();
+  if (!user) return { ok: false, error: "Sign in to post." };
+  if (!UUID.test(clubId)) return { ok: false, error: "Club not found." };
+  const v = validatePostInput(input);
+  if (!v.ok) return v;
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("club_posts").insert({ club_id: clubId, author_id: user.id, ...v.value });
+  if (error) {
+    console.error("create post failed", error);
+    if (error.code === "42501") return { ok: false, error: "Only members can post here." };
+    return { ok: false, error: clubErrorMessage(error, "Couldn't post. Please try again.") };
+  }
+  refresh(slug);
+  return { ok: true };
+}
+
+/** The author, within 15 minutes (RLS). The kind can't change. */
+export async function editPost(postId: string, slug: string, input: PostInput): Promise<PostResult> {
+  if (!(await getUser())) return { ok: false, error: "Sign in first." };
+  if (!UUID.test(postId)) return { ok: false, error: "Post not found." };
+  const v = validatePostInput(input);
+  if (!v.ok) return v;
+
+  const supabase = await createClient();
+  const { body, alg, puzzle, setup, video_url } = v.value;
+  const { data, error } = await supabase
+    .from("club_posts")
+    .update({ body, alg, puzzle, setup, video_url })
+    .eq("id", postId)
+    .eq("kind", v.value.kind)
+    .select("id");
+  if (error) {
+    console.error("edit post failed", error);
+    return { ok: false, error: "Couldn't save the edit." };
+  }
+  if (!data?.length) return { ok: false, error: "Posts can be edited for 15 minutes after posting." };
+  refresh(slug);
+  return { ok: true };
+}
+
+/** The author, the club's owner/admins, or the platform admin (RLS). */
+export async function deletePost(postId: string, slug: string): Promise<ActionResult> {
+  if (!(await getUser())) return { ok: false, error: "Sign in first." };
+  if (!UUID.test(postId)) return { ok: false, error: "Post not found." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("club_posts").delete().eq("id", postId).select("id");
+  if (error) {
+    console.error("delete post failed", error);
+    return { ok: false, error: "Couldn't delete the post." };
+  }
+  if (!data?.length) return { ok: false, error: "You can't delete this post." };
+  refresh(slug);
+  return { ok: true, value: undefined };
+}
+
+/** Owner/admins; at most 3 pinned per club (RPC, `pin_limit`). */
+export async function setPostPinned(postId: string, pinned: boolean, slug: string): Promise<ActionResult> {
+  if (!UUID.test(postId)) return { ok: false, error: "Post not found." };
+  return rpc(
+    "set_club_post_pinned",
+    { p_post: postId, p_pinned: pinned },
+    pinned ? "Couldn't pin the post." : "Couldn't unpin the post.",
+    slug,
+  );
 }

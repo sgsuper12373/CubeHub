@@ -6,6 +6,8 @@ import { notFound } from "next/navigation";
 import { ClubBadge } from "@/components/clubs/club-badge";
 import { TagList } from "@/components/clubs/club-card";
 import { ClubJoinButton } from "@/components/clubs/club-join-button";
+import { PostCard } from "@/components/clubs/post-card";
+import { PostComposer } from "@/components/clubs/post-composer";
 import { FollowButton } from "@/components/social/follow-button";
 import { EmptyState, PersonList, PersonRow } from "@/components/social/person-row";
 import { buttonVariants } from "@/components/ui/button";
@@ -14,6 +16,7 @@ import {
   getClubActivity,
   getClubBySlug,
   getClubMembers,
+  getClubPosts,
   getFollowRelations,
   getJoinRequests,
   getMembership,
@@ -24,7 +27,7 @@ import { cn } from "@/lib/utils";
 
 interface Props {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; before?: string }>;
 }
 
 type Tab = "posts" | "members" | "activity";
@@ -140,16 +143,76 @@ export default async function ClubPage({ params, searchParams }: Props) {
           </nav>
 
           {tab === "posts" && (
-            // Posts arrive in step 3 (docs/clubs.md → build order).
-            <EmptyState title="No posts yet">
-              Announcements, algorithms and videos from members will show up here.
-            </EmptyState>
+            <Posts
+              clubId={club.id}
+              slug={club.slug}
+              isMember={isMember}
+              canModerate={manager}
+              before={sp.before}
+            />
           )}
           {tab === "members" && <Members clubId={club.id} />}
           {tab === "activity" && <Activity clubId={club.id} />}
         </>
       )}
     </div>
+  );
+}
+
+async function Posts({
+  clubId,
+  slug,
+  isMember,
+  canModerate,
+  before,
+}: {
+  clubId: string;
+  slug: string;
+  isMember: boolean;
+  canModerate: boolean;
+  before?: string;
+}) {
+  const [{ pinned, posts, hasMore }, user] = await Promise.all([getClubPosts(clubId, before), getUser()]);
+  const all = [...pinned, ...posts];
+  const last = posts.at(-1);
+
+  return (
+    <section className="space-y-4" aria-label="Posts">
+      {isMember && !before && <PostComposer clubId={clubId} slug={slug} />}
+      {before && (
+        <Link href={`/clubs/${slug}`} className="text-sm text-primary hover:underline">
+          ← Newest posts
+        </Link>
+      )}
+      {all.length === 0 ? (
+        <EmptyState title={before ? "No older posts" : "No posts yet"}>
+          {isMember
+            ? "Share news, an algorithm or a video with the club."
+            : "Announcements, algorithms and videos from members show up here."}
+        </EmptyState>
+      ) : (
+        <ul className="space-y-3">
+          {all.map((p) => (
+            <PostCard
+              key={p.id}
+              post={p}
+              clubId={clubId}
+              slug={slug}
+              viewerId={user?.id ?? null}
+              canModerate={canModerate}
+            />
+          ))}
+        </ul>
+      )}
+      {hasMore && last && (
+        <Link
+          href={`/clubs/${slug}?tab=posts&before=${encodeURIComponent(last.createdAt)}`}
+          className={buttonVariants({ variant: "outline", className: "w-full" })}
+        >
+          Older posts
+        </Link>
+      )}
+    </section>
   );
 }
 

@@ -64,7 +64,11 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
    - [x] Founder applied both migrations and `20261020000200` (member-count fix);
          `clubs_test.sql` 95 PASS on live (2026-10-17).
    - [x] Step 2: clubs pages, joining and manage. `tests/e2e/clubs.spec.ts` passes on live.
-   - [ ] Steps 3–6: posts; reactions and comments; invite links; notifications, navbar and docs.
+   - [x] Step 3: posts (text, algorithm on the 3D cube, YouTube/Instagram), edit within
+         15 minutes, pin, delete. e2e passes on live.
+   - [ ] Steps 4–6: reactions and comments; invite links; notifications, navbar and docs.
+   - Note: the e2e posts count toward the 10-a-day limit (testbot1 one per run, testbot2
+     two), so the clubs spec can run about 5 times a day.
    - [ ] **e2e debt (found 2026-10-17, not from clubs):** 6 drill/timer specs fail since the
          pre-beta misfire guard (`a1bcc3c`): their quick press-release solves now count as
          misfires. `drill.spec.ts` (3), `drill-signed-in.spec.ts`, `timer.spec.ts` (session

@@ -286,3 +286,81 @@ export async function getFollowRelations(
   }
   return result;
 }
+
+export interface ClubPost {
+  id: string;
+  kind: "text" | "alg" | "video";
+  body: string | null;
+  alg: string | null;
+  puzzle: "333" | "222" | null;
+  setup: string | null;
+  videoUrl: string | null;
+  pinnedAt: string | null;
+  editedAt: string | null;
+  createdAt: string;
+  author: PersonRow;
+}
+
+const POST_COLUMNS =
+  "id, kind, body, alg, puzzle, setup, video_url, pinned_at, edited_at, created_at, author_id, author:profiles!club_posts_author_id_fkey(id, username, display_name, avatar_url)";
+
+export const POSTS_PAGE = 20;
+
+function toPost(r: Record<string, unknown>): ClubPost {
+  return {
+    id: r.id as string,
+    kind: r.kind as ClubPost["kind"],
+    body: r.body as string | null,
+    alg: r.alg as string | null,
+    puzzle: r.puzzle as ClubPost["puzzle"],
+    setup: r.setup as string | null,
+    videoUrl: r.video_url as string | null,
+    pinnedAt: r.pinned_at as string | null,
+    editedAt: r.edited_at as string | null,
+    createdAt: r.created_at as string,
+    // RLS already hides posts by cubers you've blocked (or who blocked you),
+    // so a missing profile here is unexpected; keep the post readable anyway.
+    author: personOrHidden(r.author_id as string, r.author as ProfileJoin | null).person,
+  };
+}
+
+/**
+ * The feed: pinned posts (newest pin first), then a page of the rest, newest
+ * first. `before` pages back from a created_at. Empty for a private club
+ * you're not in (RLS).
+ */
+export async function getClubPosts(
+  clubId: string,
+  before?: string,
+): Promise<{ pinned: ClubPost[]; posts: ClubPost[]; hasMore: boolean }> {
+  const supabase = await createClient();
+  let recent = supabase
+    .from("club_posts")
+    .select(POST_COLUMNS)
+    .eq("club_id", clubId)
+    .is("pinned_at", null)
+    .order("created_at", { ascending: false })
+    .limit(POSTS_PAGE + 1);
+  if (before && !Number.isNaN(Date.parse(before))) recent = recent.lt("created_at", before);
+
+  const [pinned, page] = await Promise.all([
+    before
+      ? Promise.resolve({ data: [], error: null })
+      : supabase
+          .from("club_posts")
+          .select(POST_COLUMNS)
+          .eq("club_id", clubId)
+          .not("pinned_at", "is", null)
+          .order("pinned_at", { ascending: false }),
+    recent,
+  ]);
+  if (pinned.error) console.error("pinned posts query failed", pinned.error);
+  if (page.error) console.error("posts query failed", page.error);
+
+  const rows = (page.data ?? []) as Record<string, unknown>[];
+  return {
+    pinned: ((pinned.data ?? []) as Record<string, unknown>[]).map(toPost),
+    posts: rows.slice(0, POSTS_PAGE).map(toPost),
+    hasMore: rows.length > POSTS_PAGE,
+  };
+}

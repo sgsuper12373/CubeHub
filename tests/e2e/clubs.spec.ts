@@ -146,3 +146,94 @@ test("private club: create, request, approve, ban, unban, go public, join, leave
   await a.goto(`/clubs/${slug}`);
   await expect(a.getByText(/not found|doesn't exist/i).first()).toBeVisible();
 });
+
+test("posts: text, algorithm and video; edit, pin, delete; outsiders read a public club", async ({ browser }) => {
+  const a = await signedIn(browser, "a");
+  const b = await signedIn(browser, "b");
+  const name = `E2E Club posts ${Date.now().toString(36)}`;
+
+  // A makes a public club; B joins.
+  await a.goto("/clubs/new");
+  await a.getByLabel("Name").fill(name);
+  await pick(a, "radio", "City");
+  await a.getByRole("button", { name: "Create club" }).click();
+  await expect(a).toHaveURL(/\/clubs\/e2e-club-posts-[a-z0-9-]+$/);
+  const slug = a.url().split("/").pop()!;
+
+  await b.goto(`/clubs/${slug}`);
+  await b.getByRole("button", { name: "Join" }).click();
+  await confirmDialog(b, "Join");
+  await expect(b.getByRole("button", { name: "Leave" })).toBeVisible();
+
+  // Posts count toward 10 a day per account, across every run: A posts one
+  // and B two, so the spec can run 5 times a day before hitting the limit.
+  const aFeed = a.getByRole("region", { name: "Posts" });
+  const feed = b.getByRole("region", { name: "Posts" });
+  const aComposer = a.getByRole("form", { name: "New post" });
+  const composer = b.getByRole("form", { name: "New post" });
+
+  // A: text, kept as typed with its line break.
+  await a.reload();
+  await aComposer.getByLabel("Post text").fill("Meetup on Sunday?\nBring your cubes.");
+  await aComposer.getByRole("button", { name: "Post" }).click();
+  await expect(aFeed.getByText("Meetup on Sunday?")).toBeVisible();
+
+  // B: bad notation is refused before posting, then a good algorithm.
+  await b.reload();
+  await composer.getByRole("tab", { name: "Algorithm" }).click();
+  await composer.getByLabel("Algorithm").fill("R U Q");
+  await composer.getByRole("button", { name: "Post" }).click();
+  await expect(composer.getByRole("alert")).toContainText("standard notation");
+  await composer.getByLabel("Algorithm").fill("R U R' U R U2 R'");
+  await composer.getByLabel(/Caption/).fill("Sune");
+  await composer.getByRole("button", { name: "Post" }).click();
+  await expect(feed.getByText("R U R' U R U2 R'", { exact: true })).toBeVisible();
+  await feed.getByRole("button", { name: "Show on cube" }).click();
+  await expect(feed.locator("twisty-player")).toHaveCount(1, { timeout: 15_000 });
+
+  // B: other video sites are refused; YouTube shows a thumbnail.
+  await composer.getByRole("tab", { name: "Video" }).click();
+  await composer.getByLabel("Video link").fill("https://vimeo.com/123");
+  await composer.getByRole("button", { name: "Post" }).click();
+  await expect(composer.getByRole("alert")).toContainText("YouTube and Instagram");
+  await composer.getByLabel("Video link").fill("https://youtu.be/dQw4w9WgXcQ");
+  await composer.getByRole("button", { name: "Post" }).click();
+  await expect(feed.getByRole("button", { name: "Play YouTube video" })).toBeVisible();
+  // B can't edit or pin A's post: no menu on it.
+  await expect(
+    feed.getByRole("listitem").filter({ hasText: "Meetup on Sunday?" }).getByRole("button", { name: "Post actions" }),
+  ).toHaveCount(0);
+
+  // A edits the text post within 15 minutes.
+  await a.reload();
+  const textPost = aFeed.getByRole("listitem").filter({ hasText: "Meetup on Sunday?" });
+  await textPost.getByRole("button", { name: "Post actions" }).click();
+  await a.getByRole("menuitem", { name: "Edit" }).click();
+  const editForm = aFeed.getByRole("form", { name: "Edit post" });
+  await editForm.getByLabel("Post text").fill("Meetup on Saturday instead.");
+  await editForm.getByRole("button", { name: "Save" }).click();
+  await expect(aFeed.getByRole("listitem").filter({ hasText: "Meetup on Saturday instead." })).toContainText("edited");
+
+  // A pins it and deletes B's video.
+  await aFeed.getByRole("listitem").filter({ hasText: "Saturday instead" }).getByRole("button", { name: "Post actions" }).click();
+  await a.getByRole("menuitem", { name: "Pin as announcement" }).click();
+  await expect(aFeed.getByRole("listitem").first()).toContainText("Pinned");
+  await expect(aFeed.getByRole("listitem").first()).toContainText("Saturday instead");
+
+  await aFeed
+    .getByRole("listitem")
+    .filter({ has: a.getByRole("button", { name: "Play YouTube video" }) })
+    .getByRole("button", { name: "Post actions" })
+    .click();
+  await a.getByRole("menuitem", { name: "Delete" }).click();
+  await confirmDialog(a, "Delete");
+  await expect(aFeed.getByRole("button", { name: "Play YouTube video" })).toHaveCount(0);
+
+  // Signed out: a public club's posts are readable, with no composer.
+  const anon = await (await browser.newContext()).newPage();
+  await anon.goto(`/clubs/${slug}`);
+  await expect(anon.getByText("Saturday instead")).toBeVisible();
+  await expect(anon.getByRole("form", { name: "New post" })).toHaveCount(0);
+
+  await deleteClub(a, slug, name);
+});
