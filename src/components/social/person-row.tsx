@@ -24,8 +24,9 @@ export function PersonRow({
       <span className="min-w-0">
         <span className="block truncate text-sm font-semibold text-foreground">{name}</span>
         <span className="block truncate text-xs text-muted-foreground">
-          @{person.username}
-          {detail && <> · {detail}</>}
+          {person.username && <>@{person.username}</>}
+          {person.username && detail && " · "}
+          {detail}
         </span>
       </span>
     </>

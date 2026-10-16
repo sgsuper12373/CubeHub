@@ -502,6 +502,27 @@ select pg_temp.try('a 21st club is refused',
   format('select public.join_club(%L)', (select id from public.clubs where slug = 'clubtest-filler-20')), 'club_limit');
 reset role;
 
+-- ── Deleting ───────────────────────────────────────────────────────────────
+-- A member can't delete a club; the owner can, members and all (the member
+-- count trigger runs during the cascade, see 20261020000200).
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'd2000000-0000-4000-8000-00000000000d', true);
+delete from public.clubs where id = pg_temp.id('secret');
+insert into results
+select 'a member can''t delete the club', '1',
+       (select count(*)::text from public.clubs where id = pg_temp.id('secret')), null;
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'a2000000-0000-4000-8000-00000000000a', true);
+select pg_temp.try('the owner deletes a club with members',
+  format('delete from public.clubs where id = %L', pg_temp.id('secret')), 'ok');
+insert into results
+select 'the club and its members are gone', '0|0',
+       (select count(*)::text from public.clubs where id = pg_temp.id('secret'))
+       || '|' ||
+       (select count(*)::text from public.club_members where club_id = pg_temp.id('secret')), null;
+reset role;
+
 -- ── Grants ─────────────────────────────────────────────────────────────────
 insert into results
 select 'signed-out users can''t call the write RPCs', 'false|false|false',

@@ -61,10 +61,16 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
 2. **Before the beta: build Clubs** from the spec in `docs/clubs.md` (agreed 2026-10-14).
    - [x] Step 1, database: `20261020000000_club_enums.sql` + `20261020000100_clubs.sql`,
          test `supabase/tests/clubs_test.sql` (92 PASS on a local Supabase Postgres 17).
-   - [ ] **Founder: apply both migrations (enums first)**, then run `clubs_test.sql` on the
-         live project and expect every row PASS. Needs `20261019000000_solve_sanity.sql` applied.
-   - [ ] Steps 2–6: clubs pages, joining and manage; posts; reactions and comments; invite
-         links; notifications, navbar and docs.
+   - [x] Founder applied both migrations and `20261020000200` (member-count fix);
+         `clubs_test.sql` 95 PASS on live (2026-10-17).
+   - [x] Step 2: clubs pages, joining and manage. `tests/e2e/clubs.spec.ts` passes on live.
+   - [ ] Steps 3–6: posts; reactions and comments; invite links; notifications, navbar and docs.
+   - [ ] **e2e debt (found 2026-10-17, not from clubs):** 6 drill/timer specs fail since the
+         pre-beta misfire guard (`a1bcc3c`): their quick press-release solves now count as
+         misfires. `drill.spec.ts` (3), `drill-signed-in.spec.ts`, `timer.spec.ts` (session
+         best toast, Ao5 copy). Update the specs to hold long enough, or seed solves.
+   - Note: run signed-in specs with `--workers=1` locally; social and clubs share the two
+     accounts, and the social block test hides them from each other mid-run.
 3. **Before the beta: check every page for correctness** (founder, 2026-10-14). Go page by page
    and fix wrong numbers, labels and hardcoded values. Known so far:
    - [x] Learn cards and puzzle hero: counts were hardcoded (57 algorithms, 12 tutorials, 58

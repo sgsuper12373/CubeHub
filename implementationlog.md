@@ -5,6 +5,62 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-17 — Clubs v1, step 2: clubs, joining and manage
+
+**Request:** Commit step 1, start step 2, and explain how to apply migrations with the CLI.
+
+### Added
+
+- `src/lib/clubs/types.ts`: types and tags, limits, `slugify`, `validateClubInput` (the
+  same rules as the database), `Membership`, and `clubErrorMessage`, which passes the
+  RPCs' hinted messages through.
+- `src/lib/clubs/dal.ts`: club by slug, the viewer's membership, search (name, type, tag),
+  my clubs, members (grouped by role), weekly activity, requests, bans, settings,
+  create eligibility, and batched follow relations for member rows.
+- `src/lib/clubs/actions.ts`: create, edit settings, delete (type the name), join,
+  request, cancel, leave, approve/decline, remove/ban, unban, set role, transfer.
+  All go through the cuber's own client, so the step 1 RPCs and RLS are the boundary.
+- Pages:
+  - `/clubs`: your clubs, plus search with type and tag filters.
+  - `/clubs/new`: needs a chosen username and fewer than 3 owned clubs.
+  - `/clubs/[slug]`: header, join button, and Posts (placeholder until step 3), Members
+    and Activity tabs. Outsiders to a private club see only the header.
+  - `/clubs/[slug]/manage`: requests, members with a ⋯ menu (roles, transfer, remove,
+    ban), bans, and for the owner, settings and delete.
+- Components in `src/components/clubs/`: badge (coloured initials from theme tokens), card,
+  form, join button (with the "members see your weekly solve count" note) and manage
+  controls.
+- `tests/unit/clubs.test.ts`: 17 tests.
+
+### Verification
+
+- `tsc`, eslint (one existing warning), `check:colors`, `npm test` (37 files, 429 tests),
+  and `npm run build` (all four club routes compile).
+- **Clicked through on the live project** (`tests/e2e/clubs.spec.ts`, the two test
+  accounts). Creating a club and requesting to join work. It found:
+  1. **Owners couldn't delete a club** (step 1 bug). The delete cascades to `club_members`,
+     whose member-count trigger ran with the caller's rights and couldn't update `clubs`.
+     Fixed in `20261020000200_club_member_count_definer.sql`. `clubs_test.sql` now covers
+     deleting (95 PASS locally, and it fails on the two new checks without the fix).
+  2. **Requests, members and bans from a blocked cuber vanished from the manage page**,
+     with no way to approve, remove or unban them. They now show unlinked as "A cuber
+     you've blocked"; the public Members tab still hides them.
+  3. **The social spec's block test expected `/friends`** after Block, but the app goes to
+     `/people` since the 2026-10-15 rename. It failed before unblocking, leaving
+     testbot1 → testbot2 blocked since 2026-10-14. Fixed, and the clubs spec clears
+     blocks first.
+  4. The owner's own row had a ⋯ menu offering to transfer the club to themselves. It's
+     hidden now.
+- After the founder pushed `20261020000200`: `clubs.spec.ts` and `social.spec.ts` pass on live (`--workers=1`), no test clubs left behind. 6 drill/timer specs fail since the 2026-10-15 misfire guard (pre-existing, logged in docs/todo.md).
+
+### Not done (later steps)
+
+- Posts (3), reactions and comments (4), invite links (5), and the navbar entry,
+  notifications UI, profile Clubs row and docs (6). Until the navbar entry, open
+  `/clubs` directly.
+
+---
+
 ## 2026-10-17 — Clubs v1, step 1: database
 
 **Request:** Start Clubs (docs/clubs.md), the next pre-beta item. Step 1 of 6 is the

@@ -72,7 +72,8 @@ test("block hides each profile from the other; unblock in Settings", async ({ br
   await a.page.getByRole("button", { name: "More actions" }).click();
   await a.page.getByRole("menuitem", { name: "Block" }).click();
   await confirmDialog(a.page, "Block");
-  await expect(a.page).toHaveURL(/\/friends/);
+  // Friends became People on 2026-10-15; Block goes there.
+  await expect(a.page).toHaveURL(/\/people/);
 
   const res = await b.page.goto(`/profile/${a.username}`);
   expect(res?.status()).toBe(404);
