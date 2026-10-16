@@ -174,6 +174,8 @@ const USER_FACING_HINTS = new Set([
   "bad_role",
   "pin_limit",
   "admins_only",
+  "expired",
+  "bad_expiry",
 ]);
 
 export function clubErrorMessage(
@@ -182,4 +184,33 @@ export function clubErrorMessage(
 ): string {
   if (error?.hint && USER_FACING_HINTS.has(error.hint)) return error.message;
   return fallback;
+}
+
+export const INVITE_EXPIRY_OPTIONS = [
+  { days: 1, label: "1 day" },
+  { days: 7, label: "7 days" },
+  { days: 30, label: "30 days" },
+  { days: null, label: "Never" },
+] as const;
+
+export type InviteState = "active" | "expired" | "revoked" | "used_up";
+
+/** Same order of checks as `get_club_invite`. */
+export function inviteState(
+  invite: { revokedAt: string | null; expiresAt: string | null; maxUses: number | null; uses: number },
+  now = Date.now(),
+): InviteState {
+  if (invite.revokedAt) return "revoked";
+  if (invite.expiresAt && new Date(invite.expiresAt).getTime() <= now) return "expired";
+  if (invite.maxUses !== null && invite.uses >= invite.maxUses) return "used_up";
+  return "active";
+}
+
+/** "in 6 days", "in 3 hours", "in 12 minutes", for an expiry in the future. */
+export function timeUntil(iso: string, now = Date.now()): string {
+  const s = Math.max(0, Math.round((new Date(iso).getTime() - now) / 1000));
+  const unit = (n: number, w: string) => `in ${n} ${w}${n === 1 ? "" : "s"}`;
+  if (s >= 86400) return unit(Math.floor(s / 86400), "day");
+  if (s >= 3600) return unit(Math.floor(s / 3600), "hour");
+  return unit(Math.max(1, Math.floor(s / 60)), "minute");
 }

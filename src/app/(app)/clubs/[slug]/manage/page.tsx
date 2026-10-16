@@ -3,10 +3,19 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { ClubForm } from "@/components/clubs/club-form";
+import { InviteLinks } from "@/components/clubs/invite-links";
 import { DeleteClubForm, MemberMenu, RequestButtons, UnbanButton } from "@/components/clubs/manage-controls";
 import { EmptyState, PersonList, PersonRow } from "@/components/social/person-row";
 import { getUser } from "@/lib/auth/dal";
-import { getClubBans, getClubBySlug, getClubMembers, getClubSettings, getJoinRequests, getMembership } from "@/lib/clubs/dal";
+import {
+  getClubBans,
+  getClubBySlug,
+  getClubInvites,
+  getClubMembers,
+  getClubSettings,
+  getJoinRequests,
+  getMembership,
+} from "@/lib/clubs/dal";
 import { canManage, roleLabel } from "@/lib/clubs/types";
 import { timeAgo } from "@/lib/notifications/types";
 
@@ -18,8 +27,8 @@ interface Props {
 }
 
 /**
- * Owner and admins: requests, members, bans. Owner only: settings and delete.
- * Invite links come in step 5 (docs/clubs.md → build order).
+ * Owner and admins: requests, invite links, members, bans. Owner only:
+ * settings and delete.
  */
 export default async function ManageClubPage({ params, searchParams }: Props) {
   const [{ slug }, sp] = await Promise.all([params, searchParams]);
@@ -32,12 +41,13 @@ export default async function ManageClubPage({ params, searchParams }: Props) {
   const myRole = membership.role;
   const isOwner = myRole === "owner";
 
-  const [requests, members, bans, settings, user] = await Promise.all([
+  const [requests, members, bans, settings, user, invites] = await Promise.all([
     getJoinRequests(club.id),
     getClubMembers(club.id),
     getClubBans(club.id),
     isOwner ? getClubSettings(club.id) : null,
     getUser(),
+    getClubInvites(club.id),
   ]);
 
   return (
@@ -79,6 +89,13 @@ export default async function ManageClubPage({ params, searchParams }: Props) {
           )}
         </Section>
       )}
+
+      <Section title="Invite links">
+        <p className="-mt-1 text-xs text-muted-foreground">
+          Anyone with a link joins straight away, even while the club is private. Banned cubers can&apos;t use one.
+        </p>
+        <InviteLinks clubId={club.id} slug={club.slug} invites={invites} />
+      </Section>
 
       <Section title="Members" count={members.length}>
         <PersonList>

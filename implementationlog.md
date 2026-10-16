@@ -5,6 +5,44 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-17 — Clubs v1, step 5: invite links
+
+**Request:** Start step 5. No database changes; it uses the step 1 invite RPCs.
+
+### Added
+
+- **Manage → Invite links** (owner/admins): pick an expiry (1, 7 or 30 days, or never)
+  and optional max uses, and the new link is made and copied. Each link shows Active,
+  Expired, Revoked or Used up, its uses and its expiry, with Copy and Revoke.
+- **`/clubs/join/[token]`** (noindex) previews the club for anyone. The action depends on
+  the viewer:
+  - signed out: Sign in or Create an account, both returning to the link via `?next=`
+  - signed in: Join, with the weekly-solves note
+  - already a member: Open the club
+  - expired, revoked or used up: says so, and for a public club points to its page
+  - banned: can't join
+  - unknown link: says it doesn't exist
+- DAL: `getClubInvites` and `getInvitePreview`. Actions: `createInvite`, `revokeInvite`
+  and `acceptInvite`. Helpers `inviteState` and `timeUntil`, with unit tests.
+- `clubs.spec.ts` invite test: single-use link from the clipboard, signed-out preview, B
+  joins a private club, "already a member", used up, revoked, unknown link.
+
+### Fixed while testing
+
+- Whoever used a single-use link saw "used up" instead of "You're already a member",
+  because `get_club_invite` checks the link before membership. The page now checks
+  membership first; there's a note in the page. No migration needed.
+
+### Verification
+
+- `tsc`, eslint (one existing warning), `check:colors`, `npm test` (38 files, 462
+  tests), `npm run build`.
+- `clubs.spec.ts`: the private-club and invite tests pass on live (`--workers=1`). The
+  posts test waits for the daily post limit to reset. Screenshots of the manage section
+  and the landing page, signed out and signed in. Test clubs deleted.
+
+---
+
 ## 2026-10-17 — Clubs v1, step 4: reactions, comments and reports
 
 **Request:** Proceed with step 4. No database changes.

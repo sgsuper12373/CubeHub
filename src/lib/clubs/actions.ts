@@ -383,3 +383,49 @@ export async function reportClubContent(
   }
   return { ok: true, value: undefined };
 }
+
+// ── Invite links ──────────────────────────────────────────────────────────
+
+const INVITE_DAYS = new Set([1, 7, 30]);
+
+/** Owner/admins. `days` 1, 7 or 30, or null for never; `maxUses` optional. */
+export async function createInvite(
+  clubId: string,
+  days: number | null,
+  maxUses: number | null,
+  slug: string,
+): Promise<ActionResult<string>> {
+  if (!(await getUser())) return { ok: false, error: "Sign in first." };
+  if (!UUID.test(clubId)) return { ok: false, error: "Club not found." };
+  if (days !== null && !INVITE_DAYS.has(days)) return { ok: false, error: "Pick how long the link lasts." };
+  if (maxUses !== null && (!Number.isInteger(maxUses) || maxUses < 1 || maxUses > 1000)) {
+    return { ok: false, error: "Uses must be between 1 and 1000." };
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_club_invite", { p_club: clubId, p_days: days, p_max_uses: maxUses });
+  if (error) {
+    console.error("create_club_invite failed", error);
+    return { ok: false, error: clubErrorMessage(error, "Couldn't make the link.") };
+  }
+  refresh(slug);
+  return { ok: true, value: data as string };
+}
+
+export async function revokeInvite(inviteId: string, slug: string): Promise<ActionResult> {
+  if (!UUID.test(inviteId)) return { ok: false, error: "Link not found." };
+  return rpc("revoke_club_invite", { p_invite: inviteId }, "Couldn't revoke the link.", slug);
+}
+
+/** Joins through a link, even a private club; returns the club's slug. */
+export async function acceptInvite(token: string): Promise<ActionResult<string>> {
+  if (!(await getUser())) return { ok: false, error: "Sign in to join." };
+  if (!/^[0-9a-f]{64}$/.test(token)) return { ok: false, error: "This invite link doesn't exist." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("use_club_invite", { p_token: token });
+  if (error) {
+    console.error("use_club_invite failed", error);
+    return { ok: false, error: clubErrorMessage(error, "Couldn't join. Please try again.") };
+  }
+  refresh(data as string);
+  return { ok: true, value: data as string };
+}

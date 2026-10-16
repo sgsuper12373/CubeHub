@@ -415,3 +415,64 @@ export async function getPostExtras(postIds: string[]): Promise<Map<string, Post
   }
   return out;
 }
+
+export interface ClubInvite {
+  id: string;
+  token: string;
+  createdAt: string;
+  expiresAt: string | null;
+  maxUses: number | null;
+  uses: number;
+  revokedAt: string | null;
+}
+
+/** Invite links, newest first. Owner/admins only (RLS). */
+export async function getClubInvites(clubId: string): Promise<ClubInvite[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("club_invites")
+    .select("id, token, created_at, expires_at, max_uses, uses, revoked_at")
+    .eq("club_id", clubId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  if (error) console.error("club invites query failed", error);
+  return (data ?? []).map((r) => ({
+    id: r.id as string,
+    token: r.token as string,
+    createdAt: r.created_at as string,
+    expiresAt: r.expires_at as string | null,
+    maxUses: r.max_uses as number | null,
+    uses: r.uses as number,
+    revokedAt: r.revoked_at as string | null,
+  }));
+}
+
+export type InviteStatus = "valid" | "expired" | "revoked" | "used_up" | "member" | "banned";
+
+export interface InvitePreview {
+  club: ClubSummary;
+  status: InviteStatus;
+}
+
+/** The club behind an invite token, and whether it works for the viewer. Null if unknown. */
+export const getInvitePreview = cache(async (token: string): Promise<InvitePreview | null> => {
+  if (!/^[0-9a-f]{64}$/.test(token)) return null;
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_club_invite", { p_token: token });
+  if (error) console.error("get_club_invite failed", error);
+  const r = (data as Record<string, unknown>[] | null)?.[0];
+  if (!r) return null;
+  return {
+    club: toClub({
+      id: r.club_id as string,
+      slug: r.slug as string,
+      name: r.name as string,
+      description: r.description as string | null,
+      type: r.type as string,
+      tags: r.tags as string[] | null,
+      is_public: r.is_public as boolean,
+      member_count: r.member_count as number,
+    }),
+    status: r.status as InviteStatus,
+  };
+});

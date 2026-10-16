@@ -70,7 +70,8 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
    - [ ] Re-run `clubs.spec.ts` once the test accounts' daily post limit resets (it hit
          10/day on 2026-10-17 from repeated runs); the posts test passed with reactions
          and comments before the refresh fix, the private-club test after it.
-   - [ ] Steps 5–6: invite links; notifications, navbar and docs.
+   - [x] Step 5: invite links (manage section, `/clubs/join/[token]`). e2e passes on live.
+   - [ ] Step 6: notifications, navbar and docs.
    - Note: the e2e posts count toward the 10-a-day limit (testbot1 one per run, testbot2
      two), so the clubs spec can run about 5 times a day.
    - [ ] **e2e debt (found 2026-10-17, not from clubs):** 6 drill/timer specs fail since the

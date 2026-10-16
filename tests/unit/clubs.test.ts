@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   canManage,
+  inviteState,
+  timeUntil,
   clubErrorMessage,
   slugify,
   validateClubInput,
@@ -74,5 +76,28 @@ describe("canManage", () => {
     expect(canManage({ kind: "member", role: "admin" })).toBe(true);
     expect(canManage({ kind: "member", role: "member" })).toBe(false);
     expect(canManage({ kind: "requested" })).toBe(false);
+  });
+});
+
+describe("inviteState", () => {
+  const now = Date.parse("2026-10-17T10:00:00Z");
+  const link = { revokedAt: null, expiresAt: "2026-10-20T10:00:00Z", maxUses: 5, uses: 2 };
+  it("is active until something ends it", () => {
+    expect(inviteState(link, now)).toBe("active");
+    expect(inviteState({ ...link, expiresAt: null, maxUses: null }, now)).toBe("active");
+  });
+  it("checks revoked, then expired, then used up (as get_club_invite does)", () => {
+    expect(inviteState({ ...link, revokedAt: "2026-10-16T00:00:00Z", uses: 5 }, now)).toBe("revoked");
+    expect(inviteState({ ...link, expiresAt: "2026-10-17T09:00:00Z", uses: 5 }, now)).toBe("expired");
+    expect(inviteState({ ...link, uses: 5 }, now)).toBe("used_up");
+  });
+});
+
+describe("timeUntil", () => {
+  const now = Date.parse("2026-10-17T10:00:00Z");
+  it("rounds down to the largest unit", () => {
+    expect(timeUntil("2026-10-24T09:00:00Z", now)).toBe("in 6 days");
+    expect(timeUntil("2026-10-17T13:30:00Z", now)).toBe("in 3 hours");
+    expect(timeUntil("2026-10-17T10:00:20Z", now)).toBe("in 1 minute");
   });
 });

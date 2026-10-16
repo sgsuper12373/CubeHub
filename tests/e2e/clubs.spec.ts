@@ -22,6 +22,8 @@ async function signedIn(browser: Browser, id: "a" | "b"): Promise<Page> {
   const ctx = await browser.newContext({
     storageState: E2E_USERS.find((u) => u.id === id)!.state,
     viewport: { width: 1280, height: 900 },
+    // Invite links are copied to the clipboard; the invite test reads them back.
+    permissions: ["clipboard-read", "clipboard-write"],
   });
   return ctx.newPage();
 }
@@ -266,6 +268,67 @@ test("posts: text, algorithm and video; edit, pin, delete; outsiders read a publ
   // Counts are visible, but outsiders can't react or comment.
   await expect(anon.getByRole("button", { name: /^Fire, 1$/ })).toBeDisabled();
   await expect(anon.getByLabel("Write a comment")).toHaveCount(0);
+
+  await deleteClub(a, slug, name);
+});
+
+test("invite links: preview signed out, join a private club, used up, revoked", async ({ browser }) => {
+  const a = await signedIn(browser, "a");
+  const b = await signedIn(browser, "b");
+  const name = `E2E Club invite ${Date.now().toString(36)}`;
+
+  await a.goto("/clubs/new");
+  await a.getByLabel("Name").fill(name);
+  await pick(a, "radio", "School");
+  await pick(a, "radio", /Private/);
+  await a.getByRole("button", { name: "Create club" }).click();
+  await expect(a).toHaveURL(/\/clubs\/e2e-club-invite-[a-z0-9-]+$/);
+  const slug = a.url().split("/").pop()!;
+
+  // A makes a single-use link; it's copied to the clipboard.
+  await a.goto(`/clubs/${slug}/manage`);
+  await a.getByLabel("Max uses").fill("1");
+  await a.getByRole("button", { name: "Make invite link" }).click();
+  const links = a.getByRole("list", { name: "Invite links" });
+  await expect(links.getByRole("listitem")).toHaveCount(1);
+  await expect(links).toContainText("0 uses of 1");
+  const url = await a.evaluate(() => navigator.clipboard.readText());
+  expect(url).toMatch(/\/clubs\/join\/[0-9a-f]{64}$/);
+  const path = new URL(url).pathname;
+
+  // Signed out: the club is shown, and they're asked to sign in.
+  const anon = await (await browser.newContext()).newPage();
+  await anon.goto(path);
+  await expect(anon.getByRole("heading", { name })).toBeVisible();
+  await expect(anon.getByRole("link", { name: "Sign in to join" })).toHaveAttribute("href", `/login?next=${encodeURIComponent(path)}`);
+
+  // B joins the private club through the link.
+  await b.goto(path);
+  await b.getByRole("button", { name: `Join ${name}` }).click();
+  await expect(b).toHaveURL(new RegExp(`/clubs/${slug}$`));
+  await expect(b.getByRole("button", { name: "Leave" })).toBeVisible();
+  await b.goto(path);
+  await expect(b.getByText("You're already a member.")).toBeVisible();
+
+  // The link is used up for anyone else; A sees that in the list.
+  await anon.reload();
+  await expect(anon.getByText("This invite link has been used up.")).toBeVisible();
+  await a.reload();
+  await expect(links).toContainText("Used up");
+
+  // A second link, revoked, stops working.
+  await a.getByRole("button", { name: "Make invite link" }).click();
+  await expect(links.getByRole("listitem")).toHaveCount(2);
+  const second = new URL(await a.evaluate(() => navigator.clipboard.readText())).pathname;
+  await links.getByRole("listitem").first().getByRole("button", { name: "Revoke" }).click();
+  await confirmDialog(a, "Revoke");
+  await expect(links.getByRole("listitem").first()).toContainText("Revoked");
+  await anon.goto(second);
+  await expect(anon.getByText("This invite link was turned off.")).toBeVisible();
+
+  // A link that never existed.
+  await anon.goto(`/clubs/join/${"0".repeat(64)}`);
+  await expect(anon.getByText("This invite link doesn't exist")).toBeVisible();
 
   await deleteClub(a, slug, name);
 });
