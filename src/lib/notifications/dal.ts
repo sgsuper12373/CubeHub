@@ -51,11 +51,25 @@ export const getNotifications = cache(async (): Promise<{ items: NotificationIte
     }
   }
 
+  // Club notifications carry club_id: look up the current name and slug (a
+  // club can be renamed), and drop them for clubs that are gone.
+  const clubIds = [
+    ...new Set(rows.map((r) => (r.data as { club_id?: unknown })?.club_id).filter((v): v is string => typeof v === "string")),
+  ];
+  const clubs = new Map<string, { slug: string; name: string }>();
+  if (clubIds.length > 0) {
+    const { data: found } = await supabase.from("clubs").select("id, slug, name").in("id", clubIds);
+    for (const c of found ?? []) clubs.set(c.id, { slug: c.slug, name: c.name });
+  }
+
   const items = rows.flatMap((r): NotificationItem[] => {
     const actorId = (r.data as { actor_id?: unknown })?.actor_id;
     const actor = typeof actorId === "string" ? (actors.get(actorId) ?? null) : null;
     // A follow notification whose actor is hidden (blocked) has nothing to show.
     if (typeof actorId === "string" && !actor) return [];
+    const clubId = (r.data as { club_id?: unknown })?.club_id;
+    const club = typeof clubId === "string" ? (clubs.get(clubId) ?? null) : null;
+    if (typeof clubId === "string" && !club) return [];
     return [
       {
         id: r.id,
@@ -63,6 +77,7 @@ export const getNotifications = cache(async (): Promise<{ items: NotificationIte
         isRead: r.is_read,
         createdAt: r.created_at,
         actor,
+        club,
         title: r.title,
       },
     ];

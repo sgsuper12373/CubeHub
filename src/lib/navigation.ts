@@ -5,6 +5,7 @@ import {
   Target,
   Timer,
   User,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -26,6 +27,9 @@ export const navItems: NavItem[] = [
   { label: "Learn", href: "/learn", icon: GraduationCap },
   { label: "Drill", href: "/learn/333/drill", icon: Target, match: /^\/learn\/[^/]+\/drill(\/|$)/ },
   { label: "Playground", href: "/playground", icon: Box },
+  // Its own desktop section (founder, 2026-10-14). Phones reach it from
+  // People and from profiles; see MOBILE_HIDDEN.
+  { label: "Clubs", href: "/clubs", icon: Users },
   // Compete and Shop are left out until they exist (founder, 2026-10-14): an
   // empty tab disappoints beta testers. Their pages and the landing teasers stay.
   // Your own public profile; Settings and People are reached from there, so they light it up too.
@@ -64,7 +68,9 @@ function isOtherProfile(pathname: string, ownUsername: string | null): boolean {
  * narrow to hit reliably. Playground drops: it is linked from the Learn page
  * instead, a side trip from learning, not a daily destination like the timer.
  * Stats took the slot Shop had (Shop is out of the nav until it exists).
+ * Clubs drops too: phones reach it from People's Clubs tab and the Clubs row
+ * on profiles (docs/clubs.md → Where it lives). Revisit after the beta.
  */
-const MOBILE_HIDDEN: ReadonlySet<string> = new Set(["/playground"]);
+const MOBILE_HIDDEN: ReadonlySet<string> = new Set(["/playground", "/clubs"]);
 
 export const mobileNavItems: NavItem[] = navItems.filter((item) => !MOBILE_HIDDEN.has(item.href));

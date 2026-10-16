@@ -26,6 +26,7 @@ shop. This is the order things were actually built, and what comes next:
 | 9 | Learn finishing round (case pages, SEO, error pages) + Vercel Analytics | ✅ Done | Oct 13 |
 | 10 | Signed-in e2e test accounts | ✅ Done | Oct 14 |
 | 11 | Social v1: follows and requests, block, report, Friends hub, notifications, compare | ✅ Live | Oct 14 |
+| 11b | Clubs v1: clubs, joining, roles and bans, posts, reactions, comments, invite links (`docs/clubs.md`) | ✅ Built, on `feat/clubs` | Oct 17 |
 | 12 | **Beta with 10–15 real users** | Planned | |
 | 13 | Decide access tiers and the domain, using what the beta shows | After the beta | |
 | 14 | Phase 4 — Shop | Planned | |
@@ -205,7 +206,7 @@ In rough order of value; each builds on follows.
    tab. Cheap (a table and a page), and a reason to come back daily.
 3. **Share cards**: "new 12.3 Ao5" images for Instagram and WhatsApp, extending the profile's
    existing share images.
-4. **Clubs**: **moved before the beta** (founder, 2026-10-14). Spec: `docs/clubs.md`
+4. **Clubs**: **moved before the beta** (founder, 2026-10-14), **built 2026-10-17**. Spec: `docs/clubs.md`
    (type + tags, public / private / invite links, text, algorithm and video-link posts with
    reactions and comments, its own desktop nav section). A club leaderboard waits for
    verification.

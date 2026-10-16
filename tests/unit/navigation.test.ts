@@ -43,3 +43,13 @@ describe("nav active tab", () => {
     expect(mobileNavItems.map((i) => i.label)).toEqual(["Timer", "Stats", "Learn", "Drill", "Profile"]);
   });
 });
+
+describe("Clubs in the nav", () => {
+  it("is a desktop section covering every club page, but not a phone tab", () => {
+    expect(activeNavHref("/clubs", navItems)).toBe("/clubs");
+    expect(activeNavHref("/clubs/pune-cubers/manage", navItems)).toBe("/clubs");
+    expect(activeNavHref("/clubs/join/abc", navItems)).toBe("/clubs");
+    expect(mobileNavItems.some((i) => i.href === "/clubs")).toBe(false);
+    expect(mobileNavItems).toHaveLength(5);
+  });
+});

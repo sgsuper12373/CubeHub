@@ -119,3 +119,19 @@ describe("notifications", () => {
     expect(timeAgo("2026-09-01T12:00:00Z", now)).toMatch(/^1 Sept?$/);
   });
 });
+
+describe("club notifications", () => {
+  const club = { slug: "pune-cubers", name: "Pune Cubers" };
+  it("names the club and links to it", () => {
+    expect(toKind("club_comment")).toBe("club_comment");
+    expect(notificationText({ kind: "club_request", title: "", club })).toBe("asked to join Pune Cubers");
+    expect(notificationText({ kind: "club_request_approved", title: "", club })).toBe("let you into Pune Cubers");
+    expect(notificationText({ kind: "club_comment", title: "", club })).toBe("commented on your post in Pune Cubers");
+    expect(notificationText({ kind: "club_post_pinned", title: "", club })).toBe("pinned an announcement in Pune Cubers");
+    expect(notificationHref({ kind: "club_request", actor: null, club })).toBe("/clubs/pune-cubers/manage");
+    expect(notificationHref({ kind: "club_comment", actor: null, club })).toBe("/clubs/pune-cubers");
+  });
+  it("still says something without the club", () => {
+    expect(notificationText({ kind: "club_comment", title: "New comment", club: null })).toBe("commented on your post in a club");
+  });
+});

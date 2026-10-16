@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { ClubCard, ClubGrid } from "@/components/clubs/club-card";
 import { EmptyState, PersonList, PersonRow } from "@/components/social/person-row";
 import { FollowButton } from "@/components/social/follow-button";
 import { PeopleSearch } from "@/components/social/people-search";
 import { RequestActions } from "@/components/social/row-actions";
+import { buttonVariants } from "@/components/ui/button";
 import { getUser } from "@/lib/auth/dal";
+import { getMyClubs } from "@/lib/clubs/dal";
 import { createClient } from "@/lib/supabase/server";
 import { getActivityFeed, getPendingRequests, getSuggestions } from "@/lib/social/dal";
 import type { FeedItem } from "@/lib/social/types";
@@ -23,7 +26,8 @@ interface Props {
 // 2026-10-15). A mutual follow still shows a "Friends" chip on the profile.
 // No leaderboard for now (founder, 2026-10-14): times can be faked by tapping
 // the timer, so ranking waits for verified solves.
-type Tab = "feed" | "find" | "requests";
+// Clubs is here for phones, where it has no tab of its own (docs/clubs.md).
+type Tab = "feed" | "find" | "clubs" | "requests";
 
 const FEED_DAYS = 30;
 
@@ -50,6 +54,7 @@ export default async function PeoplePage({ searchParams }: Props) {
   const tabs: { id: Tab; label: string }[] = [
     { id: "feed", label: "Activity" },
     { id: "find", label: "Find people" },
+    { id: "clubs", label: "Clubs" },
     ...(showRequests ? [{ id: "requests" as const, label: "Requests" }] : []),
   ];
   const tab: Tab = tabs.some((t) => t.id === sp.tab) ? (sp.tab as Tab) : "feed";
@@ -92,12 +97,43 @@ export default async function PeoplePage({ searchParams }: Props) {
 
       {tab === "feed" && <Feed scope={sp.scope === "everyone" ? "everyone" : "following"} />}
       {tab === "requests" && <Requests requests={requests} />}
+      {tab === "clubs" && <MyClubs />}
       {tab === "find" && (
         <PeopleSearch initialQuery={sp.q ?? ""}>
           <Suggestions />
         </PeopleSearch>
       )}
     </div>
+  );
+}
+
+async function MyClubs() {
+  const clubs = await getMyClubs();
+  return (
+    <section className="space-y-3" aria-label="Your clubs">
+      <div className="flex flex-wrap gap-2">
+        <Link href="/clubs" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          Find a club
+        </Link>
+        <Link href="/clubs/new" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+          Create a club
+        </Link>
+      </div>
+      {clubs.length === 0 ? (
+        <EmptyState title="You're not in any clubs yet">
+          Join your school, college, city or online crew.{" "}
+          <Link href="/clubs" className="text-primary hover:underline">
+            Browse clubs
+          </Link>
+        </EmptyState>
+      ) : (
+        <ClubGrid>
+          {clubs.map((c) => (
+            <ClubCard key={c.id} club={c} role={c.role} />
+          ))}
+        </ClubGrid>
+      )}
+    </section>
   );
 }
 

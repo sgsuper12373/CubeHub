@@ -100,6 +100,15 @@ test("private club: create, request, approve, ban, unban, go public, join, leave
 
   // ── A approves ───────────────────────────────────────────────────────────
   await a.reload();
+  // The navbar's Clubs section is lit on club pages.
+  await expect(a.getByRole("navigation").getByRole("link", { name: "Clubs" })).toHaveAttribute("aria-current", "page");
+  // A's bell names the club and links to its manage page.
+  await a.getByRole("button", { name: /^Notifications/ }).click();
+  await expect(a.getByRole("link", { name: new RegExp(`asked to join ${NAME}`) })).toHaveAttribute(
+    "href",
+    `/clubs/${slug}/manage`,
+  );
+  await a.keyboard.press("Escape");
   await expect(a.getByRole("link", { name: /Manage\s*1/ })).toBeVisible();
   await a.goto(`/clubs/${slug}/manage`);
   const requests = a.getByRole("region", { name: "Join requests" });

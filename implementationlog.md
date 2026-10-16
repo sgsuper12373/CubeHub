@@ -5,6 +5,37 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-17 — Clubs v1, step 6: navbar, notifications, profile row, docs
+
+**Request:** Start step 6, the last Clubs step.
+
+### Added
+
+- **Navbar:** Clubs is a desktop section (all `/clubs/*` pages light it). On phones it's
+  hidden from the bottom bar (still five tabs) and reached from People → Clubs and the
+  profile Clubs row.
+- **People → Clubs tab:** your clubs, Find a club, Create a club.
+- **Profile Clubs row** (`get_profile_clubs`): public clubs, plus private ones you're also
+  in, with the role. Only when the profile's stats are visible. Your own profile with no
+  clubs shows "Find a club".
+- **Club notifications:** "asked to join X" (links to manage), "let you into X",
+  "commented on your post in X" and "pinned an announcement in X". The club's current
+  name and slug are looked up by `club_id`, and notifications for deleted clubs drop out.
+- **Docs:** `docs/clubs.md` is marked built, with an "As built" section; also
+  `docs/roadmap.md` and `docs/todo.md`.
+- **Tests:** unit tests for club notifications and the nav. `clubs.spec.ts` checks the
+  bell's club text and link, and the lit Clubs nav item.
+
+### Verification
+
+- `tsc`, eslint (one existing warning), `check:colors`, `npm test` (38 files, 465 tests), `npm run build`.
+- e2e on live (`--workers=1`): the clubs private-club and invite tests, all social and
+  profile specs: 12 passed. Screenshots: navbar at 1280 and 900, profile row, People →
+  Clubs on a phone. Test club deleted.
+- Still to re-run: the clubs posts test, after the test accounts' daily post limit resets.
+
+---
+
 ## 2026-10-17 — Clubs v1, step 5: invite links
 
 **Request:** Start step 5. No database changes; it uses the step 1 invite RPCs.

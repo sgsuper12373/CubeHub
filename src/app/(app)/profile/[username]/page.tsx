@@ -16,6 +16,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { ProfileClubs } from "@/components/clubs/profile-clubs";
 import { BackButton } from "@/components/layout/back-button";
 import { AchievementCheck } from "@/components/profile/achievement-check";
 import { AchievementsSection } from "@/components/profile/achievements-section";
@@ -29,6 +30,7 @@ import { NotificationBell } from "@/components/social/notification-bell";
 import { ProfileActionsMenu } from "@/components/social/profile-actions-menu";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { getUser } from "@/lib/auth/dal";
+import { getProfileClubs } from "@/lib/clubs/dal";
 import {
   getAchievements,
   getPbProgression,
@@ -93,12 +95,13 @@ export default async function ProfilePage({ params, searchParams }: Props) {
   const hidden = profile.stats.hidden;
   const events = practisedEvents(profile);
   const selected = pickEvent(profile, events, event);
-  const [progression, achievements, setups] = hidden
-    ? [null, [], {} as Record<string, string>]
+  const [progression, achievements, setups, clubs] = hidden
+    ? [null, [], {} as Record<string, string>, []]
     : await Promise.all([
         selected ? getPbProgression(profile.id, selected) : null,
         getAchievements(profile.id),
         getSetups(profile.id),
+        getProfileClubs(profile.id),
       ]);
   const { activity, learning } = profile.stats;
 
@@ -135,6 +138,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
       ) : (
         <>
           <PublicStats profile={profile} />
+          <ProfileClubs clubs={clubs} isOwner={isOwner} />
           {activity && (
             <ActivitySection activity={activity} hiddenNote={isOwner && !profile.showActivity} />
           )}

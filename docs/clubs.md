@@ -1,6 +1,8 @@
 # Clubs (v1 requirements)
 
-Status: **requirements and defaults agreed 2026-10-14 (brainstorming session). Step 1 (database) written and tested locally 2026-10-17; not yet applied to the live project.** Tournaments come after the beta;
+Status: **requirements and defaults agreed 2026-10-14 (brainstorming session); built 2026-10-17** (all six
+steps, branch `feat/clubs`). Migrations `20261020000000`, `20261020000100` and `20261020000200` are on the
+live project. See "As built" at the end for where things live and what changed during the build. Tournaments come after the beta;
 clubs are built before it.
 
 Groups of cubers (a school, a college, a city, an online crew) with a member list, weekly
@@ -186,3 +188,38 @@ Build order, a commit per step:
 - Club pictures and banners
 - Location (state and city)
 - Tournaments (after the beta)
+
+## As built (2026-10-17)
+
+### Where things live
+
+| Part | Files |
+|---|---|
+| Database | `supabase/migrations/20261020000000_club_enums.sql`, `20261020000100_clubs.sql`, `20261020000200_club_member_count_definer.sql`; test `supabase/tests/clubs_test.sql` (95 checks) |
+| Rules shared by forms and server | `src/lib/clubs/types.ts` (clubs, invites), `src/lib/clubs/posts.ts` (posts, reactions, comments, video links) |
+| Reads | `src/lib/clubs/dal.ts` |
+| Writes | `src/lib/clubs/actions.ts` (every action revalidates; callers don't `router.refresh()`) |
+| Pages | `src/app/(app)/clubs/`: `page.tsx`, `new/`, `[slug]/`, `[slug]/manage/`, `join/[token]/` |
+| Components | `src/components/clubs/` |
+| Elsewhere | Desktop nav item (`src/lib/navigation.ts`), People → Clubs tab, profile Clubs row, club notification kinds (`src/lib/notifications/`) |
+| Tests | `tests/unit/clubs.test.ts`, `tests/unit/club-posts.test.ts`, `tests/e2e/clubs.spec.ts` |
+
+### Decisions and changes during the build
+
+- **Reports** have no build step of their own in the plan above. They shipped with step 4: a
+  club (⋯ in the header), a post or a comment, all through the shared `ReportDialog`.
+- **Blocked cubers on the manage page** show as "A cuber you've blocked" (unlinked) so their
+  requests, memberships and bans can still be handled. Public lists hide them.
+- **The invite page checks membership before the link's state.** `get_club_invite` checks
+  revoked/expired/used up first, so whoever used a single-use link would read "used up".
+- **Member count trigger** runs as definer (`20261020000200`): deleting a club cascades to
+  `club_members`, and the old invoker trigger couldn't update the column-limited `clubs`.
+- **Notifications** name the club as it's called now (looked up by `club_id`) and drop out
+  once the club is deleted. A join request links to the manage page; the rest to the club.
+
+### Testing notes
+
+- Signed-in e2e: run with `--workers=1` locally (social and clubs share the two accounts).
+- The posts test makes 3 posts per run (testbot1 one, testbot2 two) against the 10-a-day
+  limit, so about 5 runs a day.
+

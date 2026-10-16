@@ -476,3 +476,23 @@ export const getInvitePreview = cache(async (token: string): Promise<InvitePrevi
     status: r.status as InviteStatus,
   };
 });
+
+export interface ProfileClub {
+  slug: string;
+  name: string;
+  isPublic: boolean;
+  role: ClubRole;
+}
+
+/** The Clubs row on a profile: public clubs, plus private ones the viewer is also in. */
+export const getProfileClubs = cache(async (userId: string): Promise<ProfileClub[]> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_profile_clubs", { p_user: userId });
+  if (error) console.error("get_profile_clubs failed", error);
+  return ((data ?? []) as { slug: string; name: string; is_public: boolean; role: string }[]).map((r) => ({
+    slug: r.slug,
+    name: r.name,
+    isPublic: r.is_public,
+    role: r.role as ClubRole,
+  }));
+});

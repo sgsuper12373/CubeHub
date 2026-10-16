@@ -71,7 +71,10 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
          10/day on 2026-10-17 from repeated runs); the posts test passed with reactions
          and comments before the refresh fix, the private-club test after it.
    - [x] Step 5: invite links (manage section, `/clubs/join/[token]`). e2e passes on live.
-   - [ ] Step 6: notifications, navbar and docs.
+   - [x] Step 6: desktop navbar item, People → Clubs tab, profile Clubs row, club
+         notification wording and links, docs.
+   - [ ] **Merge `feat/clubs` and deploy** (no migrations left to push), then
+         `npm run check:chunks -- https://pre-cube-hub.vercel.app`.
    - Note: the e2e posts count toward the 10-a-day limit (testbot1 one per run, testbot2
      two), so the clubs spec can run about 5 times a day.
    - [ ] **e2e debt (found 2026-10-17, not from clubs):** 6 drill/timer specs fail since the

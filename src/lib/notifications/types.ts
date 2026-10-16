@@ -1,6 +1,24 @@
 /** Notification rows as the UI shows them. No server imports. */
 
-export type NotificationKind = "follow" | "follow_request" | "follow_accepted" | "other";
+export type NotificationKind =
+  | "follow"
+  | "follow_request"
+  | "follow_accepted"
+  | "club_request"
+  | "club_request_approved"
+  | "club_comment"
+  | "club_post_pinned"
+  | "other";
+
+const KINDS: ReadonlySet<string> = new Set([
+  "follow",
+  "follow_request",
+  "follow_accepted",
+  "club_request",
+  "club_request_approved",
+  "club_comment",
+  "club_post_pinned",
+]);
 
 export interface NotificationItem {
   id: string;
@@ -8,16 +26,19 @@ export interface NotificationItem {
   isRead: boolean;
   createdAt: string;
   actor: { username: string; displayName: string | null; avatarUrl: string | null } | null;
+  /** For club notifications: the club as it's named now. */
+  club?: { slug: string; name: string } | null;
   /** Fallback text for kinds this UI doesn't know yet. */
   title: string;
 }
 
 export function toKind(type: string): NotificationKind {
-  return type === "follow" || type === "follow_request" || type === "follow_accepted" ? type : "other";
+  return KINDS.has(type) ? (type as NotificationKind) : "other";
 }
 
 /** The sentence after the actor's name. */
-export function notificationText(n: Pick<NotificationItem, "kind" | "title">): string {
+export function notificationText(n: Pick<NotificationItem, "kind" | "title" | "club">): string {
+  const club = n.club?.name ?? "a club";
   switch (n.kind) {
     case "follow":
       return "started following you";
@@ -25,14 +46,24 @@ export function notificationText(n: Pick<NotificationItem, "kind" | "title">): s
       return "asked to follow you";
     case "follow_accepted":
       return "accepted your follow request";
+    case "club_request":
+      return `asked to join ${club}`;
+    case "club_request_approved":
+      return `let you into ${club}`;
+    case "club_comment":
+      return `commented on your post in ${club}`;
+    case "club_post_pinned":
+      return `pinned an announcement in ${club}`;
     default:
       return n.title;
   }
 }
 
 /** Where tapping a notification goes. */
-export function notificationHref(n: Pick<NotificationItem, "kind" | "actor">): string {
+export function notificationHref(n: Pick<NotificationItem, "kind" | "actor" | "club">): string {
   if (n.kind === "follow_request") return "/people?tab=requests";
+  if (n.kind === "club_request" && n.club) return `/clubs/${n.club.slug}/manage`;
+  if (n.kind.startsWith("club_") && n.club) return `/clubs/${n.club.slug}`;
   if (n.actor) return `/profile/${n.actor.username}`;
   return "/people";
 }
