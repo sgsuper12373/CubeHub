@@ -291,6 +291,8 @@ export const getCase = cache(
     puzzle: LearnPuzzle;
     series: LearnSeries;
     algCase: AlgorithmCase;
+    /** Every case in the set, in case-number order, for the case switcher. */
+    cases: AlgorithmCase[];
     prev: AlgorithmCase | null;
     next: AlgorithmCase | null;
   } | null> => {
@@ -303,7 +305,13 @@ export const getCase = cache(
     const algCase = data.cases.find((c) => c.case_number === caseNumber);
     if (!algCase) return null;
 
-    return { puzzle, series: data.series, algCase, ...adjacentCases(data.cases, caseNumber) };
+    return {
+      puzzle,
+      series: data.series,
+      algCase,
+      cases: data.cases,
+      ...adjacentCases(data.cases, caseNumber),
+    };
   },
 );
 

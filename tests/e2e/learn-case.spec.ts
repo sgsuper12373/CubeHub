@@ -46,14 +46,31 @@ test("previous and next go through the set in order", async ({ page }) => {
   await expect(page).toHaveURL(/\/learn\/333\/oll\/27$/);
 });
 
-test("a card's name links to its case page", async ({ page }) => {
+test("a card opens its case in a side panel, and Back closes it", async ({ page }) => {
   await openCase(page, "/learn/333/pll/1");
   await page.goto("/learn/333/pll");
   const link = page.locator('a[href="/learn/333/pll/1"]').first();
   const name = (await link.textContent())?.trim() ?? "";
   await link.click();
-  await expect(page).toHaveURL(/\/learn\/333\/pll\/1$/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(name);
+  await expect(page).toHaveURL(/\/learn\/333\/pll\?case=1$/);
+  const panel = page.getByRole("dialog");
+  await expect(panel.getByRole("heading", { level: 2 })).toHaveText(name);
+  await expect(panel.getByRole("link", { name: "Full page" })).toHaveAttribute("href", "/learn/333/pll/1");
+
+  // → moves to the next case within the panel
+  await page.keyboard.press("ArrowRight");
+  await expect(page).toHaveURL(/\?case=2$/);
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/learn\/333\/pll$/);
+  await expect(panel).toHaveCount(0);
+});
+
+test("list filters carry into the case page", async ({ page }) => {
+  await openCase(page, "/learn/333/oll/27");
+  await page.goto("/learn/333/oll/27?status=unlearned");
+  await expect(page.getByText("Previous and next stay within this filter.")).toBeVisible();
+  await expect(page.locator('a[rel="next"]')).toHaveAttribute("href", /\?status=unlearned$/);
 });
 
 test("bad case URLs are 404s", async ({ page }) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, type MouseEvent } from "react";
 import { AlgorithmCase } from "@/lib/learn/dal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,16 +13,21 @@ import { AlgPlayer } from "@/components/learn/alg-player";
 import { toggleAlgorithmBookmark } from "@/lib/learn/actions";
 import { announceUnlocks, toUnlocks } from "@/lib/profile/achievements";
 import { caseDiagram, mainAlgorithm } from "@/lib/learn/case-diagram";
-import { casePath } from "@/lib/learn/case-route";
 import { isPlaygroundPuzzle } from "@/lib/playground/puzzles";
 import Link from "next/link";
 
 export function AlgorithmCard({
   algCase,
   puzzle = "333",
+  href,
+  onOpen,
 }: {
   algCase: AlgorithmCase;
   puzzle?: string;
+  /** The case's own page (with the list's filters). */
+  href: string;
+  /** Opens the case in the list's side panel. */
+  onOpen: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
@@ -39,11 +44,37 @@ export function AlgorithmCard({
   };
 
   const openPlayer = () => setIsPlayerOpen(true);
+
+  // A click anywhere on the card opens the case in the side panel, except on
+  // its own controls (Mark Learned, Animate, Try it, Drill) and except when the
+  // click ends a text selection, so an algorithm can still be selected and
+  // copied. The name stays a real link to the case page, for keyboards,
+  // screen readers and new tabs (Ctrl/Cmd+click).
+  const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (e.defaultPrevented || e.button !== 0) return;
+    // React bubbles clicks out of the portaled 3D player dialog to here too.
+    if (!e.currentTarget.contains(target) || target.closest("a, button")) return;
+    if (window.getSelection()?.toString()) return;
+    if (e.metaKey || e.ctrlKey) {
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+    onOpen();
+  };
+
+  const handleNameClick = (e: MouseEvent<HTMLAnchorElement>) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    onOpen();
+  };
   const alternatives = algCase.algorithms.filter((a) => a !== mainAlg);
 
   return (
     <Card
+      onClick={handleCardClick}
       className={cn(
+        "cursor-pointer",
         // The shared Card pads top and bottom; this card lays out its own rows.
         "h-full gap-0 py-0 transition-[border-color,box-shadow,opacity] duration-300 ease-out border border-border",
         !algCase.learned &&
@@ -87,7 +118,8 @@ export function AlgorithmCard({
           <div className="min-w-0 flex-1 space-y-1">
             <h3 className="text-xl font-bold tracking-tight text-foreground/90">
               <Link
-                href={casePath(puzzle, algCase.subset, algCase.case_number)}
+                href={href}
+                onClick={handleNameClick}
                 className="rounded-sm hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
               >
                 {algCase.name}

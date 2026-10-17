@@ -1,55 +1,96 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AlgorithmCase } from "@/lib/learn/dal";
 import { AlgorithmCard } from "@/components/learn/algorithm-card";
+import { CasePanel } from "@/components/learn/case-panel";
 import { Search, CheckCircle, Circle, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { caseCategories, caseCategory } from "@/lib/learn/case-category";
+import { caseCategories } from "@/lib/learn/case-category";
+import {
+  filterFromParams,
+  filterQuery,
+  filterToParams,
+  matchesCaseFilter,
+  type CaseFilter,
+  type CaseStatus,
+} from "@/lib/learn/case-filter";
+import { casePath, parseCaseNumber } from "@/lib/learn/case-route";
 
-type FilterStatus = "all" | "unlearned" | "learned";
+const FILTER_KEYS = ["status", "group", "q"];
 
 export function AlgorithmCaseList({
   cases,
   puzzle = "333",
+  series,
+  seriesName,
 }: {
   cases: AlgorithmCase[];
   puzzle?: string;
+  series: string;
+  seriesName: string;
 }) {
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<FilterStatus>("all");
-  const [category, setCategory] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  // The filters start from the URL, so coming back from a filtered case page
+  // (or reloading) keeps them; they're written back to it as they change.
+  const [initial] = useState(() => filterFromParams(searchParams));
+  const [search, setSearch] = useState(initial.search);
+  const [filter, setFilter] = useState<CaseStatus>(initial.status);
+  const [category, setCategory] = useState<string | null>(initial.category);
 
   const categories = useMemo(() => caseCategories(cases), [cases]);
   // Ignore a selected category this set doesn't have (e.g. after navigation).
   const activeCategory = categories.some((c) => c.name === category) ? category : null;
 
-  const filteredCases = useMemo(() => {
-    let result = cases;
+  const caseFilter = useMemo<CaseFilter>(
+    () => ({ status: filter, category: activeCategory, search }),
+    [filter, activeCategory, search],
+  );
 
-    if (activeCategory) {
-      result = result.filter((c) => caseCategory(c.description) === activeCategory);
+  const filteredCases = useMemo(
+    () => cases.filter((c) => matchesCaseFilter(c, caseFilter)),
+    [cases, caseFilter],
+  );
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    for (const key of FILTER_KEYS) params.delete(key);
+    for (const [key, value] of filterToParams(caseFilter)) params.set(key, value);
+    const next = params.toString() ? `?${params}` : window.location.pathname;
+    if (next !== (window.location.search || window.location.pathname)) {
+      window.history.replaceState(null, "", next);
     }
+  }, [caseFilter]);
 
-    if (filter === "learned") {
-      result = result.filter((c) => c.learned);
-    } else if (filter === "unlearned") {
-      result = result.filter((c) => !c.learned);
+  // ?case=N opens that case in the side panel. Opening it adds a history entry,
+  // so Back closes it; moving between cases inside the panel replaces it.
+  const openNumber = parseCaseNumber(searchParams.get("case") ?? "");
+  const openCase = cases.find((c) => c.case_number === openNumber) ?? null;
+  const pushedRef = useRef(false);
+
+  const showCase = (caseNumber: number) => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("case", String(caseNumber));
+    if (openCase) {
+      window.history.replaceState(null, "", `?${params}`);
+    } else {
+      window.history.pushState(null, "", `?${params}`);
+      pushedRef.current = true;
     }
+  };
 
-    if (search.trim()) {
-      const q = search.toLowerCase().trim();
-      result = result.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.case_number.toString().includes(q) ||
-          (c.description && c.description.toLowerCase().includes(q)) ||
-          c.algorithms.some((a) => a.moves.toLowerCase().includes(q)),
-      );
+  const closeCase = () => {
+    if (pushedRef.current) {
+      pushedRef.current = false;
+      window.history.back();
+      return;
     }
-
-    return result;
-  }, [cases, filter, search, activeCategory]);
+    const params = new URLSearchParams(window.location.search);
+    params.delete("case");
+    window.history.replaceState(null, "", params.toString() ? `?${params}` : window.location.pathname);
+  };
+  const query = filterQuery(caseFilter);
 
   const learnedCount = cases.filter((c) => c.learned).length;
   const unlearnedCount = cases.length - learnedCount;
@@ -142,7 +183,13 @@ export function AlgorithmCaseList({
       {filteredCases.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filteredCases.map((algCase) => (
-            <AlgorithmCard key={algCase.id} algCase={algCase} puzzle={puzzle} />
+            <AlgorithmCard
+              key={algCase.id}
+              algCase={algCase}
+              puzzle={puzzle}
+              href={casePath(puzzle, series, algCase.case_number) + query}
+              onOpen={() => showCase(algCase.case_number)}
+            />
           ))}
         </div>
       ) : (
@@ -150,6 +197,17 @@ export function AlgorithmCaseList({
           <p className="text-sm">No algorithm cases match the filter criteria.</p>
         </div>
       )}
+
+      <CasePanel
+        algCase={openCase}
+        cases={cases}
+        filter={caseFilter}
+        puzzle={puzzle}
+        series={series}
+        seriesName={seriesName}
+        onSelect={showCase}
+        onClose={closeCase}
+      />
     </div>
   );
 }

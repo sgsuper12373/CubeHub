@@ -127,7 +127,12 @@ export default async function SeriesCasesPage({ params }: Props) {
 
       {/* Content Section */}
       {isAlgorithms ? (
-        <AlgorithmCaseList cases={cases} puzzle={puzzle.id} />
+        <AlgorithmCaseList
+          cases={cases}
+          puzzle={puzzle.id}
+          series={series.slug}
+          seriesName={series.name}
+        />
       ) : (
         <div className="flex items-start gap-8">
           <div className="flex-1 space-y-6 min-w-0">
