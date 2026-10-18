@@ -127,13 +127,13 @@ export function StatsScreen({ userId }: { userId: string | null }) {
 
   // Session filtering is client-side — the metrics already carry sessionId, so
   // narrowing costs nothing and never re-hits the network.
-  // Misfires and solves the cuber left out don't count here, as on the timer.
+  // Excluded solves (flagged mis-stops included) don't count here, as on the timer.
   const filtered = useMemo(() => {
     if (!metrics) return null;
-    const counted = countedSolves(puzzle, metrics);
+    const counted = countedSolves(metrics);
     if (sessionId === "all") return counted;
     return counted.filter((m) => m.sessionId === sessionId);
-  }, [metrics, sessionId, puzzle]);
+  }, [metrics, sessionId]);
   const practiceDays = useMemo(() => (filtered ? dailyCounts(filtered) : []), [filtered]);
 
   return (

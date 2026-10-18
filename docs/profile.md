@@ -132,8 +132,10 @@ The owner-only RLS on `solves` and `user_algorithm_bookmarks` stays exactly as i
   - *Changed 2026-10-15 (`20261019000000_solve_sanity.sql`):* badges are awarded by triggers
     on `solves` and `user_algorithm_bookmarks` for whoever's rows changed, and dated by when the
     condition was first met. `award_achievements()` now returns the badges not yet shown in a
-    toast. Misfires and left-out solves earn nothing; badges earned only by misfires were
-    removed once.
+    toast. Excluded solves earn nothing; badges earned only by misfires were removed once.
+    Since `20261021000000_misstops.sql` there is no time floor: suspected mis-stops are
+    flagged and excluded on save, and counting or excluding a solve re-derives badges both
+    ways (`docs/timer.md` → Mis-stops).
 
 ## Step 5: C11 and C12, setup, method and level (built 2026-10-12; migration `20261016000000_profile_setup.sql`)
 

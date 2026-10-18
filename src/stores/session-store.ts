@@ -5,6 +5,12 @@ import type { SolveRepository } from "@/lib/timer/repo";
 import { createSupabaseRepo } from "@/lib/timer/repo-supabase";
 import { hasLocalData, syncLocalToCloud } from "@/lib/timer/sync";
 import { knownBestsFrom, type KnownBests } from "@/lib/timer/pb-detect";
+import {
+  MISSTOP_WINDOW,
+  misstopMedian,
+  suspectedMisstop,
+  type MisstopRule,
+} from "@/lib/timer/misfire";
 import { announceUnlocks, checkAchievements } from "@/lib/profile/achievements";
 import type {
   Penalty,
@@ -27,14 +33,28 @@ interface SessionStore {
   solves: Solve[];
   /** All-time bests for the puzzle, for PB detection (see pb-detect.ts). */
   knownBests: KnownBests;
+  /**
+   * Raw times of the newest counted solves for the puzzle across sessions,
+   * newest first, for the relative mis-stop rule (misfire.ts).
+   */
+  recentCountedTimes: number[];
   syncing: boolean;
 
   hydrate(userId: string | null): Promise<void>;
   addSolve(s: Omit<Solve, "effectiveTimeMs" | "sessionId">): Promise<void>;
   setPenalty(solveId: string, p: Penalty): Promise<void>;
   setNotes(solveId: string, notes: string): Promise<void>;
-  /** Leave a solve out of records, or put it back. */
+  /**
+   * Leave a solve out of records, or put it back. Putting it back marks it
+   * real, so a flagged mis-stop is never flagged again.
+   */
   setExcluded(solveId: string, excluded: boolean): Promise<void>;
+  /**
+   * Would this result be flagged as a mis-stop? Judged on the recent counted
+   * solves before it; DNFs are never flagged. `median` is what the relative
+   * rule compared against, when there were enough solves.
+   */
+  misstopFor(timeMs: number, penalty: Penalty): { rule: MisstopRule; median: number | null } | null;
   deleteSolve(solveId: string): Promise<void>;
   createSession(name: string): Promise<void>;
   deleteSession(sessionId: string): Promise<void>;
@@ -74,6 +94,16 @@ async function loadKnownBests(puzzle: TimerPuzzle): Promise<KnownBests> {
   }
 }
 
+/** As loadKnownBests: a failure only costs the relative mis-stop rule. */
+async function loadRecentCountedTimes(puzzle: TimerPuzzle): Promise<number[]> {
+  try {
+    return await repo.loadRecentCountedTimes(puzzle, MISSTOP_WINDOW);
+  } catch (err) {
+    console.error("loading recent solves failed", err);
+    return [];
+  }
+}
+
 /** Load (or lazily create) the sessions for a puzzle and pick the active one. */
 async function loadPuzzle(puzzle: TimerPuzzle) {
   let sessions = await repo.loadSessions(puzzle);
@@ -89,11 +119,12 @@ async function loadPuzzle(puzzle: TimerPuzzle) {
     sessions = [initial];
   }
   const active = sessions.find((s) => s.isActive) ?? sessions[0];
-  const [solves, knownBests] = await Promise.all([
+  const [solves, knownBests, recentCountedTimes] = await Promise.all([
     repo.loadSolves(active.id, SOLVE_LIMIT),
     loadKnownBests(puzzle),
+    loadRecentCountedTimes(puzzle),
   ]);
-  return { sessions, active, solves, knownBests };
+  return { sessions, active, solves, knownBests, recentCountedTimes };
 }
 
 /**
@@ -102,9 +133,12 @@ async function loadPuzzle(puzzle: TimerPuzzle) {
  */
 async function refreshKnownBests() {
   const puzzle = useSessionStore.getState().puzzle;
-  const knownBests = await loadKnownBests(puzzle);
+  const [knownBests, recentCountedTimes] = await Promise.all([
+    loadKnownBests(puzzle),
+    loadRecentCountedTimes(puzzle),
+  ]);
   if (useSessionStore.getState().puzzle === puzzle) {
-    useSessionStore.setState({ knownBests });
+    useSessionStore.setState({ knownBests, recentCountedTimes });
   }
 }
 
@@ -116,6 +150,7 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
   activeSessionId: null,
   solves: [],
   knownBests: {},
+  recentCountedTimes: [],
   syncing: false,
 
   hydrate: (userId) => {
@@ -154,8 +189,8 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
         }
       }
 
-      const { sessions, active, solves, knownBests } = await loadPuzzle(get().puzzle);
-      set({ sessions, activeSessionId: active.id, solves, knownBests, hydrated: true });
+      const { sessions, active, solves, knownBests, recentCountedTimes } = await loadPuzzle(get().puzzle);
+      set({ sessions, activeSessionId: active.id, solves, knownBests, recentCountedTimes, hydrated: true });
     })();
     return hydration;
   },
@@ -167,6 +202,9 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
     const solve: Solve = { ...input, sessionId, effectiveTimeMs: null };
     // Optimistic update
     set({ solves: [solve, ...get().solves].slice(0, SOLVE_LIMIT) });
+    if (!solve.excluded && solve.penalty !== "dnf") {
+      set({ recentCountedTimes: [solve.timeMs, ...get().recentCountedTimes].slice(0, MISSTOP_WINDOW) });
+    }
     // Fire-and-forget repo write
     await repo.saveSolve(solve, activeUserId ?? undefined);
     // Signed in: the solve is in the database now, so it can earn badges.
@@ -193,11 +231,27 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
   setExcluded: async (solveId, excluded) => {
     set({
       solves: get().solves.map((s) =>
-        s.id === solveId ? { ...s, excluded: excluded || undefined } : s,
+        s.id === solveId
+          ? {
+              ...s,
+              excluded: excluded || undefined,
+              excludedReason: excluded ? ("user" as const) : undefined,
+              misstopConfirmed: !excluded || undefined,
+            }
+          : s,
       ),
     });
     await repo.updateExcluded(solveId, excluded);
     await refreshKnownBests();
+    // Putting a solve back can meet a badge (the database has awarded it).
+    if (!excluded && get().backend === "cloud") void checkAchievements().then(announceUnlocks);
+  },
+
+  misstopFor: (timeMs, penalty) => {
+    if (penalty === "dnf") return null;
+    const recent = get().recentCountedTimes;
+    const rule = suspectedMisstop(get().puzzle, timeMs, recent);
+    return rule ? { rule, median: misstopMedian(recent) } : null;
   },
 
   setNotes: async (solveId, notes) => {
@@ -330,9 +384,9 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
   setPuzzle: async (p) => {
     if (get().puzzle === p) return;
     set({ puzzle: p, hydrated: false });
-    const { sessions, active, solves, knownBests } = await loadPuzzle(p);
+    const { sessions, active, solves, knownBests, recentCountedTimes } = await loadPuzzle(p);
     if (get().puzzle !== p) return; // switched again mid-load
-    set({ sessions, activeSessionId: active.id, solves, knownBests, hydrated: true });
+    set({ sessions, activeSessionId: active.id, solves, knownBests, recentCountedTimes, hydrated: true });
   },
 
   setKnownBests: (known) => {

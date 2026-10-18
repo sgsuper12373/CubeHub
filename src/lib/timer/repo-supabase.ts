@@ -48,7 +48,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
       const { data, error } = await getClient()
         .from("solves")
         .select(
-          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at, excluded",
+          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at, excluded, excluded_reason, misstop_confirmed",
         )
         .eq("session_id", sessionId)
         .eq("user_id", userId)
@@ -73,6 +73,8 @@ export function createSupabaseRepo(userId: string): SolveRepository {
           source: solve.source ?? "web",
           scramble_type: solve.scrambleType ?? "random_state",
           excluded: solve.excluded ?? false,
+          excluded_reason: solve.excludedReason ?? null,
+          misstop_confirmed: solve.misstopConfirmed ?? false,
           created_at: solve.createdAt,
         },
         { onConflict: "id", ignoreDuplicates: true },
@@ -92,10 +94,30 @@ export function createSupabaseRepo(userId: string): SolveRepository {
     async updateExcluded(id, excluded) {
       const { error } = await getClient()
         .from("solves")
-        .update({ excluded })
+        .update(
+          excluded
+            ? { excluded, excluded_reason: "user", misstop_confirmed: false }
+            : { excluded, excluded_reason: null, misstop_confirmed: true },
+        )
         .eq("id", id)
         .eq("user_id", userId);
       if (error) throw error;
+    },
+
+    async loadRecentCountedTimes(puzzle, limit) {
+      // Served by idx_solves_user_puzzle (user_id, puzzle_type, created_at desc).
+      const { data, error } = await getClient()
+        .from("solves")
+        .select("time_ms")
+        .eq("user_id", userId)
+        .eq("puzzle_type", puzzle)
+        .is("deleted_at", null)
+        .eq("excluded", false)
+        .neq("penalty", "dnf")
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return (data ?? []).map((row) => row.time_ms as number);
     },
 
     async updateNotes(id, notes) {
@@ -180,7 +202,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
       const { data, error } = await getClient()
         .from("solves")
         .select(
-          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at, excluded, deleted_at",
+          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at, excluded, excluded_reason, misstop_confirmed, deleted_at",
         )
         .eq("user_id", userId)
         .eq("puzzle_type", puzzle)
@@ -240,7 +262,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
       const { data, error } = await getClient()
         .from("solves")
         .select(
-          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at, excluded",
+          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at, excluded, excluded_reason, misstop_confirmed",
         )
         .eq("user_id", userId)
         .eq("puzzle_type", puzzle)
@@ -289,6 +311,8 @@ export function createSupabaseRepo(userId: string): SolveRepository {
             notes: s.notes,
             source: "import",
             excluded: s.excluded ?? false,
+            excluded_reason: s.excludedReason ?? null,
+            misstop_confirmed: s.misstopConfirmed ?? false,
             created_at: s.createdAt,
           })),
           { onConflict: "id", ignoreDuplicates: true },
@@ -368,6 +392,8 @@ function mapSolve(row: {
   notes: string | null;
   created_at: string;
   excluded: boolean;
+  excluded_reason: string | null;
+  misstop_confirmed: boolean;
   deleted_at?: string | null;
 }): Solve {
   return {
@@ -381,6 +407,8 @@ function mapSolve(row: {
     notes: row.notes,
     createdAt: row.created_at,
     ...(row.excluded && { excluded: true }),
+    ...(row.excluded_reason && { excludedReason: row.excluded_reason as Solve["excludedReason"] }),
+    ...(row.misstop_confirmed && { misstopConfirmed: true }),
     ...(row.deleted_at !== undefined && { deletedAt: row.deleted_at }),
   };
 }

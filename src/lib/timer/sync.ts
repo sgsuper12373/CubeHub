@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { flagMisstops } from "./misfire";
 import type { Session, Solve } from "./types";
 
 /**
@@ -78,7 +79,9 @@ export async function syncLocalToCloud(userId: string): Promise<number> {
 
   // ── 2. Upsert solves in chunks ──
   // Soft-deleted solves are local trash — don't migrate them to the cloud.
-  const liveSolves = local.solves.filter((s) => !s.deletedAt);
+  // Flagged as the timer would, in case these were saved before mis-stop
+  // flagging (a no-op for solves that already went through it).
+  const liveSolves = flagMisstops(local.solves.filter((s) => !s.deletedAt));
   let synced = 0;
   for (let i = 0; i < liveSolves.length; i += CHUNK_SIZE) {
     const chunk = liveSolves.slice(i, i + CHUNK_SIZE);
@@ -93,6 +96,8 @@ export async function syncLocalToCloud(userId: string): Promise<number> {
       source: s.source ?? "web",
       scramble_type: s.scrambleType ?? "random_state",
       excluded: s.excluded ?? false,
+      excluded_reason: s.excludedReason ?? null,
+      misstop_confirmed: s.misstopConfirmed ?? false,
       created_at: s.createdAt,
     }));
 

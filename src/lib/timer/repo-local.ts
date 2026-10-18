@@ -1,5 +1,5 @@
 import { recentlyDeletedSince, type SolveRepository } from "./repo";
-import { countedSolves } from "./misfire";
+import { countedSolves, flagMisstops } from "./misfire";
 import { bestAverageOfN, effectiveMs } from "./stats";
 import type { PersonalBest, Session, Solve, SolveMetric } from "./types";
 
@@ -19,6 +19,11 @@ const STORAGE_KEY = "cubehub.timer.v1";
 interface LocalData {
   sessions: Session[];
   solves: Solve[];
+  /**
+   * Set once the saved solves have had the mis-stop rules applied, the local
+   * twin of the database's one-time backfill (20261021000000_misstops.sql).
+   */
+  misstopsChecked?: true;
 }
 
 let cache: LocalData | null = null;
@@ -32,9 +37,21 @@ function read(): LocalData {
     cache = {
       sessions: Array.isArray(parsed?.sessions) ? parsed.sessions : [],
       solves: Array.isArray(parsed?.solves) ? parsed.solves : [],
+      ...(parsed?.misstopsChecked === true && { misstopsChecked: true as const }),
     };
   } catch {
     cache = { sessions: [], solves: [] };
+  }
+  if (!cache.misstopsChecked) {
+    // Live solves only, as the database does; deleted ones keep what they had.
+    const live = cache.solves.filter((s) => !s.deletedAt);
+    const flagged = new Map(flagMisstops(live).map((s) => [s.id, s]));
+    cache = {
+      ...cache,
+      solves: cache.solves.map((s) => flagged.get(s.id) ?? s),
+      misstopsChecked: true,
+    };
+    scheduleFlush();
   }
   return cache;
 }
@@ -85,8 +102,18 @@ export const localRepo: SolveRepository = {
     const solve = read().solves.find((s) => s.id === id);
     if (solve) {
       solve.excluded = excluded || undefined;
+      solve.excludedReason = excluded ? "user" : undefined;
+      solve.misstopConfirmed = !excluded || undefined;
       scheduleFlush();
     }
+  },
+
+  async loadRecentCountedTimes(puzzle, limit) {
+    return read()
+      .solves.filter((s) => s.puzzle === puzzle && !s.deletedAt && !s.excluded && s.penalty !== "dnf")
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+      .slice(0, limit)
+      .map((s) => s.timeMs);
   },
 
   async updateNotes(id, notes) {
@@ -166,7 +193,7 @@ export const localRepo: SolveRepository = {
 
   async loadPersonalBests(puzzle) {
     const metrics = await localRepo.loadSolveMetrics(puzzle);
-    return computePersonalBests(countedSolves(puzzle, metrics));
+    return computePersonalBests(countedSolves(metrics));
   },
 
   async loadSolvesForExport(puzzle) {

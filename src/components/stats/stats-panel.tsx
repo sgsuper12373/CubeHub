@@ -9,7 +9,7 @@ import { SolveList } from "@/components/stats/solve-list";
 import { StatTiles } from "@/components/stats/stat-tiles";
 import { Button } from "@/components/ui/button";
 import { copyAverage } from "@/lib/timer/copy-text";
-import { countedSessionSolves } from "@/lib/timer/misfire";
+import { countedSolves } from "@/lib/timer/misfire";
 import { bestSingle, meanOfN, sessionMean, wcaAverage } from "@/lib/timer/stats";
 import type { Penalty, Solve } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
@@ -35,8 +35,8 @@ export function StatsPanel({
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Stats leave out misfires and excluded solves; the list shows them all.
-  const counted = countedSessionSolves(solves);
+  // Stats leave out excluded solves (and so flagged mis-stops); the list shows them all.
+  const counted = countedSolves(solves);
   const best = bestSingle(counted);
   const mo3 = meanOfN(counted, 3);
   const ao5 = wcaAverage(counted, 5);

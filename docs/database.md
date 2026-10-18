@@ -88,6 +88,31 @@ This is the pattern the access tiers extend — the flag check gains an `AND can
 | `rls_auto_enable()` | `ensure_rls` event trigger on `CREATE TABLE` | Enables RLS on new `public` tables. |
 | `recompute_drill_state(user, algorithm)` | statement-level triggers on `drill_attempts` insert / update / delete | Replays that algorithm's attempts in order and writes `drill_state` (counts, SM-2-style ease, interval, `next_review_at`). Authoritative, so penalty edits and deletes heal it. |
 
+## Which solves count
+
+A solve counts for records unless `solves.excluded` is true. Nothing else decides: there is no
+time floor (`20261021000000_misstops.sql` removed the fixed misfire floor of
+`20261019000000_solve_sanity.sql`). `solve_counts(puzzle, time_ms, excluded)` is `not
+excluded`; every PB, average, PB timeline, level, achievement, feed and suggestion function
+goes through it, and keeps the two unused parameters so the callers didn't change.
+
+| Column | Meaning |
+|---|---|
+| `excluded` | Left out of records. Stays in the session list. |
+| `excluded_reason` | `auto_misstop` (the app flagged it on save) or `user` (left out by hand); null when it counts. A `BEFORE INSERT OR UPDATE` trigger, `normalize_solve_exclusion()`, clears it when the solve counts and sets `user` when a client leaves one out without a reason. |
+| `misstop_confirmed` | The cuber marked a flagged solve as real; nothing flags it again. |
+
+The app flags on save (`src/lib/timer/misfire.ts`); the database does not flag inserts.
+`misstop_limit_ms(puzzle)` holds the implausible limits for the backfill.
+
+| Function | Fires | Does |
+|---|---|---|
+| `recompute_achievements_for(user)` | the trigger below, the backfill | Drops badges no longer met, re-dates the rest by when they were first met, awards new ones. |
+| `recompute_achievements_on_exclusion()` | `AFTER UPDATE ON solves`, statement-level | For cubers whose `excluded` changed. PBs already heal through `recompute_pb_on_solve_update()`, so both follow `excluded` in both directions. |
+| `backfill_misstops()` | once in the migration; re-runnable by hand (service role) | Walks each cuber's live solves per puzzle oldest first and applies both mis-stop rules using only earlier solves, skipping excluded, confirmed and DNF solves. Flags matches `auto_misstop`, then recomputes every PB and badge. Returns how many it flagged. |
+
+Tests: `supabase/tests/misstop_test.sql`.
+
 ## Indexing
 
 Notable choices worth preserving: a partial index on `solves(puzzle_type, effective_time_ms) WHERE penalty <> 'dnf'` for leaderboards; a partial index on unread notifications; a GIN trigram index on `algorithms.moves` for algorithm search; partial index on `matches` restricted to open statuses.

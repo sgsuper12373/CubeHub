@@ -19,13 +19,17 @@ custom SMTP (below, "Next after that" 1), then the "Check by hand" items.
 - [x] Landing: a Clubs tile in the feature bento.
 - [x] Stats PB row: "averages count within one session" instead of "Across every session".
 - [x] Badges: dated "First reached …".
-- [ ] **Relative mis-stops** (planned, needs decisions): a 3.01 on a ~25 s average passes the
-      fixed 3.00 floor and awards Sub-10/Sub-15. Plan: the timer flags a solve under a
-      share of the session Ao12 (Keep / Leave out / Delete; "Leave out" sets `excluded`),
-      and `achievement_earned_at` checks `single_under` badges against the 12 counted
-      solves before it. Decide: the threshold per event (40% for 3x3 and up; lower or none
-      for 2x2, Pyraminx, Skewb), what happens with fewer than 12 earlier solves, and whether
-      a solve the cuber chose to keep can still earn a badge. Needs a migration.
+- [x] **Mis-stops** (built 2026-10-19, `docs/timer.md` → Mis-stops): flagged on save by an
+      implausible limit or under half the median of the last 50 counted solves (from 12),
+      left out by default, "It was real" counts any of them; no hard floor.
+- [ ] **Founder, in order, BEFORE deploying the mis-stop code** (the signed-in timer reads
+      the new columns, so the old database breaks it):
+      1. `supabase db query --linked -f supabase/tests/solve_sanity_test.sql` (22 PASS; the
+         last chance, it fails by design after step 2).
+      2. `supabase db push` (applies `20261021000000_misstops.sql`, which runs the backfill).
+      3. `supabase db query --linked -f supabase/tests/misstop_test.sql` (22 PASS; rolls back).
+      4. Deploy, then `npm run check:chunks -- https://pre-cube-hub.vercel.app`.
+      5. By hand, signed in: a 1.50 3x3 shows "Mis-stop?"; "It was real" counts it.
 - [ ] **Test accounts and test clubs stay until the final pre-beta check** (founder,
       2026-10-19): `testbot1`/`testbot2`, the "E2E Club posts mvchw52f" and "8.8.8.8" clubs
       are left in place, then removed together once everything is checked.
@@ -126,7 +130,7 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
          check, so run it yourself.
    - [ ] After applying: check by hand that Ganesh's 0.65 and #2nd User's 0.02 PBs are gone,
          and that Ganesh's badges are dated 8 Oct.
-   - [ ] Check by hand signed out: a public profile, and the misfire prompt on the guest timer.
+   - [ ] Check by hand signed out: a public profile, and the mis-stop prompt on the guest timer.
    - [ ] Check by hand on a real phone (the desktop browser couldn't resize; a 390 px frame
          showed no sideways scrolling on the pages changed here).
    - [ ] **Challenge on the same scramble** from Compare: the first slice of Compete

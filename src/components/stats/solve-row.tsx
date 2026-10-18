@@ -4,7 +4,7 @@ import { Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { formatResult } from "@/lib/timer/format";
-import { isMisfire } from "@/lib/timer/misfire";
+import { isFlaggedMisstop } from "@/lib/timer/misfire";
 import type { Penalty, Solve } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
 import { SolveDetailModal } from "@/components/stats/solve-detail";
@@ -31,8 +31,8 @@ export function SolveRow({
   const startXRef = useRef(0);
   const rowRef = useRef<HTMLDivElement>(null);
 
-  const misfire = isMisfire(solve.puzzle, solve.timeMs);
-  const leftOut = misfire || !!solve.excluded;
+  const flagged = isFlaggedMisstop(solve);
+  const leftOut = !!solve.excluded;
 
   const togglePenalty = (p: Exclude<Penalty, "none">) => {
     onPenalty(solve.id, solve.penalty === p ? "none" : p);
@@ -121,12 +121,19 @@ export function SolveRow({
           >
             {formatResult(solve.timeMs, solve.penalty)}
           </span>
-          {leftOut && (
+          {flagged ? (
+            <span
+              className="text-[0.65rem] font-medium uppercase tracking-wide text-warning"
+              title="Looks like a mis-stop, so it doesn't count. Open it to count it if it was real."
+            >
+              Mis-stop?
+            </span>
+          ) : leftOut && (
             <span
               className="text-[0.65rem] uppercase tracking-wide text-muted-foreground"
               title="Doesn't count for stats or records"
             >
-              {misfire ? "misfire" : "left out"}
+              left out
             </span>
           )}
         </span>

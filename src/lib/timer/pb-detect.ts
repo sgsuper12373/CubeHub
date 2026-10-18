@@ -69,10 +69,11 @@ export function detectRecords(
   solve: Solve,
   known: KnownBests,
 ): { hits: RecordHit[]; known: KnownBests } {
-  // Records count only the solves that count, like the PB triggers: a
-  // misfire is never a record, and windows close over the solves around it.
-  if (!countsForRecords(solve.puzzle, solve)) return { hits: [], known };
-  previous = countedSolves(solve.puzzle, previous);
+  // Records count only the solves that count, like the PB triggers: an
+  // excluded solve (a flagged mis-stop) is never a record, and windows close
+  // over the solves around it.
+  if (!countsForRecords(solve)) return { hits: [], known };
+  previous = countedSolves(previous);
 
   const next = [solve, ...previous];
   const updated: KnownBests = { ...known };

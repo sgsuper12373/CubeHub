@@ -1,4 +1,5 @@
 import { eventLabel, isTimerEvent, TIMER_EVENTS } from "./events";
+import { flagMisstops } from "./misfire";
 import type { Penalty, Session, Solve, TimerPuzzle } from "./types";
 
 /**
@@ -449,5 +450,6 @@ export function toSolves(
     }
   });
 
-  return { sessions, solves };
+  // Mis-stops are flagged as the timer would have, oldest first per puzzle.
+  return { sessions, solves: flagMisstops(solves) };
 }

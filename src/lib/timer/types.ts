@@ -109,10 +109,17 @@ export interface Solve {
    */
   deletedAt?: string | null;
   /**
-   * Left out of records by its owner (DB `solves.excluded`). Absent = false.
-   * See misfire.ts for which solves count.
+   * Left out of records (DB `solves.excluded`). Absent = false. See
+   * misfire.ts for which solves count.
    */
   excluded?: boolean;
+  /**
+   * Why it's left out: "auto_misstop" when the timer flagged it as a
+   * suspected mis-stop, "user" when its owner left it out. Absent when it counts.
+   */
+  excludedReason?: "user" | "auto_misstop";
+  /** Its owner marked a flagged solve as real, so nothing flags it again. */
+  misstopConfirmed?: boolean;
 }
 
 /**

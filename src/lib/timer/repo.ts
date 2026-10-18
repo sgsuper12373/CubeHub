@@ -31,8 +31,18 @@ export interface SolveRepository {
   saveSolve(s: Solve, userId?: string): Promise<void>;
   updatePenalty(id: string, p: Penalty): Promise<void>;
   updateNotes(id: string, notes: string): Promise<void>;
-  /** Leave a solve out of records, or put it back. The DB recomputes PBs. */
+  /**
+   * Leave a solve out of records (reason "user"), or put it back. Putting it
+   * back also marks it real (`misstopConfirmed`), so a flagged mis-stop is
+   * never flagged again. The DB recomputes PBs and badges.
+   */
   updateExcluded(id: string, excluded: boolean): Promise<void>;
+  /**
+   * Raw times of the newest counted solves for a puzzle, across sessions,
+   * newest first: not excluded, not DNF, not deleted. What the relative
+   * mis-stop rule compares against (misfire.ts).
+   */
+  loadRecentCountedTimes(puzzle: TimerPuzzle, limit: number): Promise<number[]>;
   /** Soft delete — sets deleted_at. Reversible via restoreSolves. */
   deleteSolve(id: string): Promise<void>;
   upsertSession(s: Session, userId?: string): Promise<void>;

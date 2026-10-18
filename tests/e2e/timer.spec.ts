@@ -261,3 +261,28 @@ test("inspection beeps once at the first warning and twice at the last", async (
   await expect.poll(tones, { timeout: 3_000 }).toBe(3);
   await page.keyboard.press("Escape");
 });
+
+test("a mis-stop is flagged and left out, until the cuber says it was real", async ({ page }) => {
+  await page.goto("/timer");
+  await expect(scramble(page)).toBeVisible({ timeout: 60_000 });
+
+  // Under the 3x3 implausible limit (2.00): flagged from the first solve.
+  await solve(page, 300);
+  const toastText = page.getByText(/looks like a mis-stop, so it won't count\./);
+  await expect(toastText).toBeVisible();
+  await expect(page.getByText("Mis-stop?")).toBeVisible();
+
+  const stored = () =>
+    page.evaluate(() => {
+      const data = JSON.parse(localStorage.getItem("cubehub.timer.v1") ?? "{}");
+      return (data.solves ?? []).map(
+        (s: { excluded?: boolean; excludedReason?: string; misstopConfirmed?: boolean }) =>
+          `${!!s.excluded}|${s.excludedReason ?? ""}|${!!s.misstopConfirmed}`,
+      );
+    });
+  await expect.poll(stored).toEqual(["true|auto_misstop|false"]);
+
+  await page.getByRole("button", { name: "It was real" }).click();
+  await expect(page.getByText("Mis-stop?")).toHaveCount(0);
+  await expect.poll(stored).toEqual(["false||true"]);
+});

@@ -3,6 +3,22 @@ import { parseCsTimer, toSolves } from "@/lib/timer/import-cstimer";
 import type { ExportEnvelope } from "@/lib/timer/export";
 
 describe("parseCsTimer & toSolves", () => {
+  it("flags mis-stops in the imported solves, oldest first, as the timer would", () => {
+    // csTimer rows: [[penalty, ms], scramble, comment, unix seconds]. Twelve
+    // ~20 s solves, then a 1.50 (implausible) and an 8.00 (under half of 20).
+    const rows = [
+      ...Array.from({ length: 12 }, (_, i) => [[0, 20000 + i * 100], "R", "", 1700000000 + i]),
+      [[0, 1500], "R", "", 1700000100],
+      [[0, 8000], "R", "", 1700000200],
+      [[0, 19000], "R", "", 1700000300],
+    ];
+    const parse = parseCsTimer(JSON.stringify({ session1: rows }), "333");
+    const { solves } = toSolves(parse, "333");
+    const flagged = solves.filter((s) => s.excludedReason === "auto_misstop").map((s) => s.timeMs);
+    expect(flagged.sort((x, y) => x - y)).toEqual([1500, 8000]);
+    expect(solves.filter((s) => s.excluded)).toHaveLength(2);
+  });
+
   it("parses valid standard csTimer export JSON", () => {
     const raw = JSON.stringify({
       session1: [

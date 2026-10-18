@@ -69,6 +69,27 @@ Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Dri
   desktop). The card closes when the next solve starts. A best first set during this visit
   counts as a session best until it is part of the history (after a reload).
 
+### Mis-stops (2026-10-19)
+A suspected mis-stop is flagged when the solve is saved and left out of records by default.
+The cuber can count **any** flagged solve: there is no hard floor, and nothing is left out by
+a time rule they can't override. Rules (`src/lib/timer/misfire.ts`; either one flags):
+1. **Implausible:** raw time (before +2) under a per-event limit well below the world record:
+   3x3 2.00, 2x2 0.30, OH 4.00, 4x4 12.00, 5x5 25.00, Pyraminx 0.50, Skewb 0.50, Megaminx 18.00.
+   From the first solve.
+2. **Relative:** raw time under 0.5 × the median raw time of the cuber's last 50 counted
+   solves for the puzzle, across sessions (DNFs and excluded solves left out), once there are
+   at least 12 of them.
+
+DNFs are never flagged. A flagged solve is saved `excluded` with reason `auto_misstop`, gets
+no PB toast or celebration, and a toast says "{time} looks like a mis-stop (your average is
+about {median}), so it won't count" (no average part before there are 12 solves) with
+**It was real**, which counts it and celebrates it then if it's a record. The solve list tags
+it **Mis-stop?**; every solve's detail has a **Counts for records** switch. Counting a solve
+marks it confirmed (`misstop_confirmed`) so nothing flags it again; switching one off is
+reason `user`. Guests get the same rules from localStorage; csTimer and JSON imports run
+both rules over the imported solves, oldest first. Database side:
+`20261021000000_misstops.sql` and `docs/database.md` → Which solves count.
+
 ### Modes
 - **Zen:** everything but the digits dims while solving.
 - **Focus:** everything but the digits is hidden while solving, including the navigation.
@@ -84,7 +105,8 @@ Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Dri
 
 ### Data
 - Works signed out (localStorage). Local solves sync to the account on sign-in.
-- All-time personal bests are kept by database triggers. They heal on delete and penalty change.
+- All-time personal bests are kept by database triggers. They heal on delete, penalty change
+  and counting a solve or not (mis-stops, above).
 - Export as CSV or JSON, and import from csTimer or a CubeHub JSON backup (on `/stats`).
 
 ---

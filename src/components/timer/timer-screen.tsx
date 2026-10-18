@@ -29,10 +29,10 @@ import { useLayoutStore } from "@/stores/layout-store";
 import { generateScramble } from "@/lib/timer/scrambler";
 import { loadLastEvent, saveLastEvent } from "@/lib/timer/events";
 import { detectRecords, RECORD_LABEL, type RecordHit } from "@/lib/timer/pb-detect";
-import { countedSessionSolves, isMisfire } from "@/lib/timer/misfire";
+import { countedSolves } from "@/lib/timer/misfire";
 import { loadClientSettings, saveSettings } from "@/lib/timer/settings-persistence";
 import type { ServerTimerSettings } from "@/lib/auth/dal";
-import type { Penalty, TimerPuzzle, TimerSettings } from "@/lib/timer/types";
+import type { Penalty, Solve, TimerPuzzle, TimerSettings } from "@/lib/timer/types";
 import { useSessionStore } from "@/stores/session-store";
 import { useTimerStore } from "@/stores/timer-store";
 import { toast } from "@/stores/toast-store";
@@ -71,9 +71,9 @@ export function TimerScreen(props: {
   const sessions = useSessionStore((s) => s.sessions);
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
   const solves = useSessionStore((s) => s.solves);
-  // Session stats leave out misfires and excluded solves, as records do; the
-  // solve list still shows every solve.
-  const counted = countedSessionSolves(solves);
+  // Session stats leave out excluded solves (flagged mis-stops included), as
+  // records do; the solve list still shows every solve.
+  const counted = countedSolves(solves);
   const backend = useSessionStore((s) => s.backend);
 
   const lastRecordedStopRef = useRef<number | null>(null);
@@ -213,6 +213,8 @@ export function TimerScreen(props: {
   const recordSolve = (timeMs: number, penalty: Penalty, source: "web" | "manual") => {
     const t = useTimerStore.getState();
     const sessionState = useSessionStore.getState();
+    // Judged on the solves before this one, like records.
+    const misstop = sessionState.misstopFor(timeMs, penalty);
     const solve = {
       id: crypto.randomUUID(),
       sessionId: sessionState.activeSessionId ?? "",
@@ -224,33 +226,47 @@ export function TimerScreen(props: {
       notes: null,
       ...(source === "manual" && { source }),
       ...(t.scramble.custom && { scrambleType: "custom" as const }),
+      ...(misstop && { excluded: true, excludedReason: "auto_misstop" as const }),
       createdAt: new Date().toISOString(),
     };
 
     // Records are judged against the solves *before* this one, so read them
-    // before the store adds it.
-    const { hits, known } = detectRecords(sessionState.solves, solve, sessionState.knownBests);
+    // before the store adds it. A flagged solve is never a record.
+    const previous = sessionState.solves;
+    const { hits, known } = detectRecords(previous, solve, sessionState.knownBests);
     sessionState.setKnownBests(known);
     const saved = sessionState.addSolve(solve);
     announceRecords(hits, solve.id);
 
-    // Too fast to be real: it already doesn't count for records, and most
-    // cubers want it gone, so offer that on the spot.
-    if (isMisfire(solve.puzzle, solve.timeMs)) {
+    // A suspected mis-stop is saved left out; the cuber has the last word.
+    if (misstop) {
+      const about = misstop.median !== null ? ` (your average is about ${formatMs(misstop.median)})` : "";
       toast({
         kind: "info",
-        message: `${formatMs(timeMs)} looks like a misfire, so it won't count for records. Delete it?`,
+        message: `${formatMs(timeMs)} looks like a mis-stop${about}, so it won't count.`,
         durationMs: 8000,
         action: {
-          label: "Delete",
+          label: "It was real",
           onAction: () =>
             void (async () => {
               await saved;
-              await removeSolve(solve.id);
+              await confirmMisstop({ ...solve, excluded: false }, previous);
             })(),
         },
       });
     }
+  };
+
+  /**
+   * "It was real": count a flagged solve, and celebrate it if it's a record
+   * against the bests as they stand now (read before the store refreshes them
+   * to include it).
+   */
+  const confirmMisstop = async (solve: Solve, previous: Solve[]) => {
+    const store = useSessionStore.getState();
+    const { hits } = detectRecords(previous, solve, store.knownBests);
+    await store.setExcluded(solve.id, false);
+    announceRecords(hits, solve.id);
   };
 
   // Record the solve exactly once per stop. `stoppedAt` is unique per solve,
