@@ -5,6 +5,75 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-19 — Mis-stops: flagged on save, left out by default, no hard floor
+
+**Request:** Replace the fixed misfire floor. Flag suspected mis-stops on save (implausible
+per-event limit, or under 0.5 × the median of the last 50 counted solves once there are 12),
+leave them out by default, let the cuber count any of them. Migration, backfill, SQL test,
+app, import, docs; don't deploy until the migrations are applied.
+
+### Database (`supabase/migrations/20261021000000_misstops.sql`, new)
+
+- `solves.excluded_reason` (`user` | `auto_misstop`, check) and `misstop_confirmed`;
+  `normalize_solve_exclusion()` (before insert/update) keeps the reason in step with
+  `excluded`. Existing excluded rows become `user`.
+- `solve_counts()` is now `not p_excluded`. Every PB, average, timeline, level, achievement,
+  feed and suggestion function reached the floor only through it, so they all lose it with no
+  other change. `misfire_limit_ms` dropped; `misstop_limit_ms` holds the implausible limits.
+  `drill_misfire_limit_ms` untouched.
+- Badges follow `excluded` both ways: `recompute_achievements_for()` (drop unmet, re-date,
+  award) from a new statement trigger `trg_solves_achievements_on_exclusion`. PBs already
+  recomputed on `excluded` changes (`recompute_pb_on_solve_update`).
+- `backfill_misstops()`: per cuber and puzzle, oldest first, both rules on earlier solves
+  only, skipping excluded, confirmed and DNF; one bulk update; then every PB and badge.
+  Re-runnable. The migration runs it and marks the re-derived badges as shown.
+- `supabase/tests/misstop_test.sql` (new): 22 rows. `solve_sanity_test.sql` header says it
+  fails by design after this migration.
+
+### App
+
+- `src/lib/timer/misfire.ts`: `suspectedMisstop()`, `misstopMedian()`, `median()`
+  (percentile_cont-style), `flagMisstops()` (in-order pass), `isFlaggedMisstop()`,
+  `countsForRecords = !excluded`, `countedSolves()`; constants `MISSTOP_LIMIT_MS`,
+  `MISSTOP_RATIO`, `MISSTOP_WINDOW`, `MISSTOP_MIN_SOLVES`.
+- `types.ts`: `Solve.excludedReason`, `misstopConfirmed`.
+- Repos: both save and read the new fields; `loadRecentCountedTimes()`; `updateExcluded()`
+  sets reason `user`/unconfirms when leaving out, clears the reason/confirms when counting.
+  `sync.ts` sends the fields and flags local solves before upload. `repo-local.ts` flags a
+  guest's existing storage once (`misstopsChecked`).
+- `session-store.ts`: `recentCountedTimes` (loaded per puzzle, updated on save, refreshed
+  with the PBs), `misstopFor()`; `setExcluded()` re-checks badges when counting a solve.
+- `timer-screen.tsx`: flagged solves saved excluded, no record hits; the new toast with
+  **It was real**, which counts the solve and announces any record against the bests as
+  they stood. `solve-row.tsx`: **Mis-stop?** tag. `solve-detail.tsx`: **Counts for records**
+  switch on every solve.
+- `import-cstimer.ts`: `toSolves()` runs `flagMisstops()`.
+- Tests: `misfire.test.ts` rewritten (rules, boundaries, window, import pass, records),
+  `local-misstops.test.ts` (new), an import case, and a guest e2e flow in `timer.spec.ts`.
+- Docs: `timer.md` (Mis-stops), `database.md` (Which solves count), `profile.md`, `todo.md`
+  (founder steps before deploying).
+
+### Kept on purpose / not done
+
+- The database does not flag inserts itself; the app does (as specified). A client writing
+  solves straight to the API can skip flagging.
+- Marking a solve real from the solve detail counts it but doesn't celebrate; the toast's
+  **It was real** does.
+- Not applied to live and not deployed (founder applies the migration first).
+- The 6 drill/timer e2e specs from the to-do were already fixed earlier today; still green.
+
+### Verification
+
+- Local Postgres 17 (`cubehub-pg`, every migration applied): the migration plus
+  `misstop_test.sql` in one rolled-back transaction: 22/22 PASS.
+- `npm run validate`: tsc, eslint (one existing warning), 41 files / 491 tests.
+  `npm run build`, `check:colors`.
+- e2e under `next dev`: timer (12, incl. the new mis-stop test), drill, drill-signed-in,
+  profile, analytics, landing, learn-case, errors, auth-smoke, playground, cubing-runtime:
+  all pass. The signed-in timer wasn't run: it needs the new columns on live.
+
+---
+
 ## 2026-10-19 — Pre-beta review items: drill variants, CTA, Clubs tile, PB and badge wording
 
 **Request:** Do the simple items from the pre-beta review; keep the test bots and test clubs
