@@ -132,8 +132,10 @@ select set_config('request.jwt.claim.sub', 'a1000000-0000-4000-8000-00000000000a
 insert into seen select 'toast', (select string_agg(x->>'slug', ',' order by x->>'slug') from jsonb_array_elements(public.award_achievements()) x);
 insert into seen select 'again', coalesce((select string_agg(x->>'slug', ',') from jsonb_array_elements(public.award_achievements()) x), '');
 reset role;
+-- Night Owl is left out of the check: these solves are timed relative to now(),
+-- so a run between 2 and 3 am IST really does earn it.
 insert into results select 'the RPC returns the unshown badges', '333-sub-30,333-sub-60,first-solve',
-  (select val from seen where call = 'toast'), null;
+  (select regexp_replace(val, ',?night-owl', '') from seen where call = 'toast'), null;
 insert into results select 'then nothing', '', (select val from seen where call = 'again'), null;
 
 -- ── 4. The feed ────────────────────────────────────────────────────────────
@@ -163,7 +165,10 @@ insert into results select '"everyone" still leaves out a private profile', '0',
 -- ── 5. Suggestions ─────────────────────────────────────────────────────────
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'a1000000-0000-4000-8000-00000000000a', true);
-insert into seen select 'suggest', (select string_agg(user_id::text || ':' || follows_me::text, ',') from public.suggest_profiles());
+-- Only the test's own users: on a live project real public cubers are
+-- (rightly) suggested too.
+insert into seen select 'suggest', (select string_agg(user_id::text || ':' || follows_me::text, ',') from public.suggest_profiles()
+  where user_id in ('b1000000-0000-4000-8000-00000000000b', 'c1000000-0000-4000-8000-00000000000c'));
 reset role;
 insert into results select 'A is suggested B (follows A, no solves); never private C',
   'b1000000-0000-4000-8000-00000000000b:true', (select val from seen where call = 'suggest'), null;

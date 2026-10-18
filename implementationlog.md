@@ -5,6 +5,25 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-19 — solve_sanity_test.sql: two checks that depended on when and where they ran
+
+**Request:** The founder's live run of `solve_sanity_test.sql` had 2 FAIL of 22.
+
+### Changed
+
+- "The RPC returns the unshown badges": the test's solves are timed from `now()`, and the run
+  was at 03:13 IST, inside Night Owl's 2–3 am window, so the badge was rightly earned. The
+  check now leaves `night-owl` out.
+- "A is suggested B…": on live, real public cubers are (rightly) suggested too. The check now
+  looks only at the test's own users B and C.
+- Neither was a database bug.
+
+### Verification
+
+- Local Postgres 17 (same migrations as live): 22/22 PASS.
+
+---
+
 ## 2026-10-19 — Stats step 5: sub-X goal, histogram markers, consistency trend, practice summary
 
 **Request:** Continue with step 5, the last of `docs/stats-plan.md`.
