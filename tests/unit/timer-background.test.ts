@@ -21,12 +21,12 @@ describe("sanitizeOptions", () => {
   });
 
   it("clamps numbers and rejects unknown enums", () => {
-    const o = sanitizeOptions({ opacity: 5, blur: -3, brightness: "x", fit: "stretch", position: "middle" });
-    expect(o).toEqual({ ...DEFAULT_BACKGROUND_OPTIONS, opacity: 1, blur: 0 });
+    const o = sanitizeOptions({ opacity: 5, blur: -3, brightness: "x", saturation: 9, fit: "stretch", position: "middle" });
+    expect(o).toEqual({ ...DEFAULT_BACKGROUND_OPTIONS, opacity: 1, blur: 0, saturation: 2 });
   });
 
   it("keeps valid values", () => {
-    const valid = { opacity: 0.3, blur: 8, brightness: 0.7, fit: "contain", position: "right top" };
+    const valid = { opacity: 0.3, blur: 8, brightness: 0.7, saturation: 0.4, fit: "contain", position: "right top" };
     expect(sanitizeOptions(valid)).toEqual(valid);
   });
 
@@ -39,8 +39,8 @@ describe("sanitizeOptions", () => {
 
 describe("imageStyle", () => {
   it("maps options to CSS and overscans only a blurred cover", () => {
-    const s = imageStyle({ ...DEFAULT_BACKGROUND_OPTIONS, blur: 6, brightness: 0.8 });
-    expect(s.filter).toBe("blur(6px) brightness(0.8)");
+    const s = imageStyle({ ...DEFAULT_BACKGROUND_OPTIONS, blur: 6, brightness: 0.8, saturation: 0 });
+    expect(s.filter).toBe("blur(6px) brightness(0.8) saturate(0)");
     expect(s.transform).toBe("scale(1.06)");
     expect(imageStyle({ ...DEFAULT_BACKGROUND_OPTIONS, blur: 6, fit: "contain" }).transform).toBeUndefined();
     expect(imageStyle(DEFAULT_BACKGROUND_OPTIONS).transform).toBeUndefined();

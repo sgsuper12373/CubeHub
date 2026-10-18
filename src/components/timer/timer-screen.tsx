@@ -18,6 +18,7 @@ import { RecentlyDeleted } from "@/components/timer/recently-deleted";
 import { QuickSettings } from "@/components/timer/quick-settings";
 import { BackgroundSettings } from "@/components/timer/background-settings";
 import { TimerBackground, useTimerScrim } from "@/components/timer/timer-background";
+import { useTimerBackgroundStore } from "@/stores/timer-background-store";
 import { StatsPanel } from "@/components/stats/stats-panel";
 import { SessionStats } from "@/components/stats/session-stats";
 import { SolveList } from "@/components/stats/solve-list";
@@ -40,6 +41,15 @@ import { formatMs } from "@/lib/timer/format";
 import { cn } from "@/lib/utils";
 import { FOCUS_ATTR, isFocusHidden } from "@/lib/timer/focus";
 import { Expand } from "lucide-react";
+
+/**
+ * Frosted pill behind the top controls when a background image is set, so
+ * they don't blend into it. The blur lives on a pseudo-element rather than
+ * the wrapper: backdrop-filter on an ancestor would trap the controls'
+ * fixed-position dialogs inside it.
+ */
+const frostedChrome =
+  "relative before:pointer-events-none before:absolute before:-inset-1 before:-z-10 before:rounded-xl before:bg-background/40 before:backdrop-blur-md";
 
 /**
  * Client container for /timer: wires the stores to the presentational
@@ -79,6 +89,7 @@ export function TimerScreen(props: {
     solveId: string;
   } | null>(null);
   const scrim = useTimerScrim();
+  const hasBackground = useTimerBackgroundStore((s) => s.url !== null);
   const editingLayout = useLayoutStore((s) => s.editing);
   const isZenMode = useLayoutStore((s) => s.isZenMode);
   const isFocusMode = useLayoutStore((s) => s.isFocusMode);
@@ -506,6 +517,7 @@ export function TimerScreen(props: {
           the user bury their own settings button would be a trap. */}
       <div className={fadeWhileSolving} data-focus-hide>
         <div className="flex items-center justify-between px-4 py-2 relative z-20">
+          <div className={cn(hasBackground && frostedChrome)}>
           <SessionSwitcher
               sessions={sessions}
               activeId={activeSessionId}
@@ -559,8 +571,9 @@ export function TimerScreen(props: {
               onOpenDeleted={() => setDeletedOpen(true)}
               isAuthed={props.isAuthed}
             />
+          </div>
             {phase === "idle" || phase === "stopped" ? (
-              <div className="flex items-center gap-1">
+              <div className={cn("flex items-center gap-1", hasBackground && frostedChrome)}>
                 <LayoutControls />
                 <BackgroundSettings />
                 <QuickSettings

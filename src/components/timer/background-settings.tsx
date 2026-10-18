@@ -17,7 +17,7 @@ import { useTimerBackgroundStore } from "@/stores/timer-background-store";
 
 /**
  * Timer background popover: pick an image and tune opacity, blur,
- * brightness, fit and position. Everything stays on this device.
+ * brightness, saturation, fit and position. Everything stays on this device.
  *
  * Like <QuickSettings/>, the parent renders this only between solves.
  */
@@ -141,6 +141,13 @@ export function BackgroundSettings() {
                 limits={LIMITS.brightness}
                 format={(v) => `${Math.round(v * 100)}%`}
                 onChange={(brightness) => setOptions({ brightness })}
+              />
+              <Slider
+                label="Saturation"
+                value={options.saturation}
+                limits={LIMITS.saturation}
+                format={(v) => `${Math.round(v * 100)}%`}
+                onChange={(saturation) => setOptions({ saturation })}
               />
 
               <SettingRow label="Fit">
