@@ -1,7 +1,7 @@
 # Clubs (v1 requirements)
 
 Status: **requirements and defaults agreed 2026-10-14 (brainstorming session); built 2026-10-17** (all six
-steps, branch `feat/clubs`). Migrations `20261020000000`, `20261020000100` and `20261020000200` are on the
+steps), merged to `main` and live (checked 2026-10-19). Migrations `20261020000000`, `20261020000100` and `20261020000200` are on the
 live project. See "As built" at the end for where things live and what changed during the build. Tournaments come after the beta;
 clubs are built before it.
 

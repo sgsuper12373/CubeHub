@@ -78,7 +78,8 @@ Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Dri
 
 ### Layout and look
 - A panel grid (scramble, timer, preview, stats, trend, solves) that can be dragged and resized.
-- A custom background image, with opacity, blur, brightness, fit and position.
+- A custom background image, with opacity, blur, brightness, saturation, fit and position. While
+  one is set, the top controls sit on a frosted backing so they stay readable.
 - Theme-aware (Slate, Paper, System).
 
 ### Data

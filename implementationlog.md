@@ -5,6 +5,50 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-19 — Pre-beta cleanup: e2e green, Learn difficulty, links as links, docs
+
+**Request:** Do what's left from the status review (the migrations were already applied) and
+update the docs and any stale entries.
+
+### Changed
+
+- **Timer background** (founder's uncommitted work, committed): saturation slider; a frosted
+  backing behind the top controls while an image is set. `tests/unit/timer-background.test.ts`
+  updated for `saturation` (2 tests had failed).
+- **e2e debt:** `timer.spec.ts`, `drill.spec.ts`, `drill-signed-in.spec.ts` use solve and rep
+  times above the misfire limits (3x3: 3.00; drill: 60 ms a move). `auth.setup.ts` waits 30s
+  for the profile redirect (a cold `next dev` compile took over 5s). `learn-case.spec.ts`
+  finds the side panel by its name; its old selector matched three h2s (broken since
+  `0b74104`, not by this change).
+- **Learn difficulty** (`src/lib/learn/difficulty.ts`, new): the puzzle hero and card show the
+  range of their tutorial series' `difficulty`; series cards a 4-bar meter for it. Algorithm
+  sets have no difficulty in the database, so they show none (2x2 has no stat now). Was
+  hardcoded by puzzle id, and a made-up 1–5 meter. `tests/unit/learn-difficulty.test.ts`.
+- **Links styled as buttons:** all 25 `Button render={<Link/>}` (18 files) are now
+  `<Link className={buttonVariants(...)}>`, with `cn()` where a className overrides a variant
+  (as `Button` did). They had rendered `<a role="button">`.
+- **Docs:** `roadmap.md` (Where we are, Clubs live, Learn case navigation and difficulty,
+  Beta, chunk check), `todo.md` ("Now" retitled; Clubs merge, clubs re-run, e2e debt, Learn
+  difficulty, solve-sanity migration and links ticked), `clubs.md` (merged, live),
+  `timer.md` (saturation, frosted backing).
+
+### Not done
+
+- `supabase/tests/solve_sanity_test.sql` on live: the permission check blocked it. Left in
+  `todo.md` for the founder.
+- Custom SMTP and the by-hand checks: founder tasks.
+
+### Verification
+
+- `tsc`, eslint on changed files, `check:colors`, `npm test` (40 files, 480 tests), `npm run build`.
+- e2e under `next dev`: timer, drill, drill-signed-in, learn-case, landing-hero, profile,
+  errors, auth-smoke, playground: all pass. On the production build (`E2E_PROD=1`): clubs,
+  social, drill-signed-in, analytics, cubing-runtime: all pass.
+- `/learn/333` HTML has no `<a role="button">` left.
+- Live: `check:chunks` OK (65 files across 6 pages, `/clubs` included).
+
+---
+
 ## 2026-10-17 — Clubs v1, step 6: navbar, notifications, profile row, docs
 
 **Request:** Start step 6, the last Clubs step.

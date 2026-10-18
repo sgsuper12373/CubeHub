@@ -5,9 +5,16 @@ Written 2026-10-04. Tick items off or delete them as they're done.
 
 ---
 
-## Now: social v1 is built, waiting to go live (2026-10-14)
+## Now: getting ready for the beta (updated 2026-10-19)
 
-Branch `feat/social-v1`. What it is: `roadmap.md` → Social layer. Decided by the founder on
+Social v1 went live 2026-10-14 and Clubs 2026-10-17; both are on `main` and deployed. Every
+migration is applied (`supabase db push --dry-run`: "Remote database is up to date",
+2026-10-19). The whole e2e suite passes again. Open items before the beta, in order:
+custom SMTP (below, "Next after that" 1), then the "Check by hand" items.
+
+### Social v1 go-live (done 2026-10-14)
+
+What it is: `roadmap.md` → Social layer. Decided by the founder on
 2026-10-14: one-way follows; **private profiles approve requests**; lists visible to whoever
 can see the profile; block, rate limit and report from day one; no DMs; no new nav tab.
 
@@ -67,20 +74,18 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
    - [x] Step 3: posts (text, algorithm on the 3D cube, YouTube/Instagram), edit within
          15 minutes, pin, delete. e2e passes on live.
    - [x] Step 4: reactions, comments, and reports (club, post, comment).
-   - [ ] Re-run `clubs.spec.ts` once the test accounts' daily post limit resets (it hit
-         10/day on 2026-10-17 from repeated runs); the posts test passed with reactions
-         and comments before the refresh fix, the private-club test after it.
+   - [x] Re-run `clubs.spec.ts` once the daily post limit reset: passes on the production
+         build, with `social.spec.ts` (2026-10-19).
    - [x] Step 5: invite links (manage section, `/clubs/join/[token]`). e2e passes on live.
    - [x] Step 6: desktop navbar item, People → Clubs tab, profile Clubs row, club
          notification wording and links, docs.
-   - [ ] **Merge `feat/clubs` and deploy** (no migrations left to push), then
-         `npm run check:chunks -- https://pre-cube-hub.vercel.app`.
+   - [x] **Merge `feat/clubs` and deploy.** On `main` and live; `check:chunks` OK on
+         2026-10-19 (65 files across 6 pages, `/clubs` included).
    - Note: the e2e posts count toward the 10-a-day limit (testbot1 one per run, testbot2
      two), so the clubs spec can run about 5 times a day.
-   - [ ] **e2e debt (found 2026-10-17, not from clubs):** 6 drill/timer specs fail since the
-         pre-beta misfire guard (`a1bcc3c`): their quick press-release solves now count as
-         misfires. `drill.spec.ts` (3), `drill-signed-in.spec.ts`, `timer.spec.ts` (session
-         best toast, Ao5 copy). Update the specs to hold long enough, or seed solves.
+   - [x] **e2e debt:** the 6 drill/timer specs broken by the misfire guard now use times
+         above the limits (2026-10-19). Also fixed: the sign-in setup timing out on a cold
+         `next dev`, and the Learn side-panel spec matching three headings.
    - Note: run signed-in specs with `--workers=1` locally; social and clubs share the two
      accounts, and the social block test hides them from each other mid-run.
 3. **Before the beta: check every page for correctness** (founder, 2026-10-14). Go page by page
@@ -88,15 +93,19 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
    - [x] Learn cards and puzzle hero: counts were hardcoded (57 algorithms, 12 tutorials, 58
          algorithms, 20+ tutorials, a made-up 4.8 rating). Now counted from the database;
          rating removed (2026-10-15).
-   - [ ] Learn: the difficulty badge (cards and hero) is still hardcoded, not from the content.
+   - [x] Learn: the difficulty badge (cards and hero) comes from `tutorial_series.difficulty`
+         (2026-10-19). Algorithm sets have no difficulty in the database, so they show none;
+         add a column on `algorithm_subsets` if they should.
    - [x] Pre-beta review (2026-10-15): misfires out of records, achievements on the server
          with real dates, landing "Soon" cards → one "Coming next" strip, WCA IDs hidden from
          others, Friends → People with a feed, as-you-type search, list rows with Follow and
          a time, Compare tidy-up, chart outliers, timer skeleton, heatmap, Settings/Edit
          profile merge, Drill hide-alg / learned-first / misfire guard. See implementationlog.
-   - [ ] **Apply `20261019000000_solve_sanity.sql` BEFORE deploying this code**, then run
-         `supabase/tests/solve_sanity_test.sql` (expect 22 PASS). The timer and Stats read the
-         new `solves.excluded` column, so the old database breaks the new app.
+   - [x] **Apply `20261019000000_solve_sanity.sql`.** Applied (the CLI reports the database
+         up to date, 2026-10-19).
+   - [ ] Run `supabase db query --linked -f supabase/tests/solve_sanity_test.sql` (expect 22
+         PASS; it rolls back). Not yet run: Claude's attempt was blocked by the permission
+         check, so run it yourself.
    - [ ] After applying: check by hand that Ganesh's 0.65 and #2nd User's 0.02 PBs are gone,
          and that Ganesh's badges are dated 8 Oct.
    - [ ] Check by hand signed out: a public profile, and the misfire prompt on the guest timer.
@@ -111,8 +120,8 @@ can see the profile; block, rate limit and report from day one; no DMs; no new n
 
 ### Also open
 
-- **Links that read as buttons:** older Learn pages use `Button render={<Link/>}`, which exposes
-  links as `role="button"`. Switch them to `<Link className={buttonVariants(...)}>`.
+- ~~**Links that read as buttons**~~: done 2026-10-19. All 25 `Button render={<Link/>}` uses
+  are now `<Link className={buttonVariants(...)}>`.
 - **Error tracking (Sentry):** deferred by the founder on 2026-10-13. Until then, the error page's
   "Ref" code can be searched in Vercel's runtime logs (about 1 hour of retention on Hobby).
 

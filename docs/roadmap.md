@@ -6,7 +6,7 @@ A single destination for speedcubers — timer, tutorials, competition, and buyi
 
 Design principles: the timer loads in under a second and works before anything else on the page; a new user can start timing within five seconds of landing; mobile-ready (many cubers practice with a phone on the desk); accessible by default.
 
-## Where we are (2026-10-14)
+## Where we are (2026-10-19)
 
 The phase numbers below are the original plan. The build has not followed them strictly:
 Playground, Drill Lab and Profiles were added before the Shop, because they make the free core
@@ -26,7 +26,8 @@ shop. This is the order things were actually built, and what comes next:
 | 9 | Learn finishing round (case pages, SEO, error pages) + Vercel Analytics | ✅ Done | Oct 13 |
 | 10 | Signed-in e2e test accounts | ✅ Done | Oct 14 |
 | 11 | Social v1: follows and requests, block, report, Friends hub, notifications, compare | ✅ Live | Oct 14 |
-| 11b | Clubs v1: clubs, joining, roles and bans, posts, reactions, comments, invite links (`docs/clubs.md`) | ✅ Built, on `feat/clubs` | Oct 17 |
+| 11b | Clubs v1: clubs, joining, roles and bans, posts, reactions, comments, invite links (`docs/clubs.md`) | ✅ Live | Oct 17 |
+| 11c | Pre-beta round: Learn case side panel and switcher, misfire guard, a11y links, Learn difficulty from the content, e2e suite green again | ✅ Done | Oct 15–19 |
 | 12 | **Beta with 10–15 real users** | Planned | |
 | 13 | Decide access tiers and the domain, using what the beta shows | After the beta | |
 | 14 | Phase 4 — Shop | Planned | |
@@ -140,6 +141,10 @@ Tutorials: 3x3 Beginner (7 steps) and CFOP (1 step, an intro). The access-tier m
 - Themed 404 and error pages.
 - OLL shape categories: a seed (`supabase/DataSeeds/20261017000000_oll_shape_categories.sql`) that writes the 57 descriptions as `Group · note` so the category chips appear. Applied 2026-10-13 (57 of 57 cases, 15 groups).
 
+**Case navigation (2026-10-17):** a card opens its case in a side panel over the list (`?case=N`, Back closes it); a "Jump to case" switcher; list filters carry into the case page, where previous/next and ← → walk the filtered order; learn mode moves on to the next unlearned case.
+
+**Difficulty (2026-10-19)** comes from `tutorial_series.difficulty`, no longer hardcoded. Algorithm sets have no difficulty column, so they (and 2x2, which has only algorithm sets) show none. If sets should show one, that's a column on `algorithm_subsets`.
+
 Still open in this phase:
 - Enforce access tiers, once that decision is made (after the beta).
 - More tutorial content: CFOP has one step.
@@ -221,7 +226,9 @@ In rough order of value; each builds on follows.
 
 ## Beta
 
-Once the social layer is in: 10–15 real users. Their use decides the open product questions
+Social v1 and Clubs are live (2026-10-19). What's left before inviting 10–15 real users is in
+`todo.md` → "Now": custom SMTP first (Supabase's built-in email can't handle a group signing
+up), then the by-hand checks. Their use decides the open product questions
 that are deliberately on hold until then: which content is free vs premium (access tiers),
 and the domain.
 
@@ -261,7 +268,7 @@ The database already supports premium: `subscriptions`, `profiles.premium_until`
 
 ## Carried-over technical work
 
-- **Deploy** — live on Vercel (`https://pre-cube-hub.vercel.app`) since 2026-07-25. `npm run build` is plain `next build` (Turbopack), with `prebuild` generating `public/cubing/`; the Vercel project uses it with no `--webpack` override. The Supabase Site URL and redirect allow-list point at the live origin (2026-10-11), and `NEXT_PUBLIC_SITE_URL` is set in Vercel (2026-10-13). `npm run check:chunks` passed against the live site on 2026-10-14. GitHub Actions runs validate, the production build and Playwright.
+- **Deploy** — live on Vercel (`https://pre-cube-hub.vercel.app`) since 2026-07-25. `npm run build` is plain `next build` (Turbopack), with `prebuild` generating `public/cubing/`; the Vercel project uses it with no `--webpack` override. The Supabase Site URL and redirect allow-list point at the live origin (2026-10-11), and `NEXT_PUBLIC_SITE_URL` is set in Vercel (2026-10-13). `npm run check:chunks` passed against the live site on 2026-10-19 (65 files across 6 pages, `/clubs` included). GitHub Actions runs validate, the production build and Playwright.
 - **Supabase CLI** — linked to the live project on 2026-10-14. All 17 migrations were marked applied with `migration repair` (they had been applied by hand), and `supabase db push` reports the database up to date. New migrations can now go through `supabase db push`.
 - **GitHub OAuth** — planned, not built.
 - **`cubing.js` render test** — done 2026-09-30: `tests/e2e/cubing-runtime.spec.ts` (3D cube, 2D preview, worker-generated scramble), run against the production build in CI.
