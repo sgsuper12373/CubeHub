@@ -15,6 +15,8 @@ import { EventPills } from "@/components/stats/analytics/event-pills";
 import { NowStrip } from "@/components/stats/analytics/now-strip";
 import { PbDetail } from "@/components/stats/analytics/pb-detail";
 import { PbRow } from "@/components/stats/analytics/pb-row";
+import { PracticeSummary } from "@/components/stats/analytics/practice-summary";
+import { SubXCard } from "@/components/stats/analytics/sub-x-card";
 import { SessionsTable } from "@/components/stats/analytics/sessions-table";
 import { SolveDetailModal } from "@/components/stats/solve-detail";
 import { StatsOnboarding, STATS_UNLOCK_SOLVES } from "@/components/stats/analytics/stats-onboarding";
@@ -23,11 +25,13 @@ import { eventLabel } from "@/lib/timer/events";
 import { formatMs } from "@/lib/timer/format";
 import { countedSolves, isFlaggedMisstop } from "@/lib/timer/misfire";
 import { nextSolveNeeds, timeSpentMs, type NextSolveNeed } from "@/lib/timer/next-solve";
+import { storeGoal, useStoredGoal } from "@/lib/timer/goal-storage";
+import { defaultGoalMs, goalOptions } from "@/lib/timer/practice-stats";
 import { summarizeSessions } from "@/lib/timer/session-summary";
 import { localRepo } from "@/lib/timer/repo-local";
 import type { SolveRepository } from "@/lib/timer/repo";
 import { createSupabaseRepo } from "@/lib/timer/repo-supabase";
-import { dailyCounts, histogramBuckets } from "@/lib/timer/stats";
+import { dailyCounts, histogramBuckets, medianMs, windowStat } from "@/lib/timer/stats";
 import type {
   PbCategory,
   PersonalBest,
@@ -102,6 +106,8 @@ export function StatsScreen({ userId }: { userId: string | null }) {
     bests: PersonalBest[];
     sessions: Session[];
     error: string | null;
+    /** When this data was fetched: "now" for the time-based cards. */
+    loadedAt: number;
   } | null>(null);
 
   const repo: SolveRepository = useMemo(
@@ -222,12 +228,13 @@ export function StatsScreen({ userId }: { userId: string | null }) {
           repo.loadSessions(puzzle),
         ]);
         if (cancelled) return;
-        setResult({ key: queryKey, metrics, bests, sessions, error: null });
+        setResult({ key: queryKey, metrics, bests, sessions, error: null, loadedAt: Date.now() });
       } catch (err) {
         console.error("stats: load failed", err);
         if (cancelled) return;
         setResult({
           key: queryKey,
+          loadedAt: Date.now(),
           metrics: [],
           bests: [],
           sessions: [],
@@ -315,6 +322,17 @@ export function StatsScreen({ userId }: { userId: string | null }) {
       emptySessions={sessions.length - sessionRows.length}
     />
   );
+  // The sub-X goal: the cuber's pick for this event, or the next barrier
+  // under their current Ao12 (the range's median until there are 12 solves).
+  const storedGoal = useStoredGoal(puzzle);
+  const currentAo12 = now ? windowStat(now.recent, 12) : null;
+  const goalBase = typeof currentAo12 === "number" ? currentAo12 : filtered ? medianMs(filtered) : null;
+  const goalMs = storedGoal ?? (goalBase === null ? null : defaultGoalMs(goalBase));
+  const goalChoices =
+    goalBase === null
+      ? []
+      : [...new Set([...goalOptions(goalBase), ...(storedGoal ? [storedGoal] : [])])].sort((a, b) => a - b);
+  const pbSingle = bests.find((b) => b.category === "single")?.timeMs ?? null;
   const eventSolves = counts?.[puzzle] ?? 0;
   const locked = counts !== null && eventSolves < STATS_UNLOCK_SOLVES;
   const practiceDays = useMemo(() => (filtered ? dailyCounts(filtered) : []), [filtered]);
@@ -464,6 +482,7 @@ export function StatsScreen({ userId }: { userId: string | null }) {
               metrics={filtered}
               flagged={flaggedInRange}
               bests={bests}
+              goalMs={goalMs}
               onSelect={selectSolve}
             />
           </ChartFrame>
@@ -476,10 +495,22 @@ export function StatsScreen({ userId }: { userId: string | null }) {
               emptyMessage="A few more solves and the shape of your times appears."
               table={<HistogramTable metrics={filtered} />}
             >
-              <Histogram metrics={filtered} />
+              <Histogram metrics={filtered} pbMs={pbSingle} goalMs={goalMs} />
             </ChartFrame>
 
-            <ConsistencyCard metrics={filtered} />
+            <div className="flex flex-col gap-4">
+              <ConsistencyCard metrics={filtered} />
+              {goalMs !== null && loaded && (
+                <SubXCard
+                  counted={filtered}
+                  goalMs={goalMs}
+                  options={goalChoices}
+                  suggested={storedGoal === null}
+                  onGoal={(ms) => storeGoal(puzzle, ms)}
+                  now={loaded.loadedAt}
+                />
+              )}
+            </div>
           </div>
 
           <ChartFrame
@@ -489,6 +520,7 @@ export function StatsScreen({ userId }: { userId: string | null }) {
             emptyMessage="Your practice days will show up here."
             table={<PracticeTable metrics={filtered} />}
           >
+            {loaded && <PracticeSummary days={practiceDays} counted={filtered} now={loaded.loadedAt} />}
             <Heatmap days={practiceDays} since={practiceDays[0]?.day ?? null} />
           </ChartFrame>
         </>

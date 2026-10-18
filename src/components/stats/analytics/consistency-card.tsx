@@ -1,6 +1,10 @@
 "use client";
 
+import { Info } from "lucide-react";
+
+import { Sparkline } from "@/components/stats/sparkline";
 import { formatMs } from "@/lib/timer/format";
+import { spreadTrend } from "@/lib/timer/practice-stats";
 import { sessionMean, stdDevMs } from "@/lib/timer/stats";
 import type { SolveMetric } from "@/lib/timer/types";
 
@@ -12,8 +16,9 @@ import type { SolveMetric } from "@/lib/timer/types";
  * σ alone is not comparable between cubers — a 4-second spread means something
  * very different at 12s than at 60s — so the band is read off the coefficient
  * of variation (σ ÷ mean) while the headline number stays σ in real time, which
- * is the thing a cuber can feel. Both are shown; neither is invented out of a
- * 0–100 score nobody can check.
+ * is the thing a cuber can feel. The band leads (most cubers don't think in
+ * σ); the formula is in a tooltip, and a small line of σ per 25 solves shows
+ * whether they're getting steadier.
  */
 
 const WINDOW = 50;
@@ -47,6 +52,9 @@ export function ConsistencyCard({ metrics }: { metrics: SolveMetric[] }) {
 
   const cv = sigma / mean;
   const band = BANDS.find((b) => cv < b.max) ?? BANDS[BANDS.length - 1];
+  const trend = spreadTrend(metrics);
+  const formula = `σ is the standard deviation of your last ${counted} solves: ${formatMs(sigma)}, which is ${(cv * 100).toFixed(1)}% of your ${formatMs(mean)} mean. The band reads that percentage.`;
+  const steadier = trend.length >= 2 ? trend[trend.length - 1] < trend[0] : null;
 
   return (
     <section className="flex flex-col rounded-lg border border-border bg-card p-4">
@@ -57,16 +65,28 @@ export function ConsistencyCard({ metrics }: { metrics: SolveMetric[] }) {
         </p>
       </header>
 
-      <p className="font-mono text-4xl font-semibold tabular-nums text-timer-ready">
-        <span className="mr-1 text-2xl text-muted-foreground">σ</span>
-        {formatMs(sigma)}
+      <p className="text-lg font-semibold text-foreground">{band.label}</p>
+      <p className="mt-0.5 text-xs text-balance text-muted-foreground">{band.hint}</p>
+
+      <p className="mt-2 flex items-center gap-1.5 font-mono text-sm tabular-nums text-muted-foreground">
+        <span>σ {formatMs(sigma)}</span>
+        <span title={formula} className="inline-flex cursor-help" tabIndex={0} aria-label={formula}>
+          <Info className="size-3.5" aria-hidden />
+        </span>
       </p>
 
-      <p className="mt-2 text-sm font-medium text-foreground">{band.label}</p>
-      <p className="mt-0.5 text-xs text-balance text-muted-foreground">
-        {band.hint} That is {(cv * 100).toFixed(1)}% of your {formatMs(mean)}{" "}
-        mean.
-      </p>
+      {trend.length >= 2 && (
+        <div className="mt-3">
+          <p className="text-[0.65rem] text-muted-foreground">
+            Spread per 25 solves, oldest first{steadier === null ? "" : steadier ? " · getting steadier" : " · getting looser"}
+          </p>
+          <Sparkline
+            points={trend}
+            className="mt-1 max-h-12"
+            ariaLabel={`Spread per 25 solves, oldest first: ${trend.map((t) => formatMs(t)).join(", ")}`}
+          />
+        </div>
+      )}
     </section>
   );
 }

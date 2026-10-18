@@ -5,6 +5,56 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-19 — Stats step 5: sub-X goal, histogram markers, consistency trend, practice summary
+
+**Request:** Continue with step 5, the last of `docs/stats-plan.md`.
+
+### Added
+
+- `src/lib/timer/practice-stats.ts` (pure): barrier ladder and `barrierLabel` ("sub-20",
+  "sub-1:30"), `defaultGoalMs` (next barrier under the current average), `goalOptions`,
+  `subXRate` (a DNF is never under), `subXByPeriod` (30-day periods back from "now", leading
+  empty ones dropped), `practiceStreaks` (current streak survives an open today; week starts
+  Monday), `fastestHours` (two-hour block with the fastest median, ≥ 20 solves in at least
+  two blocks) and `hourRangeLabel`, `spreadTrend` (σ per 25 solves, oldest first).
+  `tests/unit/practice-stats.test.ts` (8).
+- `src/lib/timer/goal-storage.ts`: the goal per event in localStorage via
+  `useSyncExternalStore` (server-safe, follows other tabs), with an in-memory fallback when
+  storage is blocked.
+- `sub-x-card.tsx`: goal picker (suggested, or a barrier), headline "42% of solves sub-20 in
+  the last 30 days", "Up from 0% the 30 days before", bars per 30-day period.
+- `practice-summary.tsx`: current streak, longest streak, solves this week; "You're fastest
+  between 8 pm and 10 pm: a median of … against … overall".
+
+### Changed
+
+- `trend-chart.tsx`: dashed goal line with its label when it's in view.
+- `histogram.tsx`: mean, median, PB and goal lines with a legend (labels can't collide);
+  the tooltip says "Faster than X% of your solves".
+- `consistency-card.tsx`: the band leads, σ is small with the formula in a tooltip, and a
+  sparkline of σ per 25 solves says "getting steadier" or "looser".
+- `stats-screen.tsx`: the goal (stored pick, else the next barrier under the rolling Ao12,
+  else under the range median); Consistency and Goal stacked beside the distribution; the
+  practice summary above the heatmap. "Now" for these cards is when the data was fetched
+  (`loadedAt`), so render stays pure.
+- `docs/stats-plan.md`: all five steps ticked.
+
+### Verification
+
+- `npm run validate` (45 files, 514 tests), `check:colors`, `npm run build`.
+- e2e: a step 5 case in `stats.spec.ts` (suggested goal and headline, goal line, the four
+  histogram lines, a picked goal survives a reload, consistency and practice summary); with
+  `timer.spec.ts` and `profile.spec.ts`: 23 passed.
+- Screenshots at 1280 and 390 px with 300 seeded solves over 90 days (no sideways scroll).
+
+### Noticed
+
+- With a very steady 19.3 Ao12 the suggestion is sub-17 at 0% (the ladder goes 15, 17, 20).
+  Real spreads are wider; the picker lets the cuber choose. Adding 18 and 19 to the ladder
+  is a one-line change if that reads better.
+
+---
+
 ## 2026-10-19 — Stats step 4: sessions table replaces the session dropdown
 
 **Request:** Continue with step 4 of `docs/stats-plan.md`.

@@ -7,7 +7,8 @@ import { linearScale } from "@/components/stats/chart/scale";
 import { ChartTooltip, TooltipRow } from "@/components/stats/chart/tooltip";
 import { useMeasuredWidth } from "@/components/stats/chart/use-measured-width";
 import { formatMs } from "@/lib/timer/format";
-import { histogramBuckets, slowOutlierCeiling } from "@/lib/timer/stats";
+import { barrierLabel } from "@/lib/timer/practice-stats";
+import { effectiveMs, histogramBuckets, medianMs, sessionMean, slowOutlierCeiling } from "@/lib/timer/stats";
 import type { SolveMetric } from "@/lib/timer/types";
 
 /**
@@ -19,19 +20,43 @@ import type { SolveMetric } from "@/lib/timer/types";
  *
  * DNFs are absent by construction — they have no time to bucket — and the hint
  * under the title says so rather than leaving the count unexplained.
+ *
+ * Reference lines mark the mean, the median, the all-time PB single and the
+ * sub-X goal, each named in the legend underneath rather than on the plot,
+ * where close values would print over each other.
  */
 
 const MARGIN = { top: 8, right: 8, bottom: 30, left: 34 };
 const HEIGHT = 200;
 const BAR_GAP = 2;
 
-export function Histogram({ metrics }: { metrics: SolveMetric[] }) {
+export function Histogram({
+  metrics,
+  pbMs = null,
+  goalMs = null,
+}: {
+  metrics: SolveMetric[];
+  /** The all-time PB single, marked when it falls inside the buckets. */
+  pbMs?: number | null;
+  goalMs?: number | null;
+}) {
   const { ref, width } = useMeasuredWidth<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
 
-  const { buckets, over, cap } = useMemo(() => {
+  const { buckets, over, cap, bucketMs, times, mean, median } = useMemo(() => {
     const cap = slowOutlierCeiling(metrics);
-    return { ...histogramBuckets(metrics, 14, cap), cap };
+    const times: number[] = [];
+    for (const m of metrics) {
+      const t = effectiveMs(m);
+      if (t !== null) times.push(t);
+    }
+    return {
+      ...histogramBuckets(metrics, 14, cap),
+      cap,
+      times,
+      mean: sessionMean(metrics),
+      median: medianMs(metrics),
+    };
   }, [metrics]);
 
   const innerW = Math.max(0, width - MARGIN.left - MARGIN.right);
@@ -45,6 +70,22 @@ export function Histogram({ metrics }: { metrics: SolveMetric[] }) {
   const y = linearScale([0, maxCount], [MARGIN.top + innerH, MARGIN.top]);
   const slot = innerW / buckets.length;
   const barW = Math.max(1, slot - BAR_GAP);
+
+  // Where a time sits on the bucket axis, or null outside it.
+  const first = buckets[0].fromMs;
+  const last = buckets[buckets.length - 1].toMs;
+  const xOf = (v: number | null) =>
+    v === null || v < first || v > last ? null : MARGIN.left + ((v - first) / bucketMs) * slot;
+  const markers = [
+    { key: "mean", label: "Mean", ms: mean, color: "var(--foreground)", dash: undefined },
+    { key: "median", label: "Median", ms: median, color: "var(--foreground)", dash: "2 3" },
+    { key: "pb", label: "PB", ms: pbMs, color: "var(--timer-ready)", dash: undefined },
+    { key: "goal", label: goalMs === null ? "" : barrierLabel(goalMs), ms: goalMs, color: "var(--success)", dash: "5 4" },
+  ].map((m) => ({ ...m, x: xOf(m.ms) }));
+
+  /** A time in bucket i beats every solve at or over its upper edge. */
+  const fasterThan = (i: number) =>
+    times.length === 0 ? 0 : times.filter((t) => t >= buckets[i].toMs).length / times.length;
 
   // Only the ends and the tallest bucket are labelled — a number on every bar
   // is noise, and the peak is the one a reader looks for.
@@ -103,6 +144,25 @@ export function Histogram({ metrics }: { metrics: SolveMetric[] }) {
           );
         })}
 
+        {/* Reference lines, over the bars. */}
+        {markers.map((m) =>
+          m.x === null ? null : (
+            <line
+              key={m.key}
+              data-testid={`histogram-${m.key}`}
+              x1={m.x}
+              x2={m.x}
+              y1={MARGIN.top}
+              y2={MARGIN.top + innerH}
+              stroke={m.color}
+              strokeWidth={1.5}
+              strokeDasharray={m.dash}
+              opacity={0.85}
+              pointerEvents="none"
+            />
+          ),
+        )}
+
         {/* y axis: 0 and the peak count are the only numbers worth printing. */}
         {[0, maxCount].map((v) => (
           <text
@@ -146,8 +206,24 @@ export function Histogram({ metrics }: { metrics: SolveMetric[] }) {
             value={String(buckets[hover].count)}
             color="var(--chart-1)"
           />
+          <p className="mt-1 text-[0.7rem] text-muted-foreground">
+            Faster than {Math.round(fasterThan(hover) * 100)}% of your solves
+          </p>
         </ChartTooltip>
       )}
+
+      <ul className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+        {markers.map((m) =>
+          m.x === null || m.ms === null ? null : (
+            <li key={m.key} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <svg width="14" height="10" aria-hidden className="shrink-0">
+                <line x1="7" y1="0" x2="7" y2="10" stroke={m.color} strokeWidth="2" strokeDasharray={m.dash ? "2 2" : undefined} />
+              </svg>
+              {m.label} <span className="font-mono tabular-nums text-foreground">{formatMs(m.ms)}</span>
+            </li>
+          ),
+        )}
+      </ul>
 
       {over > 0 && cap !== null && (
         <p className="mt-1 text-xs text-muted-foreground">

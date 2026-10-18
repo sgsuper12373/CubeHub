@@ -232,3 +232,42 @@ test("sessions table: filter by a row, sort, compare two", async ({ page }) => {
   await compare.getByRole("button", { name: "Clear" }).click();
   await expect(compare).toHaveCount(0);
 });
+
+test("sub-X goal, histogram markers, consistency and practice summary", async ({ page }) => {
+  await seed(page, [
+    // 40 days ago: nothing under 20.
+    { id: "a0000000-0000-4000-8000-000000000021", name: "Old", active: false, daysAgo: 40, times: Array(12).fill(25000) },
+    // Today: Ao12 20.10, so the suggested goal is sub-20; 5 of 12 are under it.
+    {
+      id: "a0000000-0000-4000-8000-000000000022",
+      name: "Now",
+      active: true,
+      times: [19000, 19500, 20000, 20500, 21000, 19200, 19800, 20200, 20800, 19600, 20400, 21500],
+    },
+  ]);
+  await page.goto("/stats");
+
+  const goal = page.getByRole("region", { name: "Goal" });
+  await expect(goal.getByLabel("Goal barrier")).toHaveValue("suggested");
+  await expect(goal.getByTestId("subx-headline")).toHaveText("42% of solves sub-20 in the last 30 days");
+  await expect(goal).toContainText("Up from 0% the 30 days before.");
+  await expect(page.getByTestId("trend-goal")).toBeVisible();
+
+  // Histogram reference lines.
+  await expect(page.getByTestId("histogram-mean")).toHaveCount(1);
+  await expect(page.getByTestId("histogram-median")).toHaveCount(1);
+  await expect(page.getByTestId("histogram-pb")).toHaveCount(1);
+  await expect(page.getByTestId("histogram-goal")).toHaveCount(1);
+
+  // Picking a goal sticks on this device.
+  await goal.getByLabel("Goal barrier").selectOption("25000");
+  await expect(goal.getByTestId("subx-headline")).toHaveText("100% of solves sub-25 in the last 30 days");
+  await page.reload();
+  await expect(page.getByRole("region", { name: "Goal" }).getByLabel("Goal barrier")).toHaveValue("25000");
+
+  // Consistency leads with the band; practice shows streaks.
+  await expect(page.getByText("Spread over your last 24 solves")).toBeVisible();
+  const summary = page.getByTestId("practice-summary");
+  await expect(summary).toContainText("Longest streak");
+  await expect(summary).toContainText("This week");
+});

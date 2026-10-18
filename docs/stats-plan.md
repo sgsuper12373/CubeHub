@@ -1,5 +1,8 @@
 # Stats page v2: plan
 
+**All five steps built 2026-10-19.** Not deployed yet: it ships with the mis-stop code, after
+`20261021000000_misstops.sql` is applied (`docs/todo.md`).
+
 Written 2026-10-19 from a review of `/stats`. Five steps, one commit each, in order of value for
 effort. Tick them off here as they ship; details of what was built go in `implementationlog.md`.
 
@@ -53,10 +56,10 @@ effort. Tick them off here as they ship; details of what was built go in `implem
       Ao5, best Ao12. Click a row to filter the page; tick two to compare side by side.
 - Built from the loaded solves (up to 5,000); very old sessions would need their own query.
 
-### 5. Sub-X and the smaller cards
-- [ ] Sub-X goal line on the trend chart and histogram; a card with the sub-X rate over time
+### 5. Sub-X and the smaller cards (done 2026-10-19)
+- [x] Sub-X goal line on the trend chart and histogram; a card with the sub-X rate over time
       ("62% of solves sub-25 this month, up from 41%").
-- [ ] Histogram: mean, median and PB markers; "faster than X% of your solves" on hover.
-- [ ] Consistency: keep the band label, add a small σ trend, formula in a tooltip.
-- [ ] Heatmap: current streak, longest streak, solves this week (computed client-side, so
+- [x] Histogram: mean, median and PB markers; "faster than X% of your solves" on hover.
+- [x] Consistency: keep the band label, add a small σ trend, formula in a tooltip.
+- [x] Heatmap: current streak, longest streak, solves this week (computed client-side, so
       guests get it); "your fastest Ao12s are between 9 and 11 pm".

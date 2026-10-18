@@ -15,6 +15,7 @@ import {
 } from "@/components/stats/chart/trend-data";
 import { useMeasuredWidth } from "@/components/stats/chart/use-measured-width";
 import { formatAverage, formatMs } from "@/lib/timer/format";
+import { barrierLabel } from "@/lib/timer/practice-stats";
 import { slowOutlierCeiling } from "@/lib/timer/stats";
 import type { PersonalBest, SolveMetric } from "@/lib/timer/types";
 
@@ -53,6 +54,7 @@ export function TrendChart({
   metrics,
   flagged = [],
   bests = [],
+  goalMs = null,
   onSelect,
 }: {
   /** Counted solves, newest first. */
@@ -61,6 +63,8 @@ export function TrendChart({
   flagged?: SolveMetric[];
   /** All-time PBs, starred where their solve is on the chart. */
   bests?: PersonalBest[];
+  /** The sub-X goal, drawn as a dashed line when it's in view. */
+  goalMs?: number | null;
   /** Open a solve. Without it, points aren't clickable. */
   onSelect?: (solveId: string) => void;
 }) {
@@ -114,7 +118,7 @@ export function TrendChart({
     // Clamped: past the top, or (a mis-stop) under the bottom, sits on the edge.
     const y = (v: number) => scale(Math.min(Math.max(v, yDomain[0]), yDomain[1]));
     const x = linearScale(d0 === d1 ? [d0 - 1, d1 + 1] : [d0, d1], [MARGIN.left, MARGIN.left + innerW]);
-    return { visible, counted, geometry: { ticks, x, y, cap } };
+    return { visible, counted, geometry: { ticks, x, y, cap, yDomain } };
   }, [points, d0, d1, mode, innerW, innerH]);
 
   if (width === 0 || !geometry) {
@@ -123,7 +127,8 @@ export function TrendChart({
     return <div ref={ref} style={{ height: HEIGHT + 40 }} />;
   }
 
-  const { ticks, x, y, cap } = geometry;
+  const { ticks, x, y, cap, yDomain } = geometry;
+  const goalInView = goalMs !== null && goalMs > yDomain[0] && goalMs < yDomain[1];
   const px = (p: TrendPoint) => x(xOf(p));
 
   /**
@@ -323,6 +328,28 @@ export function TrendChart({
         </defs>
 
         <TimeGrid ticks={ticks} y={y} left={MARGIN.left} right={MARGIN.left + innerW} />
+
+        {goalInView && (
+          <g data-testid="trend-goal" aria-hidden>
+            <line
+              x1={MARGIN.left}
+              x2={MARGIN.left + innerW}
+              y1={y(goalMs)}
+              y2={y(goalMs)}
+              stroke="var(--success)"
+              strokeWidth={1.25}
+              strokeDasharray="5 4"
+            />
+            <text
+              x={MARGIN.left + innerW - 2}
+              y={y(goalMs) - 4}
+              textAnchor="end"
+              className="fill-success text-[10px] font-medium"
+            >
+              {barrierLabel(goalMs)}
+            </text>
+          </g>
+        )}
 
         <g clipPath={`url(#${clipId})`}>
           {/* ── Above the axis: a marker on the top edge per slow single ── */}
