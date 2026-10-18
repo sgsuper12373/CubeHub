@@ -72,8 +72,15 @@ export interface SolveRepository {
    */
   loadSolveMetrics(
     puzzle: TimerPuzzle,
-    opts?: { since?: string; limit?: number },
+    opts?: { since?: string; until?: string; limit?: number },
   ): Promise<SolveMetric[]>;
+
+  /**
+   * The solves behind a personal best, newest first: the `n` counted solves of
+   * that solve's session up to and including it (n = 1 for a single), with
+   * scrambles. Fewer if some have since been deleted.
+   */
+  loadWindowSolves(solveId: string, n: number): Promise<Solve[]>;
 
   /**
    * All-time personal bests for a puzzle. The cloud reads the authoritative

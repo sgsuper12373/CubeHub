@@ -5,6 +5,47 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-19 — Stats step 2: "Now" strip, PB solves, next solve needs
+
+**Request:** Start step 2 of `docs/stats-plan.md`.
+
+### Added
+
+- `src/lib/timer/next-solve.ts`: `nextSolveNeeds(category, sessionCounted, pbMs)` →
+  `below` (a time), `any` (csTimer's ∞), `none` (N/A) or `more` (solves still needed for the
+  window). The average with the next solve never gets faster as that time grows, so the
+  threshold is found by bisection over the same `windowStat` the timer uses (rounding
+  included). Also `timeSpentMs`, `formatDuration`, `CATEGORY_WINDOW`.
+- `now-strip.tsx`: current Ao5/Ao12/Ao100 over the newest 100 counted solves whatever the
+  session, each against the same average from the solves before 30 days ago ("down 3.65 s"
+  in the success colour, "up" in warning); solves and time solving in the selected range
+  (left-out solves included: the time was spent).
+- `pb-detail.tsx`: a dialog with the solves behind a PB, oldest first, trimmed ones in
+  brackets, scrambles, **Copy as text** (the timer's csTimer-style text, dated by the PB).
+  Says so when solves behind it were deleted or left out since.
+- Repos: `loadSolveMetrics` takes `until`; `loadWindowSolves(solveId, n)` reads the n counted
+  solves of that solve's session up to it.
+- Tests: `tests/unit/next-solve.test.ts` (8: thresholds checked against the average itself,
+  ∞, N/A, DNFs, Mo3, `more`); a step 2 case in `tests/e2e/stats.spec.ts`.
+
+### Changed
+
+- `pb-row.tsx`: tiles with a PB are buttons that open the dialog, with a "Next: …" line
+  (tooltip explains it); tiles without one stay static.
+- `stats-screen.tsx`: a separate load for the strip and the next-solve data (newest solves,
+  solves before 30 days ago, the active session's solves), keyed by account, event and
+  imports; the strip sits above the PBs, also on the "no solves in this range" view.
+
+### Verification
+
+- `npm run validate` (42 files, 499 tests), `check:colors`, `npm run build`.
+- e2e: `stats.spec.ts` (4 tests) and `timer.spec.ts` under `next dev`: 16 passed.
+- Screenshots at 390 and 1280 px with 250 seeded solves, and the PB dialog.
+- Signed in, `loadWindowSolves` reads the mis-stop columns, so like the timer it needs
+  `20261021000000_misstops.sql` on live first.
+
+---
+
 ## 2026-10-19 — Stats v2 plan; step 1: onboarding, ⋯ menu, sticky filters, event pills
 
 **Request:** Plan the Stats page review (five steps, founder took the recommendations), save

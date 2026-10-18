@@ -32,12 +32,12 @@ effort. Tick them off here as they ship; details of what was built go in `implem
 - [x] Event pills with a solve count each (from `v_user_puzzle_summary`; local storage counts
       for guests) and a small puzzle glyph, instead of the native dropdown.
 
-### 2. "Now" strip and interactive PB tiles
-- [ ] A row above the PBs: current Ao5, Ao12, Ao100 (rolling, across sessions), each with the
+### 2. "Now" strip and interactive PB tiles (done 2026-10-19)
+- [x] A row above the PBs: current Ao5, Ao12, Ao100 (rolling, across sessions), each with the
       change against 30 days ago; solves and time spent solving in the range. PBs move second.
-- [ ] PB tiles open the solves behind them: times with trimmed ones in brackets, scrambles,
+- [x] PB tiles open the solves behind them: times with trimmed ones in brackets, scrambles,
       date, **Copy**. Needs a repo read of full solves by id.
-- [ ] "Next solve needs" per tile, as csTimer: a time, **N/A** (no time can), or **∞** (any
+- [x] "Next solve needs" per tile, as csTimer: a time, **N/A** (no time can), or **∞** (any
       non-DNF time will). Averages are per session, so against the latest session. Pure
       function with unit tests.
 

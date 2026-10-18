@@ -10,19 +10,24 @@ import { TrendChart } from "@/components/stats/chart/trend-chart";
 import { ConsistencyCard } from "@/components/stats/analytics/consistency-card";
 import { DataMenu, useImportFlow } from "@/components/stats/analytics/data-tools";
 import { EventPills } from "@/components/stats/analytics/event-pills";
+import { NowStrip } from "@/components/stats/analytics/now-strip";
+import { PbDetail } from "@/components/stats/analytics/pb-detail";
 import { PbRow } from "@/components/stats/analytics/pb-row";
 import { StatsOnboarding, STATS_UNLOCK_SOLVES } from "@/components/stats/analytics/stats-onboarding";
 import { CubeLoader } from "@/components/ui/cube-loader";
 import { eventLabel } from "@/lib/timer/events";
 import { formatMs } from "@/lib/timer/format";
 import { countedSolves } from "@/lib/timer/misfire";
+import { nextSolveNeeds, timeSpentMs, type NextSolveNeed } from "@/lib/timer/next-solve";
 import { localRepo } from "@/lib/timer/repo-local";
 import type { SolveRepository } from "@/lib/timer/repo";
 import { createSupabaseRepo } from "@/lib/timer/repo-supabase";
 import { dailyCounts, histogramBuckets } from "@/lib/timer/stats";
 import type {
+  PbCategory,
   PersonalBest,
   Session,
+  Solve,
   SolveMetric,
   TimerPuzzle,
 } from "@/lib/timer/types";
@@ -60,6 +65,11 @@ type RangeKey = (typeof RANGES)[number]["key"];
  * When it bites, the page says so.
  */
 const METRIC_LIMIT = 5000;
+
+/** Enough rows to find 100 counted solves even with some left out. */
+const NOW_LIMIT = 300;
+const MONTH_MS = 30 * 86_400_000;
+const PB_CATEGORIES: PbCategory[] = ["single", "mean3", "ao5", "ao12", "ao50", "ao100"];
 
 export function StatsScreen({ userId }: { userId: string | null }) {
   const [puzzle, setPuzzle] = useState<TimerPuzzle>("333");
@@ -111,6 +121,47 @@ export function StatsScreen({ userId }: { userId: string | null }) {
     };
   }, [repo, countsKey]);
   const counts = countsResult?.key === countsKey ? countsResult.counts : null;
+
+  // The "Now" strip and "next solve needs": the newest solves whatever the
+  // range, the solves from before 30 days ago, and the session the next solve
+  // goes into (the timer's active one).
+  const nowKey = `${userId ?? "local"}|${puzzle}|${reloads}`;
+  const [nowResult, setNowResult] = useState<{
+    key: string;
+    recent: SolveMetric[];
+    monthAgo: SolveMetric[];
+    session: Solve[];
+  } | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const until = new Date(Date.now() - MONTH_MS).toISOString();
+    (async () => {
+      try {
+        const [recent, monthAgo, puzzleSessions] = await Promise.all([
+          repo.loadSolveMetrics(puzzle, { limit: NOW_LIMIT }),
+          repo.loadSolveMetrics(puzzle, { until, limit: NOW_LIMIT }),
+          repo.loadSessions(puzzle),
+        ]);
+        const active = puzzleSessions.find((s) => s.isActive);
+        const session = active ? await repo.loadSolves(active.id, 120) : [];
+        if (cancelled) return;
+        setNowResult({
+          key: nowKey,
+          recent: countedSolves(recent).slice(0, 100),
+          monthAgo: countedSolves(monthAgo).slice(0, 100),
+          session: countedSolves(session),
+        });
+      } catch (err) {
+        console.error("stats: now strip failed", err);
+        if (!cancelled) setNowResult({ key: nowKey, recent: [], monthAgo: [], session: [] });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [repo, puzzle, nowKey]);
+  const now = nowResult?.key === nowKey ? nowResult : null;
+  const [openBest, setOpenBest] = useState<PersonalBest | null>(null);
 
   const importFlow = useImportFlow({
     repo,
@@ -173,6 +224,38 @@ export function StatsScreen({ userId }: { userId: string | null }) {
     if (effectiveSessionId === "all") return counted;
     return counted.filter((m) => m.sessionId === effectiveSessionId);
   }, [metrics, effectiveSessionId]);
+  // Every solve in the range, left-out ones too: that time was still spent.
+  const inRange = useMemo(() => {
+    if (!metrics) return [];
+    return effectiveSessionId === "all"
+      ? metrics
+      : metrics.filter((m) => m.sessionId === effectiveSessionId);
+  }, [metrics, effectiveSessionId]);
+  const rangeLabel =
+    range === "session"
+      ? "in this session"
+      : range === "all"
+        ? "all time"
+        : `in ${RANGES.find((r) => r.key === range)!.label}`;
+  const needs = useMemo(() => {
+    if (!now || !loaded) return null;
+    const byCategory = new Map(loaded.bests.map((b) => [b.category, b.timeMs]));
+    const out: Partial<Record<PbCategory, NextSolveNeed>> = {};
+    for (const c of PB_CATEGORIES) out[c] = nextSolveNeeds(c, now.session, byCategory.get(c) ?? null);
+    return out;
+  }, [now, loaded]);
+  const nowStrip = now && (
+    <NowStrip
+      recent={now.recent}
+      monthAgo={now.monthAgo}
+      rangeSolves={inRange.length}
+      rangeTimeMs={timeSpentMs(inRange)}
+      rangeLabel={rangeLabel}
+    />
+  );
+  const pbRow = (
+    <PbRow bests={bests} isAuthed={userId !== null} needs={needs} onOpen={setOpenBest} />
+  );
   const eventSolves = counts?.[puzzle] ?? 0;
   const locked = counts !== null && eventSolves < STATS_UNLOCK_SOLVES;
   const practiceDays = useMemo(() => (filtered ? dailyCounts(filtered) : []), [filtered]);
@@ -189,6 +272,7 @@ export function StatsScreen({ userId }: { userId: string | null }) {
         <DataMenu repo={repo} puzzle={puzzle} onImport={importFlow.openPicker} />
       </header>
       {importFlow.ui}
+      <PbDetail repo={repo} puzzle={puzzle} best={openBest} onClose={() => setOpenBest(null)} />
 
       {/* ── Filters: above everything they affect, and kept in reach on scroll ── */}
       <div
@@ -247,7 +331,8 @@ export function StatsScreen({ userId }: { userId: string | null }) {
         <StatsOnboarding puzzle={puzzle} solves={eventSolves} onImport={importFlow.openPicker} />
       ) : filtered.length === 0 ? (
         <>
-          <PbRow bests={bests} isAuthed={userId !== null} />
+          {nowStrip}
+          {pbRow}
           <section className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border bg-card px-4 py-10 text-center">
             <p className="text-sm text-muted-foreground">
               {range === "session"
@@ -268,7 +353,8 @@ export function StatsScreen({ userId }: { userId: string | null }) {
         </>
       ) : (
         <>
-          <PbRow bests={bests} isAuthed={userId !== null} />
+          {nowStrip}
+          {pbRow}
 
           <ChartFrame
             title="Times over time"

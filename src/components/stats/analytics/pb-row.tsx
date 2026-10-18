@@ -4,6 +4,7 @@ import { Star } from "lucide-react";
 import Link from "next/link";
 
 import { formatMs } from "@/lib/timer/format";
+import type { NextSolveNeed } from "@/lib/timer/next-solve";
 import type { PbCategory, PersonalBest } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
 
@@ -31,9 +32,15 @@ const ORDER: { category: PbCategory; label: string }[] = [
 export function PbRow({
   bests,
   isAuthed,
+  needs,
+  onOpen,
 }: {
   bests: PersonalBest[];
   isAuthed: boolean;
+  /** What the next solve in the current session needs, per category; null hides the line. */
+  needs: Partial<Record<PbCategory, NextSolveNeed>> | null;
+  /** Open the solves behind a PB. */
+  onOpen: (best: PersonalBest) => void;
 }) {
   const byCategory = new Map(bests.map((b) => [b.category, b]));
 
@@ -54,15 +61,10 @@ export function PbRow({
         {ORDER.map(({ category, label }) => {
           const best = byCategory.get(category);
           const isSingle = category === "single";
-          return (
-            <div
-              key={category}
-              title={isSingle ? "Best single across all sessions" : `Best ${label} within a single session`}
-              className={cn(
-                "flex flex-col gap-1 rounded-lg px-3 py-2.5 ring-1 ring-inset",
-                isSingle ? "ring-primary/30" : "ring-foreground/10",
-              )}
-            >
+          const need = needs?.[category];
+          const openable = !!best?.solveId;
+          const body = (
+            <>
               <span className="flex items-center gap-1 text-[0.6rem] font-medium tracking-wider text-muted-foreground uppercase">
                 {isSingle && (
                   <Star
@@ -89,6 +91,28 @@ export function PbRow({
                     })
                   : "Not set yet"}
               </span>
+              {need && <NextLine need={need} />}
+            </>
+          );
+          const className = cn(
+            "flex flex-col items-start gap-1 rounded-lg px-3 py-2.5 text-left ring-1 ring-inset",
+            isSingle ? "ring-primary/30" : "ring-foreground/10",
+          );
+          const title = isSingle ? "Best single across all sessions" : `Best ${label} within a single session`;
+          return openable ? (
+            <button
+              key={category}
+              type="button"
+              title={`${title} · show the solves`}
+              aria-label={`${label} personal best ${formatMs(best!.timeMs)}: show the solves`}
+              onClick={() => onOpen(best!)}
+              className={cn(className, "transition-colors hover:bg-muted/50")}
+            >
+              {body}
+            </button>
+          ) : (
+            <div key={category} title={title} className={className}>
+              {body}
             </div>
           );
         })}
@@ -103,5 +127,23 @@ export function PbRow({
         </p>
       )}
     </section>
+  );
+}
+
+/** csTimer's "time needed to improve on the next solve", for this session. */
+function NextLine({ need }: { need: NextSolveNeed }) {
+  const [text, hint] =
+    need.kind === "below"
+      ? [`< ${formatMs(need.ms)}`, `A next solve under ${formatMs(need.ms)} in this session sets a new PB`]
+      : need.kind === "any"
+        ? ["∞", "Any finished next solve in this session sets a new PB"]
+        : need.kind === "none"
+          ? ["N/A", "No time on the next solve can beat it in this session"]
+          : [`${need.solves} more`, `${need.solves} more solve${need.solves === 1 ? "" : "s"} in this session before this average can complete`];
+  return (
+    <span className="text-[0.65rem] text-muted-foreground" title={hint}>
+      Next: <span className="font-mono font-medium text-foreground">{text}</span>
+      <span className="sr-only"> ({hint})</span>
+    </span>
   );
 }

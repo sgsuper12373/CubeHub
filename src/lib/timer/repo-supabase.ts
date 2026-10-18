@@ -226,7 +226,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
       if (error) throw error;
     },
 
-    async loadSolveMetrics(puzzle, { since, limit = 5000 } = {}) {
+    async loadSolveMetrics(puzzle, { since, until, limit = 5000 } = {}) {
       // Served by idx_solves_user_puzzle (user_id, puzzle_type, created_at desc).
       // The select is deliberately narrow — no scramble, no notes.
       let query = getClient()
@@ -239,10 +239,37 @@ export function createSupabaseRepo(userId: string): SolveRepository {
         .limit(limit);
 
       if (since) query = query.gte("created_at", since);
+      if (until) query = query.lt("created_at", until);
 
       const { data, error } = await query;
       if (error) throw error;
       return (data ?? []).map(mapMetric);
+    },
+
+    async loadWindowSolves(solveId, n) {
+      const client = getClient();
+      const { data: end, error: endError } = await client
+        .from("solves")
+        .select("session_id, created_at")
+        .eq("id", solveId)
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (endError) throw endError;
+      if (!end) return [];
+      const { data, error } = await client
+        .from("solves")
+        .select(
+          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at, excluded, excluded_reason, misstop_confirmed",
+        )
+        .eq("user_id", userId)
+        .eq("session_id", end.session_id)
+        .is("deleted_at", null)
+        .eq("excluded", false)
+        .lte("created_at", end.created_at)
+        .order("created_at", { ascending: false })
+        .limit(n);
+      if (error) throw error;
+      return (data ?? []).map(mapSolve);
     },
 
     async loadPersonalBests(puzzle) {

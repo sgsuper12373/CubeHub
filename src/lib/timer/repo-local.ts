@@ -178,17 +178,29 @@ export const localRepo: SolveRepository = {
     scheduleFlush();
   },
 
-  async loadSolveMetrics(puzzle, { since, limit = 5000 } = {}) {
+  async loadSolveMetrics(puzzle, { since, until, limit = 5000 } = {}) {
     return read()
       .solves.filter(
         (s) =>
           s.puzzle === puzzle &&
           !s.deletedAt &&
-          (since === undefined || s.createdAt >= since),
+          (since === undefined || s.createdAt >= since) &&
+          (until === undefined || s.createdAt < until),
       )
       .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
       .slice(0, limit)
       .map(toMetric);
+  },
+
+  async loadWindowSolves(solveId, n) {
+    const end = read().solves.find((s) => s.id === solveId);
+    if (!end) return [];
+    return read()
+      .solves.filter(
+        (s) => s.sessionId === end.sessionId && !s.deletedAt && !s.excluded && s.createdAt <= end.createdAt,
+      )
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+      .slice(0, n);
   },
 
   async loadPersonalBests(puzzle) {

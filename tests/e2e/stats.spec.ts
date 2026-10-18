@@ -8,7 +8,10 @@ import { test, expect, type Page } from "@playwright/test";
 const KEY = "cubehub.timer.v1";
 
 /** Local storage as the timer leaves it: sessions and solves for 3x3. */
-async function seed(page: Page, sessions: { id: string; name: string; active: boolean; times: number[] }[]) {
+async function seed(
+  page: Page,
+  sessions: { id: string; name: string; active: boolean; times: number[]; daysAgo?: number }[],
+) {
   const data = {
     misstopsChecked: true,
     sessions: sessions.map((s, i) => ({ id: s.id, puzzle: "333", name: s.name, isActive: s.active, orderIndex: i })),
@@ -22,7 +25,9 @@ async function seed(page: Page, sessions: { id: string; name: string; active: bo
         effectiveTimeMs: null,
         scramble: "R U R' U'",
         notes: null,
-        createdAt: new Date(Date.now() - (si * 100 + (s.times.length - i)) * 60_000).toISOString(),
+        createdAt: new Date(
+          Date.now() - (s.daysAgo ?? 0) * 86_400_000 - (si * 100 + (s.times.length - i)) * 60_000,
+        ).toISOString(),
       })),
     ),
   };
@@ -88,4 +93,39 @@ test("import and export live in the ⋯ menu; import previews before writing", a
   await dialog.getByRole("button", { name: "Import 3" }).click();
   await expect(dialog).toHaveCount(0);
   await expect(page.getByRole("radio", { name: "3x3, 8 solves" })).toBeChecked();
+});
+
+test("Now strip, PB solves and what the next solve needs", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await seed(page, [
+    // 40 days ago: Ao5 25.00.
+    { id: "a0000000-0000-4000-8000-000000000004", name: "Old", active: false, daysAgo: 40, times: [25000, 25000, 25000, 25000, 25000] },
+    // Now, oldest first: Ao5 = mean(21, 22, 23) = 22.00.
+    { id: "a0000000-0000-4000-8000-000000000005", name: "Now", active: true, times: [20000, 21000, 22000, 23000, 24000] },
+  ]);
+  await page.goto("/stats");
+
+  const nowStrip = page.getByRole("region", { name: "Now" });
+  await expect(nowStrip).toContainText("22.00");
+  await expect(nowStrip).toContainText("down 3.00 s");
+  await expect(nowStrip).toContainText("Needs 12 solves");
+
+  // What the next solve needs, in the active session: under the 20.00 single;
+  // the Ao5 can't improve (a fast fifth is trimmed, leaving 22.00 again).
+  const single = page.getByRole("button", { name: /^Single personal best 20\.00/ });
+  await expect(single).toContainText("Next: < 20.00");
+  const ao5 = page.getByRole("button", { name: /^Ao5 personal best 22\.00/ });
+  await expect(ao5).toContainText("Next: N/A");
+
+  await ao5.click();
+  const dialog = page.getByRole("dialog", { name: "3x3 Ao5 22.00" });
+  await expect(dialog).toBeVisible();
+  const rows = dialog.getByTestId("pb-solves").getByRole("listitem");
+  await expect(rows).toHaveCount(5);
+  await expect(rows.first()).toContainText("(20.00)");
+  await expect(rows.last()).toContainText("(24.00)");
+
+  await dialog.getByRole("button", { name: "Copy as text" }).click();
+  const text = await page.evaluate(() => navigator.clipboard.readText());
+  expect(text.split("\n")[0]).toMatch(/^3x3 Ao5: 22\.00 · CubeHub · /);
 });
