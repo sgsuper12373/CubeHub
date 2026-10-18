@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { ChartFrame, ChartTable } from "@/components/stats/chart/chart-frame";
@@ -14,6 +15,7 @@ import { EventPills } from "@/components/stats/analytics/event-pills";
 import { NowStrip } from "@/components/stats/analytics/now-strip";
 import { PbDetail } from "@/components/stats/analytics/pb-detail";
 import { PbRow } from "@/components/stats/analytics/pb-row";
+import { SessionsTable } from "@/components/stats/analytics/sessions-table";
 import { SolveDetailModal } from "@/components/stats/solve-detail";
 import { StatsOnboarding, STATS_UNLOCK_SOLVES } from "@/components/stats/analytics/stats-onboarding";
 import { CubeLoader } from "@/components/ui/cube-loader";
@@ -21,6 +23,7 @@ import { eventLabel } from "@/lib/timer/events";
 import { formatMs } from "@/lib/timer/format";
 import { countedSolves, isFlaggedMisstop } from "@/lib/timer/misfire";
 import { nextSolveNeeds, timeSpentMs, type NextSolveNeed } from "@/lib/timer/next-solve";
+import { summarizeSessions } from "@/lib/timer/session-summary";
 import { localRepo } from "@/lib/timer/repo-local";
 import type { SolveRepository } from "@/lib/timer/repo";
 import { createSupabaseRepo } from "@/lib/timer/repo-supabase";
@@ -77,6 +80,7 @@ export function StatsScreen({ userId }: { userId: string | null }) {
   const [puzzle, setPuzzle] = useState<TimerPuzzle>("333");
   const [range, setRange] = useState<RangeKey>("12m");
   const [sessionId, setSessionId] = useState<string>("all");
+  const [compareIds, setCompareIds] = useState<string[]>([]);
 
   /**
    * What is currently on screen is identified by the query that produced it, so
@@ -289,6 +293,28 @@ export function StatsScreen({ userId }: { userId: string | null }) {
     <PbRow bests={bests} isAuthed={userId !== null} needs={needs} onOpen={setOpenBest} />
   );
   const flaggedInRange = useMemo(() => inRange.filter(isFlaggedMisstop), [inRange]);
+  // Every session's numbers over the counted solves in the range (the table
+  // itself is the session filter, so it ignores it).
+  const sessionRows = useMemo(
+    () => (loaded ? summarizeSessions(loaded.sessions, countedSolves(loaded.metrics)) : []),
+    [loaded],
+  );
+  const selectedSession = sessions.find((s) => s.id === sessionId) ?? null;
+  const ticked = compareIds.filter((id) => sessionRows.some((r) => r.id === id));
+  const sessionsTable = range !== "session" && sessions.length > 1 && sessionRows.length > 0 && (
+    <SessionsTable
+      rows={sessionRows}
+      selectedId={sessionId}
+      onSelect={setSessionId}
+      compareIds={ticked}
+      onToggleCompare={(id) =>
+        setCompareIds((ids) =>
+          ids.includes(id) ? ids.filter((x) => x !== id) : [...ids.filter((x) => x !== id), id].slice(-2),
+        )
+      }
+      emptySessions={sessions.length - sessionRows.length}
+    />
+  );
   const eventSolves = counts?.[puzzle] ?? 0;
   const locked = counts !== null && eventSolves < STATS_UNLOCK_SOLVES;
   const practiceDays = useMemo(() => (filtered ? dailyCounts(filtered) : []), [filtered]);
@@ -361,22 +387,18 @@ export function StatsScreen({ userId }: { userId: string | null }) {
               value={range}
               onChange={(v) => setRange(v as RangeKey)}
             />
-            {range !== "session" && sessions.length > 1 && (
-              <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="sr-only">Session</span>
-                <select
-                  value={sessionId}
-                  onChange={(e) => setSessionId(e.target.value)}
-                  className="rounded-md border border-border bg-card px-2 py-1.5 text-xs text-foreground"
+            {range !== "session" && selectedSession && (
+              <span className="flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 py-0.5 pr-1 pl-2.5 text-xs font-medium text-foreground">
+                <span className="max-w-[10rem] truncate">{selectedSession.name}</span>
+                <button
+                  type="button"
+                  onClick={() => setSessionId("all")}
+                  aria-label={`Stop filtering to ${selectedSession.name}`}
+                  className="rounded-full p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
-                  <option value="all">All sessions</option>
-                  {sessions.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  <X className="size-3" aria-hidden />
+                </button>
+              </span>
             )}
           </div>
         )}
@@ -428,6 +450,7 @@ export function StatsScreen({ userId }: { userId: string | null }) {
         <>
           {nowStrip}
           {pbRow}
+          {sessionsTable}
 
           <ChartFrame
             title="Times over time"

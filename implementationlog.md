@@ -5,6 +5,43 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-19 — Stats step 4: sessions table replaces the session dropdown
+
+**Request:** Continue with step 4 of `docs/stats-plan.md`.
+
+### Added
+
+- `src/lib/timer/session-summary.ts` (pure): `summarizeSessions(sessions, counted)` → per
+  session over the counted solves in the range: solves, first/last solve, mean, median, best,
+  best Ao5/Ao12 (per session, like PBs), σ, time solving; sessions without solves in the
+  range are left out. `sortSessions` (missing values last in either direction; names compare
+  naturally, "Session 9" before "Session 10"). `tests/unit/session-summary.test.ts` (3).
+- `sessions-table.tsx`: sortable columns (`aria-sort`; a new column starts newest/most first
+  for dates and counts, A–Z for names, fastest first for times); clicking a row (or its name
+  button) filters the page, again clears it; the current session is badged; first 6 rows
+  with "Show all N" (the selected and ticked rows stay visible); a count of sessions with no
+  solves in the range. On phones the date sits under the name so the times fit before the
+  table scrolls sideways.
+- Ticking two shows a side-by-side (older left): solves, dates, mean, median, best, best
+  Ao5/Ao12, σ, time solving, with the faster of each time highlighted. A third box is
+  disabled while two are ticked.
+
+### Changed
+
+- `stats-screen.tsx`: the session `<select>` is gone; a chip in the sticky filter bar shows
+  the selected session with ×. The table sits under the PBs (hidden for "This session" and
+  for events with one session).
+
+### Verification
+
+- `npm run validate` (44 files, 506 tests), `check:colors`, `npm run build`.
+- e2e: a step 4 case in `stats.spec.ts` (filter by row, chip, sort by best, compare, third
+  box disabled, clear); with `timer.spec.ts`: 18 passed.
+- Screenshots with 25 sessions (most named "Session 1"): desktop with a comparison, phone
+  at 390 px (no page-level sideways scroll).
+
+---
+
 ## 2026-10-19 — Stats step 3: trend chart opens solves, stars, mis-stops, by date, zoom
 
 **Request:** Continue with step 3 of `docs/stats-plan.md`.

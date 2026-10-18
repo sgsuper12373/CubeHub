@@ -48,8 +48,8 @@ effort. Tick them off here as they ship; details of what was built go in `implem
 - [x] "By solve / by date" x-axis toggle.
 - [x] Drag to zoom on a range, with a reset.
 
-### 4. Sessions table
-- [ ] Replaces the session dropdown: sortable rows with name, date, solves, mean, best, best
+### 4. Sessions table (done 2026-10-19)
+- [x] Replaces the session dropdown: sortable rows with name, date, solves, mean, best, best
       Ao5, best Ao12. Click a row to filter the page; tick two to compare side by side.
 - Built from the loaded solves (up to 5,000); very old sessions would need their own query.
 

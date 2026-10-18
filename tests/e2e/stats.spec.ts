@@ -194,3 +194,41 @@ test("trend chart: stars, hollow mis-stops, open a solve, by date, drag to zoom"
   await page.getByRole("button", { name: "Reset zoom" }).click();
   await expect(page.getByRole("button", { name: "Reset zoom" })).toHaveCount(0);
 });
+
+test("sessions table: filter by a row, sort, compare two", async ({ page }) => {
+  await seed(page, [
+    { id: "a0000000-0000-4000-8000-000000000011", name: "Session 1", active: false, times: [30000, 31000, 32000, 33000, 34000] },
+    { id: "a0000000-0000-4000-8000-000000000012", name: "Session 1", active: false, times: [25000, 26000, 27000] },
+    { id: "a0000000-0000-4000-8000-000000000013", name: "Fast one", active: true, times: [18000, 19000, 20000, 21000, 22000, 23000] },
+  ]);
+  await page.goto("/stats");
+
+  const table = page.getByRole("region", { name: "Sessions" });
+  const rows = table.locator("tbody tr");
+  await expect(rows).toHaveCount(3);
+  await expect(table.getByText("current")).toBeVisible();
+  await expect(page.getByText("14 solves in this range")).toBeVisible();
+
+  // Click a row: the page filters to it, and a chip says so.
+  await table.getByRole("button", { name: "Fast one" }).click();
+  await expect(page.getByText("6 solves in this range")).toBeVisible();
+  await page.getByRole("button", { name: "Stop filtering to Fast one" }).click();
+  await expect(page.getByText("14 solves in this range")).toBeVisible();
+
+  // Sort by best, fastest first.
+  await table.getByRole("button", { name: "Best", exact: true }).click();
+  await expect(table.getByRole("columnheader", { name: "Best", exact: true })).toHaveAttribute("aria-sort", "ascending");
+  await expect(rows.first()).toContainText("Fast one");
+
+  // Tick two: a side-by-side; the third box is disabled.
+  const boxes = table.getByRole("checkbox");
+  await boxes.nth(0).check();
+  await boxes.nth(1).check();
+  const compare = page.getByTestId("session-compare");
+  await expect(compare).toBeVisible();
+  await expect(compare).toContainText("Fast one");
+  await expect(compare).toContainText("18.00");
+  await expect(boxes.nth(2)).toBeDisabled();
+  await compare.getByRole("button", { name: "Clear" }).click();
+  await expect(compare).toHaveCount(0);
+});
