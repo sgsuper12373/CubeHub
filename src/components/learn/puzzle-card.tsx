@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Info, BookOpen, Code2, BarChart2, Star } from "lucide-react";
 import { LearnPuzzle } from "@/lib/learn/dal";
+import { difficultyRange } from "@/lib/learn/difficulty";
 import {
   Popover,
   PopoverContent,
@@ -19,7 +20,7 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
   const cardRef = useRef<HTMLDivElement>(null);
   const mousePosition = useMousePosition(cardRef);
   
-  const difficulty = puzzle.id === "333" ? "Beginner to Adv." : "Beginner Friendly";
+  const difficulty = difficultyRange(puzzle.series);
   
   const isPopular = puzzle.id === "333";
   const accentColor = isPopular ? "var(--primary)" : "var(--accent-2)";
@@ -144,15 +145,19 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
               </div>
             </div>
 
-            <div className="w-px h-8 bg-foreground/10" />
-            
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-              <BarChart2 className="w-5 h-5 text-warning hidden sm:block" />
-              <div>
-                <div className="text-sm font-bold text-foreground leading-tight">{difficulty}</div>
-                <div className="text-sm font-bold text-foreground leading-tight">Difficulty</div>
-              </div>
-            </div>
+            {difficulty && (
+              <>
+                <div className="w-px h-8 bg-foreground/10" />
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <BarChart2 className="w-5 h-5 text-warning hidden sm:block" />
+                  <div>
+                    <div className="text-sm font-bold text-foreground leading-tight">{difficulty}</div>
+                    <div className="text-sm font-bold text-foreground leading-tight">Difficulty</div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
         </div>

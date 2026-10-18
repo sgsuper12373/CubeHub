@@ -3,6 +3,7 @@ import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/auth/dal";
 import { adjacentCases } from "@/lib/learn/case-route";
+import { toDifficulty, type Difficulty } from "@/lib/learn/difficulty";
 import { getPuzzleDescription, getPuzzleName } from "@/lib/learn/puzzle-names";
 
 export type LearnPuzzle = {
@@ -25,6 +26,8 @@ export type LearnSeries = {
   algorithmsCount?: number;
   /** Published steps (tutorial series only). */
   stepsCount?: number;
+  /** From `tutorial_series.difficulty`; algorithm sets have none. */
+  difficulty?: Difficulty;
 };
 
 export type AlgorithmCase = {
@@ -158,6 +161,7 @@ export const getPuzzles = cache(async (): Promise<LearnPuzzle[]> => {
         accessTier:
           (s.access_tier as "public" | "free" | "premium") ?? "public",
         stepsCount: stepCounts.get(s.id) ?? 0,
+        difficulty: toDifficulty(s.difficulty),
       });
     }
   }

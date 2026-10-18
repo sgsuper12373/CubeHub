@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Link from "next/link";
 import { FileCode2, BookOpen } from "lucide-react";
 import { LearnSeries } from "@/lib/learn/dal";
+import { DIFFICULTY_LEVELS, difficultyLabel, difficultyRank } from "@/lib/learn/difficulty";
 import { useMousePosition } from "@/hooks/use-mouse-position";
 import { cn } from "@/lib/utils";
 
@@ -37,8 +38,7 @@ export function SeriesCard({ puzzleId, series }: { puzzleId: string, series: Lea
     icon: <BookOpen className="w-4 h-4" />
   };
 
-  // Mock difficulty rating 1-5
-  const difficultyRating = isMethod ? 2 : isAlg ? (series.name.includes("PLL") ? 4 : 3) : 1;
+  const difficultyRating = series.difficulty ? difficultyRank(series.difficulty) : 0;
 
   return (
     <div 
@@ -129,10 +129,11 @@ export function SeriesCard({ puzzleId, series }: { puzzleId: string, series: Lea
            </span>
         </div>
         
-        <div className="flex items-center gap-2">
-           <span className="text-xs text-muted-foreground/70">Difficulty</span>
-           <div className="flex gap-0.5">
-             {[1, 2, 3, 4, 5].map((level) => (
+        {series.difficulty && (
+        <div className="flex items-center gap-2" title={difficultyLabel(series.difficulty)}>
+           <span className="text-xs text-muted-foreground/70">{difficultyLabel(series.difficulty)}</span>
+           <div className="flex gap-0.5" aria-hidden>
+             {DIFFICULTY_LEVELS.map((_, i) => i + 1).map((level) => (
                <div 
                  key={level} 
                  className={cn(
@@ -146,6 +147,7 @@ export function SeriesCard({ puzzleId, series }: { puzzleId: string, series: Lea
              ))}
            </div>
         </div>
+        )}
       </div>
       
     </div>

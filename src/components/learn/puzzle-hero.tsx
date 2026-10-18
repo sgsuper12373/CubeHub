@@ -8,6 +8,7 @@ import { ChevronLeft, BookOpen, Code2, BarChart2, Shapes } from "lucide-react";
 import { useMousePosition } from "@/hooks/use-mouse-position";
 import { Button } from "@/components/ui/button";
 import { LearnPuzzle } from "@/lib/learn/dal";
+import { difficultyRange } from "@/lib/learn/difficulty";
 
 export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -17,7 +18,7 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
   const algSets = puzzle.series.filter((s) => s.type === "algorithms");
   const casesCount = algSets.reduce((n, s) => n + (s.casesCount ?? 0), 0);
   const algsCount = algSets.reduce((n, s) => n + (s.algorithmsCount ?? 0), 0);
-  const difficulty = puzzle.id === "333" ? "Beginner to Adv." : "Beginner Friendly";
+  const difficulty = difficultyRange(puzzle.series);
   
   // Choose the same image as the home page based on puzzle id
   const imageSrc = puzzle.id === "333" ? "/images/learn/333.jpg" : "/images/learn/222.jpg";
@@ -109,13 +110,15 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
             </div>
           )}
 
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-foreground/[0.03] border border-border shadow-lg backdrop-blur-md">
-            <BarChart2 className="w-6 h-6 text-warning" />
-            <div>
-              <div className="text-lg font-bold text-foreground leading-none">{difficulty}</div>
-              <div className="text-sm text-muted-foreground mt-1">Difficulty</div>
+          {difficulty && (
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-foreground/[0.03] border border-border shadow-lg backdrop-blur-md">
+              <BarChart2 className="w-6 h-6 text-warning" />
+              <div>
+                <div className="text-lg font-bold text-foreground leading-none">{difficulty}</div>
+                <div className="text-sm text-muted-foreground mt-1">Difficulty</div>
+              </div>
             </div>
-          </div>
+          )}
         </motion.div>
       </div>
 
