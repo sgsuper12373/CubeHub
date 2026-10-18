@@ -52,18 +52,21 @@ async function solve(page: import("@playwright/test").Page, ms: number) {
   await page.waitForTimeout(300);
 }
 
+// Times sit above the 3x3 misfire limit (3.00, lib/timer/misfire.ts): faster
+// solves don't count for records, so they'd never be a best or an average.
 test("session best toast, then an all-time PB card with a share image", async ({ page }) => {
+  test.setTimeout(60_000);
   await page.goto("/timer");
   await expect(scramble(page)).toBeVisible({ timeout: 60_000 });
 
-  await solve(page, 1500);
-  await solve(page, 700);
+  await solve(page, 4500);
+  await solve(page, 3600);
   await expect(page.getByText(/^Session best: Single/)).toBeVisible();
 
-  // After a reload the 0.7s single is history, so beating it is all-time.
+  // After a reload the 3.6s single is history, so beating it is all-time.
   await page.reload();
   await expect(scramble(page)).toBeVisible({ timeout: 60_000 });
-  await solve(page, 250);
+  await solve(page, 3200);
 
   const card = page.getByRole("status").filter({ hasText: "New all-time PB" });
   await expect(card).toBeVisible();
@@ -82,11 +85,12 @@ test("session best toast, then an all-time PB card with a share image", async ({
 });
 
 test("clicking Ao5 copies the average as csTimer-style text", async ({ page, context }) => {
+  test.setTimeout(60_000);
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/timer");
   await expect(scramble(page)).toBeVisible({ timeout: 60_000 });
 
-  for (const ms of [400, 500, 600, 700, 800]) await solve(page, ms);
+  for (const ms of [3100, 3200, 3300, 3400, 3500]) await solve(page, ms);
 
   await page.getByRole("button", { name: /^Copy Ao5 .* as text$/ }).click();
   await expect(page.getByText("Ao5 copied")).toBeVisible();

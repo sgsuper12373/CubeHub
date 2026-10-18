@@ -27,7 +27,7 @@ test("signed-in reps survive a reload", async ({ page }) => {
 
   for (let i = 0; i < 2; i++) {
     await page.keyboard.press("Space"); // start
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(1500); // past the misfire limit, or the rep isn't saved
     await page.keyboard.press("Space"); // stop
     await page.waitForTimeout(250);
     await page.keyboard.press("Space"); // next (same case)

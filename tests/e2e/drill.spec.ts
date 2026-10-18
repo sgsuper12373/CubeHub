@@ -39,8 +39,10 @@ test.describe("Drill Lab", () => {
     const first = (await name.textContent())?.trim();
     expect(first).toBeTruthy();
 
+    // Slower than the misfire limit (60 ms a move, lib/timer/misfire.ts) for
+    // any PLL, or the rep isn't kept.
     await page.keyboard.press("Space"); // start
-    await page.waitForTimeout(350);
+    await page.waitForTimeout(1500);
     await page.keyboard.press("Space"); // stop
     await expect(time).not.toHaveText("0.00");
     await expect(page.getByTestId("drill-session-list").locator("li")).toHaveCount(1);
@@ -63,7 +65,7 @@ test.describe("Drill Lab", () => {
     await expect(page.getByTestId("drill-case-hidden")).toHaveCount(0);
     await page.waitForTimeout(200);
     await page.keyboard.press("Space"); // recognised → executing
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(1500); // past the misfire limit
     await page.keyboard.press("Space"); // stop
 
     // Space drove the drill, not the focused checkbox.
@@ -94,11 +96,12 @@ test.describe("Drill Lab", () => {
       await page.keyboard.press("Space"); // next (the same case: it is the whole set)
     };
 
-    // 10 slow reps on the main variant, 10 fast ones on the alternative.
+    // 10 slow reps on the main variant, 10 fast ones on the alternative. Both
+    // stay above the misfire limit (60 ms a move), or the reps aren't kept.
     await variants.nth(0).click();
-    for (let i = 0; i < 10; i++) await rep(700);
+    for (let i = 0; i < 10; i++) await rep(2000);
     await variants.nth(1).click();
-    for (let i = 0; i < 10; i++) await rep(250);
+    for (let i = 0; i < 10; i++) await rep(1000);
 
     // Back on the slow variant, the evidence says switch.
     await variants.nth(0).click();

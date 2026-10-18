@@ -15,7 +15,8 @@ for (const user of E2E_USERS) {
     await page.getByLabel("Email").fill(user.email);
     await page.getByLabel("Password").fill(user.password);
     await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page).toHaveURL(/\/profile\/[A-Za-z0-9_]+$/);
+    // Generous: under `next dev` the first visit compiles the profile page.
+    await expect(page).toHaveURL(/\/profile\/[A-Za-z0-9_]+$/, { timeout: 30_000 });
     await page.context().storageState({ path: user.state });
   });
 }
