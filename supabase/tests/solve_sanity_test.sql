@@ -1,6 +1,11 @@
 -- Test for 20261019000000_solve_sanity.sql: misfires and left-out solves,
 -- server-side achievements with real dates, the activity feed, suggestions.
 --
+-- ⚠️ Superseded for the misfire parts by 20261021000000_misstops.sql, which
+-- removed the time floor: after that migration the 0.15 and 0.30 rows here
+-- count, so the misfire checks fail by design. Run this before applying it;
+-- supabase/tests/misstop_test.sql covers the rules that replaced it.
+--
 -- SAFE TO RUN ON PRODUCTION. Everything happens inside a transaction that ends
 -- in ROLLBACK. It creates three throwaway users and acts as them the way
 -- PostgREST does. Run in the Supabase dashboard SQL editor; expect every row
