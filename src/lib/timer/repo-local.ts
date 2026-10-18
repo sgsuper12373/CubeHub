@@ -1,7 +1,7 @@
 import { recentlyDeletedSince, type SolveRepository } from "./repo";
 import { countedSolves, flagMisstops } from "./misfire";
 import { bestAverageOfN, effectiveMs } from "./stats";
-import type { PersonalBest, Session, Solve, SolveMetric } from "./types";
+import type { PersonalBest, Session, Solve, SolveMetric, TimerPuzzle } from "./types";
 
 /**
  * localStorage-backed repository for logged-out users.
@@ -194,6 +194,12 @@ export const localRepo: SolveRepository = {
   async loadPersonalBests(puzzle) {
     const metrics = await localRepo.loadSolveMetrics(puzzle);
     return computePersonalBests(countedSolves(metrics));
+  },
+
+  async loadEventCounts() {
+    const counts: Partial<Record<TimerPuzzle, number>> = {};
+    for (const s of read().solves) if (!s.deletedAt) counts[s.puzzle] = (counts[s.puzzle] ?? 0) + 1;
+    return counts;
   },
 
   async loadSolvesForExport(puzzle) {

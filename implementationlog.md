@@ -5,6 +5,45 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-19 — Stats v2 plan; step 1: onboarding, ⋯ menu, sticky filters, event pills
+
+**Request:** Plan the Stats page review (five steps, founder took the recommendations), save
+the plan, start step 1.
+
+### Added
+
+- `docs/stats-plan.md`: the five steps and the decisions (rolling "Now" averages across
+  sessions, sub-X goal on the device, all five steps, side-by-side session compare).
+- `src/components/stats/analytics/event-pills.tsx`: event pills with a solve count and a small
+  SVG glyph per puzzle (grids for the cubes, OH corner, triangle, skewb diamond, pentagon);
+  events without solves are muted. Scrolls sideways on a phone.
+- `src/components/stats/analytics/stats-onboarding.tsx`: one "Time 5 solves to unlock your
+  stats" panel (or "N more"), with Open the timer and Import from csTimer, shown instead of
+  every card while the event has fewer than 5 live solves.
+- `loadEventCounts()` on both repos: local storage counts; the cloud reads
+  `v_user_puzzle_summary`.
+- `tests/e2e/stats.spec.ts` (new, guest): onboarding, pill counts, This session, another
+  empty event, the ⋯ menu, and an import through the preview dialog.
+
+### Changed
+
+- `data-section.tsx` → `data-tools.tsx`: `DataMenu` (⋯ next to the title: Export CSV, Export
+  JSON, Import) and `useImportFlow` (hidden file input plus a dry-run dialog), shared by the
+  menu and the empty state. The preview now names the event instead of assuming 3x3/2x2.
+- `stats-screen.tsx`: header with the ⋯ menu; a sticky filter bar (under the desktop navbar)
+  with the pills and, once unlocked, the range and session filters; a "This session" range
+  (the active session, all time; hides the session dropdown); short range labels on phones;
+  a single "No solves in this range · Show all time" message instead of empty cards.
+
+### Verification
+
+- `npm run validate` (41 files, 491 tests), `check:colors`, `npm run build`.
+- e2e: `stats.spec.ts` (3) and `timer.spec.ts` (12) under `next dev`: pass.
+- Screenshots at 390 and 1280 px: onboarding, pills, sticky filters on scroll, no sideways
+  scroll at 390 px.
+
+---
+
 ## 2026-10-19 — Mis-stops: flagged on save, left out by default, no hard floor
 
 **Request:** Replace the fixed misfire floor. Flag suspected mis-stops on save (implausible

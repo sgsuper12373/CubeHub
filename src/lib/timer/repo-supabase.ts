@@ -258,6 +258,18 @@ export function createSupabaseRepo(userId: string): SolveRepository {
         .map(mapPersonalBest);
     },
 
+    async loadEventCounts() {
+      // One row per puzzle the cuber has live solves for (the view filters deleted_at).
+      const { data, error } = await getClient()
+        .from("v_user_puzzle_summary")
+        .select("puzzle_type, total_solves")
+        .eq("user_id", userId);
+      if (error) throw error;
+      const counts: Partial<Record<TimerPuzzle, number>> = {};
+      for (const row of data ?? []) counts[row.puzzle_type as TimerPuzzle] = Number(row.total_solves);
+      return counts;
+    },
+
     async loadSolvesForExport(puzzle) {
       const { data, error } = await getClient()
         .from("solves")

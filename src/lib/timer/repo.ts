@@ -83,6 +83,12 @@ export interface SolveRepository {
   loadPersonalBests(puzzle: TimerPuzzle): Promise<PersonalBest[]>;
 
   /**
+   * How many live solves each puzzle has (deleted ones left out), for the
+   * Stats event picker. Puzzles with none are absent.
+   */
+  loadEventCounts(): Promise<Partial<Record<TimerPuzzle, number>>>;
+
+  /**
    * Every surviving solve for a puzzle with nothing dropped — scramble and
    * notes included. Separate from `loadSolveMetrics` because export has the
    * opposite requirement to analytics: losslessness over payload size.
