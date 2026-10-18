@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Boxes, GraduationCap, Target, Timer, Users } from "lucide-react";
+import { ArrowRight, Boxes, GraduationCap, Target, Timer, Users, UsersRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { SectionHeading } from "@/components/marketing/section-heading";
@@ -20,6 +20,12 @@ const DRILL_ROWS = [
   { name: "OLL 33", tag: "due", median: "2.41" },
   { name: "PLL Gb", tag: "due", median: "3.07" },
   { name: "OLL 45", tag: "new", median: "—" },
+] as const;
+
+const CLUB_POSTS = [
+  { kind: "Algorithm", text: "M-slice Ua: M2 U M U2 M' U M2" },
+  { kind: "Announcement", text: "Saturday meetup, 4 pm. Bring a 2x2." },
+  { kind: "Video", text: "Example solve breakdown, sub-15 CFOP" },
 ] as const;
 
 export function FeatureBento() {
@@ -131,6 +137,27 @@ export function FeatureBento() {
             <dd className="text-muted-foreground">4.87</dd>
             <dd className="font-semibold text-primary">4.31</dd>
           </dl>
+        </Tile>
+
+        {/* Clubs: next to Profiles on two columns, a full-width row on three. */}
+        <Tile
+          href="/clubs"
+          icon={UsersRound}
+          title="Clubs"
+          body="A home for your school, college or city crew: a member list, posts with algorithms on the 3D cube, video links, reactions and comments."
+          className="lg:col-span-3"
+        >
+          <ul className="mt-5 grid gap-2 lg:grid-cols-3">
+            {CLUB_POSTS.map((p) => (
+              <li
+                key={p.kind}
+                className="rounded-2xl border border-border/70 bg-surface-raised/50 px-4 py-3 text-sm"
+              >
+                <span className="text-[10px] font-semibold uppercase text-accent-2">{p.kind}</span>
+                <p className="mt-1 text-muted-foreground">{p.text}</p>
+              </li>
+            ))}
+          </ul>
         </Tile>
       </div>
     </section>

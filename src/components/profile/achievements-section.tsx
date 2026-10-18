@@ -63,7 +63,11 @@ function Badge({ achievement: a }: { achievement: Achievement }) {
           {mystery ? "Keep cubing to find out." : a.description}
         </p>
         {unlocked && (
-          <p className="mt-1 text-[0.7rem] font-medium text-primary">
+          <p
+            className="mt-1 text-[0.7rem] font-medium text-primary"
+            title="The day you first met this badge's condition"
+          >
+            First reached{" "}
             {new Date(a.unlockedAt!).toLocaleDateString("en-IN", {
               day: "numeric",
               month: "short",

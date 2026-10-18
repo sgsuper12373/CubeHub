@@ -6,7 +6,8 @@ import { Eyebrow } from "@/components/marketing/section-heading";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function CtaBand() {
+/** Signed in, the sign-up pitch gives way to the next thing to practise. */
+export function CtaBand({ signedIn = false }: { signedIn?: boolean }) {
   return (
     <section className="px-4 pb-20 md:pb-28">
       <div className="reveal relative mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-border bg-card px-6 py-16 text-center sm:px-12 md:py-20">
@@ -23,8 +24,9 @@ export function CtaBand() {
             Start your next practice session
           </h2>
           <p className="max-w-md text-base text-muted-foreground sm:text-lg">
-            No account needed to time solves. Sign in whenever you want your
-            times synced across devices.
+            {signedIn
+              ? "Pick up where you left off. Your times are synced across your devices."
+              : "No account needed to time solves. Sign in whenever you want your times synced across devices."}
           </p>
           <div className="mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <Link
@@ -35,10 +37,10 @@ export function CtaBand() {
               <ArrowRight data-icon="inline-end" className="size-4" />
             </Link>
             <Link
-              href="/signup"
+              href={signedIn ? "/learn/333/drill" : "/signup"}
               className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-12 rounded-full px-7 text-base font-semibold")}
             >
-              Create a free account
+              {signedIn ? "Drill your weakest cases" : "Create a free account"}
             </Link>
           </div>
         </div>

@@ -508,6 +508,7 @@ export function DrillLab({
             stats={stats}
             selectedId={algorithm.id}
             onSelect={(id) => setVariantChoice((prev) => ({ ...prev, [drillCase.id]: id }))}
+            hideMoves={hideAlg && phase !== "stopped"}
           />
 
           {!isAuthed && attempts.length >= 1 && (

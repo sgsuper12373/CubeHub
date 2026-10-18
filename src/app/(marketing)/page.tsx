@@ -5,6 +5,7 @@ import { CtaBand, SiteFooter } from "@/components/marketing/cta-band";
 import { CustomizeSection } from "@/components/marketing/customize-section";
 import { FeatureBento } from "@/components/marketing/feature-bento";
 import { HeroSection } from "@/components/marketing/hero-section";
+import { getUser } from "@/lib/auth/dal";
 
 export const metadata: Metadata = {
   title: "CubeHub — Speedcubing Timer, Tutorials & Stats",
@@ -18,13 +19,15 @@ export const metadata: Metadata = {
  * advertised above the strip. The landing page never captures Space or
  * touches unless the visitor asks it to; see `hero-timer-card.tsx`.
  */
-export default function Home() {
+export default async function Home() {
+  // Cached: the layout's navbar has already asked.
+  const user = await getUser();
   return (
     <>
       <HeroSection />
       <FeatureBento />
       <CustomizeSection />
-      <CtaBand />
+      <CtaBand signedIn={user !== null} />
       <ComingNext />
       <SiteFooter />
     </>

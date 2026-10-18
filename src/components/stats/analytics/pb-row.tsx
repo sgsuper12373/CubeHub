@@ -45,7 +45,7 @@ export function PbRow({
         </h2>
         <p className="text-xs text-muted-foreground">
           {isAuthed
-            ? "Across every session · not affected by the filters"
+            ? "Best single from any session · averages count within one session · not affected by the filters"
             : "From this device · sign in to keep them"}
         </p>
       </header>
@@ -57,6 +57,7 @@ export function PbRow({
           return (
             <div
               key={category}
+              title={isSingle ? "Best single across all sessions" : `Best ${label} within a single session`}
               className={cn(
                 "flex flex-col gap-1 rounded-lg px-3 py-2.5 ring-1 ring-inset",
                 isSingle ? "ring-primary/30" : "ring-foreground/10",

@@ -23,19 +23,30 @@ function successRate(s: VariantStats | undefined): string {
   return `${Math.round((s.successes / s.attempts) * 100)}%`;
 }
 
-/** The current case's variants: pick one, see how each performs. */
+/**
+ * The current case's variants: pick one, see how each performs. With
+ * `hideMoves` (the "hide algorithm" option, before the rep is done) a variant
+ * is named by its label or number and move count, so the list can't give the
+ * answer away.
+ */
 export function VariantPicker({
   drillCase,
   stats,
   selectedId,
   onSelect,
+  hideMoves = false,
 }: {
   drillCase: DrillCase;
   stats: StatsByAlgorithm;
   selectedId: string;
   onSelect: (algorithmId: string) => void;
+  hideMoves?: boolean;
 }) {
-  const movesById = new Map(drillCase.algorithms.map((a) => [a.id, a.moves]));
+  const nameOf = (a: DrillCase["algorithms"][number], i: number) =>
+    a.label ?? (a.is_main ? "the main algorithm" : `variant ${i + 1}`);
+  const movesById = new Map(
+    drillCase.algorithms.map((a, i) => [a.id, hideMoves ? nameOf(a, i) : a.moves]),
+  );
   const rec = recommendSwitch(
     selectedId,
     drillCase.algorithms.map((a) => a.id),
@@ -50,7 +61,7 @@ export function VariantPicker({
       </h2>
 
       <ul className="mt-2 space-y-1.5">
-        {drillCase.algorithms.map((a) => {
+        {drillCase.algorithms.map((a, i) => {
           const s = stats.get(a.id);
           const active = a.id === selectedId;
           return (
@@ -64,9 +75,15 @@ export function VariantPicker({
                   active ? "border-primary/50 bg-primary/5" : "border-border hover:bg-muted/50",
                 )}
               >
-                <span className="block font-mono text-sm text-foreground">{a.moves}</span>
+                {hideMoves ? (
+                  <span className="block text-sm text-muted-foreground" data-testid="variant-hidden">
+                    {a.label ?? `Variant ${i + 1}`} · {a.move_count} moves
+                  </span>
+                ) : (
+                  <span className="block font-mono text-sm text-foreground">{a.moves}</span>
+                )}
                 <span className="mt-0.5 flex flex-wrap gap-x-3 text-xs text-muted-foreground">
-                  {a.label && <span>{a.label}</span>}
+                  {a.label && !hideMoves && <span>{a.label}</span>}
                   {a.is_main && <span>main</span>}
                   <span>{reps(s?.attempts ?? 0)}</span>
                   <span>median {median(s?.medianMs)}</span>

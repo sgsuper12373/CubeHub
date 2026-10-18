@@ -39,6 +39,10 @@ test.describe("Drill Lab", () => {
     const first = (await name.textContent())?.trim();
     expect(first).toBeTruthy();
 
+    // "Hide algorithm" is on by default: the variant list doesn't give it away either.
+    const hiddenVariants = page.getByTestId("variant-hidden");
+    await expect(hiddenVariants.first()).toBeVisible();
+
     // Slower than the misfire limit (60 ms a move, lib/timer/misfire.ts) for
     // any PLL, or the rep isn't kept.
     await page.keyboard.press("Space"); // start
@@ -46,6 +50,7 @@ test.describe("Drill Lab", () => {
     await page.keyboard.press("Space"); // stop
     await expect(time).not.toHaveText("0.00");
     await expect(page.getByTestId("drill-session-list").locator("li")).toHaveCount(1);
+    await expect(hiddenVariants).toHaveCount(0);
 
     await page.waitForTimeout(250); // past the stop debounce
     await page.keyboard.press("Space"); // next case
