@@ -6,6 +6,7 @@ import { ChartFrame, ChartTable } from "@/components/stats/chart/chart-frame";
 import { Heatmap } from "@/components/stats/chart/heatmap";
 import { Histogram } from "@/components/stats/chart/histogram";
 import { formatDayLabel } from "@/components/stats/chart/scale";
+import { SegmentedControl } from "@/components/stats/chart/segmented-control";
 import { TrendChart } from "@/components/stats/chart/trend-chart";
 import { ConsistencyCard } from "@/components/stats/analytics/consistency-card";
 import { DataMenu, useImportFlow } from "@/components/stats/analytics/data-tools";
@@ -13,11 +14,12 @@ import { EventPills } from "@/components/stats/analytics/event-pills";
 import { NowStrip } from "@/components/stats/analytics/now-strip";
 import { PbDetail } from "@/components/stats/analytics/pb-detail";
 import { PbRow } from "@/components/stats/analytics/pb-row";
+import { SolveDetailModal } from "@/components/stats/solve-detail";
 import { StatsOnboarding, STATS_UNLOCK_SOLVES } from "@/components/stats/analytics/stats-onboarding";
 import { CubeLoader } from "@/components/ui/cube-loader";
 import { eventLabel } from "@/lib/timer/events";
 import { formatMs } from "@/lib/timer/format";
-import { countedSolves } from "@/lib/timer/misfire";
+import { countedSolves, isFlaggedMisstop } from "@/lib/timer/misfire";
 import { nextSolveNeeds, timeSpentMs, type NextSolveNeed } from "@/lib/timer/next-solve";
 import { localRepo } from "@/lib/timer/repo-local";
 import type { SolveRepository } from "@/lib/timer/repo";
@@ -31,7 +33,7 @@ import type {
   SolveMetric,
   TimerPuzzle,
 } from "@/lib/timer/types";
-import { cn } from "@/lib/utils";
+import { toast } from "@/stores/toast-store";
 
 /**
  * The analytics page.
@@ -83,6 +85,11 @@ export function StatsScreen({ userId }: { userId: string | null }) {
    * comparing keys gets the same behaviour with one render.
    */
   const [reloads, setReloads] = useState(0);
+  // An edit from the solve detail refetches without changing any key, so the
+  // page keeps showing what it has (no loader, chart zoom kept) until the new
+  // data lands.
+  const [refreshTick, setRefreshTick] = useState(0);
+  const refresh = () => setRefreshTick((n) => n + 1);
   const queryKey = `${userId ?? "local"}|${puzzle}|${range}|${reloads}`;
 
   const [result, setResult] = useState<{
@@ -119,7 +126,7 @@ export function StatsScreen({ userId }: { userId: string | null }) {
     return () => {
       cancelled = true;
     };
-  }, [repo, countsKey]);
+  }, [repo, countsKey, refreshTick]);
   const counts = countsResult?.key === countsKey ? countsResult.counts : null;
 
   // The "Now" strip and "next solve needs": the newest solves whatever the
@@ -159,9 +166,34 @@ export function StatsScreen({ userId }: { userId: string | null }) {
     return () => {
       cancelled = true;
     };
-  }, [repo, puzzle, nowKey]);
+  }, [repo, puzzle, nowKey, refreshTick]);
   const now = nowResult?.key === nowKey ? nowResult : null;
   const [openBest, setOpenBest] = useState<PersonalBest | null>(null);
+  const [openSolve, setOpenSolve] = useState<Solve | null>(null);
+
+  const selectSolve = (id: string) => {
+    repo
+      .loadSolve(id)
+      .then((solve) => {
+        if (solve) setOpenSolve(solve);
+      })
+      .catch((err) => {
+        console.error("stats: loading a solve failed", err);
+        toast({ kind: "error", message: "Couldn't open that solve", durationMs: 3000 });
+      });
+  };
+
+  /** Write through the repo, then refresh: PBs, the strip and the charts all move. */
+  const editSolve = async (write: () => Promise<void>, next: Solve | null) => {
+    try {
+      await write();
+      setOpenSolve(next);
+      refresh();
+    } catch (err) {
+      console.error("stats: editing a solve failed", err);
+      toast({ kind: "error", message: "Couldn't save that change", durationMs: 3000 });
+    }
+  };
 
   const importFlow = useImportFlow({
     repo,
@@ -203,7 +235,7 @@ export function StatsScreen({ userId }: { userId: string | null }) {
     return () => {
       cancelled = true;
     };
-  }, [repo, puzzle, range, queryKey]);
+  }, [repo, puzzle, range, queryKey, refreshTick]);
 
   const loaded = result?.key === queryKey ? result : null;
   const metrics = loaded?.metrics ?? null;
@@ -256,6 +288,7 @@ export function StatsScreen({ userId }: { userId: string | null }) {
   const pbRow = (
     <PbRow bests={bests} isAuthed={userId !== null} needs={needs} onOpen={setOpenBest} />
   );
+  const flaggedInRange = useMemo(() => inRange.filter(isFlaggedMisstop), [inRange]);
   const eventSolves = counts?.[puzzle] ?? 0;
   const locked = counts !== null && eventSolves < STATS_UNLOCK_SOLVES;
   const practiceDays = useMemo(() => (filtered ? dailyCounts(filtered) : []), [filtered]);
@@ -273,6 +306,46 @@ export function StatsScreen({ userId }: { userId: string | null }) {
       </header>
       {importFlow.ui}
       <PbDetail repo={repo} puzzle={puzzle} best={openBest} onClose={() => setOpenBest(null)} />
+      {openSolve && (
+        <SolveDetailModal
+          key={openSolve.id}
+          solve={openSolve}
+          puzzle={openSolve.puzzle}
+          onClose={() => setOpenSolve(null)}
+          onPenalty={(penalty) =>
+            void editSolve(() => repo.updatePenalty(openSolve.id, penalty), {
+              ...openSolve,
+              penalty,
+              effectiveTimeMs: null,
+            })
+          }
+          onNotes={(notes) =>
+            void editSolve(() => repo.updateNotes(openSolve.id, notes), { ...openSolve, notes })
+          }
+          onCounts={(counts) =>
+            void editSolve(() => repo.updateExcluded(openSolve.id, !counts), {
+              ...openSolve,
+              excluded: !counts || undefined,
+              excludedReason: counts ? undefined : "user",
+              misstopConfirmed: counts || undefined,
+            })
+          }
+          onDelete={() => {
+            const id = openSolve.id;
+            void editSolve(() => repo.deleteSolve(id), null).then(() =>
+              toast({
+                kind: "undo",
+                message: "Solve deleted",
+                durationMs: 5000,
+                action: {
+                  label: "Undo",
+                  onAction: () => void repo.restoreSolves([id]).then(refresh),
+                },
+              }),
+            );
+          }}
+        />
+      )}
 
       {/* ── Filters: above everything they affect, and kept in reach on scroll ── */}
       <div
@@ -363,7 +436,13 @@ export function StatsScreen({ userId }: { userId: string | null }) {
             emptyMessage="Two solves in this range and the trend appears."
             table={<TrendTable metrics={filtered} />}
           >
-            <TrendChart metrics={filtered} />
+            <TrendChart
+              key={`${puzzle}|${range}|${effectiveSessionId}`}
+              metrics={filtered}
+              flagged={flaggedInRange}
+              bests={bests}
+              onSelect={selectSolve}
+            />
           </ChartFrame>
 
           <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
@@ -391,51 +470,6 @@ export function StatsScreen({ userId }: { userId: string | null }) {
           </ChartFrame>
         </>
       )}
-    </div>
-  );
-}
-
-function SegmentedControl({
-  label,
-  options,
-  value,
-  onChange,
-}: {
-  label: string;
-  options: { key: string; label: string; short?: string }[];
-  value: string;
-  onChange: (key: string) => void;
-}) {
-  return (
-    <div
-      role="group"
-      aria-label={label}
-      className="flex rounded-md border border-border bg-card p-0.5"
-    >
-      {options.map((o) => (
-        <button
-          key={o.key}
-          type="button"
-          aria-pressed={value === o.key}
-          aria-label={o.short ? o.label : undefined}
-          onClick={() => onChange(o.key)}
-          className={cn(
-            "whitespace-nowrap rounded px-2.5 py-1 text-xs font-medium transition-colors",
-            value === o.key
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          {o.short ? (
-            <>
-              <span className="sm:hidden" aria-hidden>{o.short}</span>
-              <span className="hidden sm:inline" aria-hidden>{o.label}</span>
-            </>
-          ) : (
-            o.label
-          )}
-        </button>
-      ))}
     </div>
   );
 }

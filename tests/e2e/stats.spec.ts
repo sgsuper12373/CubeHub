@@ -129,3 +129,68 @@ test("Now strip, PB solves and what the next solve needs", async ({ page, contex
   const text = await page.evaluate(() => navigator.clipboard.readText());
   expect(text.split("\n")[0]).toMatch(/^3x3 Ao5: 22\.00 · CubeHub · /);
 });
+
+test("trend chart: stars, hollow mis-stops, open a solve, by date, drag to zoom", async ({ page }) => {
+  const sessionId = "a0000000-0000-4000-8000-000000000006";
+  const times = [22000, 21000, 23000, 20000, 24000, 22500, 21500, 23500, 20500, 22000];
+  const solves = times.map((ms, i) => ({
+    id: `t-${i}`,
+    sessionId,
+    puzzle: "333",
+    timeMs: ms,
+    penalty: "none",
+    effectiveTimeMs: null,
+    scramble: "R U R' U'",
+    notes: null,
+    createdAt: new Date(Date.now() - (times.length - i + 1) * 3_600_000).toISOString(),
+  }));
+  // The newest solve: a flagged mis-stop.
+  solves.push({
+    ...solves[0],
+    id: "t-misstop",
+    timeMs: 400,
+    createdAt: new Date(Date.now() - 60_000).toISOString(),
+    // @ts-expect-error extra fields on the seeded solve
+    excluded: true,
+    excludedReason: "auto_misstop",
+  });
+  const data = {
+    misstopsChecked: true,
+    sessions: [{ id: sessionId, puzzle: "333", name: "Main", isActive: true, orderIndex: 0 }],
+    solves,
+  };
+  await page.addInitScript(([key, value]) => localStorage.setItem(key, value), [KEY, JSON.stringify(data)] as const);
+  await page.goto("/stats");
+
+  const chart = page.getByTestId("trend-chart");
+  await expect(chart).toBeVisible();
+  await expect(page.getByTestId("trend-misstop")).toHaveCount(1);
+  await expect(page.getByTestId("trend-pb-single")).toHaveCount(1);
+
+  // Keyboard: focus starts on the newest point (the mis-stop); Enter opens it.
+  await chart.focus();
+  await page.keyboard.press("Enter");
+  const counts = page.getByRole("switch", { name: /Counts for records/ });
+  await expect(counts).not.toBeChecked();
+  await expect(page.getByText(/looks like a mis-stop/)).toBeVisible();
+  await counts.check();
+  await expect(counts).toBeChecked();
+  await page.getByRole("button", { name: "Close" }).first().click();
+  // Counted now: no hollow point, and it's the new single PB.
+  await expect(page.getByTestId("trend-misstop")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^Single personal best 0\.40/ })).toBeVisible();
+
+  await page.getByRole("group", { name: "X axis" }).getByRole("button", { name: "By date" }).click();
+  await expect(chart).toBeVisible();
+
+  // Drag across the left half to zoom in, then reset.
+  const box = (await chart.boundingBox())!;
+  await page.mouse.move(box.x + 50, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.6, box.y + box.height / 2, { steps: 5 });
+  await page.mouse.up();
+  await expect(page.getByRole("button", { name: "Reset zoom" })).toBeVisible();
+  await expect(page.getByText(/solves in view/)).toBeVisible();
+  await page.getByRole("button", { name: "Reset zoom" }).click();
+  await expect(page.getByRole("button", { name: "Reset zoom" })).toHaveCount(0);
+});

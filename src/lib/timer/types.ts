@@ -140,6 +140,8 @@ export interface SolveMetric {
   effectiveTimeMs: number | null;
   createdAt: string;
   excluded?: boolean;
+  /** As `Solve.excludedReason`: the trend chart draws flagged mis-stops hollow. */
+  excludedReason?: "user" | "auto_misstop";
 }
 
 /** Categories `personal_bests.category` accepts that the timer produces. */

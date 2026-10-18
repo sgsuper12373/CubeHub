@@ -41,12 +41,12 @@ effort. Tick them off here as they ship; details of what was built go in `implem
       non-DNF time will). Averages are per session, so against the latest session. Pure
       function with unit tests.
 
-### 3. Trend chart
-- [ ] Clicking a point opens the solve detail (penalties, notes, Counts for records); the page
+### 3. Trend chart (done 2026-10-19)
+- [x] Clicking a point opens the solve detail (penalties, notes, Counts for records); the page
       refetches after a change. Makes the mis-stop flow reachable from Stats.
-- [ ] Stars on PBs; flagged mis-stops as hollow points (the chart gets excluded solves too).
-- [ ] "By solve / by date" x-axis toggle.
-- [ ] Drag to zoom on a range, with a reset.
+- [x] Stars on PBs; flagged mis-stops as hollow points (the chart gets excluded solves too).
+- [x] "By solve / by date" x-axis toggle.
+- [x] Drag to zoom on a range, with a reset.
 
 ### 4. Sessions table
 - [ ] Replaces the session dropdown: sortable rows with name, date, solves, mean, best, best

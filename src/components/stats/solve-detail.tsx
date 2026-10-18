@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { ScramblePreview } from "@/components/timer/scramble-preview";
 import { formatMs } from "@/lib/timer/format";
 import { isFlaggedMisstop } from "@/lib/timer/misfire";
-import { useSessionStore } from "@/stores/session-store";
 import type { Penalty, Solve, TimerPuzzle } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
 import { useOverlayLock } from "@/stores/overlay-store";
@@ -31,6 +30,7 @@ export function SolveDetailModal({
   onPenalty,
   onDelete,
   onNotes,
+  onCounts,
 }: {
   solve: Solve;
   puzzle: TimerPuzzle;
@@ -38,6 +38,8 @@ export function SolveDetailModal({
   onPenalty: (p: Penalty) => void;
   onDelete: () => void;
   onNotes: (notes: string) => void;
+  /** Count the solve for records, or leave it out. */
+  onCounts: (counts: boolean) => void;
 }) {
   const [copied, setCopied] = useState(false);
   const [notes, setLocalNotes] = useState(solve.notes ?? "");
@@ -74,7 +76,9 @@ export function SolveDetailModal({
             Solve Details
           </h2>
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Close"
             className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <X className="size-4" />
@@ -121,9 +125,7 @@ export function SolveDetailModal({
               role="switch"
               className="mt-0.5 size-4 accent-primary"
               checked={!solve.excluded}
-              onChange={(e) =>
-                void useSessionStore.getState().setExcluded(solve.id, !e.target.checked)
-              }
+              onChange={(e) => onCounts(e.target.checked)}
             />
             <span>
               <span className="font-medium text-foreground">Counts for records</span>

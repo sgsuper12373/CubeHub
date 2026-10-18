@@ -214,6 +214,20 @@ export function createSupabaseRepo(userId: string): SolveRepository {
       return (data ?? []).map(mapSolve);
     },
 
+    async loadSolve(id) {
+      const { data, error } = await getClient()
+        .from("solves")
+        .select(
+          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at, excluded, excluded_reason, misstop_confirmed",
+        )
+        .eq("id", id)
+        .eq("user_id", userId)
+        .is("deleted_at", null)
+        .maybeSingle();
+      if (error) throw error;
+      return data ? mapSolve(data) : null;
+    },
+
     async purgeSolves(ids) {
       if (ids.length === 0) return;
       // Only rows already in the trash: a stray id can never destroy a live solve.
@@ -231,7 +245,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
       // The select is deliberately narrow — no scramble, no notes.
       let query = getClient()
         .from("solves")
-        .select("id, session_id, time_ms, penalty, effective_time_ms, created_at, excluded")
+        .select("id, session_id, time_ms, penalty, effective_time_ms, created_at, excluded, excluded_reason")
         .eq("user_id", userId)
         .eq("puzzle_type", puzzle)
         .is("deleted_at", null)
@@ -394,6 +408,7 @@ function mapMetric(row: {
   effective_time_ms: number | null;
   created_at: string;
   excluded: boolean;
+  excluded_reason: string | null;
 }): SolveMetric {
   return {
     id: row.id,
@@ -403,6 +418,7 @@ function mapMetric(row: {
     effectiveTimeMs: row.effective_time_ms,
     createdAt: row.created_at,
     ...(row.excluded && { excluded: true }),
+    ...(row.excluded_reason && { excludedReason: row.excluded_reason as SolveMetric["excludedReason"] }),
   };
 }
 

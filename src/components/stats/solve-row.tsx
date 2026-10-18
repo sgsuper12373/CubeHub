@@ -8,6 +8,7 @@ import { isFlaggedMisstop } from "@/lib/timer/misfire";
 import type { Penalty, Solve } from "@/lib/timer/types";
 import { cn } from "@/lib/utils";
 import { SolveDetailModal } from "@/components/stats/solve-detail";
+import { useSessionStore } from "@/stores/session-store";
 
 /**
  * A single solve in the list. Desktop: hover reveals actions. Mobile:
@@ -191,6 +192,7 @@ export function SolveRow({
           onPenalty={(p) => onPenalty(solve.id, p)}
           onDelete={() => onDelete(solve.id)}
           onNotes={(notes) => onNotes(solve.id, notes)}
+          onCounts={(counts) => void useSessionStore.getState().setExcluded(solve.id, !counts)}
         />
       )}
     </div>

@@ -57,6 +57,8 @@ export interface SolveRepository {
    * most recently deleted first, with `deletedAt` set.
    */
   loadDeletedSolves(puzzle: TimerPuzzle, limit?: number): Promise<Solve[]>;
+  /** One live solve with everything (scramble, notes), or null if it's gone. */
+  loadSolve(id: string): Promise<Solve | null>;
   /** Hard delete — gone for good. Only offered for solves already soft-deleted. */
   purgeSolves(ids: string[]): Promise<void>;
 

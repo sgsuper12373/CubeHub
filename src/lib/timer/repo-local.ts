@@ -170,6 +170,10 @@ export const localRepo: SolveRepository = {
       .slice(0, limit);
   },
 
+  async loadSolve(id) {
+    return read().solves.find((s) => s.id === id && !s.deletedAt) ?? null;
+  },
+
   async purgeSolves(ids) {
     if (ids.length === 0) return;
     const set = new Set(ids);
@@ -256,6 +260,7 @@ function toMetric(s: Solve): SolveMetric {
     effectiveTimeMs: s.effectiveTimeMs,
     createdAt: s.createdAt,
     ...(s.excluded && { excluded: true }),
+    ...(s.excludedReason && { excludedReason: s.excludedReason }),
   };
 }
 

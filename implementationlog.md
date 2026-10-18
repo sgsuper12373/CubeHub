@@ -5,6 +5,46 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-19 — Stats step 3: trend chart opens solves, stars, mis-stops, by date, zoom
+
+**Request:** Continue with step 3 of `docs/stats-plan.md`.
+
+### Added
+
+- `src/components/stats/chart/trend-data.ts` (pure): `buildTrendPoints` puts counted solves
+  and flagged mis-stops on one time line (averages from counted solves only), `pbMarks`
+  (stars for the single/Ao5/Ao12 PBs whose solve is on the chart), `nearestPoint`.
+  `tests/unit/trend-data.test.ts` (4).
+- `src/components/stats/chart/segmented-control.tsx`: moved out of `stats-screen.tsx` so the
+  chart can use it.
+- `loadSolve(id)` on both repos; `SolveMetric.excludedReason` (metrics select it).
+
+### Changed
+
+- `trend-chart.tsx`: click or Enter opens a solve; hover picks the nearest point; PB stars
+  (single on its dot, Ao5/Ao12 at the PB value, in the series colours); mis-stops as hollow
+  points in the warning colour (clamped to the bottom edge, never averaged, "Mis-stop? (left
+  out)" in the tooltip); "By solve / By date" (date mode breaks average lines across pauses
+  over two days); drag across to zoom (pointer events, so it works on touch while vertical
+  scrolling still scrolls), Reset zoom and Escape; the y axis fits what's in view.
+- `solve-detail.tsx`: takes `onCounts` instead of writing to the timer's session store, so
+  Stats can use it with the repo; the close button has an accessible name. `solve-row.tsx`
+  passes the store call.
+- `stats-screen.tsx`: opens the solve detail from the chart (penalty, notes, Counts for
+  records, delete with Undo). Edits refresh without changing the query keys, so the page
+  keeps its data and the chart keeps its zoom until the new data lands.
+
+### Verification
+
+- `npm run validate` (43 files, 503 tests), `check:colors`, `npm run build`.
+- e2e: a step 3 case in `stats.spec.ts` (hollow mis-stop, PB star, keyboard open, mark
+  real → it becomes the single PB, by date, drag to zoom and reset); with `timer.spec.ts`:
+  17 passed.
+- Screenshots: hover, drag, zoomed, by date with a 12-day break, phone at 390 px (no
+  sideways scroll).
+
+---
+
 ## 2026-10-19 — Stats step 2: "Now" strip, PB solves, next solve needs
 
 **Request:** Start step 2 of `docs/stats-plan.md`.
