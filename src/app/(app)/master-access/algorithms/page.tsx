@@ -1,6 +1,7 @@
 import { getAllAlgorithmCases } from "@/lib/admin/dal";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Plus, BookOpen, Layers, Settings2, Grid3X3 } from "lucide-react";
 
@@ -30,10 +31,10 @@ export default async function AdminAlgorithmsPage() {
             Manage your puzzle collections, subsets, and the individual algorithm cases. This is the master database that drives the Learn tab.
           </p>
         </div>
-        <Button render={<Link href="/master-access/algorithms/new" />} nativeButton={false} size="lg" className="shrink-0">
+        <Link href="/master-access/algorithms/new" className={cn(buttonVariants({ size: "lg" }), "shrink-0")}>
           <Plus className="mr-2 h-5 w-5" />
           Create New Case
-        </Button>
+        </Link>
       </div>
 
       {/* Stats Overview */}
@@ -144,9 +145,9 @@ export default async function AdminAlgorithmsPage() {
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">
               You haven&apos;t created any algorithm cases yet. Start by creating your first puzzle case (like OLL or PLL).
             </p>
-            <Button render={<Link href="/master-access/algorithms/new" />} nativeButton={false} size="lg">
+            <Link href="/master-access/algorithms/new" className={buttonVariants({ size: "lg" })}>
               <Plus className="mr-2 h-4 w-4" /> Create First Case
-            </Button>
+            </Link>
           </div>
         )}
       </div>

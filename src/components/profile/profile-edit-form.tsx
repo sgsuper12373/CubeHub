@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -242,9 +242,9 @@ export function ProfileEditForm({ profile }: { profile: EditableProfile }) {
         )}
 
         <div className="flex items-center justify-end gap-3">
-          <Button variant="ghost" render={<Link href="/profile" />} nativeButton={false}>
+          <Link href="/profile" className={buttonVariants({ variant: "ghost" })}>
             Cancel
-          </Button>
+          </Link>
           <Button type="submit" disabled={pending}>
             {pending ? "Saving…" : "Save profile"}
           </Button>

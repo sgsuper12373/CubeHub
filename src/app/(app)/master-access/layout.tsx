@@ -1,7 +1,8 @@
 import { requireAdmin } from "@/lib/auth/dal";
 import Link from "next/link";
 import { Settings, BookOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { redirect } from "next/navigation";
 
 export default async function MasterAccessLayout({
@@ -22,10 +23,10 @@ export default async function MasterAccessLayout({
         <div className="space-y-1">
           <h2 className="text-xl font-bold tracking-tight px-4 mb-4">Master Access</h2>
           <nav className="space-y-1">
-            <Button variant="ghost" className="w-full justify-start" render={<Link href="/master-access/algorithms" />} nativeButton={false}>
+            <Link href="/master-access/algorithms" className={cn(buttonVariants({ variant: "ghost" }), "w-full justify-start")}>
               <BookOpen className="mr-2 h-4 w-4" />
               Algorithm Cases
-            </Button>
+            </Link>
             <Button variant="ghost" className="w-full justify-start text-muted-foreground" disabled>
               <Settings className="mr-2 h-4 w-4" />
               Settings (Soon)

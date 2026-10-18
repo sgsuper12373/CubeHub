@@ -4,7 +4,8 @@ import { ChevronLeft } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { ProfileEditForm } from "@/components/profile/profile-edit-form";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { getEditableProfile } from "@/lib/profile/dal";
 
 export const metadata: Metadata = { title: "Edit profile — CubeHub" };
@@ -16,16 +17,13 @@ export default async function EditProfilePage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-8">
-      <Button
-        variant="ghost"
-        size="sm"
-        render={<Link href="/profile" />}
-        nativeButton={false}
-        className="-ml-3 text-muted-foreground"
+      <Link
+        href="/profile"
+        className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-ml-3 text-muted-foreground")}
       >
         <ChevronLeft />
         Back to profile
-      </Button>
+      </Link>
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Edit profile</h1>
         <p className="mt-1 text-sm text-muted-foreground">

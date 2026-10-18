@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useSyncExternalStore, useTransition } from "react";
 import { LogOut } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   type ThemePreference,
   setTheme,
@@ -342,9 +342,9 @@ function AccountSection({
                 Username, name, photo and privacy are all in Edit profile.
               </p>
             </div>
-            <Button variant="outline" nativeButton={false} render={<Link href="/profile/edit" />} className="shrink-0">
+            <Link href="/profile/edit" className={cn(buttonVariants({ variant: "outline" }), "shrink-0")}>
               Edit profile
-            </Button>
+            </Link>
           </div>
         )}
         <div className="flex items-center justify-between gap-4 p-4 sm:p-6">

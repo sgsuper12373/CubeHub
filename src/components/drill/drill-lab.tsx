@@ -7,7 +7,7 @@ import { LogIn, Trash2 } from "lucide-react";
 
 import { DrillCaseView } from "@/components/drill/drill-case-view";
 import { SessionList, SetRanking, VariantPicker } from "@/components/drill/drill-report";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { deleteDrillAttempt, recordDrillAttempt, setDrillAttemptPenalty } from "@/lib/drill/actions";
 import { randomAuf, type Auf } from "@/lib/drill/case-state";
 import type { DrillCase, DrillSubset } from "@/lib/drill/dal";
@@ -321,24 +321,20 @@ export function DrillLab({
       {/* Set picker */}
       <nav className="flex flex-wrap items-center gap-1.5" aria-label="Drill set">
         {subsets.map((s) => (
-          <Button
+          <Link
+            href={setHref(s.slug)}
+            className={buttonVariants({ size: "sm", variant: activeSet === s.slug ? "default" : "outline" })}
             key={s.slug}
-            size="sm"
-            variant={activeSet === s.slug ? "default" : "outline"}
-            render={<Link href={setHref(s.slug)} />}
-            nativeButton={false}
           >
             {s.name}
-          </Button>
+          </Link>
         ))}
-        <Button
-          size="sm"
-          variant={activeSet === "all" ? "default" : "outline"}
-          render={<Link href={`${setHref("all")}&order=weakest`} />}
-          nativeButton={false}
+        <Link
+          href={`${setHref("all")}&order=weakest`}
+          className={buttonVariants({ size: "sm", variant: activeSet === "all" ? "default" : "outline" })}
         >
           All cases
-        </Button>
+        </Link>
         {activeSet === "custom" && (
           <Button size="sm" variant="default" disabled>
             Custom · {cases.length}

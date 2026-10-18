@@ -7,7 +7,8 @@ import { useState } from "react";
 
 import { BrandLockup } from "@/components/layout/logo";
 import { HeroTimerCard } from "@/components/marketing/hero-timer-card";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 // Client-only canvas; nothing for the server to render.
 const ScrambleMatrix = dynamic(
@@ -57,24 +58,19 @@ export function HeroSection() {
           </p>
 
           <div className="mt-8 flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
-            <Button
-              size="lg"
-              className="h-12 rounded-full px-7 text-base font-semibold shadow-lg shadow-primary/25 hover:bg-primary/90"
-              nativeButton={false}
-              render={<Link href="/timer" />}
+            <Link
+              href="/timer"
+              className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-7 text-base font-semibold shadow-lg shadow-primary/25 hover:bg-primary/90")}
             >
               Start timing free
               <ArrowRight data-icon="inline-end" className="size-4" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="h-12 rounded-full bg-background/60 px-7 text-base font-semibold backdrop-blur"
-              nativeButton={false}
-              render={<Link href="/learn" />}
+            </Link>
+            <Link
+              href="/learn"
+              className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-12 rounded-full bg-background/60 px-7 text-base font-semibold backdrop-blur")}
             >
               Explore tutorials
-            </Button>
+            </Link>
           </div>
 
           <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground lg:justify-start">

@@ -28,7 +28,7 @@ import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import { FollowButton } from "@/components/social/follow-button";
 import { NotificationBell } from "@/components/social/notification-bell";
 import { ProfileActionsMenu } from "@/components/social/profile-actions-menu";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { getUser } from "@/lib/auth/dal";
 import { getProfileClubs } from "@/lib/clubs/dal";
 import {
@@ -266,15 +266,13 @@ function ProfileHeader({
               <NotificationBell items={notifications.items} unread={notifications.unread} />
             </div>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            render={<Link href="/settings" />}
-            nativeButton={false}
+          <Link
+            href="/settings"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
             aria-label="Settings"
           >
             <Settings />
-          </Button>
+          </Link>
         </div>
       )}
     </header>
@@ -374,9 +372,9 @@ function EventSection({
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-12 text-center">
         <p className="text-sm text-muted-foreground">No solves yet.</p>
         {isOwner && (
-          <Button size="sm" render={<Link href="/timer" />} nativeButton={false}>
+          <Link href="/timer" className={buttonVariants({ size: "sm" })}>
             Start timing
-          </Button>
+          </Link>
         )}
       </div>
     );

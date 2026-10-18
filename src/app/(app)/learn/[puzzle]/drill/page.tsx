@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { DrillLab } from "@/components/drill/drill-lab";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { getUser } from "@/lib/auth/dal";
 import { randomAuf } from "@/lib/drill/case-state";
 import { getDrillData, type DrillSelection } from "@/lib/drill/dal";
@@ -75,21 +75,19 @@ export default async function DrillPage({ params, searchParams }: Props) {
             : "This set has no cases with approved algorithms yet."}
         </p>
         {data.subsets.length === 0 && (
-          <Button variant="outline" size="sm" render={<Link href="/learn" />} nativeButton={false}>
+          <Link href="/learn" className={buttonVariants({ variant: "outline", size: "sm" })}>
             Browse tutorials
-          </Button>
+          </Link>
         )}
         <div className="flex flex-wrap justify-center gap-2">
           {data.subsets.map((s) => (
-            <Button
+            <Link
+              href={`/learn/${puzzleId}/drill?set=${encodeURIComponent(s.slug)}`}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
               key={s.slug}
-              variant="outline"
-              size="sm"
-              render={<Link href={`/learn/${puzzleId}/drill?set=${encodeURIComponent(s.slug)}`} />}
-              nativeButton={false}
             >
               {s.name}
-            </Button>
+            </Link>
           ))}
         </div>
       </div>

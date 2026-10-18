@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "@/components/layout/logo";
 import { UserMenu } from "@/components/layout/user-menu";
 import { NotificationBell } from "@/components/social/notification-bell";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import type { CurrentProfile } from "@/lib/auth/dal";
 import { activeNavHref, navItems } from "@/lib/navigation";
 import type { NotificationItem } from "@/lib/notifications/types";
@@ -63,13 +63,12 @@ export function Navbar({
               <UserMenu profile={profile} />
             </>
           ) : (
-            <Button
-              size="sm"
-              nativeButton={false}
-              render={<Link href="/login" />}
+            <Link
+              href="/login"
+              className={buttonVariants({ size: "sm" })}
             >
               Sign In
-            </Button>
+            </Link>
           )}
         </div>
       </nav>

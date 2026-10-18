@@ -8,7 +8,7 @@ import { useRef } from "react";
 
 import Image from "next/image";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 
 export function HeroSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -70,9 +70,9 @@ export function HeroSection() {
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             {/* The phone bar has no Playground tab, so this is its way in on mobile. */}
-            <Button variant="outline" size="lg" nativeButton={false} render={<Link href="/playground" />}>
+            <Link href="/playground" className={buttonVariants({ variant: "outline", size: "lg" })}>
               <Box /> No cube to hand? Try the Playground
-            </Button>
+            </Link>
           </motion.div>
         </div>
 

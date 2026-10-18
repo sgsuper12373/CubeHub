@@ -3,7 +3,7 @@
 import { useState, useTransition, type MouseEvent } from "react";
 import { AlgorithmCase } from "@/lib/learn/dal";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Dialog } from "@base-ui/react/dialog";
 import { Play, Check, Eye, X, Box } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -212,16 +212,13 @@ export function AlgorithmCard({
             </Button>
           )}
 
-          <Button
-            render={<Link href={`/learn/${puzzle}/drill?case=${algCase.id}`} />}
-            nativeButton={false}
-            variant={algCase.learned ? "ghost" : "secondary"}
-            size="sm"
-            className="ml-auto font-medium"
+          <Link
+            href={`/learn/${puzzle}/drill?case=${algCase.id}`}
+            className={cn(buttonVariants({ variant: algCase.learned ? "ghost" : "secondary", size: "sm" }), "ml-auto font-medium")}
           >
             <Play className="mr-1.5 h-3.5 w-3.5" />
             Drill Case
-          </Button>
+          </Link>
         </div>
       </CardContent>
 

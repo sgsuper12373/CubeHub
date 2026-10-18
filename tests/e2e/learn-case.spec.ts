@@ -53,8 +53,9 @@ test("a card opens its case in a side panel, and Back closes it", async ({ page 
   const name = (await link.textContent())?.trim() ?? "";
   await link.click();
   await expect(page).toHaveURL(/\/learn\/333\/pll\?case=1$/);
+  // The panel is named by its title; its section headings are h2s too.
   const panel = page.getByRole("dialog");
-  await expect(panel.getByRole("heading", { level: 2 })).toHaveText(name);
+  await expect(page.getByRole("dialog", { name })).toBeVisible();
   await expect(panel.getByRole("link", { name: "Full page" })).toHaveAttribute("href", "/learn/333/pll/1");
 
   // → moves to the next case within the panel

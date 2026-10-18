@@ -3,7 +3,8 @@ import { ArrowRight, Sparkles } from "lucide-react";
 
 import { Logo } from "@/components/layout/logo";
 import { Eyebrow } from "@/components/marketing/section-heading";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function CtaBand() {
   return (
@@ -26,24 +27,19 @@ export function CtaBand() {
             times synced across devices.
           </p>
           <div className="mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-            <Button
-              size="lg"
-              className="h-12 rounded-full px-7 text-base font-semibold shadow-lg shadow-primary/25 hover:bg-primary/90"
-              nativeButton={false}
-              render={<Link href="/timer" />}
+            <Link
+              href="/timer"
+              className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-7 text-base font-semibold shadow-lg shadow-primary/25 hover:bg-primary/90")}
             >
               Open the timer
               <ArrowRight data-icon="inline-end" className="size-4" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="h-12 rounded-full px-7 text-base font-semibold"
-              nativeButton={false}
-              render={<Link href="/signup" />}
+            </Link>
+            <Link
+              href="/signup"
+              className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-12 rounded-full px-7 text-base font-semibold")}
             >
               Create a free account
-            </Button>
+            </Link>
           </div>
         </div>
       </div>

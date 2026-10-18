@@ -6,7 +6,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Play, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 
 interface Props {
@@ -55,16 +56,13 @@ export default async function SeriesCasesPage({ params }: Props) {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-4 flex-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            render={<Link href={`/learn/${puzzle.id}`} />}
-            nativeButton={false}
-            className="-ml-3 text-muted-foreground"
+          <Link
+            href={`/learn/${puzzle.id}`}
+            className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-ml-3 text-muted-foreground")}
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back to {puzzle.name}
-          </Button>
+          </Link>
 
           <div className="flex items-center gap-3">
             <h1 className="text-4xl font-bold tracking-tight">{series.name}</h1>

@@ -6,7 +6,8 @@ import Image from "next/image";
 import { motion } from "motion/react";
 import { ChevronLeft, BookOpen, Code2, BarChart2, Shapes } from "lucide-react";
 import { useMousePosition } from "@/hooks/use-mouse-position";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { LearnPuzzle } from "@/lib/learn/dal";
 import { difficultyRange } from "@/lib/learn/difficulty";
 
@@ -47,10 +48,10 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <Button variant="ghost" size="sm" render={<Link href="/learn" />} nativeButton={false} className="-ml-3 text-primary hover:text-primary hover:bg-primary/10 transition-colors">
+          <Link href="/learn" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-ml-3 text-primary hover:text-primary hover:bg-primary/10 transition-colors")}>
               <ChevronLeft className="mr-1 h-4 w-4" />
               Back to Puzzles
-          </Button>
+          </Link>
         </motion.div>
 
         <div className="space-y-4">

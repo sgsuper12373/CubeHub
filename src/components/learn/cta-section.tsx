@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { Lightbulb, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /** `href` is the puzzle's first tutorial series (its beginner method). */
 export function CTASection({ href }: { href: string }) {
@@ -26,14 +27,13 @@ export function CTASection({ href }: { href: string }) {
         </div>
 
         <div className="shrink-0 w-full md:w-auto">
-          <Button 
-            render={<Link href={href} />}
-            nativeButton={false}
-            className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 py-7 rounded-full shadow-[0_0_30px_color-mix(in_oklch,var(--primary)_20%,transparent)] hover:shadow-[0_0_50px_color-mix(in_oklch,var(--primary)_40%,transparent)] hover:scale-105 active:scale-95 transition-all duration-300 text-lg group/btn"
+          <Link
+            href={href}
+            className={cn(buttonVariants(), "w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 py-7 rounded-full shadow-[0_0_30px_color-mix(in_oklch,var(--primary)_20%,transparent)] hover:shadow-[0_0_50px_color-mix(in_oklch,var(--primary)_40%,transparent)] hover:scale-105 active:scale-95 transition-all duration-300 text-lg group/btn")}
           >
               Start Beginner Method
               <ArrowRight className="w-5 h-5 ml-2 group-hover/btn:translate-x-1.5 transition-transform" />
-          </Button>
+          </Link>
         </div>
       </div>
     </div>

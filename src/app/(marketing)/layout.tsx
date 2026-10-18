@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Logo } from "@/components/layout/logo";
 import { Navbar } from "@/components/layout/navbar";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { getProfile } from "@/lib/auth/dal";
 import { getNotifications } from "@/lib/notifications/dal";
 
@@ -31,18 +31,16 @@ export default async function MarketingLayout({
         </Link>
         <div className="ml-auto">
           {profile ? (
-            <Button
-              size="sm"
-              variant="ghost"
-              nativeButton={false}
-              render={<Link href="/timer" />}
+            <Link
+              href="/timer"
+              className={buttonVariants({ size: "sm", variant: "ghost" })}
             >
               Open timer
-            </Button>
+            </Link>
           ) : (
-            <Button size="sm" nativeButton={false} render={<Link href="/login" />}>
+            <Link href="/login" className={buttonVariants({ size: "sm" })}>
               Sign In
-            </Button>
+            </Link>
           )}
         </div>
       </header>
