@@ -12,6 +12,24 @@ migration is applied (`supabase db push --dry-run`: "Remote database is up to da
 2026-10-19). The whole e2e suite passes again. Open items before the beta, in order:
 custom SMTP (below, "Next after that" 1), then the "Check by hand" items.
 
+### Pre-beta review (2026-10-19)
+
+- [x] Drill: variant moves hidden while "Hide algorithm" is on, until the rep is done.
+- [x] Landing CTA: no "Create a free account" when signed in.
+- [x] Landing: a Clubs tile in the feature bento.
+- [x] Stats PB row: "averages count within one session" instead of "Across every session".
+- [x] Badges: dated "First reached …".
+- [ ] **Relative mis-stops** (planned, needs decisions): a 3.01 on a ~25 s average passes the
+      fixed 3.00 floor and awards Sub-10/Sub-15. Plan: the timer flags a solve under a
+      share of the session Ao12 (Keep / Leave out / Delete; "Leave out" sets `excluded`),
+      and `achievement_earned_at` checks `single_under` badges against the 12 counted
+      solves before it. Decide: the threshold per event (40% for 3x3 and up; lower or none
+      for 2x2, Pyraminx, Skewb), what happens with fewer than 12 earlier solves, and whether
+      a solve the cuber chose to keep can still earn a badge. Needs a migration.
+- [ ] **Test accounts and test clubs stay until the final pre-beta check** (founder,
+      2026-10-19): `testbot1`/`testbot2`, the "E2E Club posts mvchw52f" and "8.8.8.8" clubs
+      are left in place, then removed together once everything is checked.
+
 ### Social v1 go-live (done 2026-10-14)
 
 What it is: `roadmap.md` → Social layer. Decided by the founder on

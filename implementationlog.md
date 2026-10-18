@@ -5,6 +5,42 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-19 — Pre-beta review items: drill variants, CTA, Clubs tile, PB and badge wording
+
+**Request:** Do the simple items from the pre-beta review; keep the test bots and test clubs
+for now; remove `download.pdf`; plan next steps.
+
+### Changed
+
+- `src/components/drill/drill-report.tsx`, `drill-lab.tsx`: `VariantPicker` takes
+  `hideMoves` (`hideAlg && phase !== "stopped"`). Hidden, a variant shows "label or Variant N
+  · N moves", and the switch recommendation names variants instead of quoting moves.
+- `src/components/marketing/cta-band.tsx`, `src/app/(marketing)/page.tsx`: `CtaBand` takes
+  `signedIn` (from the cached `getUser()`); signed in it offers "Drill your weakest cases".
+- `src/components/marketing/feature-bento.tsx`: a Clubs tile with three example posts;
+  `lg:col-span-3`, so it sits beside Profiles on two columns and is a full row on three.
+- `src/components/stats/analytics/pb-row.tsx`: header says singles from any session,
+  averages within one; a tooltip per tile.
+- `src/components/profile/achievements-section.tsx`: "First reached" before the badge date,
+  with a tooltip.
+- `tests/e2e/drill.spec.ts`: the variant list is hidden before the rep and shown after.
+- `docs/todo.md`: a "Pre-beta review" block; the mis-stop plan and the decision to keep the
+  test accounts and clubs until the final check.
+- Removed the untracked `download.pdf` (a Lighthouse report); kept the `.json` one.
+
+### Kept on purpose
+
+- Test accounts and the two test clubs (founder's call).
+- Relative mis-stops: not built; needs the founder's decisions (see `docs/todo.md`).
+
+### Verification
+
+- `tsc`, eslint on changed files, `check:colors`, `npm test` (480), `npm run build`.
+- e2e on the production build: drill, landing-hero, profile, timer: 21 passed.
+- Screenshots: the bento at 800 and 1280 px, the signed-in CTA.
+
+---
+
 ## 2026-10-19 — Pre-beta cleanup: e2e green, Learn difficulty, links as links, docs
 
 **Request:** Do what's left from the status review (the migrations were already applied) and
