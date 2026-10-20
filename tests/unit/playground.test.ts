@@ -284,7 +284,16 @@ describe("playground prefs", () => {
       animationSpeed: 8,
       hintStickers: true,
       inspection: false,
+      swipeToTurn: true,
+      dragOffCube: "orbit",
+      swipeHintDismissed: false,
     });
     expect(sanitizePrefs({ keyBindings: "x", animationSpeed: 4, hintStickers: "yes" })).toEqual(DEFAULT_PREFS);
+    expect(sanitizePrefs({ swipeToTurn: false, dragOffCube: "rotate", swipeHintDismissed: true })).toMatchObject({
+      swipeToTurn: false,
+      dragOffCube: "rotate",
+      swipeHintDismissed: true,
+    });
+    expect(sanitizePrefs({ swipeToTurn: "no", dragOffCube: "spin" })).toEqual(DEFAULT_PREFS);
   });
 });

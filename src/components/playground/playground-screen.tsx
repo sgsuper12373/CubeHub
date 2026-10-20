@@ -247,6 +247,11 @@ export function PlaygroundScreen({
   }, [onMove, prefs.keyBindings]);
 
   const onBindingsChange = useCallback((keyBindings: KeyBindings) => updatePrefs({ keyBindings }), []);
+  const swipeHintDismissed = prefs.swipeHintDismissed;
+  const dismissSwipeHint = useCallback(() => {
+    if (!swipeHintDismissed) updatePrefs({ swipeHintDismissed: true });
+  }, [swipeHintDismissed]);
+  const swipeOn = prefs.swipeToTurn && visualization === "3D";
   const closeKeys = useCallback(() => setKeysOpen(false), []);
 
   const solved = solvedWith(moves);
@@ -340,6 +345,10 @@ export function PlaygroundScreen({
             tempoScale={prefs.animationSpeed}
             hintStickers={prefs.hintStickers}
             replayToken={replayToken}
+            swipe={prefs.swipeToTurn}
+            dragOffCube={prefs.dragOffCube}
+            showSwipeHint={!swipeHintDismissed}
+            onDismissSwipeHint={dismissSwipeHint}
             onMove={onMove}
           />
 
@@ -459,7 +468,11 @@ export function PlaygroundScreen({
               {sameBindings(prefs.keyBindings, DEFAULT_BINDINGS)
                 ? "Press R to turn R. Hold Shift for R'."
                 : "Using your custom keys."}{" "}
-              Drag to look around; click a face to turn it.
+              {swipeOn
+                ? prefs.dragOffCube === "rotate"
+                  ? "Swipe a row to turn it; drag off the cube to rotate it."
+                  : "Swipe a row to turn it; drag off the cube to look around."
+                : "Drag to look around; click a face to turn it."}
             </p>
             <Button type="button" variant="outline" size="sm" onClick={() => setKeysOpen(true)}>
               <Keyboard /> Keys &amp; custom mapping{" "}
@@ -490,6 +503,18 @@ export function PlaygroundScreen({
               checked={prefs.inspection}
               onChange={(inspection) => updatePrefs({ inspection })}
             />
+            <Toggle
+              label="Swipe to turn"
+              checked={prefs.swipeToTurn}
+              onChange={(swipeToTurn) => updatePrefs({ swipeToTurn })}
+            />
+            {prefs.swipeToTurn && (
+              <Toggle
+                label="Drag off the cube rotates it"
+                checked={prefs.dragOffCube === "rotate"}
+                onChange={(rotate) => updatePrefs({ dragOffCube: rotate ? "rotate" : "orbit" })}
+              />
+            )}
           </Panel>
         </aside>
       </div>

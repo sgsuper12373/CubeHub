@@ -2830,3 +2830,56 @@ A virtual puzzle sandbox at `/playground` (plan: `docs/playground.md`).
 - `npm run build`, then the playground and cubing-runtime e2e specs against
   `next start`: 5 passed. Click and touch-tap turning checked by hand in Chromium.
 
+
+## 2026-10-20 — Playground: swipe to turn
+
+Phone-app style swipes on the 3D 3x3 and 2x2, replacing click-a-face (branch
+`feat/playground-swipe`).
+
+### Added
+
+- `src/lib/playground/swipe.ts`: pure geometry. Projects with cubing's own camera
+  (read from cubing 0.56's `Twisty3DVantage` / `setCameraFromOrbitCoordinates`:
+  20° vertical FOV, near 0.1, camera at `Spherical(distance, 90° − lat, lon)` looking
+  at the origin with +Y up, cubing's tall-view offset), ray-casts the axis-aligned
+  cube (half-edge 0.5551, measured from PG3D's hit planes) to a face/row/column,
+  and maps (sticker, swipe, camera) to a move.
+- `playground-cube.tsx`: a capture-phase Pointer Events layer on the cube's
+  container. A press on a sticker is taken (cubing never sees it); after 15 px the
+  direction locks and one move goes through the existing `onMove`. A press off the
+  cube is left to cubing, which orbits as before. cubing's move-press input is
+  switched to "none" while swipe is on, so nothing turns twice.
+- Prefs (`prefs.ts`): `swipeToTurn` (default on), `dragOffCube` ("orbit" default,
+  or "rotate" for x/y/z), `swipeHintDismissed`. Settings: "Swipe to turn" and,
+  under it, "Drag off the cube rotates it". The Controls text follows the setting.
+- A one-time hint on coarse-pointer screens, closed by "Got it" or the first swipe.
+- Tests: `tests/unit/playground-swipe.test.ts` (every face, both directions, outer
+  and middle layers, 2x2, a sweep of camera angles), `tests/e2e/playground-swipe.spec.ts`.
+
+### Mapping
+
+The face's two in-plane axes are projected to the screen from the sticker centre and
+the swipe follows the closer one. The sticker then moves along world axis `m`, which
+is a rotation about `ω = normal × m`; the layer is the sticker's slice along ω, and
+the sign of ω against each layer's clockwise sense (R, U, F, S negative about their
++axis; L, D, B, M, E positive) gives the prime.
+
+### Decided
+
+- A face seen so edge-on that its row and column directions are under 30° apart on
+  screen is not swipeable: the press orbits the camera instead (the move pad is still
+  there). This is U/D within about 15° of level, or a side face at a grazing angle.
+  Every face visible from the default view is clear of it (U 58°, F 68°, R 37°).
+- One move per swipe, emitted when the threshold is crossed, not on release.
+- No orientation tracking after x/y/z: cubing's moves are position-based, so the top
+  layer is always U.
+
+### Verification
+
+- The e2e spec checks the maths against the real renderer under touch emulation: the
+  cube size, the colour under every projected sticker centre at four camera angles,
+  and for 14 swipes the move in history *and* the colour that arrives under the
+  finger. Mutating the FOV or flipping the prime both fail it.
+- tsc, eslint (0 errors), `npm test` (575 passed), `check:colors`, `npm run build`,
+  `check:chunks` (all files present; `/learn/333/drill` and `/learn/333/oll/27` 404 in
+  a container with no Supabase data), e2e on `next start`.
