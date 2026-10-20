@@ -25,19 +25,26 @@ import { themeMode } from "@/themes/preference";
  */
 const ON_VERCEL = process.env.VERCEL === "1";
 
+// Preload only what paints in the first viewport. Measured on / (phone and
+// desktop): Geist (body, nav, hero copy), Outfit (the logo and the hero
+// lockup) and Geist Mono (the hero timer card). Everything else gets
+// preload: false; its @font-face is still declared, so the browser fetches
+// the file once an element actually renders in it. display: "swap" is the
+// default, spelled out so nobody wonders.
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  preload: true,
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  preload: true,
+  display: "swap",
 });
 
-// Paper's timer font. preload: false keeps it out of the <head> preloads; the
-// @font-face is still declared, so the browser fetches the file only once an
-// element actually renders in it (Paper's --font-timer).
 // Brand font: only the logo wordmark and tagline use it (--font-brand in
 // globals.css; weights 500 and 700). Body text stays Geist. Outfit is a
 // variable font, so no `weight`: one file covers both, and Turbopack's
@@ -45,9 +52,14 @@ const geistMono = Geist_Mono({
 const outfit = Outfit({
   variable: "--font-brand",
   subsets: ["latin"],
+  preload: true,
   display: "swap",
 });
 
+// Paper's timer font (Paper's --font-timer), so it paints above the fold
+// only for Paper visitors (the landing hero's timer card), and never as the
+// LCP element there (that's the hero copy). Preloading it would make every
+// Slate visitor download a file they never use.
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],

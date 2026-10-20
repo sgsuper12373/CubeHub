@@ -2903,3 +2903,17 @@ anything looks or behaves. Six steps, one commit each, on `perf/mobile-lighthous
   The one same-shaped cost: on phones the hero timer card's `backdrop-blur-xl` sits over the
   ScrambleMatrix canvas, which redraws every frame, so the blur is redone every frame. Off
   below `md`; the card is 90% opaque, so the blur barely showed there.
+
+### 4. Fonts
+
+- Measured which families paint in the first viewport (Playwright, phone and desktop): on `/`,
+  Geist (copy, nav), Outfit (logo, hero lockup) and Geist Mono (hero timer card) all do; on
+  phone `/learn` only Geist does. Preload stays on those three, since the root layout's
+  preloads are shared by every route and `/` needs all three. JetBrains Mono keeps
+  `preload: false`: it is Paper's timer font, so it paints in the hero timer card only for
+  Paper visitors (light OS with no cookie, which is also what Lighthouse sees), and it is
+  never the LCP element (Lighthouse names the hero paragraph). Preloading it would cost every
+  Slate visitor 39.5 KiB.
+- `display: "swap"` and `preload` are now spelled out on all four. Both match the defaults
+  they replace, so nothing changes at runtime; the comment that described JetBrains Mono but sat
+  above Outfit moved to the right font.
