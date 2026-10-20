@@ -94,11 +94,13 @@ export function HeroSection() {
             className="relative w-[320px] h-[320px] md:w-[450px] md:h-[450px] group-hover/hero:scale-105 group-hover/hero:-rotate-2 transition-all duration-700 ease-out cursor-pointer"
           >
              <Image 
-               src="/images/learn/hero_cube.png" 
+               src="/images/learn/hero_cube.webp" 
                alt="CubeHub Hero Cube" 
                fill 
                className="object-contain drop-shadow-[0_20px_40px_color-mix(in_oklch,var(--primary)_20%,transparent)] hover:drop-shadow-[0_30px_60px_color-mix(in_oklch,var(--primary)_40%,transparent)] transition-all duration-500"
-               priority
+               // The box is 320px, 450px from md. /learn's LCP image.
+               sizes="(min-width: 768px) 450px, 320px"
+               preload
              />
           </motion.div>
         </motion.div>

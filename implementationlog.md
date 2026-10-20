@@ -2853,3 +2853,35 @@ anything looks or behaves. Six steps, one commit each, on `perf/mobile-lighthous
 - `NotificationBell` takes an optional `onRead`, since `router.refresh()` can't update a
   static page. Sign-in/out in another tab refetches through `onAuthStateChange`.
 - Build: `/` is now `○` (was `ƒ`). `/_not-found` and `/auth/auth-code-error` also became static.
+
+### 2. Images
+
+- `public/images/learn/hero_cube.png`, `333.jpg` and `222.jpg` → WebP (quality 90, via the
+  `sharp` that Next already installs; no new dependency). None has transparency. PSNR against
+  the originals is 36–42 dB, and next/image re-encodes at q75 anyway. Originals removed,
+  references updated.
+- `public/brand/*.png` lockups and marks: lossless WebP copies added next to the PNGs (alpha
+  kept). The PNGs stay: the app doesn't use these files (press, docs and email, per
+  `docs/brand.md`), email clients handle WebP badly, and `/brand/*.png` URLs may be linked
+  from outside. The OG sources stay PNG only, since social cards need PNG or JPEG.
+
+| File | Before | After |
+|---|---|---|
+| `images/learn/hero_cube` | 1297 KiB (PNG) | 80 KiB |
+| `images/learn/333` | 687 KiB (JPG) | 121 KiB |
+| `images/learn/222` | 780 KiB (JPG) | 154 KiB |
+| `brand/cubehub-lockup-classic-transparent` | 499 KiB | 303 KiB |
+| `brand/cubehub-lockup-classic` | 315 KiB | 193 KiB |
+| `brand/cubehub-lockup-paper` | 134 KiB | 49 KiB |
+| `brand/cubehub-lockup-slate-transparent` | 452 KiB | 247 KiB |
+| `brand/cubehub-lockup-slate` | 291 KiB | 173 KiB |
+| `brand/cubehub-mark-classic` | 346 KiB | 234 KiB |
+| `brand/cubehub-mark-paper` | 109 KiB | 36 KiB |
+| `brand/cubehub-mark-slate` | 312 KiB | 180 KiB |
+
+- `sizes` on every `fill` image: Learn hero `(min-width: 768px) 450px, 320px` (it asked for a
+  1200w file on a phone before); puzzle cards `(min-width: 640px) 240px, 200px` (the box grows
+  at `sm`, not 768px); puzzle hero `(min-width: 768px) 350px, 280px`.
+- Preload: kept on the /learn hero cube and on the `/learn/[puzzle]` hero (each page's LCP
+  image), dropped from the two puzzle cards below the /learn hero. `priority` became
+  `preload`, its non-deprecated name in Next 16 (same behaviour).
