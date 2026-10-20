@@ -31,17 +31,18 @@ function SignInLink() {
 export function MarketingNavbar() {
   const { viewer, likelySignedIn } = useViewer();
 
+  // Signed out stays this one link from the server's HTML onwards: swapping it
+  // for the navbar's own Sign In mid-hydration dropped clicks made meanwhile.
+  // Only its class changes once the answer is in (a stale cookie can mark
+  // <html> signed in for someone who isn't).
   let account: React.ReactNode | undefined;
-  if (!viewer) {
-    if (likelySignedIn === null) {
-      account = (
-        <span className={IF_SIGNED_OUT}>
+  if (!viewer?.profile) {
+    account =
+      !viewer && likelySignedIn ? null : (
+        <span className={viewer ? "contents" : IF_SIGNED_OUT}>
           <SignInLink />
         </span>
       );
-    } else if (likelySignedIn) {
-      account = null;
-    }
   }
 
   return (
@@ -64,12 +65,12 @@ export function MobileHeaderAction() {
     </Link>
   );
 
-  if (viewer) return viewer.profile ? openTimer : <SignInLink />;
-  if (likelySignedIn !== null) return likelySignedIn ? openTimer : <SignInLink />;
+  // Same elements throughout, only the classes change (see MarketingNavbar).
+  const signedIn = viewer ? Boolean(viewer.profile) : likelySignedIn;
   return (
     <>
-      <span className={IF_SIGNED_IN}>{openTimer}</span>
-      <span className={IF_SIGNED_OUT}>
+      <span className={signedIn === null ? IF_SIGNED_IN : signedIn ? "contents" : "hidden"}>{openTimer}</span>
+      <span className={signedIn === null ? IF_SIGNED_OUT : signedIn ? "hidden" : "contents"}>
         <SignInLink />
       </span>
     </>
