@@ -2882,4 +2882,8 @@ the sign of ω against each layer's clockwise sense (R, U, F, S negative about t
   finger. Mutating the FOV or flipping the prime both fail it.
 - tsc, eslint (0 errors), `npm test` (575 passed), `check:colors`, `npm run build`,
   `check:chunks` (all files present; `/learn/333/drill` and `/learn/333/oll/27` 404 in
-  a container with no Supabase data), e2e on `next start`.
+  a container with no Supabase data), e2e on `next start`: all playground,
+  playground-swipe and cubing-runtime specs pass. In the full suite, the four
+  `drill.spec.ts` tests fail identically on `main` (no seeded data here), and
+  `analytics.spec.ts` times out because the prefetch of `/learn/333/drill` hangs
+  without a database; neither touches code this change imports.
