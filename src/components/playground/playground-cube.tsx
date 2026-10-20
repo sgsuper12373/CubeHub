@@ -277,7 +277,7 @@ export function PlaygroundCube({
       )}
       <div ref={containerRef} className="size-full touch-none" />
       {swipeOn && showSwipeHint && touch && readyKey === configKey && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center px-2">
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center px-2">
           <div
             role="note"
             className="pointer-events-auto flex items-center gap-2 rounded-lg border border-border bg-card/95 px-3 py-2 text-xs text-muted-foreground shadow-sm"
