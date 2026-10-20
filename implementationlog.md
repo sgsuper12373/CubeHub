@@ -48,6 +48,202 @@ of empty space; on desktop and tablet everything should fit, redesigning the UI 
 
 ---
 
+## 2026-10-20 — Mobile Lighthouse: landing page and /learn
+
+**Request:** Raise the mobile Lighthouse score of `/` and `/learn` without changing how
+anything looks or behaves. Six steps, one commit each, on `perf/mobile-lighthouse`.
+
+### 1. Static landing page
+
+- `src/app/layout.tsx` no longer calls `cookies()`. It renders the default theme (Slate);
+  `THEME_INIT_SCRIPT` now applies the `cubehub-theme` cookie itself before first paint (an
+  explicit or legacy theme as is, "system" by `prefers-color-scheme`). Same no-flash result
+  with JavaScript on. With JavaScript off, an explicit Paper choice falls back to Slate.
+- `(marketing)/layout.tsx` and `page.tsx` no longer call `getProfile()`, `getNotifications()`
+  or `getUser()`. The navbar's user slot, the phone header's action and the CTA band's copy are
+  client islands (`marketing-header.tsx`, `cta-band-actions.tsx`) fed by `use-viewer.ts`,
+  which asks the new `GET /api/viewer` (same DAL calls, `Cache-Control: private, no-store`).
+  Visitors without a Supabase auth cookie are signed out with no request.
+- No "Sign In" flash for signed-in visitors: `SIGNED_IN_HINT_SCRIPT` (root `<head>`) marks
+  `<html data-signed-in>` when the auth cookie exists, and the server-rendered markup picks
+  the chrome with CSS until hydration. Their name and bell appear when the request returns.
+- `NotificationBell` takes an optional `onRead`, since `router.refresh()` can't update a
+  static page. Sign-in/out in another tab refetches through `onAuthStateChange`.
+- Build: `/` is now `○` (was `ƒ`). `/_not-found` and `/auth/auth-code-error` also became static.
+
+### 2. Images
+
+- `public/images/learn/hero_cube.png`, `333.jpg` and `222.jpg` → WebP (quality 90, via the
+  `sharp` that Next already installs; no new dependency). None has transparency. PSNR against
+  the originals is 36–42 dB, and next/image re-encodes at q75 anyway. Originals removed,
+  references updated.
+- `public/brand/*.png` lockups and marks: lossless WebP copies added next to the PNGs (alpha
+  kept). The PNGs stay: the app doesn't use these files (press, docs and email, per
+  `docs/brand.md`), email clients handle WebP badly, and `/brand/*.png` URLs may be linked
+  from outside. The OG sources stay PNG only, since social cards need PNG or JPEG.
+
+| File | Before | After |
+|---|---|---|
+| `images/learn/hero_cube` | 1297 KiB (PNG) | 80 KiB |
+| `images/learn/333` | 687 KiB (JPG) | 121 KiB |
+| `images/learn/222` | 780 KiB (JPG) | 154 KiB |
+| `brand/cubehub-lockup-classic-transparent` | 499 KiB | 303 KiB |
+| `brand/cubehub-lockup-classic` | 315 KiB | 193 KiB |
+| `brand/cubehub-lockup-paper` | 134 KiB | 49 KiB |
+| `brand/cubehub-lockup-slate-transparent` | 452 KiB | 247 KiB |
+| `brand/cubehub-lockup-slate` | 291 KiB | 173 KiB |
+| `brand/cubehub-mark-classic` | 346 KiB | 234 KiB |
+| `brand/cubehub-mark-paper` | 109 KiB | 36 KiB |
+| `brand/cubehub-mark-slate` | 312 KiB | 180 KiB |
+
+- `sizes` on every `fill` image: Learn hero `(min-width: 768px) 450px, 320px` (it asked for a
+  1200w file on a phone before); puzzle cards `(min-width: 640px) 240px, 200px` (the box grows
+  at `sm`, not 768px); puzzle hero `(min-width: 768px) 350px, 280px`.
+- Preload: kept on the /learn hero cube and on the `/learn/[puzzle]` hero (each page's LCP
+  image), dropped from the two puzzle cards below the /learn hero. `priority` became
+  `preload`, its non-deprecated name in Next 16 (same behaviour).
+
+### 3. Animation cost
+
+- Learn hero (`src/components/learn/hero-section.tsx`): the endless float was a motion `y`
+  animation, a JS frame loop that repainted the cube's drop-shadow. It is now a CSS animation
+  of `transform` (`.learn-hero-float` in `globals.css`: same keyframes, easeInOut per segment,
+  4s), which runs on the compositor, and is off under `prefers-reduced-motion`. The entrance
+  fades sit in `<MotionConfig reducedMotion="user">`, so reduced-motion visitors get the fade
+  without the slide or scale.
+- Phones (below `md`): no drop-shadow filter on the cube. The same glow is a box-shadow on the
+  picture's own rect (the image is opaque, so the filter only ever traced that rectangle). In
+  Chromium a box-shadow needs twice the drop-shadow's blur (80px for 40px) to match; measured
+  against the filter in isolation, the largest pixel difference is 2/255, normal and hover.
+- Marketing: the hero replay and ScrambleMatrix already stop for reduced motion and pause when
+  off screen; `.reveal` is scroll-driven CSS behind `prefers-reduced-motion: no-preference`.
+  The one same-shaped cost: on phones the hero timer card's `backdrop-blur-xl` sits over the
+  ScrambleMatrix canvas, which redraws every frame, so the blur is redone every frame. Off
+  below `md`; the card is 90% opaque, so the blur barely showed there.
+
+### 4. Fonts
+
+- Measured which families paint in the first viewport (Playwright, phone and desktop): on `/`,
+  Geist (copy, nav), Outfit (logo, hero lockup) and Geist Mono (hero timer card) all do; on
+  phone `/learn` only Geist does. Preload stays on those three, since the root layout's
+  preloads are shared by every route and `/` needs all three. JetBrains Mono keeps
+  `preload: false`: it is Paper's timer font, so it paints in the hero timer card only for
+  Paper visitors (light OS with no cookie, which is also what Lighthouse sees), and it is
+  never the LCP element (Lighthouse names the hero paragraph). Preloading it would cost every
+  Slate visitor 39.5 KiB.
+- `display: "swap"` and `preload` are now spelled out on all four. Both match the defaults
+  they replace, so nothing changes at runtime; the comment that described JetBrains Mono but sat
+  above Outfit moved to the right font.
+
+### 5. Below-the-fold JS
+
+- `CustomizeSection` is loaded with `next/dynamic` (`ssr: false`) once a visitor scrolls
+  within 800px of it (`customize-section-lazy.tsx`, `src/hooks/use-near-viewport.ts`). Until
+  then a placeholder with the section's own id, border, background and per-breakpoint height
+  holds its place. Measured: 1590 vs 1589.5px on a phone, exact on desktop. Scrolling the
+  whole page at phone, tablet and desktop sizes records CLS 0. Besides its own code, it no
+  longer pulls Paper's theme preview (and its font) into the first load.
+- **cubing.js did load on the landing page.** The bento's Learn tile renders a 3D
+  `ScramblePreview`, which fetched twisty + three.js at page load. `ScramblePreview` takes
+  `deferUntilNear` now: it shows its usual loading state until the preview is within 200px
+  of the viewport. Page load on `/` makes no `/cubing/` request at any size; the cube still
+  draws once you scroll to it. `cubing-runtime.spec.ts` asserts both.
+- The other below-the-fold sections (`FeatureBento`, `ComingNext`, `SiteFooter`, the CTA
+  band) are server components with no client JS of their own; the CTA's island is a few
+  lines. Nothing else to split.
+- First load of `/` on a phone (Playwright, 412px, Slate): scripts 28 requests / 371 KiB →
+  22 / 317 KiB, and no cubing.js.
+
+### 6. Analytics and Speed Insights
+
+- No change needed. `<Analytics />` and `<SpeedInsights />` (rendered only on Vercel) each
+  inject their `<script defer>` from a `useEffect`, so nothing loads until hydration is done,
+  which is when the page becomes interactive. Pushing them later (an idle callback or the load
+  event) would lose pageviews from visitors who leave first, and Speed Insights could miss
+  early interactions. A comment in `layout.tsx` records this so nobody re-does the check.
+
+### Not done, and why
+
+- **`/learn` stays dynamic.** The `(app)` layout reads the user for the navbar, bottom nav
+  and username onboarding on every app route. Making it static means the same client-island
+  treatment for the whole app shell. Worth doing, but it touches every route.
+- **`/learn`'s LCP is the hero `<h1>`, which motion renders at `opacity: 0` and fades in
+  after hydration.** That is most of the page's LCP. Showing it without the fade is a visible
+  change, so it is left for the founder to decide.
+- **`motion` on the landing page** is there only for `useReducedMotion`, in
+  `hero-timer-card.tsx` and `scramble-matrix.tsx`. A `matchMedia` hook could drop the library from
+  `/`, but that is a refactor beyond this brief.
+- **`/learn/[puzzle]` hero** (`puzzle-hero.tsx`) has the same endless motion float with a
+  drop-shadow, combined with a mouse-driven tilt, so it isn't a one-line swap. Not on the two
+  pages in scope.
+- **Brand PNGs not replaced**: see step 2.
+
+### Verification
+
+See the PR description for the full run (tsc, lint, unit, check:chunks, check:colors, build,
+e2e on the production build) and before/after Lighthouse numbers.
+
+---
+
+## 2026-10-20 — Playground: swipe to turn
+
+Phone-app style swipes on the 3D 3x3 and 2x2, replacing click-a-face (branch
+`feat/playground-swipe`).
+
+### Added
+
+- `src/lib/playground/swipe.ts`: pure geometry. Projects with cubing's own camera
+  (read from cubing 0.56's `Twisty3DVantage` / `setCameraFromOrbitCoordinates`:
+  20° vertical FOV, near 0.1, camera at `Spherical(distance, 90° − lat, lon)` looking
+  at the origin with +Y up, cubing's tall-view offset), ray-casts the axis-aligned
+  cube (half-edge 0.5551, measured from PG3D's hit planes) to a face/row/column,
+  and maps (sticker, swipe, camera) to a move.
+- `playground-cube.tsx`: a capture-phase Pointer Events layer on the cube's
+  container. A press on a sticker is taken (cubing never sees it); after 15 px the
+  direction locks and one move goes through the existing `onMove`. A press off the
+  cube is left to cubing, which orbits as before. cubing's move-press input is
+  switched to "none" while swipe is on, so nothing turns twice.
+- Prefs (`prefs.ts`): `swipeToTurn` (default on), `dragOffCube` ("orbit" default,
+  or "rotate" for x/y/z), `swipeHintDismissed`. Settings: "Swipe to turn" and,
+  under it, "Drag off the cube rotates it". The Controls text follows the setting.
+- A one-time hint on coarse-pointer screens, closed by "Got it" or the first swipe.
+- Tests: `tests/unit/playground-swipe.test.ts` (every face, both directions, outer
+  and middle layers, 2x2, a sweep of camera angles), `tests/e2e/playground-swipe.spec.ts`.
+
+### Mapping
+
+The face's two in-plane axes are projected to the screen from the sticker centre and
+the swipe follows the closer one. The sticker then moves along world axis `m`, which
+is a rotation about `ω = normal × m`; the layer is the sticker's slice along ω, and
+the sign of ω against each layer's clockwise sense (R, U, F, S negative about their
++axis; L, D, B, M, E positive) gives the prime.
+
+### Decided
+
+- A face seen so edge-on that its row and column directions are under 30° apart on
+  screen is not swipeable: the press orbits the camera instead (the move pad is still
+  there). This is U/D within about 15° of level, or a side face at a grazing angle.
+  Every face visible from the default view is clear of it (U 58°, F 68°, R 37°).
+- One move per swipe, emitted when the threshold is crossed, not on release.
+- No orientation tracking after x/y/z: cubing's moves are position-based, so the top
+  layer is always U.
+
+### Verification
+
+- The e2e spec checks the maths against the real renderer under touch emulation: the
+  cube size, the colour under every projected sticker centre at four camera angles,
+  and for 14 swipes the move in history *and* the colour that arrives under the
+  finger. Mutating the FOV or flipping the prime both fail it.
+- tsc, eslint (0 errors), `npm test` (575 passed), `check:colors`, `npm run build`,
+  `check:chunks` (all files present; `/learn/333/drill` and `/learn/333/oll/27` 404 in
+  a container with no Supabase data), e2e on `next start`: all playground,
+  playground-swipe and cubing-runtime specs pass. In the full suite, the four
+  `drill.spec.ts` tests fail identically on `main` (no seeded data here), and
+  `analytics.spec.ts` times out because the prefetch of `/learn/333/drill` hangs
+  without a database; neither touches code this change imports.
+
+---
+
 ## 2026-10-19 — solve_sanity_test.sql: two checks that depended on when and where they ran
 
 **Request:** The founder's live run of `solve_sanity_test.sql` had 2 FAIL of 22.
@@ -2872,61 +3068,3 @@ A virtual puzzle sandbox at `/playground` (plan: `docs/playground.md`).
 - `tsc`, eslint (no new errors), `check:colors`, `npm test` (224 passed).
 - `npm run build`, then the playground and cubing-runtime e2e specs against
   `next start`: 5 passed. Click and touch-tap turning checked by hand in Chromium.
-
-
-## 2026-10-20 — Playground: swipe to turn
-
-Phone-app style swipes on the 3D 3x3 and 2x2, replacing click-a-face (branch
-`feat/playground-swipe`).
-
-### Added
-
-- `src/lib/playground/swipe.ts`: pure geometry. Projects with cubing's own camera
-  (read from cubing 0.56's `Twisty3DVantage` / `setCameraFromOrbitCoordinates`:
-  20° vertical FOV, near 0.1, camera at `Spherical(distance, 90° − lat, lon)` looking
-  at the origin with +Y up, cubing's tall-view offset), ray-casts the axis-aligned
-  cube (half-edge 0.5551, measured from PG3D's hit planes) to a face/row/column,
-  and maps (sticker, swipe, camera) to a move.
-- `playground-cube.tsx`: a capture-phase Pointer Events layer on the cube's
-  container. A press on a sticker is taken (cubing never sees it); after 15 px the
-  direction locks and one move goes through the existing `onMove`. A press off the
-  cube is left to cubing, which orbits as before. cubing's move-press input is
-  switched to "none" while swipe is on, so nothing turns twice.
-- Prefs (`prefs.ts`): `swipeToTurn` (default on), `dragOffCube` ("orbit" default,
-  or "rotate" for x/y/z), `swipeHintDismissed`. Settings: "Swipe to turn" and,
-  under it, "Drag off the cube rotates it". The Controls text follows the setting.
-- A one-time hint on coarse-pointer screens, closed by "Got it" or the first swipe.
-- Tests: `tests/unit/playground-swipe.test.ts` (every face, both directions, outer
-  and middle layers, 2x2, a sweep of camera angles), `tests/e2e/playground-swipe.spec.ts`.
-
-### Mapping
-
-The face's two in-plane axes are projected to the screen from the sticker centre and
-the swipe follows the closer one. The sticker then moves along world axis `m`, which
-is a rotation about `ω = normal × m`; the layer is the sticker's slice along ω, and
-the sign of ω against each layer's clockwise sense (R, U, F, S negative about their
-+axis; L, D, B, M, E positive) gives the prime.
-
-### Decided
-
-- A face seen so edge-on that its row and column directions are under 30° apart on
-  screen is not swipeable: the press orbits the camera instead (the move pad is still
-  there). This is U/D within about 15° of level, or a side face at a grazing angle.
-  Every face visible from the default view is clear of it (U 58°, F 68°, R 37°).
-- One move per swipe, emitted when the threshold is crossed, not on release.
-- No orientation tracking after x/y/z: cubing's moves are position-based, so the top
-  layer is always U.
-
-### Verification
-
-- The e2e spec checks the maths against the real renderer under touch emulation: the
-  cube size, the colour under every projected sticker centre at four camera angles,
-  and for 14 swipes the move in history *and* the colour that arrives under the
-  finger. Mutating the FOV or flipping the prime both fail it.
-- tsc, eslint (0 errors), `npm test` (575 passed), `check:colors`, `npm run build`,
-  `check:chunks` (all files present; `/learn/333/drill` and `/learn/333/oll/27` 404 in
-  a container with no Supabase data), e2e on `next start`: all playground,
-  playground-swipe and cubing-runtime specs pass. In the full suite, the four
-  `drill.spec.ts` tests fail identically on `main` (no seeded data here), and
-  `analytics.spec.ts` times out because the prefetch of `/learn/333/drill` hangs
-  without a database; neither touches code this change imports.

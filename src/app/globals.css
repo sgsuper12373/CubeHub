@@ -272,6 +272,28 @@
   }
 }
 
+/* ── Learn hero float (src/components/learn/hero-section.tsx) ────────────────
+   The hero cube bobs 10px up and down forever. As a CSS animation of
+   `transform` it runs on the compositor, so the drop-shadow under it is
+   painted once rather than every frame. Same keyframes and easing as the
+   motion version it replaces (easeInOut per segment, 4s). Off for anyone who
+   prefers reduced motion. */
+@keyframes learn-hero-float {
+  0%,
+  100% {
+    transform: translateY(-10px);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .learn-hero-float {
+    animation: learn-hero-float 4s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+  }
+}
+
 /* ── CubeHub brand mark + wordmark (src/components/layout/logo.tsx) ────────
    Driven by --logo-c / --logo-h / --logo-wire, falling back to the theme's
    --primary / --foreground. Shades are derived with color-mix() so any theme

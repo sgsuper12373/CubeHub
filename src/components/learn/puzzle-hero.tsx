@@ -22,7 +22,7 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
   const difficulty = difficultyRange(puzzle.series);
   
   // Choose the same image as the home page based on puzzle id
-  const imageSrc = puzzle.id === "333" ? "/images/learn/333.jpg" : "/images/learn/222.jpg";
+  const imageSrc = puzzle.id === "333" ? "/images/learn/333.webp" : "/images/learn/222.webp";
 
   return (
     <section 
@@ -148,7 +148,9 @@ export function PuzzleHero({ puzzle }: { puzzle: LearnPuzzle }) {
              alt={`${puzzle.name} 3D Render`}
              fill 
              className="object-contain drop-shadow-[0_20px_40px_color-mix(in_oklch,var(--primary)_30%,transparent)] transition-all duration-500 [mask-image:radial-gradient(ellipse_100%_100%_at_50%_50%,black_60%,transparent_100%)] mix-blend-screen"
-             priority
+             // The box is 280px, 350px from md. This page's hero, so preloaded.
+             sizes="(min-width: 768px) 350px, 280px"
+             preload
            />
         </motion.div>
 

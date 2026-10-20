@@ -91,8 +91,8 @@ logo today.
 |---|---|
 | `src/app/icon.png`, `apple-icon.png` | Static tab and home-screen icons |
 | `src/app/opengraph-image.png` + `.alt.txt` | Social card (the Slate OG image, 1200×630) |
-| `public/brand/cubehub-{lockup,mark}-{slate,classic,paper}.{svg,png}` | Pre-rendered lockups and marks, for press, docs and email. The app UI doesn't use them. |
-| `public/brand/cubehub-lockup-{slate,classic}-transparent.*` | The same, without a background |
-| `public/brand/cubehub-og-{slate,classic}.{svg,png}` | OG card sources. Copy one to `src/app/opengraph-image.png` to switch. |
+| `public/brand/cubehub-{lockup,mark}-{slate,classic,paper}.{svg,png,webp}` | Pre-rendered lockups and marks, for press, docs and email. The app UI doesn't use them. The WebP files are lossless copies of the PNGs, 30–65% smaller, for web pages; keep the PNGs for email (patchy WebP support) and existing links. |
+| `public/brand/cubehub-lockup-{slate,classic}-transparent.*` | The same, without a background (alpha kept in the WebP) |
+| `public/brand/cubehub-og-{slate,classic}.{svg,png}` | OG card sources. Copy one to `src/app/opengraph-image.png` to switch. PNG only: social cards need PNG or JPEG. |
 | `docs/brand/cubehub-avatar-{slate,classic}.*` | YouTube and social avatars. Not served. |
 | `docs/brand/raster/` | The earlier raster logo set. Social media only; don't use in the app. |

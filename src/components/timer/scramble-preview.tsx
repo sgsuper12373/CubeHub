@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 
 import { CubeLoader } from "@/components/ui/cube-loader";
+import { useNearViewport } from "@/hooks/use-near-viewport";
 import type { TimerPuzzle } from "@/lib/timer/types";
 
 /**
@@ -20,13 +21,17 @@ const TwistyPlayer = dynamic(
     import("./scramble-preview-inner").then((mod) => mod.ScramblePreviewInner),
   {
     ssr: false,
-    loading: () => (
-      <div className="flex h-32 w-32 items-center justify-center">
-        <CubeLoader size={40} label="Loading cube preview" />
-      </div>
-    ),
+    loading: () => <PreviewLoading />,
   },
 );
+
+function PreviewLoading() {
+  return (
+    <div className="flex h-32 w-32 items-center justify-center">
+      <CubeLoader size={40} label="Loading cube preview" />
+    </div>
+  );
+}
 
 export function ScramblePreview({
   alg,
@@ -34,6 +39,7 @@ export function ScramblePreview({
   size,
   visualization,
   className,
+  deferUntilNear = false,
 }: {
   alg: string;
   puzzle: TimerPuzzle;
@@ -41,15 +47,28 @@ export function ScramblePreview({
   visualization?: "2D" | "3D";
   /** Overrides the default inline spacing so a floating shell can own layout. */
   className?: string;
+  /**
+   * Show the loading state until the preview is near the viewport, so a
+   * below-the-fold preview (the landing page's) doesn't fetch cubing.js on
+   * page load.
+   */
+  deferUntilNear?: boolean;
 }) {
+  // A tight margin: the landing bento's cube starts right under the hero on
+  // desktop, and cubing.js shouldn't load until someone scrolls to it.
+  const [ref, near] = useNearViewport<HTMLDivElement>("200px");
   return (
-    <div className={className ?? "flex justify-center py-2"}>
-      <TwistyPlayer
-        alg={alg}
-        puzzle={puzzle}
-        size={size}
-        visualization={visualization}
-      />
+    <div ref={deferUntilNear ? ref : undefined} className={className ?? "flex justify-center py-2"}>
+      {deferUntilNear && !near ? (
+        <PreviewLoading />
+      ) : (
+        <TwistyPlayer
+          alg={alg}
+          puzzle={puzzle}
+          size={size}
+          visualization={visualization}
+        />
+      )}
     </div>
   );
 }

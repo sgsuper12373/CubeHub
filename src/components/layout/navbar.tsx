@@ -16,9 +16,15 @@ import { useLayoutStore } from "@/stores/layout-store";
 export function Navbar({
   profile,
   notifications,
+  account,
+  onNotificationsRead,
 }: {
   profile: CurrentProfile | null;
   notifications: { items: NotificationItem[]; unread: number };
+  /** Replaces the sign-in / user menu slot, while a static page is still finding out who is signed in. */
+  account?: React.ReactNode;
+  /** Passed to the bell; see NotificationBell. */
+  onNotificationsRead?: () => void;
 }) {
   const pathname = usePathname();
   const activeHref = activeNavHref(pathname, navItems, profile?.username ?? null);
@@ -57,9 +63,15 @@ export function Navbar({
           })}
         </div>
         <div className="ml-auto flex shrink-0 items-center gap-2">
-          {profile ? (
+          {account !== undefined ? (
+            account
+          ) : profile ? (
             <>
-              <NotificationBell items={notifications.items} unread={notifications.unread} />
+              <NotificationBell
+                items={notifications.items}
+                unread={notifications.unread}
+                onRead={onNotificationsRead}
+              />
               <UserMenu profile={profile} />
             </>
           ) : (

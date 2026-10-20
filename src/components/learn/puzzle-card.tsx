@@ -26,7 +26,7 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
   const accentColor = isPopular ? "var(--primary)" : "var(--accent-2)";
 
   // Image source based on puzzle ID
-  const imageSrc = puzzle.id === "333" ? "/images/learn/333.jpg" : "/images/learn/222.jpg";
+  const imageSrc = puzzle.id === "333" ? "/images/learn/333.webp" : "/images/learn/222.webp";
 
   return (
     <motion.div
@@ -116,8 +116,8 @@ export function PuzzleCard({ puzzle, index = 0 }: { puzzle: LearnPuzzle, index?:
                  alt={puzzle.name}
                  fill
                  className="object-contain drop-shadow-[0_20px_30px_color-mix(in_oklch,black_80%,transparent)] [mask-image:radial-gradient(ellipse_100%_100%_at_50%_50%,black_60%,transparent_100%)] mix-blend-screen"
-                 sizes="(max-width: 768px) 200px, 240px"
-                 priority
+                 // The box is 200px, 240px from sm (640px). Below /learn's hero, so not preloaded.
+                 sizes="(min-width: 640px) 240px, 200px"
                />
             </div>
           </div>

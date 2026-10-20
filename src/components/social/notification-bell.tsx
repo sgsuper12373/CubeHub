@@ -15,9 +15,19 @@ import { cn } from "@/lib/utils";
 /**
  * The bell: unread count, and the latest notifications in a popover. Opening
  * it marks everything read (the dots stay until it closes, so you can see
- * what was new).
+ * what was new). Closing it then re-reads the list: `router.refresh()` by
+ * default, or `onRead` where the navbar's data doesn't come from the server
+ * render (the static landing page).
  */
-export function NotificationBell({ items, unread }: { items: NotificationItem[]; unread: number }) {
+export function NotificationBell({
+  items,
+  unread,
+  onRead,
+}: {
+  items: NotificationItem[];
+  unread: number;
+  onRead?: () => void;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [, startTransition] = useTransition();
@@ -29,7 +39,10 @@ export function NotificationBell({ items, unread }: { items: NotificationItem[];
         await markAllNotificationsRead();
       });
     }
-    if (!next && unread > 0) router.refresh();
+    if (!next && unread > 0) {
+      if (onRead) onRead();
+      else router.refresh();
+    }
   }
 
   return (

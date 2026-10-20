@@ -86,11 +86,13 @@ Route groups (parenthesized folders) set **chrome**, not access. They do not app
 ```
 src/app/
   layout.tsx              document shell only: html/body/fonts/theme/AuthListener,
-                          plus Vercel Analytics + Speed Insights on Vercel only
+                          plus Vercel Analytics + Speed Insights on Vercel only.
+                          Reads no cookies, so routes can be static.
   not-found.tsx error.tsx unknown URLs and errors outside (app); no navbar
   sitemap.ts robots.ts    /sitemap.xml /robots.txt
-  (marketing)/            navbar, no bottom nav
+  (marketing)/            navbar, no bottom nav; static (user state filled in client-side)
     page.tsx                        /
+  api/viewer/             GET: the signed-in user's navbar data, for static pages
   (auth)/                 no chrome at all
     login/ signup/                  /login  /signup  /signup/check-email
   (app)/                  navbar + bottom nav; own not-found.tsx and error.tsx
@@ -159,13 +161,13 @@ Ones already hit:
 - `middleware.ts` → `proxy.ts` (above).
 - Base UI `Button` rendered as a link needs `nativeButton={false}` alongside `render={<Link/>}`, or it warns about lost button semantics. Even then the link is exposed as `role="button"`. For navigation, prefer a plain `<Link className={buttonVariants(...)}>`, as the 404, error and case pages do. Older Learn pages still use the `render` form.
 - A metadata image under a dynamic segment (the case `opengraph-image.tsx`) builds as dynamic even with `revalidate`. `export const dynamic = "force-static"` makes it render on its first request and then cache.
-- An `async` layout that reads auth cookies makes every route below it dynamic (`ƒ` in the build output). Expected, not a bug.
+- An `async` layout that reads auth cookies makes every route below it dynamic (`ƒ` in the build output). Expected, not a bug. That's why `(marketing)` doesn't: its navbar and CTA get the user from `GET /api/viewer` in the browser (`components/marketing/use-viewer.ts`), and `/` builds as `○`.
 
 ## Styling
 
 **Tailwind v4 has no `tailwind.config` file.** Theme tokens live in `src/app/globals.css` (`@import "tailwindcss"`, `@custom-variant dark`, `@theme inline`). `components.json` has `"config": ""` for this reason.
 
-Themes (Slate dark, Paper light, or System) come from `src/themes/`. The `cubehub-theme` cookie is the source of truth, read in the root layout, and `THEME_INIT_SCRIPT` corrects "System" before first paint. See `design-tokens.md`. `npm run check:colors` fails on new hardcoded colours outside `src/themes/`, tests and the next/og image files.
+Themes (Slate dark, Paper light, or System) come from `src/themes/`. The `cubehub-theme` cookie is the source of truth. The root layout renders the default theme and `THEME_INIT_SCRIPT` applies the cookie (or the OS scheme for "System") before first paint, so the root layout reads no cookies and the landing page stays static. See `design-tokens.md`. `npm run check:colors` fails on new hardcoded colours outside `src/themes/`, tests and the next/og image files.
 
 ## Environment
 
