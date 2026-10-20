@@ -2917,3 +2917,22 @@ anything looks or behaves. Six steps, one commit each, on `perf/mobile-lighthous
 - `display: "swap"` and `preload` are now spelled out on all four. Both match the defaults
   they replace, so nothing changes at runtime; the comment that described JetBrains Mono but sat
   above Outfit moved to the right font.
+
+### 5. Below-the-fold JS
+
+- `CustomizeSection` is loaded with `next/dynamic` (`ssr: false`) once a visitor scrolls
+  within 800px of it (`customize-section-lazy.tsx`, `src/hooks/use-near-viewport.ts`). Until
+  then a placeholder with the section's own id, border, background and per-breakpoint height
+  holds its place. Measured: 1590 vs 1589.5px on a phone, exact on desktop. Scrolling the
+  whole page at phone, tablet and desktop sizes records CLS 0. Besides its own code, it no
+  longer pulls Paper's theme preview (and its font) into the first load.
+- **cubing.js did load on the landing page.** The bento's Learn tile renders a 3D
+  `ScramblePreview`, which fetched twisty + three.js at page load. `ScramblePreview` takes
+  `deferUntilNear` now: it shows its usual loading state until the preview is within 200px
+  of the viewport. Page load on `/` makes no `/cubing/` request at any size; the cube still
+  draws once you scroll to it. `cubing-runtime.spec.ts` asserts both.
+- The other below-the-fold sections (`FeatureBento`, `ComingNext`, `SiteFooter`, the CTA
+  band) are server components with no client JS of their own; the CTA's island is a few
+  lines. Nothing else to split.
+- First load of `/` on a phone (Playwright, 412px, Slate): scripts 28 requests / 371 KiB →
+  22 / 317 KiB, and no cubing.js.

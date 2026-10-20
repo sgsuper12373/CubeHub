@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { ComingNext } from "@/components/marketing/coming-next";
 import { CtaBand, SiteFooter } from "@/components/marketing/cta-band";
-import { CustomizeSection } from "@/components/marketing/customize-section";
+import { LazyCustomizeSection } from "@/components/marketing/customize-section-lazy";
 import { FeatureBento } from "@/components/marketing/feature-bento";
 import { HeroSection } from "@/components/marketing/hero-section";
 
@@ -26,7 +26,7 @@ export default function Home() {
     <>
       <HeroSection />
       <FeatureBento />
-      <CustomizeSection />
+      <LazyCustomizeSection />
       <CtaBand />
       <ComingNext />
       <SiteFooter />

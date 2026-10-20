@@ -79,6 +79,7 @@ export function FeatureBento() {
               puzzle="333"
               size={220}
               visualization="3D"
+              deferUntilNear
               className="relative flex min-h-[220px] items-center justify-center max-md:pointer-events-none md:z-10 md:cursor-grab md:active:cursor-grabbing"
             />
           </div>

@@ -66,11 +66,21 @@ async function expect3DCanvas(page: Page) {
 }
 
 test.describe("cubing.js runtime loading", () => {
-  test("landing page: hero renders and the showcase cube preview draws", async ({ page }) => {
+  test("landing page: hero renders without cubing.js, and the showcase cube draws once scrolled to", async ({ page }) => {
     const problems = watchForLoadFailures(page);
+    const cubingRequests: string[] = [];
+    page.on("request", (req) => {
+      if (new URL(req.url()).pathname.startsWith("/cubing/")) cubingRequests.push(req.url());
+    });
     await page.goto("/");
 
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    // The showcase is below the fold and waits until it's scrolled near
+    // (ScramblePreview's deferUntilNear), so page load never fetches cubing.
+    await page.waitForLoadState("networkidle");
+    expect(cubingRequests).toEqual([]);
+
+    await page.getByRole("status", { name: /loading cube/i }).first().scrollIntoViewIfNeeded();
     await expectTwistyMounted(page);
     // The showcase is the 3D view, which is the part that pulls in three.js.
     await expect3DCanvas(page);
