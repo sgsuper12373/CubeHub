@@ -8,6 +8,7 @@ import {
   PartyPopper,
   Redo2,
   RotateCcw,
+  Settings2,
   Shuffle,
   Timer,
   Undo2,
@@ -22,6 +23,7 @@ import { MovePad } from "@/components/playground/move-pad";
 import { PlaygroundCube } from "@/components/playground/playground-cube";
 import { PracticeTimer } from "@/components/playground/practice-timer";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { loadAlg } from "@/lib/cubing/runtime";
 import { caseSetupFor, parseAlgWith, simplifyWith } from "@/lib/playground/alg-input";
 import {
@@ -91,7 +93,7 @@ export function PlaygroundScreen({
   link?: PlaygroundLink;
 }) {
   const [state, dispatch] = useReducer(playgroundReducer, initialPuzzle, initialPlaygroundState);
-  const { puzzle, scramble, setupKind, caseMoves, moves, redo, revision } = state;
+  const { puzzle, scramble, setupKind, caseMoves, moves, redo, revision, revealing } = state;
   const prefs = usePlaygroundPrefs();
   const [visualization, setVisualization] = useState<"3D" | "2D">("3D");
   const [generating, setGenerating] = useState(false);
@@ -103,6 +105,8 @@ export function PlaygroundScreen({
   const [practiceOn, setPracticeOn] = useState(false);
   const [practiceState, setPractice] = useState<PracticePhase>(IDLE);
   const [replayToken, setReplayToken] = useState(0);
+  /** Which scramble move is being turned on while `revealing`. */
+  const [revealStep, setRevealStep] = useState(-1);
   const puzzleRef = useRef(puzzle);
   const linkRef = useRef<PlaygroundLink | null>(link);
   const showMeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -142,6 +146,8 @@ export function PlaygroundScreen({
   /** Every single turn, from keys, the pad or a click on the cube. */
   const onMove = useCallback(
     (move: string) => {
+      // The scramble is still going on; the reducer would drop the turn too.
+      if (revealing) return;
       // Until the model loads, only the key map and the pad can produce moves,
       // and both only produce legal ones for the current puzzle.
       if (model && !isValidMoveWith(model, move)) return;
@@ -152,7 +158,7 @@ export function PlaygroundScreen({
       }
       dispatch({ type: "move", move, t });
     },
-    [model, moves, practice, solvedWith],
+    [model, moves, practice, solvedWith, revealing],
   );
 
   const onScramble = useCallback(async () => {
@@ -161,20 +167,30 @@ export function PlaygroundScreen({
     try {
       const alg = await generateScramble(forPuzzle);
       if (puzzleRef.current !== forPuzzle) return;
-      dispatch({ type: "scramble", scramble: alg });
-      setPractice(practiceOn ? armPractice(alg, prefs.inspection, performance.now()) : IDLE);
+      const animate = prefs.animateScramble && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+      setRevealStep(-1);
+      dispatch({ type: "scramble", scramble: alg, animate });
+      // An animated scramble arms practice when it has finished (onRevealed),
+      // so inspection doesn't tick away while it plays.
+      setPractice(practiceOn && !animate ? armPractice(alg, prefs.inspection, performance.now()) : IDLE);
     } catch (err) {
       console.error("playground: scramble failed", err);
     } finally {
       setGenerating(false);
     }
-  }, [practiceOn, prefs.inspection]);
+  }, [practiceOn, prefs.inspection, prefs.animateScramble]);
+
+  const onRevealed = useCallback(() => {
+    dispatch({ type: "revealed" });
+    setRevealStep(-1);
+    if (practiceOn && scramble) setPractice(armPractice(scramble, prefs.inspection, performance.now()));
+  }, [practiceOn, scramble, prefs.inspection]);
 
   function togglePractice() {
     const on = !practiceOn;
     setPracticeOn(on);
     // Turning it on with a fresh scramble on the cube times that scramble.
-    if (on && setupKind === "scramble" && moves.length === 0) {
+    if (on && !revealing && setupKind === "scramble" && moves.length === 0) {
       setPractice(armPractice(scramble, prefs.inspection, performance.now()));
     } else {
       setPractice(IDLE);
@@ -247,6 +263,11 @@ export function PlaygroundScreen({
   }, [onMove, prefs.keyBindings]);
 
   const onBindingsChange = useCallback((keyBindings: KeyBindings) => updatePrefs({ keyBindings }), []);
+  const swipeHintDismissed = prefs.swipeHintDismissed;
+  const dismissSwipeHint = useCallback(() => {
+    if (!swipeHintDismissed) updatePrefs({ swipeHintDismissed: true });
+  }, [swipeHintDismissed]);
+  const swipeOn = prefs.swipeToTurn && visualization === "3D";
   const closeKeys = useCallback(() => setKeysOpen(false), []);
 
   const solved = solvedWith(moves);
@@ -282,13 +303,13 @@ export function PlaygroundScreen({
     setupKind === "case" ? "Case setup" : setupKind === "link" ? "Start position" : "Scramble";
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 md:py-10">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Playground</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            A virtual cube to turn, scramble, solve and try algorithms on. Solves here are never saved.
-          </p>
+    // md and up: exactly one screen under the navbar (h-14), nothing scrolls
+    // but the move list. Phones stack and scroll, as there is no room to fit.
+    <div className="flex w-full flex-1 flex-col md:h-[calc(100dvh-3.5rem)] md:overflow-hidden">
+      <header className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 pt-4 pb-2 lg:px-6">
+        <div className="flex min-w-0 items-baseline gap-3">
+          <h1 className="text-xl font-semibold tracking-tight">Playground</h1>
+          <p className="text-xs text-muted-foreground md:hidden xl:block">Solves here are never saved.</p>
         </div>
         <div className="flex items-center gap-2">
           <Segmented
@@ -297,6 +318,7 @@ export function PlaygroundScreen({
             options={PLAYGROUND_PUZZLES.map((p) => ({ value: p.id, label: p.label }))}
             onChange={(p) => {
               setPractice(IDLE);
+              setRevealStep(-1);
               dispatch({ type: "puzzle", puzzle: p });
             }}
           />
@@ -310,11 +332,33 @@ export function PlaygroundScreen({
             onChange={setVisualization}
           />
         </div>
+        <div className="ml-auto flex items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className="hidden md:inline-flex"
+            onClick={() => setKeysOpen(true)}
+            aria-label="Keys and custom mapping"
+            title="Keys & custom mapping (?)"
+          >
+            <Keyboard />
+          </Button>
+          <SettingsPopover prefs={prefs} swipeOn={swipeOn} onOpenKeys={() => setKeysOpen(true)} />
+        </div>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
-        <section className="flex min-w-0 flex-col items-center gap-4">
-          <div className="flex min-h-8 items-center" aria-live="polite">
+      <div
+        className={cn(
+          "grid min-h-0 flex-1 gap-4 px-4 pb-6 md:pb-4 lg:px-6",
+          // Tablet: cube on top taking what's left, then the pad, then the panels.
+          "md:grid-rows-[minmax(16rem,1fr)_auto_auto]",
+          // Desktop: pad | cube | notation, one row.
+          "lg:grid-cols-[minmax(11rem,13rem)_minmax(0,1fr)_minmax(17rem,20rem)] lg:grid-rows-[minmax(0,1fr)]",
+        )}
+      >
+        <section className="flex min-h-0 min-w-0 flex-col items-center gap-3 lg:col-start-2 lg:row-start-1">
+          <div className="flex min-h-7 items-center" aria-live="polite">
             {justSolved ? (
               <p className="flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
                 <PartyPopper className="size-4" /> Solved in {count} {count === 1 ? "move" : "moves"}
@@ -324,28 +368,41 @@ export function PlaygroundScreen({
               </p>
             ) : (
               <p className="text-sm text-muted-foreground tabular-nums">
-                {statusLabel(setupKind, solved)} · {count} {count === 1 ? "move" : "moves"}
+                {revealing
+                  ? "Scrambling…"
+                  : `${statusLabel(setupKind, solved)}, ${count} ${count === 1 ? "move" : "moves"}`}
               </p>
             )}
           </div>
 
           <PracticeTimer phase={practice} onReplay={() => setReplayToken((n) => n + 1)} />
 
-          <PlaygroundCube
-            puzzle={puzzle}
-            visualization={visualization}
-            scramble={scramble}
-            moves={moves}
-            revision={revision}
-            tempoScale={prefs.animationSpeed}
-            hintStickers={prefs.hintStickers}
-            replayToken={replayToken}
-            onMove={onMove}
-          />
+          {/* The cube is the biggest square this box allows (container query units). */}
+          <div className="grid w-full place-items-center md:min-h-0 md:flex-1 md:[container-type:size]">
+            <PlaygroundCube
+              puzzle={puzzle}
+              visualization={visualization}
+              scramble={scramble}
+              moves={moves}
+              revision={revision}
+              tempoScale={prefs.animationSpeed}
+              hintStickers={prefs.hintStickers}
+              replayToken={replayToken}
+              revealing={revealing}
+              swipe={prefs.swipeToTurn}
+              dragOffCube={prefs.dragOffCube}
+              showSwipeHint={!swipeHintDismissed}
+              onDismissSwipeHint={dismissSwipeHint}
+              onMove={onMove}
+              onRevealStep={setRevealStep}
+              onRevealed={onRevealed}
+              className="w-full max-w-[28rem] md:w-[min(100cqw,100cqh)] md:max-w-none"
+            />
+          </div>
 
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <Button type="button" onClick={onScramble} disabled={generating}>
-              <Shuffle /> {generating ? "Scrambling…" : "Scramble"}
+            <Button type="button" onClick={onScramble} disabled={generating || revealing}>
+              <Shuffle /> {generating || revealing ? "Scrambling…" : "Scramble"}
             </Button>
             <Button
               type="button"
@@ -360,8 +417,9 @@ export function PlaygroundScreen({
               type="button"
               variant="outline"
               onClick={() => dispatch({ type: "undo" })}
-              disabled={moves.length === 0}
+              disabled={moves.length === 0 || revealing}
               aria-label="Undo"
+              title="Undo (Ctrl+Z)"
             >
               <Undo2 /> <span className="hidden sm:inline">Undo</span>
             </Button>
@@ -369,8 +427,9 @@ export function PlaygroundScreen({
               type="button"
               variant="outline"
               onClick={() => dispatch({ type: "redo", t: performance.now() })}
-              disabled={redo.length === 0}
+              disabled={redo.length === 0 || revealing}
               aria-label="Redo"
+              title="Redo (Ctrl+Shift+Z)"
             >
               <Redo2 /> <span className="hidden sm:inline">Redo</span>
             </Button>
@@ -379,6 +438,7 @@ export function PlaygroundScreen({
               variant="ghost"
               onClick={() => {
                 setPractice(IDLE);
+                setRevealStep(-1);
                 dispatch({ type: "reset" });
               }}
               disabled={!scramble && moves.length === 0}
@@ -386,12 +446,67 @@ export function PlaygroundScreen({
               <RotateCcw /> Reset
             </Button>
           </div>
-
-          <MovePad puzzle={puzzle} onMove={onMove} />
         </section>
 
-        <aside className="flex min-w-0 flex-col gap-4">
-          <Panel title="Try an algorithm">
+        <div className="flex min-h-0 justify-center lg:col-start-1 lg:row-start-1 lg:overflow-y-auto">
+          <MovePad puzzle={puzzle} onMove={onMove} disabled={revealing} />
+        </div>
+
+        <aside className="grid min-h-0 min-w-0 gap-4 md:grid-cols-2 lg:col-start-3 lg:row-start-1 lg:grid-cols-1 lg:grid-rows-[minmax(0,1fr)_auto]">
+          <Panel className="min-h-0 md:max-lg:order-2">
+            <div className="flex flex-col gap-1.5">
+              <h2 className="text-sm font-medium">{startLabel}</h2>
+              <ScrambleTape
+                scramble={scramble}
+                step={revealing ? revealStep : null}
+                label={setupKind === "scramble" ? `Scramble: ${scramble}` : undefined}
+              />
+            </div>
+
+            <div className="flex min-h-0 flex-1 flex-col gap-1.5 border-t border-border pt-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-medium">Your moves</h2>
+                <div className="flex gap-0.5">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => copyText(shareUrl(), "link")}
+                    disabled={!scramble && moves.length === 0}
+                    aria-label="Copy link to this cube"
+                    title="Copy a link to this cube"
+                  >
+                    {copied === "link" ? <Check /> : <Link2 />}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => copyText(history, "moves")}
+                    disabled={moves.length === 0}
+                    aria-label="Copy moves"
+                    title="Copy moves"
+                  >
+                    {copied === "moves" ? <Check /> : <Copy />}
+                  </Button>
+                </div>
+              </div>
+              <p
+                className="max-h-40 min-h-10 overflow-y-auto font-mono text-sm break-words md:max-h-24 lg:max-h-none lg:flex-1"
+                data-testid="playground-history"
+              >
+                {history || <span className="text-muted-foreground">Turn the cube to start.</span>}
+              </p>
+              {simplified && simplified !== history && (
+                <p className="text-xs text-muted-foreground">
+                  Simplified: <span className="font-mono">{simplified}</span>
+                </p>
+              )}
+            </div>
+          </Panel>
+
+          <Panel className="md:max-lg:order-1">
+            <h2 className="text-sm font-medium">Try an algorithm</h2>
             <AlgPanel
               value={algText}
               onChange={(v) => {
@@ -399,96 +514,10 @@ export function PlaygroundScreen({
                 setAlgError(null);
               }}
               error={algError}
-              disabled={!ready}
+              disabled={!ready || revealing}
               onSetupCase={setUpCase}
               onShowMe={showMe}
               onApply={applyAlg}
-            />
-          </Panel>
-
-          <Panel title={startLabel}>
-            <p
-              className="font-mono text-sm break-words"
-              aria-label={setupKind === "scramble" ? `Scramble: ${scramble}` : undefined}
-            >
-              {scramble || <span className="text-muted-foreground">None yet. Press Scramble.</span>}
-            </p>
-          </Panel>
-
-          <Panel
-            title="Your moves"
-            action={
-              <div className="flex gap-0.5">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => copyText(shareUrl(), "link")}
-                  disabled={!scramble && moves.length === 0}
-                  aria-label="Copy link to this cube"
-                  title="Copy a link to this cube"
-                >
-                  {copied === "link" ? <Check /> : <Link2 />}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => copyText(history, "moves")}
-                  disabled={moves.length === 0}
-                  aria-label="Copy moves"
-                  title="Copy moves"
-                >
-                  {copied === "moves" ? <Check /> : <Copy />}
-                </Button>
-              </div>
-            }
-          >
-            <p className="max-h-40 overflow-y-auto font-mono text-sm break-words" data-testid="playground-history">
-              {history || <span className="text-muted-foreground">Turn the cube to start.</span>}
-            </p>
-            {simplified && simplified !== history && (
-              <p className="text-xs text-muted-foreground">
-                Simplified: <span className="font-mono">{simplified}</span>
-              </p>
-            )}
-          </Panel>
-
-          <Panel title="Controls" className="hidden md:flex">
-            <p className="text-xs text-muted-foreground">
-              {sameBindings(prefs.keyBindings, DEFAULT_BINDINGS)
-                ? "Press R to turn R. Hold Shift for R'."
-                : "Using your custom keys."}{" "}
-              Drag to look around; click a face to turn it.
-            </p>
-            <Button type="button" variant="outline" size="sm" onClick={() => setKeysOpen(true)}>
-              <Keyboard /> Keys &amp; custom mapping{" "}
-              <kbd className="font-mono text-[0.7rem] text-muted-foreground">?</kbd>
-            </Button>
-          </Panel>
-
-          <Panel title="Settings">
-            <label className="flex items-center justify-between gap-3 text-sm">
-              Turn speed
-              <input
-                type="range"
-                min={0}
-                max={ANIMATION_SPEEDS.length - 1}
-                step={1}
-                value={Math.max(0, ANIMATION_SPEEDS.indexOf(prefs.animationSpeed as (typeof ANIMATION_SPEEDS)[number]))}
-                onChange={(e) => updatePrefs({ animationSpeed: ANIMATION_SPEEDS[Number(e.target.value)] })}
-                className="w-28 accent-primary"
-              />
-            </label>
-            <Toggle
-              label="Show hidden faces"
-              checked={prefs.hintStickers}
-              onChange={(hintStickers) => updatePrefs({ hintStickers })}
-            />
-            <Toggle
-              label="15s inspection in practice"
-              checked={prefs.inspection}
-              onChange={(inspection) => updatePrefs({ inspection })}
             />
           </Panel>
         </aside>
@@ -510,6 +539,115 @@ function statusLabel(kind: string, solved: boolean): string {
   if (kind === "case") return "Case set up: solve it";
   if (kind === "link") return "Shared cube";
   return solved ? "Solved" : "Free play";
+}
+
+/**
+ * The start position as a row of moves. While a scramble is being turned on,
+ * the move on the cube right now is lit and the ones still to come are faint,
+ * so the cube and the notation can be read together.
+ */
+function ScrambleTape({ scramble, step, label }: { scramble: string; step: number | null; label?: string }) {
+  if (!scramble) {
+    return <p className="font-mono text-sm text-muted-foreground">None yet. Press Scramble.</p>;
+  }
+  const tokens = scramble.split(/\s+/).filter(Boolean);
+  return (
+    <p className="-mx-1 font-mono text-sm leading-7 break-words" aria-label={label}>
+      {tokens.map((move, i) => (
+        <span
+          // Moves repeat, so position is the identity.
+          key={i}
+          className={cn(
+            "inline-block rounded px-1",
+            step !== null && i === step && "bg-primary text-primary-foreground",
+            step !== null && i > step && "text-muted-foreground/45",
+          )}
+        >
+          {move}
+        </span>
+      ))}
+    </p>
+  );
+}
+
+/** Speed, view and input settings. Kept off the page so the cube gets the room. */
+function SettingsPopover({
+  prefs,
+  swipeOn,
+  onOpenKeys,
+}: {
+  prefs: ReturnType<typeof usePlaygroundPrefs>;
+  swipeOn: boolean;
+  onOpenKeys: () => void;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger
+        render={
+          <Button type="button" variant="ghost" size="icon-sm" aria-label="Settings" title="Settings">
+            <Settings2 />
+          </Button>
+        }
+      />
+      <PopoverContent align="end" className="w-80 gap-3 p-4">
+        <label className="flex items-center justify-between gap-3 text-sm">
+          Turn speed
+          <input
+            type="range"
+            min={0}
+            max={ANIMATION_SPEEDS.length - 1}
+            step={1}
+            value={Math.max(0, ANIMATION_SPEEDS.indexOf(prefs.animationSpeed as (typeof ANIMATION_SPEEDS)[number]))}
+            onChange={(e) => updatePrefs({ animationSpeed: ANIMATION_SPEEDS[Number(e.target.value)] })}
+            className="w-28 accent-primary"
+          />
+        </label>
+        <Toggle
+          label="Animate scrambles"
+          checked={prefs.animateScramble}
+          onChange={(animateScramble) => updatePrefs({ animateScramble })}
+        />
+        <Toggle
+          label="Show hidden faces"
+          checked={prefs.hintStickers}
+          onChange={(hintStickers) => updatePrefs({ hintStickers })}
+        />
+        <Toggle
+          label="15s inspection in practice"
+          checked={prefs.inspection}
+          onChange={(inspection) => updatePrefs({ inspection })}
+        />
+        <Toggle
+          label="Swipe to turn"
+          checked={prefs.swipeToTurn}
+          onChange={(swipeToTurn) => updatePrefs({ swipeToTurn })}
+        />
+        {prefs.swipeToTurn && (
+          <Toggle
+            label="Drag off the cube rotates it"
+            checked={prefs.dragOffCube === "rotate"}
+            onChange={(rotate) => updatePrefs({ dragOffCube: rotate ? "rotate" : "orbit" })}
+          />
+        )}
+        <div className="flex flex-col gap-2 border-t border-border pt-3">
+          <p className="text-xs text-muted-foreground">
+            {sameBindings(prefs.keyBindings, DEFAULT_BINDINGS)
+              ? "Press R to turn R. Hold Shift for R'."
+              : "Using your custom keys."}{" "}
+            {swipeOn
+              ? prefs.dragOffCube === "rotate"
+                ? "Swipe a row to turn it; drag off the cube to rotate it."
+                : "Swipe a row to turn it; drag off the cube to look around."
+              : "Drag to look around; click a face to turn it."}
+          </p>
+          <Button type="button" variant="outline" size="sm" onClick={onOpenKeys}>
+            <Keyboard /> Keys &amp; custom mapping{" "}
+            <kbd className="font-mono text-[0.7rem] text-muted-foreground">?</kbd>
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 function Segmented<T extends string>({
@@ -558,23 +696,9 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
   );
 }
 
-function Panel({
-  title,
-  action,
-  className,
-  children,
-}: {
-  title: string;
-  action?: React.ReactNode;
-  className?: string;
-  children: React.ReactNode;
-}) {
+function Panel({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
-    <section className={cn("flex flex-col gap-2 rounded-xl border border-border bg-card p-4", className)}>
-      <div className="flex items-center justify-between">
-        <h2 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{title}</h2>
-        {action}
-      </div>
+    <section className={cn("flex flex-col gap-3 rounded-xl border border-border bg-card p-4", className)}>
       {children}
     </section>
   );

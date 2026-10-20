@@ -24,6 +24,11 @@ export interface PlaygroundState {
   /** Undone moves, most recent last, so redo pops from the end. */
   redo: string[];
   revision: number;
+  /**
+   * The scramble is being turned onto the cube from solved, move by move, so
+   * it can be watched. Turns are ignored until "revealed" ends it.
+   */
+  revealing: boolean;
 }
 
 export type SetupKind = "none" | "scramble" | "case" | "link";
@@ -34,21 +39,35 @@ export type PlaygroundAction =
   | { type: "undo" }
   | { type: "redo"; t?: number }
   | { type: "reset" }
-  | { type: "scramble"; scramble: string }
+  | { type: "scramble"; scramble: string; animate?: boolean }
+  | { type: "revealed" }
   | { type: "case"; setup: string; caseMoves: string[] }
   | { type: "load"; setup: string; moves: string[] }
   | { type: "puzzle"; puzzle: PlaygroundPuzzle };
 
 export function initialPlaygroundState(puzzle: PlaygroundPuzzle): PlaygroundState {
-  return { puzzle, scramble: "", setupKind: "none", caseMoves: [], moves: [], times: [], redo: [], revision: 0 };
+  return { puzzle, scramble: "", setupKind: "none", caseMoves: [], moves: [], times: [], redo: [], revision: 0, revealing: false };
 }
 
 /** A fresh attempt from a new starting state: no moves, and a redraw. */
 function restart(state: PlaygroundState, patch: Partial<PlaygroundState>): PlaygroundState {
-  return { ...state, caseMoves: [], moves: [], times: [], redo: [], revision: state.revision + 1, ...patch };
+  return {
+    ...state,
+    caseMoves: [],
+    moves: [],
+    times: [],
+    redo: [],
+    revision: state.revision + 1,
+    revealing: false,
+    ...patch,
+  };
 }
 
+/** What changes the moves; ignored while a scramble is still being turned on. */
+const TURNS: ReadonlySet<PlaygroundAction["type"]> = new Set(["move", "moves", "undo", "redo"]);
+
 export function playgroundReducer(state: PlaygroundState, action: PlaygroundAction): PlaygroundState {
+  if (state.revealing && TURNS.has(action.type)) return state;
   switch (action.type) {
     case "move":
       // A new move forks history, as in any editor.
@@ -90,7 +109,13 @@ export function playgroundReducer(state: PlaygroundState, action: PlaygroundActi
     case "reset":
       return restart(state, { scramble: "", setupKind: "none" });
     case "scramble":
-      return restart(state, { scramble: action.scramble, setupKind: "scramble" });
+      return restart(state, {
+        scramble: action.scramble,
+        setupKind: "scramble",
+        revealing: Boolean(action.animate && action.scramble),
+      });
+    case "revealed":
+      return state.revealing ? { ...state, revealing: false } : state;
     case "case":
       return restart(state, { scramble: action.setup, setupKind: "case", caseMoves: action.caseMoves });
     case "load":

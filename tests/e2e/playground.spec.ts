@@ -39,11 +39,18 @@ function chord(p: KeyPress): string {
   return p.shiftKey ? `Shift+${p.code}` : p.code;
 }
 
+/** Scramble, and wait until it has finished turning onto the cube. */
 async function scrambleIt(page: Page): Promise<string> {
   await page.getByRole("button", { name: "Scramble" }).click();
   const scrambleEl = page.locator('[aria-label^="Scramble: "]');
   await expect(scrambleEl).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/^Scrambled, /)).toBeVisible({ timeout: 10_000 });
   return ((await scrambleEl.getAttribute("aria-label")) ?? "").replace("Scramble: ", "");
+}
+
+/** Settings live in a popover in the page header. */
+async function openSettings(page: Page) {
+  await page.getByRole("button", { name: "Settings" }).click();
 }
 
 const TPERM = "R U R' U' R' F R2 U' R' U' R U R' F'";
@@ -78,10 +85,38 @@ test.describe("Playground", () => {
     await expectCubeReady(page);
 
     const scramble = await scrambleIt(page);
-    await expect(page.getByText(/^Scrambled/)).toBeVisible();
 
     await play(page, invert(scramble));
     await expect(page.getByText(/Solved in \d+ moves/)).toBeVisible();
+  });
+
+  test("a scramble is turned on move by move, and turns wait for it", async ({ page }) => {
+    await page.goto("/playground");
+    await expectCubeReady(page);
+    const history = page.getByTestId("playground-history");
+
+    await page.getByRole("button", { name: "Scramble" }).click();
+    await expect(page.getByText("Scrambling…").first()).toBeVisible({ timeout: 30_000 });
+    await page.keyboard.press("KeyR");
+    await expect(page.getByRole("button", { name: "Turn R", exact: true })).toBeDisabled();
+    await expect(page.getByText(/^Scrambled, 0 moves/)).toBeVisible({ timeout: 10_000 });
+    await expect(history).toHaveText(/Turn the cube to start/);
+
+    await page.keyboard.press("KeyR");
+    await expect(history).toHaveText("R");
+  });
+
+  test("with Animate scrambles off, a scramble is on at once", async ({ page }) => {
+    await page.goto("/playground");
+    await expectCubeReady(page);
+    await openSettings(page);
+    await page.getByRole("checkbox", { name: "Animate scrambles" }).uncheck();
+    await page.keyboard.press("Escape");
+
+    await page.getByRole("button", { name: "Scramble" }).click();
+    await expect(page.getByText(/^Scrambled, 0 moves/)).toBeVisible({ timeout: 30_000 });
+    await page.keyboard.press("KeyR");
+    await expect(page.getByTestId("playground-history")).toHaveText("R");
   });
 
   test("?puzzle=222 opens the 2x2, where slice keys do nothing", async ({ page }) => {
@@ -124,7 +159,9 @@ test.describe("Playground", () => {
 
     await page.reload();
     await expectCubeReady(page);
+    await openSettings(page);
     await expect(page.getByText("Using your custom keys.")).toBeVisible();
+    await page.keyboard.press("Escape");
     await page.keyboard.press("KeyI");
     await expect(page.getByTestId("playground-history")).toHaveText("R");
 
@@ -171,7 +208,9 @@ test.describe("Playground", () => {
     await page.goto("/playground");
     await expectCubeReady(page);
 
+    await openSettings(page);
     await page.getByRole("checkbox", { name: "15s inspection in practice" }).uncheck();
+    await page.keyboard.press("Escape");
     await page.getByRole("button", { name: "Practice" }).click();
     const scramble = await scrambleIt(page);
     const timer = page.getByTestId("practice-timer");

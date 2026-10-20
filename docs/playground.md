@@ -26,6 +26,24 @@ Bluetooth cube to test with.
 - Tests: `tests/unit/playground.test.ts`, `tests/e2e/playground.spec.ts` (keys, pad,
   undo/redo, solving a real worker scramble, 2x2).
 
+### Swipe to turn (2026-10-20)
+
+- 3D 3x3 and 2x2: swipe a row or column to turn it (outer layers and, on 3x3, M/E/S),
+  with mouse or touch. The geometry is `lib/playground/swipe.ts`, which copies
+  cubing's PG3D camera exactly; re-run `tests/e2e/playground-swipe.spec.ts` after
+  any cubing upgrade, since it checks the projection against rendered pixels.
+- Drag off the cube orbits the view (or, as a setting, does x/y/z). Faces seen nearly
+  edge-on aren't swipeable; a press there orbits instead. Click-to-turn is off while
+  swipe is on, and back when the "Swipe to turn" setting is off. 2D is unchanged.
+
+### Scramble animation and one-screen layout (2026-10-20)
+
+- A new scramble is turned onto a solved cube one move every 100ms (each turn animated,
+  ~2s for a 3x3), with the current move lit in the scramble text. Turns, undo and redo
+  wait for it. "Animate scrambles" in Settings, or `prefers-reduced-motion`, turns it off.
+- md and up, the page is exactly one screen (no scroll): lg is pad | cube | notation; md
+  stacks cube / pad / panels. Settings live in the header's popover. Phones scroll.
+
 ### What Phase 2 shipped (round 2)
 
 - **Keys: notation by default, fully remappable.** R turns R, Shift+R turns R',
