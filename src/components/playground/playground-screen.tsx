@@ -44,6 +44,11 @@ import { isOverlayOpen } from "@/stores/overlay-store";
 /** Input types where keys are not text entry. */
 const NON_TEXT_INPUTS: ReadonlySet<string> = new Set(["checkbox", "radio", "button", "range"]);
 
+/** Controls where Enter already does something: pressing them. */
+function isPressableTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest("button, a, summary, [role=button], [role=tab], [role=radio]") !== null;
+}
+
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   if (target instanceof HTMLInputElement) return !NON_TEXT_INPUTS.has(target.type);
@@ -251,6 +256,13 @@ export function PlaygroundScreen({
         setKeysOpen(true);
         return;
       }
+      // Enter scrambles. It can't be bound to a move, so it never clashes.
+      if (e.key === "Enter" && !e.altKey && !e.shiftKey) {
+        if (e.repeat || isPressableTarget(e.target)) return;
+        e.preventDefault();
+        if (!generating && !revealing) void onScramble();
+        return;
+      }
       // Holding a key should not spin a face round and round.
       if (e.altKey || e.repeat) return;
       const move = moveForKey(e, puzzleRef.current, prefs.keyBindings);
@@ -260,7 +272,7 @@ export function PlaygroundScreen({
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onMove, prefs.keyBindings]);
+  }, [onMove, onScramble, generating, revealing, prefs.keyBindings]);
 
   const onBindingsChange = useCallback((keyBindings: KeyBindings) => updatePrefs({ keyBindings }), []);
   const swipeHintDismissed = prefs.swipeHintDismissed;
@@ -303,61 +315,64 @@ export function PlaygroundScreen({
     setupKind === "case" ? "Case setup" : setupKind === "link" ? "Start position" : "Scramble";
 
   return (
-    // md and up: exactly one screen under the navbar (h-14), nothing scrolls
-    // but the move list. Phones stack and scroll, as there is no room to fit.
-    <div className="flex w-full flex-1 flex-col md:h-[calc(100dvh-3.5rem)] md:overflow-hidden">
-      <header className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 pt-4 pb-2 lg:px-6">
-        <div className="flex min-w-0 items-baseline gap-3">
-          <h1 className="text-xl font-semibold tracking-tight">Playground</h1>
-          <p className="text-xs text-muted-foreground md:hidden xl:block">Solves here are never saved.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Segmented
-            label="Puzzle"
-            value={puzzle}
-            options={PLAYGROUND_PUZZLES.map((p) => ({ value: p.id, label: p.label }))}
-            onChange={(p) => {
-              setPractice(IDLE);
-              setRevealStep(-1);
-              dispatch({ type: "puzzle", puzzle: p });
-            }}
-          />
-          <Segmented
-            label="View"
-            value={visualization}
-            options={[
-              { value: "3D", label: "3D" },
-              { value: "2D", label: "2D" },
-            ]}
-            onChange={setVisualization}
-          />
-        </div>
-        <div className="ml-auto flex items-center gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            className="hidden md:inline-flex"
-            onClick={() => setKeysOpen(true)}
-            aria-label="Keys and custom mapping"
-            title="Keys & custom mapping (?)"
-          >
-            <Keyboard />
-          </Button>
-          <SettingsPopover prefs={prefs} swipeOn={swipeOn} onOpenKeys={() => setKeysOpen(true)} />
-        </div>
-      </header>
+    // md and up: exactly one screen under the navbar (h-14), one grid, nothing
+    // scrolls but the move list. Phones: header, cube, buttons and pad fill the
+    // screen above the bottom nav; the panels follow below it.
+    <div
+      className={cn(
+        "flex w-full flex-1 flex-col gap-4 px-4 pb-6",
+        "md:grid md:h-[calc(100dvh-3.5rem)] md:gap-x-4 md:gap-y-3 md:overflow-hidden md:pb-4",
+        // Tablet: cube on top taking what's left, then the pad, then the panels.
+        "md:grid-rows-[auto_minmax(16rem,1fr)_auto_auto]",
+        // Desktop: pad | cube | notation, one row under the header.
+        "lg:grid-cols-[minmax(11rem,13rem)_minmax(0,1fr)_minmax(17rem,20rem)] lg:grid-rows-[auto_minmax(0,1fr)] lg:px-6",
+      )}
+    >
+      {/* Phones only: one screen high. md and up it dissolves into the grid. */}
+      <div className="flex h-[calc(100dvh-4rem-env(safe-area-inset-bottom))] min-h-[32rem] flex-col gap-2 pb-3 md:contents">
+        <header className="flex flex-wrap items-center gap-x-2 gap-y-2 sm:gap-x-3 pt-3 md:col-span-full md:pt-4">
+          <div className="flex min-w-0 items-baseline gap-3">
+            <h1 className="text-lg font-semibold tracking-tight md:text-xl">Playground</h1>
+            <p className="hidden text-xs text-muted-foreground xl:block">Solves here are never saved.</p>
+          </div>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Segmented
+              label="Puzzle"
+              value={puzzle}
+              options={PLAYGROUND_PUZZLES.map((p) => ({ value: p.id, label: p.label }))}
+              onChange={(p) => {
+                setPractice(IDLE);
+                setRevealStep(-1);
+                dispatch({ type: "puzzle", puzzle: p });
+              }}
+            />
+            <Segmented
+              label="View"
+              value={visualization}
+              options={[
+                { value: "3D", label: "3D" },
+                { value: "2D", label: "2D" },
+              ]}
+              onChange={setVisualization}
+            />
+          </div>
+          <div className="ml-auto flex items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="hidden md:inline-flex"
+              onClick={() => setKeysOpen(true)}
+              aria-label="Keys and custom mapping"
+              title="Keys & custom mapping (?)"
+            >
+              <Keyboard />
+            </Button>
+            <SettingsPopover prefs={prefs} swipeOn={swipeOn} onOpenKeys={() => setKeysOpen(true)} />
+          </div>
+        </header>
 
-      <div
-        className={cn(
-          "grid min-h-0 flex-1 gap-4 px-4 pb-6 md:pb-4 lg:px-6",
-          // Tablet: cube on top taking what's left, then the pad, then the panels.
-          "md:grid-rows-[minmax(16rem,1fr)_auto_auto]",
-          // Desktop: pad | cube | notation, one row.
-          "lg:grid-cols-[minmax(11rem,13rem)_minmax(0,1fr)_minmax(17rem,20rem)] lg:grid-rows-[minmax(0,1fr)]",
-        )}
-      >
-        <section className="flex min-h-0 min-w-0 flex-col items-center gap-3 lg:col-start-2 lg:row-start-1">
+        <section className="flex min-h-0 min-w-0 flex-1 flex-col items-center gap-2 md:gap-3 lg:col-start-2 lg:row-start-2">
           <div className="flex min-h-7 items-center" aria-live="polite">
             {justSolved ? (
               <p className="flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
@@ -378,7 +393,7 @@ export function PlaygroundScreen({
           <PracticeTimer phase={practice} onReplay={() => setReplayToken((n) => n + 1)} />
 
           {/* The cube is the biggest square this box allows (container query units). */}
-          <div className="grid w-full place-items-center md:min-h-0 md:flex-1 md:[container-type:size]">
+          <div className="grid min-h-0 w-full flex-1 place-items-center [container-type:size]">
             <PlaygroundCube
               puzzle={puzzle}
               visualization={visualization}
@@ -396,12 +411,12 @@ export function PlaygroundScreen({
               onMove={onMove}
               onRevealStep={setRevealStep}
               onRevealed={onRevealed}
-              className="w-full max-w-[28rem] md:w-[min(100cqw,100cqh)] md:max-w-none"
+              className="w-[min(100cqw,100cqh)]"
             />
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <Button type="button" onClick={onScramble} disabled={generating || revealing}>
+          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+            <Button type="button" onClick={onScramble} disabled={generating || revealing} title="Scramble (Enter)">
               <Shuffle /> {generating || revealing ? "Scrambling…" : "Scramble"}
             </Button>
             <Button
@@ -410,8 +425,9 @@ export function PlaygroundScreen({
               onClick={togglePractice}
               aria-pressed={practiceOn}
               title="Time your solves: the clock starts on your first turn after a scramble"
+              aria-label="Practice"
             >
-              <Timer /> Practice
+              <Timer /> <span className="max-[379px]:hidden">Practice</span>
             </Button>
             <Button
               type="button"
@@ -442,86 +458,88 @@ export function PlaygroundScreen({
                 dispatch({ type: "reset" });
               }}
               disabled={!scramble && moves.length === 0}
+              aria-label="Reset"
+              title="Reset to solved"
             >
-              <RotateCcw /> Reset
+              <RotateCcw /> <span className="hidden sm:inline">Reset</span>
             </Button>
           </div>
         </section>
 
-        <div className="flex min-h-0 justify-center lg:col-start-1 lg:row-start-1 lg:overflow-y-auto">
+        <div className="flex min-h-0 justify-center lg:col-start-1 lg:row-start-2 lg:overflow-y-auto">
           <MovePad puzzle={puzzle} onMove={onMove} disabled={revealing} />
         </div>
-
-        <aside className="grid min-h-0 min-w-0 gap-4 md:grid-cols-2 lg:col-start-3 lg:row-start-1 lg:grid-cols-1 lg:grid-rows-[minmax(0,1fr)_auto]">
-          <Panel className="min-h-0 md:max-lg:order-2">
-            <div className="flex flex-col gap-1.5">
-              <h2 className="text-sm font-medium">{startLabel}</h2>
-              <ScrambleTape
-                scramble={scramble}
-                step={revealing ? revealStep : null}
-                label={setupKind === "scramble" ? `Scramble: ${scramble}` : undefined}
-              />
-            </div>
-
-            <div className="flex min-h-0 flex-1 flex-col gap-1.5 border-t border-border pt-3">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-medium">Your moves</h2>
-                <div className="flex gap-0.5">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-xs"
-                    onClick={() => copyText(shareUrl(), "link")}
-                    disabled={!scramble && moves.length === 0}
-                    aria-label="Copy link to this cube"
-                    title="Copy a link to this cube"
-                  >
-                    {copied === "link" ? <Check /> : <Link2 />}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-xs"
-                    onClick={() => copyText(history, "moves")}
-                    disabled={moves.length === 0}
-                    aria-label="Copy moves"
-                    title="Copy moves"
-                  >
-                    {copied === "moves" ? <Check /> : <Copy />}
-                  </Button>
-                </div>
-              </div>
-              <p
-                className="max-h-40 min-h-10 overflow-y-auto font-mono text-sm break-words md:max-h-24 lg:max-h-none lg:flex-1"
-                data-testid="playground-history"
-              >
-                {history || <span className="text-muted-foreground">Turn the cube to start.</span>}
-              </p>
-              {simplified && simplified !== history && (
-                <p className="text-xs text-muted-foreground">
-                  Simplified: <span className="font-mono">{simplified}</span>
-                </p>
-              )}
-            </div>
-          </Panel>
-
-          <Panel className="md:max-lg:order-1">
-            <h2 className="text-sm font-medium">Try an algorithm</h2>
-            <AlgPanel
-              value={algText}
-              onChange={(v) => {
-                setAlgText(v);
-                setAlgError(null);
-              }}
-              error={algError}
-              disabled={!ready || revealing}
-              onSetupCase={setUpCase}
-              onShowMe={showMe}
-              onApply={applyAlg}
-            />
-          </Panel>
-        </aside>
       </div>
+
+      <aside className="grid min-h-0 min-w-0 gap-4 md:grid-cols-2 lg:col-start-3 lg:row-start-2 lg:grid-cols-1 lg:grid-rows-[minmax(0,1fr)_auto]">
+        <Panel className="min-h-0 md:max-lg:order-2">
+          <div className="flex flex-col gap-1.5">
+            <h2 className="text-sm font-medium">{startLabel}</h2>
+            <ScrambleTape
+              scramble={scramble}
+              step={revealing ? revealStep : null}
+              label={setupKind === "scramble" ? `Scramble: ${scramble}` : undefined}
+            />
+          </div>
+
+          <div className="flex min-h-0 flex-1 flex-col gap-1.5 border-t border-border pt-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium">Your moves</h2>
+              <div className="flex gap-0.5">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => copyText(shareUrl(), "link")}
+                  disabled={!scramble && moves.length === 0}
+                  aria-label="Copy link to this cube"
+                  title="Copy a link to this cube"
+                >
+                  {copied === "link" ? <Check /> : <Link2 />}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => copyText(history, "moves")}
+                  disabled={moves.length === 0}
+                  aria-label="Copy moves"
+                  title="Copy moves"
+                >
+                  {copied === "moves" ? <Check /> : <Copy />}
+                </Button>
+              </div>
+            </div>
+            <p
+              className="max-h-40 min-h-10 overflow-y-auto font-mono text-sm break-words md:max-h-24 lg:max-h-none lg:flex-1"
+              data-testid="playground-history"
+            >
+              {history || <span className="text-muted-foreground">Turn the cube to start.</span>}
+            </p>
+            {simplified && simplified !== history && (
+              <p className="text-xs text-muted-foreground">
+                Simplified: <span className="font-mono">{simplified}</span>
+              </p>
+            )}
+          </div>
+        </Panel>
+
+        <Panel className="md:max-lg:order-1">
+          <h2 className="text-sm font-medium">Try an algorithm</h2>
+          <AlgPanel
+            value={algText}
+            onChange={(v) => {
+              setAlgText(v);
+              setAlgError(null);
+            }}
+            error={algError}
+            disabled={!ready || revealing}
+            onSetupCase={setUpCase}
+            onShowMe={showMe}
+            onApply={applyAlg}
+          />
+        </Panel>
+      </aside>
 
       <KeysOverlay
         open={keysOpen}
@@ -638,7 +656,8 @@ function SettingsPopover({
               ? prefs.dragOffCube === "rotate"
                 ? "Swipe a row to turn it; drag off the cube to rotate it."
                 : "Swipe a row to turn it; drag off the cube to look around."
-              : "Drag to look around; click a face to turn it."}
+              : "Drag to look around; click a face to turn it."}{" "}
+            Enter scrambles. Solves here are never saved.
           </p>
           <Button type="button" variant="outline" size="sm" onClick={onOpenKeys}>
             <Keyboard /> Keys &amp; custom mapping{" "}
@@ -671,7 +690,7 @@ function Segmented<T extends string>({
           aria-checked={o.value === value}
           onClick={() => onChange(o.value)}
           className={cn(
-            "rounded-md px-2.5 py-1 text-sm font-medium transition-colors",
+            "rounded-md px-2 py-1 text-sm font-medium transition-colors sm:px-2.5",
             o.value === value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
           )}
         >

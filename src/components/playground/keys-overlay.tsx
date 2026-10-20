@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { useOverlayLock } from "@/stores/overlay-store";
 
 const SHORTCUTS: { keys: string[]; label: string }[] = [
+  { keys: ["Enter"], label: "New scramble" },
   { keys: ["Ctrl", "Z"], label: "Undo" },
   { keys: ["Ctrl", "Y"], label: "Redo" },
   { keys: ["?"], label: "Show this list" },

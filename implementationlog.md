@@ -5,6 +5,42 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-20 — Merge perf/mobile-lighthouse; landing Sign In fix; playground on phones, Enter to scramble; repo tidy-up
+
+**Request:** (1) Merge `perf/mobile-lighthouse` into main, resolving conflicts. (2) On phones,
+fit the playground's cube and move pad on one screen. (4) A key to scramble. (5) Delete
+remote branches already merged, and move the Lighthouse report out of the repo root.
+
+### Changed
+
+- **Merge:** the only conflict was this file; both remote sessions had appended their entries
+  at the bottom. Kept both, moved under the newest entry, newest first.
+- **Landing Sign In (found by the merge's e2e run):** `marketing-header.tsx` server-rendered
+  Sign In inside a span, then swapped it for the navbar's own link once it knew the visitor
+  was signed out; a click during hydration was lost (auth-smoke failed every run, and a slow
+  phone would hit it too). Both the navbar slot and the phone header now keep the same
+  elements throughout and only change classes. A stale cookie that marks `<html>` signed in
+  for a signed-out visitor still shows Sign In once `/api/viewer` answers.
+- **Playground on phones** (`playground-screen.tsx`, `move-pad.tsx`): header, cube, buttons and
+  pad form one block `100dvh − 4rem − safe area` high (the bottom nav); the cube takes what is
+  left (container query units, now at every size). Panels follow below. md and up the block is
+  `display: contents`, so the tablet/desktop grid is unchanged (the header became its first row).
+  Phone pad: tabs Faces / Slices & wide (3x3 only) / Rotations, a column per face with its
+  turn, prime and double: three 40px rows. Under 380px the Practice label and on phones the
+  Reset label go icon-only (aria-labels kept). "Solves here are never saved." moved into the
+  Settings popover on phones.
+- **Enter scrambles** (not on a focused button/link/tab, not in the alg box, not mid-scramble).
+  Enter was already unbindable, so it can't clash with custom keys. Listed in the key overlay.
+
+### Verification
+
+- tsc, eslint (0 errors), unit tests 577 passed, `check:colors`.
+- e2e playground + playground-swipe: 29 passed (new: Enter, phone pad fits above the bottom
+  nav and its tabs turn the cube). auth-smoke and landing-hero pass. Screenshots at 360x640,
+  375x667, 390x844, 412x915 (pad ends above the nav), 820x1180, 1280x720 (unchanged).
+
+---
+
 ## 2026-10-20 — Playground: scrambles turn on visibly; one-screen layout on tablet and desktop
 
 **Request:** (1) The Scramble button jumped the cube straight to the scrambled state; apply

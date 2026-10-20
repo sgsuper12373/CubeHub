@@ -106,6 +106,52 @@ test.describe("Playground", () => {
     await expect(history).toHaveText("R");
   });
 
+  test("Enter scrambles, but not while a button or the alg box has focus", async ({ page }) => {
+    await page.goto("/playground");
+    await expectCubeReady(page);
+    const scrambleEl = page.locator('[aria-label^="Scramble: "]');
+
+    await page.getByRole("textbox", { name: "Algorithm" }).fill("R");
+    await page.getByRole("textbox", { name: "Algorithm" }).press("Enter"); // sets up the case
+    await expect(page.getByText(/^Case set up/)).toBeVisible({ timeout: 30_000 });
+    await expect(scrambleEl).toHaveCount(0);
+
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await page.keyboard.press("Enter");
+    await expect(page.getByText(/^Scrambled, 0 moves/)).toBeVisible({ timeout: 30_000 });
+    const first = await scrambleEl.getAttribute("aria-label");
+
+    // On a focused button, Enter presses that button instead.
+    const practice = page.getByRole("button", { name: "Practice" });
+    await practice.focus();
+    await page.keyboard.press("Enter");
+    await expect(practice).toHaveAttribute("aria-pressed", "true");
+    await page.waitForTimeout(500);
+    expect(await scrambleEl.getAttribute("aria-label")).toBe(first);
+  });
+
+  test("phones: the cube, buttons and a compact pad fit above the bottom nav", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/playground");
+    await expectCubeReady(page);
+    const pad = page.getByRole("tabpanel", { name: "Move pad" });
+    const nav = page.locator("nav.fixed");
+    const padBox = await pad.boundingBox();
+    const navBox = await nav.boundingBox();
+    expect(padBox && navBox && padBox.y + padBox.height <= navBox.y).toBe(true);
+
+    await page.getByRole("button", { name: "Turn U'" }).click();
+    await page.getByRole("tab", { name: "Slices & wide" }).click();
+    await page.getByRole("button", { name: "Turn M2" }).click();
+    await page.getByRole("tab", { name: "Rotations" }).click();
+    await page.getByRole("button", { name: "Turn y", exact: true }).click();
+    await expect(page.getByTestId("playground-history")).toHaveText("U' M2 y");
+
+    // A 2x2 has no slices tab.
+    await page.getByRole("radio", { name: "2x2" }).click();
+    await expect(page.getByRole("tab", { name: "Slices & wide" })).toHaveCount(0);
+  });
+
   test("with Animate scrambles off, a scramble is on at once", async ({ page }) => {
     await page.goto("/playground");
     await expectCubeReady(page);
