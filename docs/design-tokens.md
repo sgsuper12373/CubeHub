@@ -192,8 +192,8 @@ A test generates the `[data-theme="paper"] { … }` CSS block from these objects
 - The `cubehub-theme` cookie is the single source of truth for the theme; localStorage is not used.
   - The cookie holds `slate`, `paper` or `system`. Legacy values are still read: `dark` means Slate and `light` means Paper.
   - No cookie (or an unknown value) means `system`. The server renders Slate until the head script resolves it.
-  - The server renders `data-theme` and `.dark` from the cookie.
-  - A tiny inline `<head>` script does work only for `system` (including no cookie). It resolves `prefers-color-scheme` before first paint, so there is no flash of unthemed content.
+  - The server renders the default theme (Slate) for everyone: the root layout doesn't read cookies, so pages such as the landing page can be static.
+  - A tiny inline `<head>` script applies the cookie before first paint: an explicit or legacy theme as is, `system` (including no cookie) by `prefers-color-scheme`. There is no flash of unthemed content. With JavaScript off, every visitor gets Slate.
 - `next-themes` or the existing `.dark` class keeps working: `mode` sets it, so shadcn `dark:` variants stay valid.
 
 ## Migration and done checklist

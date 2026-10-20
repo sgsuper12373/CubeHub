@@ -2830,3 +2830,26 @@ A virtual puzzle sandbox at `/playground` (plan: `docs/playground.md`).
 - `npm run build`, then the playground and cubing-runtime e2e specs against
   `next start`: 5 passed. Click and touch-tap turning checked by hand in Chromium.
 
+
+## 2026-10-20 — Mobile Lighthouse: landing page and /learn
+
+**Request:** Raise the mobile Lighthouse score of `/` and `/learn` without changing how
+anything looks or behaves. Six steps, one commit each, on `perf/mobile-lighthouse`.
+
+### 1. Static landing page
+
+- `src/app/layout.tsx` no longer calls `cookies()`. It renders the default theme (Slate);
+  `THEME_INIT_SCRIPT` now applies the `cubehub-theme` cookie itself before first paint (an
+  explicit or legacy theme as is, "system" by `prefers-color-scheme`). Same no-flash result
+  with JavaScript on. With JavaScript off, an explicit Paper choice falls back to Slate.
+- `(marketing)/layout.tsx` and `page.tsx` no longer call `getProfile()`, `getNotifications()`
+  or `getUser()`. The navbar's user slot, the phone header's action and the CTA band's copy are
+  client islands (`marketing-header.tsx`, `cta-band-actions.tsx`) fed by `use-viewer.ts`,
+  which asks the new `GET /api/viewer` (same DAL calls, `Cache-Control: private, no-store`).
+  Visitors without a Supabase auth cookie are signed out with no request.
+- No "Sign In" flash for signed-in visitors: `SIGNED_IN_HINT_SCRIPT` (root `<head>`) marks
+  `<html data-signed-in>` when the auth cookie exists, and the server-rendered markup picks
+  the chrome with CSS until hydration. Their name and bell appear when the request returns.
+- `NotificationBell` takes an optional `onRead`, since `router.refresh()` can't update a
+  static page. Sign-in/out in another tab refetches through `onAuthStateChange`.
+- Build: `/` is now `○` (was `ƒ`). `/_not-found` and `/auth/auth-code-error` also became static.

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, JetBrains_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 
-import { cookies } from "next/headers";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -12,14 +11,11 @@ import { ThemeSwitcher } from "@/components/dev/theme-switcher";
 import { SystemThemeSync } from "@/components/layout/system-theme-sync";
 import { ConfirmHost } from "@/components/ui/confirm-dialog";
 import { Toaster } from "@/components/ui/toast";
+import { SIGNED_IN_HINT_SCRIPT } from "@/lib/auth/viewer";
 import { SITE_URL } from "@/lib/site-url";
 import { THEME_INIT_SCRIPT } from "@/themes/init-script";
-import {
-  parseThemePreference,
-  resolveThemeId,
-  THEME_COOKIE,
-  themeMode,
-} from "@/themes/preference";
+import { DEFAULT_THEME_ID } from "@/themes";
+import { themeMode } from "@/themes/preference";
 
 /**
  * Vercel Web Analytics and Speed Insights run only on Vercel deployments
@@ -85,34 +81,36 @@ export const metadata: Metadata = {
  *
  * `AuthListener` stays at the root so cross-tab sign-in/out is picked up on
  * every route, including the auth pages themselves.
+ *
+ * No cookies() here: reading a request API in the root layout would make
+ * every route dynamic, the landing page included. The theme cookie is still
+ * the source of truth; THEME_INIT_SCRIPT applies it before first paint.
  */
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  // The cookie is the source of truth for the theme. Token values are keyed
-  // on [data-theme] (src/themes/); `.dark` is derived from the theme's mode
-  // for shadcn `dark:` variants. "system" can't be resolved here, so the
-  // server renders the default and THEME_INIT_SCRIPT corrects it before
-  // first paint.
-  const themeId = resolveThemeId(
-    parseThemePreference(cookieStore.get(THEME_COOKIE)?.value),
-  );
-  const modeClass = themeMode(themeId) === "dark" ? "dark " : "";
+  // Token values are keyed on [data-theme] (src/themes/); `.dark` is derived
+  // from the theme's mode for shadcn `dark:` variants. The server always
+  // renders the default; THEME_INIT_SCRIPT swaps in the cookie's theme (or the
+  // OS one for "system") before first paint.
+  const modeClass = themeMode(DEFAULT_THEME_ID) === "dark" ? "dark " : "";
 
   return (
     // suppressHydrationWarning: THEME_INIT_SCRIPT may change data-theme and
-    // the `dark` class before hydration (only when the preference is "system").
+    // the `dark` class before hydration, and SIGNED_IN_HINT_SCRIPT may add
+    // data-signed-in.
     <html
       lang="en"
-      data-theme={themeId}
+      data-theme={DEFAULT_THEME_ID}
       suppressHydrationWarning
       className={`${modeClass}${geistSans.variable} ${geistMono.variable} ${jetbrainsMono.variable} ${outfit.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        {/* For static pages' signed-in chrome; see src/lib/auth/viewer.ts. */}
+        <script dangerouslySetInnerHTML={{ __html: SIGNED_IN_HINT_SCRIPT }} />
       </head>
       {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla's
           `cz-shortcut-listen`, Grammarly's `data-gr-*`) inject attributes onto

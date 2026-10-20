@@ -46,7 +46,7 @@ describe("THEME_INIT_SCRIPT", () => {
   }
 
   beforeEach(() => {
-    // What the server renders for "system": the default, Slate.
+    // What the server renders for every visitor: the default, Slate.
     root.setAttribute("data-theme", "slate");
     root.classList.add("dark");
   });
@@ -76,11 +76,23 @@ describe("THEME_INIT_SCRIPT", () => {
     expect(root.dataset.theme).toBe("paper");
   });
 
-  it("does nothing for an explicit or legacy theme — the server already rendered it", () => {
+  it("applies an explicit or legacy theme from the cookie, whatever the OS says", () => {
+    run("paper", false);
+    expect(root.dataset.theme).toBe("paper");
+    expect(root.classList.contains("dark")).toBe(false);
     run("slate", true);
     expect(root.dataset.theme).toBe("slate");
+    expect(root.classList.contains("dark")).toBe(true);
+    run("light", false);
+    expect(root.dataset.theme).toBe("paper");
+    expect(root.classList.contains("dark")).toBe(false);
     run("dark", true);
     expect(root.dataset.theme).toBe("slate");
     expect(root.classList.contains("dark")).toBe(true);
+  });
+
+  it("treats inherited object keys as unknown values", () => {
+    run("constructor", true);
+    expect(root.dataset.theme).toBe("paper");
   });
 });
