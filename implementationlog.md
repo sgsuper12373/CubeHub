@@ -2885,3 +2885,21 @@ anything looks or behaves. Six steps, one commit each, on `perf/mobile-lighthous
 - Preload: kept on the /learn hero cube and on the `/learn/[puzzle]` hero (each page's LCP
   image), dropped from the two puzzle cards below the /learn hero. `priority` became
   `preload`, its non-deprecated name in Next 16 (same behaviour).
+
+### 3. Animation cost
+
+- Learn hero (`src/components/learn/hero-section.tsx`): the endless float was a motion `y`
+  animation, a JS frame loop that repainted the cube's drop-shadow. It is now a CSS animation
+  of `transform` (`.learn-hero-float` in `globals.css`: same keyframes, easeInOut per segment,
+  4s), which runs on the compositor, and is off under `prefers-reduced-motion`. The entrance
+  fades sit in `<MotionConfig reducedMotion="user">`, so reduced-motion visitors get the fade
+  without the slide or scale.
+- Phones (below `md`): no drop-shadow filter on the cube. The same glow is a box-shadow on the
+  picture's own rect (the image is opaque, so the filter only ever traced that rectangle). In
+  Chromium a box-shadow needs twice the drop-shadow's blur (80px for 40px) to match; measured
+  against the filter in isolation, the largest pixel difference is 2/255, normal and hover.
+- Marketing: the hero replay and ScrambleMatrix already stop for reduced motion and pause when
+  off screen; `.reveal` is scroll-driven CSS behind `prefers-reduced-motion: no-preference`.
+  The one same-shaped cost: on phones the hero timer card's `backdrop-blur-xl` sits over the
+  ScrambleMatrix canvas, which redraws every frame, so the blur is redone every frame. Off
+  below `md`; the card is 90% opaque, so the blur barely showed there.

@@ -310,7 +310,10 @@ export function HeroTimerCard({ className }: { className?: string }) {
         )}
       />
 
-      <div className="relative overflow-hidden rounded-3xl border border-border bg-card/90 shadow-2xl shadow-primary/10 backdrop-blur-xl">
+      {/* No backdrop blur on phones: there the card sits over the animated
+          ScrambleMatrix canvas, so the blur would be redone every frame.
+          The card is 90% opaque, so it barely shows anyway. */}
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-card/90 shadow-2xl shadow-primary/10 backdrop-blur-xl max-md:backdrop-blur-none">
         {/* Header */}
         <div className="flex items-center justify-between gap-3 border-b border-border/70 px-5 py-3 font-mono text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
           <span className="flex items-center gap-2">
