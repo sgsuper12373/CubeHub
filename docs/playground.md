@@ -44,6 +44,12 @@ Bluetooth cube to test with.
 - md and up, the page is exactly one screen (no scroll): lg is pad | cube | notation; md
   stacks cube / pad / panels. Settings live in the header's popover. Phones scroll.
 
+### Phones and Enter (2026-10-20)
+
+- Phones: header, cube, buttons and a tabbed pad (Faces / Slices & wide / Rotations, a
+  column per face) fill one screen above the bottom nav; the panels follow below.
+- Enter starts a new scramble (not on a focused button or in the alg box).
+
 ### What Phase 2 shipped (round 2)
 
 - **Keys: notation by default, fully remappable.** R turns R, Shift+R turns R',

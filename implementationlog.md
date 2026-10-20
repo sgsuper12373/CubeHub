@@ -31,6 +31,8 @@ remote branches already merged, and move the Lighthouse report out of the repo r
   Settings popover on phones.
 - **Enter scrambles** (not on a focused button/link/tab, not in the alg box, not mid-scramble).
   Enter was already unbindable, so it can't clash with custom keys. Listed in the key overlay.
+- **Tidy-up, left to the founder:** deleting the five merged remote branches and moving the
+  Lighthouse report into `docs/perf/` were blocked by the agent's permission check.
 
 ### Verification
 
