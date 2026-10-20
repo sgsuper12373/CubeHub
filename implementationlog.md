@@ -2936,3 +2936,32 @@ anything looks or behaves. Six steps, one commit each, on `perf/mobile-lighthous
   lines. Nothing else to split.
 - First load of `/` on a phone (Playwright, 412px, Slate): scripts 28 requests / 371 KiB →
   22 / 317 KiB, and no cubing.js.
+
+### 6. Analytics and Speed Insights
+
+- No change needed. `<Analytics />` and `<SpeedInsights />` (rendered only on Vercel) each
+  inject their `<script defer>` from a `useEffect`, so nothing loads until hydration is done,
+  which is when the page becomes interactive. Pushing them later (an idle callback or the load
+  event) would lose pageviews from visitors who leave first, and Speed Insights could miss
+  early interactions. A comment in `layout.tsx` records this so nobody re-does the check.
+
+### Not done, and why
+
+- **`/learn` stays dynamic.** The `(app)` layout reads the user for the navbar, bottom nav
+  and username onboarding on every app route. Making it static means the same client-island
+  treatment for the whole app shell. Worth doing, but it touches every route.
+- **`/learn`'s LCP is the hero `<h1>`, which motion renders at `opacity: 0` and fades in
+  after hydration.** That is most of the page's LCP. Showing it without the fade is a visible
+  change, so it is left for the founder to decide.
+- **`motion` on the landing page** is there only for `useReducedMotion`, in
+  `hero-timer-card.tsx` and `scramble-matrix.tsx`. A `matchMedia` hook could drop the library from
+  `/`, but that is a refactor beyond this brief.
+- **`/learn/[puzzle]` hero** (`puzzle-hero.tsx`) has the same endless motion float with a
+  drop-shadow, combined with a mouse-driven tilt, so it isn't a one-line swap. Not on the two
+  pages in scope.
+- **Brand PNGs not replaced**: see step 2.
+
+### Verification
+
+See the PR description for the full run (tsc, lint, unit, check:chunks, check:colors, build,
+e2e on the production build) and before/after Lighthouse numbers.

@@ -22,6 +22,11 @@ import { themeMode } from "@/themes/preference";
  * (`VERCEL=1`, set at build and run time). Local dev, `next start`, Playwright
  * and GitHub CI leave it unset, so they never load the scripts or request
  * /_vercel/*, which would 404 off Vercel. No custom events: Hobby plan.
+ *
+ * Both already load after the page is interactive: each component injects its
+ * `<script defer>` from a useEffect, i.e. after hydration. Don't push them
+ * later (idle callback, load event): a visitor who leaves first would send no
+ * pageview, and Speed Insights could miss early interactions.
  */
 const ON_VERCEL = process.env.VERCEL === "1";
 
