@@ -16,22 +16,32 @@ const EXTRA_333 = ["M", "E", "S", "r", "l", "u"];
  * On-screen moves, for phones: there is no keyboard, and swiping a small 3D
  * cube is fiddly. Each family gets its clockwise, prime and double turn side
  * by side. A 2x2 has no slices or wide turns, so it never shows "More moves".
+ *
+ * Below lg it is a grid under the cube; at lg it is a single column beside it.
  */
 export function MovePad({
   puzzle,
   onMove,
+  disabled = false,
 }: {
   puzzle: PlaygroundPuzzle;
   onMove: (move: string) => void;
+  disabled?: boolean;
 }) {
   const [more, setMore] = useState(false);
   const extras = puzzle === "333" ? EXTRA_333 : [];
 
   return (
-    <div className="flex w-full max-w-lg flex-col items-center gap-2">
-      <div className="grid w-full grid-cols-2 gap-1.5 sm:grid-cols-3" aria-label="Move pad">
+    <div className="flex w-full max-w-lg flex-col items-center gap-2 lg:max-w-none">
+      <div className="grid w-full grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-1" aria-label="Move pad">
         {[...FACES, ...(more ? extras : []), ...ROTATIONS].map((family) => (
-          <MoveFamily key={family} family={family} subtle={ROTATIONS.includes(family)} onMove={onMove} />
+          <MoveFamily
+            key={family}
+            family={family}
+            subtle={ROTATIONS.includes(family)}
+            disabled={disabled}
+            onMove={onMove}
+          />
         ))}
       </div>
       {extras.length > 0 && (
@@ -44,7 +54,17 @@ export function MovePad({
   );
 }
 
-function MoveFamily({ family, subtle, onMove }: { family: string; subtle: boolean; onMove: (move: string) => void }) {
+function MoveFamily({
+  family,
+  subtle,
+  disabled,
+  onMove,
+}: {
+  family: string;
+  subtle: boolean;
+  disabled: boolean;
+  onMove: (move: string) => void;
+}) {
   return (
     <div className="flex gap-1">
       {[family, `${family}'`, `${family}2`].map((move) => (
@@ -53,7 +73,8 @@ function MoveFamily({ family, subtle, onMove }: { family: string; subtle: boolea
           type="button"
           variant={subtle ? "ghost" : "outline"}
           size="sm"
-          className="h-10 flex-1 px-0 font-mono text-sm"
+          className="h-10 flex-1 px-0 font-mono text-sm lg:h-8"
+          disabled={disabled}
           onClick={() => onMove(move)}
           aria-label={`Turn ${move}`}
         >

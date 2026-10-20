@@ -5,6 +5,49 @@ Newest entries at the top.
 
 ---
 
+## 2026-10-20 — Playground: scrambles turn on visibly; one-screen layout on tablet and desktop
+
+**Request:** (1) The Scramble button jumped the cube straight to the scrambled state; apply
+the scramble live, fast, with each turn still visible. (2) The page scrolled and had a lot
+of empty space; on desktop and tablet everything should fit, redesigning the UI as needed.
+
+### Changed
+
+- `lib/playground/history.ts`: `scramble` takes `animate`; state gains `revealing`. While it
+  is set, move/moves/undo/redo are ignored; `revealed` clears it; any restart clears it.
+- `components/playground/playground-cube.tsx`: on a redraw with `revealing`, the player starts
+  solved and the scramble's moves are added one every 100ms at `tempoScale` 6 (cubing animates
+  an added move over 500ms / tempoScale, so ~85ms per turn; a 3x3 scramble takes ~2s). At the
+  end the scramble becomes the setup alg (same picture) and `onRevealed` fires. A view switch
+  or a cube that loads mid-reveal ends it at once, so turns are never left blocked. The cube's
+  size now comes from the screen (`className`).
+- `components/playground/playground-screen.tsx`: new layout. md and up fill the screen under
+  the navbar (`h-[calc(100dvh-3.5rem)]`, no page scroll): lg is move pad | cube | notation
+  panel; md stacks cube (takes the leftover height) / pad / two panels side by side. The cube
+  is the largest square its box allows (container query units). Settings and the controls
+  hint moved into a popover in the header (gear), next to a keys button. Panel titles are
+  sentence case. The scramble is shown as a row of moves; while it is being turned on, the
+  current move is lit and the rest are faint. Practice mode arms after the reveal, so
+  inspection doesn't run during it.
+- `components/playground/move-pad.tsx`: `disabled` (during a reveal); a single column at lg.
+- `lib/playground/prefs.ts`: `animateScramble` (default on), "Animate scrambles" in Settings.
+  `prefers-reduced-motion` skips the animation too.
+
+### Kept on purpose
+
+- Phones still stack and scroll; the order there is unchanged apart from the header.
+- Turns during a reveal are ignored, not queued: it is ~2s and the pad is visibly disabled.
+
+### Verification
+
+- tsc, eslint (0 errors), `check:colors`, unit tests for the playground (91 passed, new
+  reveal and prefs cases), e2e `playground.spec.ts` + `playground-swipe.spec.ts` against
+  `next dev`: 27 passed (two new: turns wait for the reveal; Animate scrambles off).
+- Screenshots at 1440x900, 1280x720, 1180x820, 820x1180: page height equals the viewport,
+  no scroll. 390x844 scrolls as intended. Checked light and dark.
+
+---
+
 ## 2026-10-19 — solve_sanity_test.sql: two checks that depended on when and where they ran
 
 **Request:** The founder's live run of `solve_sanity_test.sql` had 2 FAIL of 22.

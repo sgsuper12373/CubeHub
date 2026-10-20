@@ -313,14 +313,18 @@ test.describe("Playground swipe-to-turn", () => {
   test("off-cube drag can rotate the cube instead, and swipe can be turned off", async ({ page }) => {
     await openCube(page);
     const history = page.getByTestId("playground-history");
+    await page.getByRole("button", { name: "Settings" }).click();
     await page.getByRole("checkbox", { name: "Drag off the cube rotates it" }).check();
+    await page.keyboard.press("Escape");
     const box = await cubeBox(page);
     await touchSwipe(page, { x: box.x + 10, y: box.y + box.height / 2 }, 80, 0);
     await expect(history).toHaveText("y'");
 
     // Off: cubing's click-to-turn is back and the gesture layer stands aside.
+    await page.getByRole("button", { name: "Settings" }).click();
     await page.getByRole("checkbox", { name: "Swipe to turn" }).uncheck();
     await expect(page.getByRole("checkbox", { name: "Drag off the cube rotates it" })).toHaveCount(0);
+    await page.keyboard.press("Escape");
     const centre = await stickerOnScreen(page, VIEWS[0].camera, "F", 1, 1);
     await touchSwipe(page, centre, 0, -60);
     await page.waitForTimeout(300);

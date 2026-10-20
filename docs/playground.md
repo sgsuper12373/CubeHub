@@ -36,6 +36,14 @@ Bluetooth cube to test with.
   edge-on aren't swipeable; a press there orbits instead. Click-to-turn is off while
   swipe is on, and back when the "Swipe to turn" setting is off. 2D is unchanged.
 
+### Scramble animation and one-screen layout (2026-10-20)
+
+- A new scramble is turned onto a solved cube one move every 100ms (each turn animated,
+  ~2s for a 3x3), with the current move lit in the scramble text. Turns, undo and redo
+  wait for it. "Animate scrambles" in Settings, or `prefers-reduced-motion`, turns it off.
+- md and up, the page is exactly one screen (no scroll): lg is pad | cube | notation; md
+  stacks cube / pad / panels. Settings live in the header's popover. Phones scroll.
+
 ### What Phase 2 shipped (round 2)
 
 - **Keys: notation by default, fully remappable.** R turns R, Shift+R turns R',

@@ -24,6 +24,8 @@ export interface PlaygroundPrefs {
   dragOffCube: DragOffCube;
   /** The one-time "swipe a row" hint on touch screens has been closed. */
   swipeHintDismissed: boolean;
+  /** Turn a new scramble onto the cube from solved, quickly, instead of jumping to it. */
+  animateScramble: boolean;
 }
 
 export type DragOffCube = "orbit" | "rotate";
@@ -38,6 +40,7 @@ export const DEFAULT_PREFS: PlaygroundPrefs = {
   swipeToTurn: true,
   dragOffCube: "orbit",
   swipeHintDismissed: false,
+  animateScramble: true,
 };
 
 const KEY = "cubehub-playground-prefs";
@@ -56,6 +59,7 @@ export function sanitizePrefs(raw: unknown): PlaygroundPrefs {
     dragOffCube: r.dragOffCube === "orbit" || r.dragOffCube === "rotate" ? r.dragOffCube : DEFAULT_PREFS.dragOffCube,
     swipeHintDismissed:
       typeof r.swipeHintDismissed === "boolean" ? r.swipeHintDismissed : DEFAULT_PREFS.swipeHintDismissed,
+    animateScramble: typeof r.animateScramble === "boolean" ? r.animateScramble : DEFAULT_PREFS.animateScramble,
   };
 }
 

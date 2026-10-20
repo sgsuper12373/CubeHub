@@ -69,6 +69,21 @@ describe("playground history", () => {
     expect(run([{ type: "reset" }], s)).toMatchObject({ scramble: "", moves: [] });
   });
 
+  it("an animated scramble holds off turns until it has been turned on", () => {
+    const s = run([{ type: "move", move: "R" }, { type: "scramble", scramble: "F2 U", animate: true }]);
+    expect(s).toMatchObject({ scramble: "F2 U", moves: [], revealing: true });
+    const turns: PlaygroundAction[] = [{ type: "move", move: "R" }, { type: "moves", moves: ["U"] }, { type: "undo" }, { type: "redo" }];
+    for (const a of turns) {
+      expect(playgroundReducer(s, a)).toBe(s);
+    }
+    const done = run([{ type: "revealed" }, { type: "move", move: "R" }], s);
+    expect(done).toMatchObject({ revealing: false, moves: ["R"], revision: s.revision });
+    // A plain scramble, reset or puzzle switch never leaves the cube waiting.
+    expect(run([{ type: "scramble", scramble: "F2 U" }]).revealing).toBe(false);
+    expect(run([{ type: "reset" }], s).revealing).toBe(false);
+    expect(run([{ type: "puzzle", puzzle: "222" }], s).revealing).toBe(false);
+  });
+
   it("switching puzzle starts over, but still forces a redraw", () => {
     const s = run([{ type: "move", move: "R" }, { type: "puzzle", puzzle: "222" }]);
     expect(s).toMatchObject({ puzzle: "222", moves: [], scramble: "" });
@@ -287,7 +302,9 @@ describe("playground prefs", () => {
       swipeToTurn: true,
       dragOffCube: "orbit",
       swipeHintDismissed: false,
+      animateScramble: true,
     });
+    expect(sanitizePrefs({ animateScramble: false }).animateScramble).toBe(false);
     expect(sanitizePrefs({ keyBindings: "x", animationSpeed: 4, hintStickers: "yes" })).toEqual(DEFAULT_PREFS);
     expect(sanitizePrefs({ swipeToTurn: false, dragOffCube: "rotate", swipeHintDismissed: true })).toMatchObject({
       swipeToTurn: false,

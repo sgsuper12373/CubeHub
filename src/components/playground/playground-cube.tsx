@@ -6,6 +6,7 @@ import type { TwistyPlayer } from "cubing/twisty";
 import { Button } from "@/components/ui/button";
 import { CubeLoader } from "@/components/ui/cube-loader";
 import { loadTwisty } from "@/lib/cubing/runtime";
+import { cn } from "@/lib/utils";
 import type { DragOffCube } from "@/lib/playground/prefs";
 import { twistyPuzzleId, type PlaygroundPuzzle } from "@/lib/playground/puzzles";
 import {
@@ -23,6 +24,16 @@ type AddMove = TwistyPlayer["experimentalModel"]["experimentalAddMove"];
 
 /** Cube size per puzzle, for swipe-to-turn. Puzzles not listed keep cubing's own input. */
 const SWIPE_SIZES: Partial<Record<PlaygroundPuzzle, number>> = { "333": 3, "222": 2 };
+
+/**
+ * Turning a scramble on. A turn added to the player animates over
+ * 500ms / tempoScale (cubing's catch-up), so this tempo gives ~85ms per turn,
+ * and a new turn starts every REVEAL_STEP_MS: quick, but each turn is seen.
+ */
+const REVEAL_TEMPO = 6;
+const REVEAL_STEP_MS = 100;
+/** A beat on the solved cube first, so the scramble is seen to start from it. */
+const REVEAL_LEAD_MS = 180;
 
 /** One pointer's swipe in progress. `hit` is null for a drag that started off the cube. */
 interface Gesture {
@@ -56,6 +67,11 @@ interface Gesture {
  *
  * `replayToken` changing (to anything but 0) plays the whole attempt from the
  * start state: the practice-mode replay.
+ *
+ * `revealing` (set with a new scramble) turns the scramble onto a solved cube
+ * one move at a time instead of jumping to it, reporting each move through
+ * `onRevealStep` and the end through `onRevealed`. The screen ignores turns
+ * until then.
  */
 export function PlaygroundCube({
   puzzle,
@@ -66,11 +82,15 @@ export function PlaygroundCube({
   tempoScale,
   hintStickers,
   replayToken,
+  revealing,
   swipe,
   dragOffCube,
   showSwipeHint,
   onDismissSwipeHint,
   onMove,
+  onRevealStep,
+  onRevealed,
+  className,
 }: {
   puzzle: PlaygroundPuzzle;
   visualization: "3D" | "2D";
@@ -80,12 +100,18 @@ export function PlaygroundCube({
   tempoScale: number;
   hintStickers: boolean;
   replayToken: number;
+  revealing: boolean;
   swipe: boolean;
   dragOffCube: DragOffCube;
   /** Show the one-time "swipe a row" hint (touch screens only). */
   showSwipeHint: boolean;
   onDismissSwipeHint: () => void;
   onMove: (move: string) => void;
+  /** The scramble move now being turned on, by index. */
+  onRevealStep: (index: number) => void;
+  onRevealed: () => void;
+  /** Sizes the square; the screen decides how big the cube can be. */
+  className?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<TwistyPlayer | null>(null);
@@ -95,7 +121,7 @@ export function PlaygroundCube({
   // animate one appended move or has to redraw.
   const shownRef = useRef<{ revision: number; length: number } | null>(null);
   // Latest props for the mount effect, which must not re-run on every move.
-  const latestRef = useRef({ scramble, moves, revision, tempoScale, hintStickers });
+  const latestRef = useRef({ scramble, moves, revision, tempoScale, hintStickers, revealing });
   const configKey = `${puzzle}|${visualization}`;
   const [readyKey, setReadyKey] = useState<string | null>(null);
   const swipeSize = SWIPE_SIZES[puzzle];
@@ -104,12 +130,15 @@ export function PlaygroundCube({
   const swipeRef = useRef({ on: swipeOn, size: swipeSize ?? 3, dragOffCube });
   const orbitRef = useRef<OrbitCamera>(DEFAULT_ORBIT);
   const onSwipeRef = useRef(onDismissSwipeHint);
+  const revealRef = useRef({ onStep: onRevealStep, onDone: onRevealed });
+  const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touch = useSyncExternalStore(subscribeCoarsePointer, isCoarsePointer, () => false);
 
   useEffect(() => {
     onMoveRef.current = onMove;
     onSwipeRef.current = onDismissSwipeHint;
-    latestRef.current = { scramble, moves, revision, tempoScale, hintStickers };
+    revealRef.current = { onStep: onRevealStep, onDone: onRevealed };
+    latestRef.current = { scramble, moves, revision, tempoScale, hintStickers, revealing };
     swipeRef.current = { on: swipeOn, size: swipeSize ?? 3, dragOffCube };
   });
 
@@ -122,7 +151,7 @@ export function PlaygroundCube({
       if (cancelled || !containerRef.current) return;
 
       playerRef.current?.remove();
-      const { scramble, moves, revision, tempoScale, hintStickers } = latestRef.current;
+      const { scramble, moves, revision, tempoScale, hintStickers, revealing } = latestRef.current;
       const player = new TwistyPlayer({
         puzzle: twistyPuzzleId(puzzle),
         experimentalSetupAlg: scramble,
@@ -154,10 +183,14 @@ export function PlaygroundCube({
       playerRef.current = player;
       shownRef.current = { revision, length: moves.length };
       setReadyKey(configKey);
+      // A new player draws the scramble already on (its turn-on was cut off
+      // by a view switch, or it came before the cube loaded): it's done.
+      if (revealing) revealRef.current.onDone();
     })().catch((err: unknown) => console.error("playground cube failed to load", err));
 
     return () => {
       cancelled = true;
+      clearTimeout(revealTimer.current ?? undefined);
       stopOrbit?.();
       playerRef.current?.remove();
       playerRef.current = null;
@@ -174,7 +207,33 @@ export function PlaygroundCube({
     if (!player || !addMove || !shown || readyKey !== configKey) return;
     if (shown.revision === revision && shown.length === moves.length) return;
 
-    if (shown.revision === revision && moves.length > shown.length) {
+    // Whatever was being turned on is superseded by this change.
+    if (shown.revision !== revision) clearTimeout(revealTimer.current ?? undefined);
+
+    if (shown.revision !== revision && revealing) {
+      // Start solved, then add the scramble's moves on a clock, each animated.
+      const steps = scramble.split(/\s+/).filter(Boolean);
+      player.tempoScale = REVEAL_TEMPO;
+      player.experimentalSetupAlg = "";
+      player.alg = "";
+      player.timestamp = "end";
+      let i = 0;
+      const step = () => {
+        if (i < steps.length) {
+          revealRef.current.onStep(i);
+          addMove(steps[i++], { cancel: false });
+          revealTimer.current = setTimeout(step, REVEAL_STEP_MS);
+          return;
+        }
+        // Same picture, now held as the setup, so undo and reset work as usual.
+        player.experimentalSetupAlg = scramble;
+        player.alg = "";
+        player.timestamp = "end";
+        player.tempoScale = latestRef.current.tempoScale;
+        revealRef.current.onDone();
+      };
+      revealTimer.current = setTimeout(step, REVEAL_LEAD_MS);
+    } else if (shown.revision === revision && moves.length > shown.length) {
       // Moves appended (one turn, or a whole alg from the alg box): animate
       // them in order. No cancellation, so `R R'` stays two moves in the
       // player just as it does in the history.
@@ -185,7 +244,7 @@ export function PlaygroundCube({
       player.timestamp = "end";
     }
     shownRef.current = { revision, length: moves.length };
-  }, [scramble, moves, revision, readyKey, configKey]);
+  }, [scramble, moves, revision, revealing, readyKey, configKey]);
 
   // View settings apply to the live player; no need to rebuild it.
   useEffect(() => {
@@ -269,7 +328,7 @@ export function PlaygroundCube({
   }, [replayToken, readyKey, configKey]);
 
   return (
-    <div className="relative aspect-square w-full max-w-[min(28rem,70vh)]" data-testid="playground-cube">
+    <div className={cn("relative aspect-square", className)} data-testid="playground-cube">
       {readyKey !== configKey && (
         <div className="absolute inset-0 grid place-items-center">
           <CubeLoader size={48} label="Loading cube" />
