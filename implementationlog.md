@@ -5,6 +5,56 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-07 — Drill Lab redesign, step 1: full-height layout, toolbar, options popover
+
+**Request:** Prompt 1 of the seven-step Drill Lab redesign. At lg and up the drill fills the
+viewport with no page scroll and its panes scroll inside themselves; one toolbar row; the five
+options move into a popover, with chips for the ones changed from their defaults. No drill
+logic, timing or animation changes.
+
+### Changed
+
+- `drill-lab.tsx`: layout only. xl (≥1280): cases (300px) | stage | variants + session
+  (340px). lg (1024–1279): stage | one 360px panel with Cases / Variants / Session tabs
+  (Variants first). Below lg: stage, variants, session, cases, stacked as before (the phone
+  layout is step 7). Every pane is rendered once and placed by CSS grid, so switching tabs or
+  widths keeps its state. The recognising digits use `text-warning` instead of
+  `text-amber-400` (the same colour on Slate, and readable on Paper).
+- `drill-toolbar.tsx` (new): set links and the Learned/All and Weakest/Random toggles as
+  segmented controls; a gear opening "Drill options" (the five checkboxes, behaviour
+  unchanged) and a keyboard-shortcuts popover. Chips under the toolbar for options that are
+  on and off by default: Recognition split, Setup shown, 2D; a chip opens the popover. Uses
+  the existing Base UI popover; no new dependency.
+- `case-table.tsx` (new): the cases pane. For now it wraps `SetRanking` and the custom-set
+  controls (moved out of DrillLab unchanged); the header stays put and the list scrolls.
+- Session pane: an empty-state line before the first rep.
+- `tests/e2e/drill.spec.ts`: the recognition test opens "Drill options" before ticking
+  Recognition split. The popover stays open, so Space still lands on the focused checkbox,
+  as the test intends.
+
+### Departures from the prompt
+
+- Height is `calc(100dvh - 3.5rem - 1px)` at lg and up: the header is h-14 **plus a 1px
+  bottom border**, and without the 1px the page scrolled by one pixel. Nothing is subtracted
+  for the bottom nav: it only shows below md, where the navbar is hidden, and below lg the
+  page still scrolls. Step 7 needs `100dvh − 4rem − safe area` on phones (no navbar there)
+  and `100dvh − 3.5rem − 1px` at md.
+- The popover primitive keeps its own short open/close fade (Base UI + tw-animate, 100ms).
+  It's the shared component; the motion pass (step 6) can move it to the tokens.
+
+### Verification
+
+- `npm run validate`: tsc, eslint (0 errors; the one warning is the existing `_alg` in
+  `algorithm-case-editor.tsx`), unit tests 577 passed. `npm run check:colors` OK.
+- Drill e2e (`drill.spec.ts` + `drill-signed-in.spec.ts`, with sign-in setup): 7 passed on
+  the production build. Run against a local Supabase stand-in (PLL and OLL from
+  `supabase/DataSeeds`, one fake account), because the session couldn't reach the live
+  project; CI runs them against live data.
+- Page scroll measured 0px at 1440×900, 1280×720, 1100×800 and 1024×700; the cases list
+  scrolls inside its pane. Checked Slate and Paper.
+
+---
+
 ## 2026-10-20 — Merge perf/mobile-lighthouse; landing Sign In fix; playground on phones, Enter to scramble; repo tidy-up
 
 **Request:** (1) Merge `perf/mobile-lighthouse` into main, resolving conflicts. (2) On phones,
