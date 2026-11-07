@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { LogIn, Trash2 } from "lucide-react";
 
+import { CaseTable } from "@/components/drill/case-table";
 import { DrillCaseView } from "@/components/drill/drill-case-view";
-import { SessionList, SetRanking, VariantPicker } from "@/components/drill/drill-report";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { SessionList, VariantPicker } from "@/components/drill/drill-report";
+import { DrillToolbar, type DrillOptionKey } from "@/components/drill/drill-toolbar";
+import { Button } from "@/components/ui/button";
 import { deleteDrillAttempt, recordDrillAttempt, setDrillAttemptPenalty } from "@/lib/drill/actions";
 import { randomAuf, type Auf } from "@/lib/drill/case-state";
 import type { DrillCase, DrillSubset } from "@/lib/drill/dal";
@@ -26,6 +27,9 @@ interface SessionAttempt extends DrillAttempt {
   serverId: string | null;
   saving: boolean;
 }
+
+/** The panel beside the stage at lg (xl shows them all). */
+type PanelTab = "cases" | "variants" | "session";
 
 /** Input types where Space is a control action, not typing. */
 const NON_TEXT_INPUTS: ReadonlySet<string> = new Set(["checkbox", "radio", "button", "range"]);
@@ -96,7 +100,6 @@ export function DrillLab({
   /** For one set: whether only learned cases are queued, and the counts. */
   scopeInfo: { scope: "learned" | "all"; learned: number; total: number } | null;
 }) {
-  const router = useRouter();
   const phase = useDrillStore((s) => s.phase);
   const recognitionMode = useDrillStore((s) => s.recognitionMode);
   const lastTimeMs = useDrillStore((s) => s.lastTimeMs);
@@ -121,8 +124,9 @@ export function DrillLab({
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reading browser storage after hydration
     setHideAlg(loadHideAlg());
   }, []);
-  const [selecting, setSelecting] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  /** Which panel shows beside the stage at lg, where there is room for one. */
+  const [panelTab, setPanelTab] = useState<PanelTab>("variants");
   // "Now" for due-date display, refreshed per case rather than per render.
   const [now, setNow] = useState(() => Date.now());
 
@@ -232,6 +236,27 @@ export function DrillLab({
     [],
   );
 
+  const setOption = useCallback((key: DrillOptionKey, on: boolean) => {
+    switch (key) {
+      case "recognitionMode":
+        useDrillStore.getState().setRecognitionMode(on);
+        break;
+      case "hideAlg":
+        setHideAlg(on);
+        saveHideAlg(on);
+        break;
+      case "randomizeAuf":
+        setRandomizeAuf(on);
+        break;
+      case "showSetup":
+        setShowSetup(on);
+        break;
+      case "twoD":
+        setVisualization(on ? "2D" : "3D");
+        break;
+    }
+  }, []);
+
   const deleteLast = useCallback(() => {
     const last = latest.current.attempts[0];
     if (!last || last.saving) return;
@@ -314,79 +339,77 @@ export function DrillLab({
     stopped: "tap for the next case · 1 = +2 · 2 = DNF · d = delete",
   }[phase];
 
-  const setHref = (slug: string) => `/learn/${puzzle}/drill?set=${encodeURIComponent(slug)}`;
+  const panes: { id: PanelTab; label: string }[] = [
+    { id: "cases", label: "Cases" },
+    { id: "variants", label: "Variants" },
+    { id: "session", label: "Session" },
+  ];
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-4 px-4 py-6">
-      {/* Set picker */}
-      <nav className="flex flex-wrap items-center gap-1.5" aria-label="Drill set">
-        {subsets.map((s) => (
-          <Link
-            href={setHref(s.slug)}
-            className={buttonVariants({ size: "sm", variant: activeSet === s.slug ? "default" : "outline" })}
-            key={s.slug}
-          >
-            {s.name}
-          </Link>
-        ))}
-        <Link
-          href={`${setHref("all")}&order=weakest`}
-          className={buttonVariants({ size: "sm", variant: activeSet === "all" ? "default" : "outline" })}
+    // lg and up: exactly the viewport under the navbar (h-14 plus its 1px
+    // bottom border); panes scroll inside themselves, never the page. Below lg
+    // the panes stack and the page scrolls.
+    <div className="flex w-full flex-col gap-3 p-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:overflow-hidden">
+      <DrillToolbar
+        puzzle={puzzle}
+        subsets={subsets}
+        activeSet={activeSet}
+        caseCount={cases.length}
+        scopeInfo={scopeInfo}
+        order={order}
+        onOrderChange={setOrder}
+        options={{ recognitionMode, hideAlg, randomizeAuf, showSetup, visualization }}
+        onOptionChange={setOption}
+        optionsOpen={optionsOpen}
+        onOptionsOpenChange={setOptionsOpen}
+      />
+
+      {/*
+        xl: cases | stage | variants + session.
+        lg: stage | one panel, picked with the tabs above it.
+        Below lg: stage, variants, session, cases, stacked.
+      */}
+      <div className="flex flex-col gap-4 lg:grid lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_360px] lg:grid-rows-[auto_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_340px] xl:grid-rows-[minmax(0,1fr)]">
+        <div
+          role="tablist"
+          aria-label="Drill panels"
+          className="hidden rounded-lg border border-border p-0.5 lg:col-start-2 lg:row-start-1 lg:flex xl:hidden"
         >
-          All cases
-        </Link>
-        {activeSet === "custom" && (
-          <Button size="sm" variant="default" disabled>
-            Custom · {cases.length}
-          </Button>
-        )}
-
-        <span className="mx-1 hidden h-5 w-px bg-border sm:block" />
-
-        {scopeInfo && scopeInfo.learned > 0 && (
-          <div className="flex items-center rounded-md border border-border p-0.5" role="group" aria-label="Which cases">
-            {(["learned", "all"] as const).map((s) => (
-              <Link
-                key={s}
-                href={`${setHref(activeSet)}&scope=${s}`}
-                aria-current={scopeInfo.scope === s ? "true" : undefined}
-                className={cn(
-                  "rounded px-2 py-0.5 text-xs",
-                  scopeInfo.scope === s ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {s === "learned" ? `Learned · ${scopeInfo.learned}` : `All · ${scopeInfo.total}`}
-              </Link>
-            ))}
-          </div>
-        )}
-
-        <div className="flex items-center rounded-md border border-border p-0.5" role="group" aria-label="Case order">
-          <span className="px-1.5 text-xs text-muted-foreground">Order</span>
-          {(["weakest", "random"] as const).map((o) => (
+          {panes.map((t) => (
             <button
-              key={o}
+              key={t.id}
               type="button"
-              aria-pressed={order === o}
-              onClick={() => setOrder(o)}
+              role="tab"
+              id={`drill-tab-${t.id}`}
+              aria-selected={panelTab === t.id}
+              aria-controls={`drill-pane-${t.id}`}
+              onClick={() => setPanelTab(t.id)}
               className={cn(
-                "rounded px-2 py-0.5 text-xs",
-                order === o ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground",
+                "flex-1 rounded-md px-2.5 py-1 text-sm",
+                panelTab === t.id ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
               )}
             >
-              {o === "weakest" ? "Weakest first" : "Random"}
+              {t.label}
             </button>
           ))}
         </div>
-      </nav>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)] lg:items-start">
+        <div
+          id="drill-pane-cases"
+          className={cn(
+            "flex min-h-0 flex-col max-lg:order-last lg:col-start-2 lg:row-start-2 xl:col-start-1 xl:row-start-1",
+            panelTab !== "cases" && "lg:hidden xl:flex",
+          )}
+        >
+          <CaseTable puzzle={puzzle} cases={cases} stats={stats} now={now} className="flex-1" />
+        </div>
+
         {/* Stage: the whole panel is the tap target */}
         <section
           role="button"
           aria-label={`Drill timer: ${hint}`}
           tabIndex={-1}
-          className="flex min-h-[420px] cursor-pointer touch-none select-none flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-card p-4 lg:sticky lg:top-4"
+          className="flex min-h-[420px] cursor-pointer touch-none select-none flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-card p-4 max-lg:order-first lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:min-h-0 lg:overflow-y-auto xl:col-start-2 xl:row-span-1"
           onPointerDown={(e) => {
             if (!e.isPrimary || e.button > 0) return;
             e.preventDefault();
@@ -422,7 +445,7 @@ export function DrillLab({
           <p
             className={cn(
               "font-mono text-6xl tabular-nums",
-              phase === "running" ? "text-foreground" : phase === "recognising" ? "text-amber-400" : "text-foreground/90",
+              phase === "running" ? "text-foreground" : phase === "recognising" ? "text-warning" : "text-foreground/90",
             )}
             aria-live="off"
           >
@@ -450,121 +473,44 @@ export function DrillLab({
           )}
         </section>
 
-        {/* Side panel */}
-        <div className="space-y-4">
-          <section className="flex flex-wrap gap-x-4 gap-y-2 rounded-lg border border-border bg-card p-4 text-sm" aria-label="Drill options">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="size-4 accent-primary"
-                checked={recognitionMode}
-                onChange={(e) => useDrillStore.getState().setRecognitionMode(e.target.checked)}
-              />
-              Recognition split
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="size-4 accent-primary"
-                checked={hideAlg}
-                onChange={(e) => {
-                  setHideAlg(e.target.checked);
-                  saveHideAlg(e.target.checked);
-                }}
-              />
-              Hide algorithm until done
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="size-4 accent-primary"
-                checked={randomizeAuf}
-                onChange={(e) => setRandomizeAuf(e.target.checked)}
-              />
-              Random AUF
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="size-4 accent-primary"
-                checked={showSetup}
-                onChange={(e) => setShowSetup(e.target.checked)}
-              />
-              Show setup
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="size-4 accent-primary"
-                checked={visualization === "2D"}
-                onChange={(e) => setVisualization(e.target.checked ? "2D" : "3D")}
-              />
-              2D view
-            </label>
-          </section>
-
-          <VariantPicker
-            drillCase={drillCase}
-            stats={stats}
-            selectedId={algorithm.id}
-            onSelect={(id) => setVariantChoice((prev) => ({ ...prev, [drillCase.id]: id }))}
-            hideMoves={hideAlg && phase !== "stopped"}
-          />
-
-          {!isAuthed && attempts.length >= 1 && (
-            <p className="flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm">
-              <LogIn className="size-4 shrink-0 text-primary" />
-              <span>
-                <Link href="/login" className="font-medium text-primary hover:underline">
-                  Sign in
-                </Link>{" "}
-                to keep your drill history, spaced-repetition schedule and variant stats across sessions.
-              </span>
-            </p>
+        {/* Variants and this session: one scrolling column at xl, two tabs at lg. */}
+        <div
+          className={cn(
+            "flex min-h-0 flex-col gap-4 lg:col-start-2 lg:row-start-2 lg:overflow-y-auto xl:col-start-3 xl:row-start-1",
+            panelTab === "cases" && "lg:hidden xl:flex",
           )}
-
-          <SessionList attempts={attempts} caseNames={caseNames} saved={isAuthed} />
-
-          <section className="rounded-lg border border-border bg-card p-4" aria-label="Cases in this set">
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold text-foreground">Cases, weakest first</h2>
-              {selecting ? (
-                <div className="flex gap-1.5">
-                  <Button size="xs" variant="ghost" onClick={() => setSelecting(false)}>
-                    Cancel
-                  </Button>
-                  <Button
-                    size="xs"
-                    disabled={selected.size === 0}
-                    onClick={() =>
-                      router.push(`/learn/${puzzle}/drill?cases=${[...selected].join(",")}`)
-                    }
-                  >
-                    Drill {selected.size} selected
-                  </Button>
-                </div>
-              ) : (
-                <Button size="xs" variant="outline" onClick={() => setSelecting(true)}>
-                  Custom set
-                </Button>
-              )}
-            </div>
-            <SetRanking
-              cases={cases}
+        >
+          <div id="drill-pane-variants" className={cn(panelTab !== "variants" && "lg:hidden xl:block")}>
+            <VariantPicker
+              drillCase={drillCase}
               stats={stats}
-              now={now}
-              selecting={selecting}
-              selected={selected}
-              onToggle={(id) =>
-                setSelected((prev) => {
-                  const next = new Set(prev);
-                  if (next.has(id)) next.delete(id);
-                  else next.add(id);
-                  return next;
-                })
-              }
+              selectedId={algorithm.id}
+              onSelect={(id) => setVariantChoice((prev) => ({ ...prev, [drillCase.id]: id }))}
+              hideMoves={hideAlg && phase !== "stopped"}
             />
-          </section>
+          </div>
+
+          <div id="drill-pane-session" className={cn("space-y-4", panelTab !== "session" && "lg:hidden xl:block")}>
+            {!isAuthed && attempts.length >= 1 && (
+              <p className="flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm">
+                <LogIn className="size-4 shrink-0 text-primary" />
+                <span>
+                  <Link href="/login" className="font-medium text-primary hover:underline">
+                    Sign in
+                  </Link>{" "}
+                  to keep your drill history, spaced-repetition schedule and variant stats across sessions.
+                </span>
+              </p>
+            )}
+
+            {attempts.length > 0 ? (
+              <SessionList attempts={attempts} caseNames={caseNames} saved={isAuthed} />
+            ) : (
+              <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+                Your reps this session show up here.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -63,6 +63,8 @@ test.describe("Drill Lab", () => {
     await skipWithoutData(page);
     await expectCaseRendered(page);
 
+    // The options live in a popover; it stays open, so the checkbox keeps focus.
+    await page.getByRole("button", { name: "Drill options" }).click();
     await page.getByLabel("Recognition split").check();
     await expect(page.getByTestId("drill-case-hidden")).toBeVisible();
 
