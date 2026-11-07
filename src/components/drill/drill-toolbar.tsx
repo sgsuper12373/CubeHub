@@ -11,17 +11,15 @@ import { cn } from "@/lib/utils";
 
 /** The five drill options. Their state lives in DrillLab (and the drill store). */
 export interface DrillOptions {
-  recognitionMode: boolean;
   hideAlg: boolean;
   randomizeAuf: boolean;
   showSetup: boolean;
   visualization: "2D" | "3D";
 }
 
-type OptionKey = "recognitionMode" | "hideAlg" | "randomizeAuf" | "showSetup" | "twoD";
+type OptionKey = "hideAlg" | "randomizeAuf" | "showSetup" | "twoD";
 
 const OPTION_ROWS: { key: OptionKey; label: string }[] = [
-  { key: "recognitionMode", label: "Recognition split" },
   { key: "hideAlg", label: "Hide algorithm until done" },
   { key: "randomizeAuf", label: "Random AUF" },
   { key: "showSetup", label: "Show setup" },
@@ -34,7 +32,6 @@ const OPTION_ROWS: { key: OptionKey; label: string }[] = [
  * Random AUF are on by default, so they never show here.
  */
 const CHIPS: { key: OptionKey; label: string }[] = [
-  { key: "recognitionMode", label: "Recognition split" },
   { key: "showSetup", label: "Setup shown" },
   { key: "twoD", label: "2D" },
 ];

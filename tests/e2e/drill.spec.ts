@@ -2,8 +2,8 @@ import { test, expect, type Page } from "@playwright/test";
 
 /**
  * Drill Lab, as a guest: the case renders from the algorithm, a tap starts and
- * a tap stops, the next tap moves on to a different case, and the recognition
- * split works. Guests record nothing server-side, so this needs no account.
+ * a tap stops, and the next tap moves on to a different case. Guests record
+ * nothing server-side, so this needs no account.
  * The old timer train links must land here.
  */
 
@@ -56,29 +56,6 @@ test.describe("Drill Lab", () => {
     await page.keyboard.press("Space"); // next case
     await expect(name).not.toHaveText(first!);
     await expectCaseRendered(page);
-  });
-
-  test("recognition split: hidden, reveal, execute, stop", async ({ page }) => {
-    await page.goto("/learn/333/drill?set=pll&order=random");
-    await skipWithoutData(page);
-    await expectCaseRendered(page);
-
-    // The options live in a popover; it stays open, so the checkbox keeps focus.
-    await page.getByRole("button", { name: "Drill options" }).click();
-    await page.getByLabel("Recognition split").check();
-    await expect(page.getByTestId("drill-case-hidden")).toBeVisible();
-
-    await page.keyboard.press("Space"); // reveal
-    await expect(page.getByTestId("drill-case-hidden")).toHaveCount(0);
-    await page.waitForTimeout(200);
-    await page.keyboard.press("Space"); // recognised → executing
-    await page.waitForTimeout(1500); // past the misfire limit
-    await page.keyboard.press("Space"); // stop
-
-    // Space drove the drill, not the focused checkbox.
-    await expect(page.getByLabel("Recognition split")).toBeChecked();
-    // The session row shows the recognition time before the result.
-    await expect(page.getByTestId("drill-session-list").locator("li").first()).toContainText("+");
   });
 
   test("per-variant evidence produces a switch recommendation", async ({ page }) => {

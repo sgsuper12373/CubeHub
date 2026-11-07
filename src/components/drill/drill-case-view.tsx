@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { PuzzleID, TwistyPlayer } from "cubing/twisty";
-import { Eye, Play, RotateCcw } from "lucide-react";
+import { Play, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { CubeLoader } from "@/components/ui/cube-loader";
@@ -24,7 +24,6 @@ export function DrillCaseView({
   auf,
   puzzle,
   visualization,
-  hidden,
   showSetup,
   size = 240,
 }: {
@@ -32,8 +31,6 @@ export function DrillCaseView({
   auf: Auf;
   puzzle: string;
   visualization: "2D" | "3D";
-  /** Recognition mode, before the reveal tap. */
-  hidden: boolean;
   showSetup: boolean;
   size?: number;
 }) {
@@ -92,48 +89,36 @@ export function DrillCaseView({
       <div className="relative grid place-items-center" style={{ width: size, height: size }}>
         {!ready && <CubeLoader size={40} label="Loading cube" className="absolute" />}
         <div ref={containerRef} className="grid place-items-center" />
-        {hidden && (
-          <div
-            className="absolute inset-0 grid place-items-center rounded-2xl border border-border bg-card"
-            data-testid="drill-case-hidden"
-          >
-            <span className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Eye className="size-4" /> Tap to reveal
-            </span>
-          </div>
-        )}
       </div>
 
-      {!hidden && (
-        <div className="flex items-center gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="xs"
-            onClick={() => {
-              playerRef.current?.jumpToStart();
-              playerRef.current?.play();
-            }}
-            onPointerDown={(e) => e.stopPropagation()}
-          >
-            <Play className="size-3" /> Watch
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="xs"
-            onClick={() => {
-              playerRef.current?.pause();
-              playerRef.current?.jumpToStart();
-            }}
-            onPointerDown={(e) => e.stopPropagation()}
-          >
-            <RotateCcw className="size-3" /> Case
-          </Button>
-        </div>
-      )}
+      <div className="flex items-center gap-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="xs"
+          onClick={() => {
+            playerRef.current?.jumpToStart();
+            playerRef.current?.play();
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <Play className="size-3" /> Watch
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="xs"
+          onClick={() => {
+            playerRef.current?.pause();
+            playerRef.current?.jumpToStart();
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <RotateCcw className="size-3" /> Case
+        </Button>
+      </div>
 
-      {showSetup && !hidden && (
+      {showSetup && (
         <p className={cn("max-w-xs text-center font-mono text-xs text-muted-foreground", !setup && "opacity-0")}>
           Setup (yellow top, green front): <span className="text-foreground">{setup ?? "…"}</span>
         </p>

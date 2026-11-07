@@ -101,7 +101,6 @@ export function DrillLab({
   scopeInfo: { scope: "learned" | "all"; learned: number; total: number } | null;
 }) {
   const phase = useDrillStore((s) => s.phase);
-  const recognitionMode = useDrillStore((s) => s.recognitionMode);
   const lastTimeMs = useDrillStore((s) => s.lastTimeMs);
 
   const [serverStats, setServerStats] = useState(
@@ -156,7 +155,7 @@ export function DrillLab({
 
   // ── Side effects of a tap ────────────────────────────────────────────────
   const recordStop = useCallback(
-    (timeMs: number, recognitionMs: number | null) => {
+    (timeMs: number) => {
       // Captured now: by the time "Save anyway" is tapped the drill has moved on.
       const { drillCase: c, algorithm: a } = latest.current;
 
@@ -167,7 +166,7 @@ export function DrillLab({
           caseId: c.id,
           timeMs,
           penalty: "none",
-          recognitionMs,
+          recognitionMs: null,
           createdAt: new Date().toISOString(),
           serverId: null,
           saving: isAuthed,
@@ -175,7 +174,7 @@ export function DrillLab({
         setAttempts((prev) => [attempt, ...prev]);
         if (!isAuthed) return;
 
-        recordDrillAttempt({ algorithmId: a.id, caseId: c.id, timeMs, penalty: "none", recognitionMs })
+        recordDrillAttempt({ algorithmId: a.id, caseId: c.id, timeMs, penalty: "none", recognitionMs: null })
           .then((res) => {
             setAttempts((prev) =>
               prev.map((x) => (x.id === attempt.id ? { ...x, serverId: res.id, saving: false } : x)),
@@ -215,7 +214,7 @@ export function DrillLab({
 
   const handle = useCallback(
     (outcome: PressOutcome) => {
-      if (outcome.type === "stopped") recordStop(outcome.timeMs, outcome.recognitionMs);
+      if (outcome.type === "stopped") recordStop(outcome.timeMs);
       else if (outcome.type === "advance") advance();
     },
     [recordStop, advance],
@@ -238,9 +237,6 @@ export function DrillLab({
 
   const setOption = useCallback((key: DrillOptionKey, on: boolean) => {
     switch (key) {
-      case "recognitionMode":
-        useDrillStore.getState().setRecognitionMode(on);
-        break;
       case "hideAlg":
         setHideAlg(on);
         saveHideAlg(on);
@@ -289,7 +285,7 @@ export function DrillLab({
         handle(store.press(performance.now()));
         return;
       }
-      if (store.phase === "stopped" || store.phase === "idle" || store.phase === "hidden") {
+      if (store.phase === "stopped" || store.phase === "idle") {
         if (e.key === "1") setLastPenalty("plus2");
         else if (e.key === "2") setLastPenalty("dnf");
         else if (e.key.toLowerCase() === "d") deleteLast();
@@ -310,16 +306,15 @@ export function DrillLab({
 
   // ── Live digits (imperative, like the main timer: no React commits per frame) ─
   const digitsRef = useRef<HTMLSpanElement>(null);
-  const live = phase === "running" || phase === "recognising";
+  const live = phase === "running";
   useEffect(() => {
     if (!live) return;
     if (digitsRef.current) digitsRef.current.textContent = "0.00";
     let frame = 0;
     const tick = () => {
       const s = useDrillStore.getState();
-      const from = s.phase === "running" ? s.startedAt : s.revealedAt;
-      if (digitsRef.current && from !== null) {
-        digitsRef.current.textContent = formatMs(performance.now() - from);
+      if (digitsRef.current && s.startedAt !== null) {
+        digitsRef.current.textContent = formatMs(performance.now() - s.startedAt);
       }
       frame = requestAnimationFrame(tick);
     };
@@ -333,8 +328,6 @@ export function DrillLab({
 
   const hint = {
     idle: "tap or press space to start",
-    hidden: "tap to reveal the case",
-    recognising: "tap when you recognise it — execution starts",
     running: "tap or any key to stop",
     stopped: "tap for the next case · 1 = +2 · 2 = DNF · d = delete",
   }[phase];
@@ -358,7 +351,7 @@ export function DrillLab({
         scopeInfo={scopeInfo}
         order={order}
         onOrderChange={setOrder}
-        options={{ recognitionMode, hideAlg, randomizeAuf, showSetup, visualization }}
+        options={{ hideAlg, randomizeAuf, showSetup, visualization }}
         onOptionChange={setOption}
         optionsOpen={optionsOpen}
         onOptionsOpenChange={setOptionsOpen}
@@ -419,18 +412,16 @@ export function DrillLab({
         >
           <div className="text-center">
             <p className="text-lg font-semibold text-foreground" data-testid="drill-case-name">
-              {phase === "hidden" ? "Next case" : drillCase.name}
+              {drillCase.name}
             </p>
-            {phase !== "hidden" && phase !== "recognising" && (
-              <p className="font-mono text-xs text-muted-foreground">
-                {current.auf && <span className="text-primary">{current.auf} </span>}
-                {phase === "stopped" || (phase === "idle" && !hideAlg)
-                  ? algorithm.moves
-                  : phase === "idle"
-                    ? "algorithm hidden until you've done it"
-                    : "…"}
-              </p>
-            )}
+            <p className="font-mono text-xs text-muted-foreground">
+              {current.auf && <span className="text-primary">{current.auf} </span>}
+              {phase === "stopped" || (phase === "idle" && !hideAlg)
+                ? algorithm.moves
+                : phase === "idle"
+                  ? "algorithm hidden until you've done it"
+                  : "…"}
+            </p>
           </div>
 
           <DrillCaseView
@@ -438,14 +429,13 @@ export function DrillLab({
             auf={current.auf}
             puzzle={puzzle}
             visualization={visualization}
-            hidden={phase === "hidden"}
             showSetup={showSetup}
           />
 
           <p
             className={cn(
               "font-mono text-6xl tabular-nums",
-              phase === "running" ? "text-foreground" : phase === "recognising" ? "text-warning" : "text-foreground/90",
+              phase === "running" ? "text-foreground" : "text-foreground/90",
             )}
             aria-live="off"
           >

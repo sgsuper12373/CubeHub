@@ -127,7 +127,7 @@ Added in `20260930000000_drill_lab.sql`, tested by `supabase/tests/drill_lab_tes
 
 | Object | What it is |
 |---|---|
-| `drill_attempts` | One row per timed rep. `time_ms` is execution only; `recognition_ms` is filled only in recognition mode. `effective_time_ms` and `succeeded` (`penalty <> 'dnf'`) are **generated**. `source` is `drill` or `detected_in_solve`. Owner-scoped `FOR ALL` policy. |
+| `drill_attempts` | One row per timed rep. `time_ms` is execution only. `recognition_ms` was filled by the recognition split, removed in Nov 2026; new rows leave it null and old values are unused. `effective_time_ms` and `succeeded` (`penalty <> 'dnf'`) are **generated**. `source` is `drill` or `detected_in_solve`. Owner-scoped `FOR ALL` policy. |
 | `drill_state` | Spaced-repetition state per `(user, algorithm)`: attempt/success counts, `ease`, `interval_days`, `next_review_at`. **Trigger-written only**: an owner `SELECT` policy and no write policies, like `personal_bests`. |
 | `v_drill_variant_stats` | Per `(user, algorithm)` with `case_id`: attempts, successes, `median_ms` and `median_recognition_ms` (`percentile_cont`, DNFs excluded), plus the state's `ease` / `next_review_at`. What the app reads. |
 

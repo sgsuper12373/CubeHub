@@ -52,7 +52,6 @@ export function VariantPicker({
     drillCase.algorithms.map((a) => a.id),
     stats,
   );
-  const selected = stats.get(selectedId);
 
   return (
     <section className="rounded-lg border border-border bg-card p-4" aria-label="Algorithm variants">
@@ -94,13 +93,6 @@ export function VariantPicker({
           );
         })}
       </ul>
-
-      {selected?.medianRecognitionMs != null && (
-        <p className="mt-3 text-xs text-muted-foreground">
-          Recognition median <span className="text-foreground">{median(selected.medianRecognitionMs)}</span>
-          {" · "}execution median <span className="text-foreground">{median(selected.medianMs)}</span>
-        </p>
-      )}
 
       {rec && (
         <div className="mt-3 flex gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 p-3" role="status">
@@ -145,12 +137,7 @@ export function SessionList({
         {attempts.slice(0, 12).map((a) => (
           <li key={a.id} className="flex items-center justify-between py-1.5">
             <span className="text-muted-foreground">{caseNames.get(a.caseId) ?? "Case"}</span>
-            <span className="font-mono tabular-nums text-foreground">
-              {a.recognitionMs !== null && (
-                <span className="mr-2 text-xs text-muted-foreground">{formatMs(a.recognitionMs)} +</span>
-              )}
-              {formatResult(a.timeMs, a.penalty)}
-            </span>
+            <span className="font-mono tabular-nums text-foreground">{formatResult(a.timeMs, a.penalty)}</span>
           </li>
         ))}
       </ol>

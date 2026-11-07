@@ -5,6 +5,37 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-07 — Drill Lab redesign, step 2a: Recognition split removed
+
+**Request:** Remove the recognition split (founder's call, which includes changing
+`drill-store.ts`). It hid the case until a tap and then timed "recognition" until a second
+tap, but a cuber can't set the physical cube up for a case they haven't seen, so after the
+reveal the clock ran while they set the cube up: the recorded recognition time was mostly
+setup. Its replacements are planned as steps 8 (recognition quiz) and 9 (hidden-case mode).
+
+### Changed
+
+- `drill-store.ts`: phases are idle → running → stopped → idle. `hidden`, `recognising`,
+  `revealedAt`, `recognitionMs`, `recognitionMode` and `setRecognitionMode` are gone;
+  `PressOutcome.stopped` carries only `timeMs`.
+- `drill-lab.tsx`, `drill-toolbar.tsx`: no Recognition split option or chip; the rAF loop
+  reads `startedAt` only. Reps send `recognitionMs: null` (the server action is unchanged).
+- `drill-case-view.tsx`: no "Tap to reveal" cover (`drill-case-hidden` is gone); Watch, Case
+  and the setup line always show.
+- `drill-report.tsx`: no "Recognition median" line in the variants panel, no "1.23 +"
+  prefix on session rows.
+- Database unchanged: `drill_attempts.recognition_ms` stays and new rows leave it null.
+  `order.ts` still computes a recognition median from any old values; nothing shows it.
+- `tests/e2e/drill.spec.ts`: the recognition split test is deleted. `docs/database.md`
+  notes the column is no longer written.
+
+### Verification
+
+- `npm run validate` (577 unit tests), `check:colors` OK.
+- Drill e2e on the production build against the local stand-in: 6 passed.
+
+---
+
 ## 2026-11-07 — Drill Lab redesign, step 1: full-height layout, toolbar, options popover
 
 **Request:** Prompt 1 of the seven-step Drill Lab redesign. At lg and up the drill fills the
