@@ -8,6 +8,7 @@ import { CaseTable } from "@/components/drill/case-table";
 import { DrillCaseView } from "@/components/drill/drill-case-view";
 import { SessionList, VariantPicker } from "@/components/drill/drill-report";
 import { DrillToolbar, type DrillOptionKey } from "@/components/drill/drill-toolbar";
+import { StartPad } from "@/components/drill/start-pad";
 import { Button } from "@/components/ui/button";
 import { deleteDrillAttempt, recordDrillAttempt, setDrillAttemptPenalty } from "@/lib/drill/actions";
 import { randomAuf, type Auf } from "@/lib/drill/case-state";
@@ -326,11 +327,7 @@ export function DrillLab({
   const shownTime =
     phase === "stopped" && last ? formatResult(last.timeMs, last.penalty) : lastTimeMs !== null && phase === "idle" ? formatMs(lastTimeMs) : "0.00";
 
-  const hint = {
-    idle: "tap or press space to start",
-    running: "tap or any key to stop",
-    stopped: "tap for the next case · 1 = +2 · 2 = DNF · d = delete",
-  }[phase];
+  const press = () => handle(useDrillStore.getState().press(performance.now()));
 
   const panes: { id: PanelTab; label: string }[] = [
     { id: "cases", label: "Cases" },
@@ -397,69 +394,85 @@ export function DrillLab({
           <CaseTable puzzle={puzzle} cases={cases} stats={stats} now={now} className="flex-1" />
         </div>
 
-        {/* Stage: the whole panel is the tap target */}
+        {/*
+          Stage. Only the start pad starts a rep, so the cube can be dragged to
+          look at it. While a rep runs, a transparent layer over the whole stage
+          makes any tap stop it.
+        */}
         <section
-          role="button"
-          aria-label={`Drill timer: ${hint}`}
-          tabIndex={-1}
-          className="flex min-h-[420px] cursor-pointer touch-none select-none flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-card p-4 max-lg:order-first lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:min-h-0 lg:overflow-y-auto xl:col-start-2 xl:row-span-1"
-          onPointerDown={(e) => {
-            if (!e.isPrimary || e.button > 0) return;
-            e.preventDefault();
-            handle(useDrillStore.getState().press(performance.now()));
-          }}
-          onContextMenu={(e) => e.preventDefault()}
+          aria-label="Drill stage"
+          className="relative flex min-h-[420px] flex-col rounded-2xl border border-border bg-card max-lg:order-first lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:min-h-0 xl:col-start-2 xl:row-span-1"
         >
-          <div className="text-center">
-            <p className="text-lg font-semibold text-foreground" data-testid="drill-case-name">
-              {drillCase.name}
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4 lg:min-h-0 lg:overflow-y-auto">
+            <div className="text-center">
+              <p className="text-lg font-semibold text-foreground" data-testid="drill-case-name">
+                {drillCase.name}
+              </p>
+              <p className="font-mono text-xs text-muted-foreground">
+                {current.auf && <span className="text-primary">{current.auf} </span>}
+                {phase === "stopped" || (phase === "idle" && !hideAlg)
+                  ? algorithm.moves
+                  : phase === "idle"
+                    ? "algorithm hidden until you've done it"
+                    : "…"}
+              </p>
+            </div>
+
+            <DrillCaseView
+              moves={algorithm.moves}
+              auf={current.auf}
+              puzzle={puzzle}
+              visualization={visualization}
+              showSetup={showSetup}
+            />
+
+            <p
+              className={cn(
+                "font-mono text-6xl tabular-nums",
+                phase === "running" ? "text-foreground" : "text-foreground/90",
+              )}
+              aria-live="off"
+            >
+              {/* The live span is written by the rAF loop only, never by React. */}
+              {live ? (
+                <span ref={digitsRef} data-testid="drill-time" />
+              ) : (
+                <span data-testid="drill-time">{shownTime}</span>
+              )}
             </p>
-            <p className="font-mono text-xs text-muted-foreground">
-              {current.auf && <span className="text-primary">{current.auf} </span>}
-              {phase === "stopped" || (phase === "idle" && !hideAlg)
-                ? algorithm.moves
-                : phase === "idle"
-                  ? "algorithm hidden until you've done it"
-                  : "…"}
-            </p>
+
+            {/* Always takes its height, so the pad below never moves on a stop. */}
+            <div className="flex h-6 gap-1.5">
+              {phase === "stopped" && last && (
+                <>
+                  <Button size="xs" variant={last.penalty === "plus2" ? "default" : "outline"} disabled={last.saving} onClick={() => setLastPenalty("plus2")}>
+                    +2
+                  </Button>
+                  <Button size="xs" variant={last.penalty === "dnf" ? "default" : "outline"} disabled={last.saving} onClick={() => setLastPenalty("dnf")}>
+                    DNF
+                  </Button>
+                  <Button size="xs" variant="outline" disabled={last.saving} onClick={deleteLast} aria-label="Delete attempt">
+                    <Trash2 className="size-3" />
+                  </Button>
+                </>
+              )}
+            </div>
+
+            <StartPad phase={phase} onPress={press} className="max-w-xl" />
           </div>
 
-          <DrillCaseView
-            moves={algorithm.moves}
-            auf={current.auf}
-            puzzle={puzzle}
-            visualization={visualization}
-            showSetup={showSetup}
-          />
-
-          <p
-            className={cn(
-              "font-mono text-6xl tabular-nums",
-              phase === "running" ? "text-foreground" : "text-foreground/90",
-            )}
-            aria-live="off"
-          >
-            {/* The live span is written by the rAF loop only, never by React. */}
-            {live ? (
-              <span ref={digitsRef} data-testid="drill-time" />
-            ) : (
-              <span data-testid="drill-time">{shownTime}</span>
-            )}
-          </p>
-          <p className="text-xs text-muted-foreground">{hint}</p>
-
-          {phase === "stopped" && last && (
-            <div className="flex gap-1.5" onPointerDown={(e) => e.stopPropagation()}>
-              <Button size="xs" variant={last.penalty === "plus2" ? "default" : "outline"} disabled={last.saving} onClick={() => setLastPenalty("plus2")}>
-                +2
-              </Button>
-              <Button size="xs" variant={last.penalty === "dnf" ? "default" : "outline"} disabled={last.saving} onClick={() => setLastPenalty("dnf")}>
-                DNF
-              </Button>
-              <Button size="xs" variant="outline" disabled={last.saving} onClick={deleteLast} aria-label="Delete attempt">
-                <Trash2 className="size-3" />
-              </Button>
-            </div>
+          {phase === "running" && (
+            <div
+              aria-hidden="true"
+              data-testid="drill-stop-layer"
+              className="absolute inset-0 z-10 cursor-pointer touch-none rounded-2xl select-none"
+              onPointerDown={(e) => {
+                if (!e.isPrimary || e.button > 0) return;
+                e.preventDefault();
+                press();
+              }}
+              onContextMenu={(e) => e.preventDefault()}
+            />
           )}
         </section>
 

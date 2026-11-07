@@ -58,6 +58,38 @@ test.describe("Drill Lab", () => {
     await expectCaseRendered(page);
   });
 
+  test("dragging the cube never starts a rep; the start pad does, and a tap on the stage stops it", async ({ page }) => {
+    await page.goto("/learn/333/drill?set=pll&order=random");
+    await skipWithoutData(page);
+    await expectCaseRendered(page);
+
+    const time = page.getByTestId("drill-time");
+    const pad = page.getByRole("button", { name: /drill timer/i });
+    await expect(pad).toHaveAttribute("aria-label", /to start/);
+
+    // Drag across the 3D cube, as when turning it to look at the case.
+    const box = (await page.locator("twisty-player").first().boundingBox())!;
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    for (let i = 1; i <= 8; i++) await page.mouse.move(x + i * 10, y + i * 3);
+    await page.mouse.up();
+    await page.waitForTimeout(300);
+    await expect(time).toHaveText("0.00");
+    await expect(pad).toHaveAttribute("aria-label", /to start/);
+
+    // The pad starts the rep...
+    await pad.click();
+    await expect(pad).toHaveAttribute("aria-label", /to stop/);
+    await page.waitForTimeout(1500); // past the misfire limit, or the rep isn't kept
+    // ...and a tap anywhere on the stage, even on the cube, stops it.
+    await page.mouse.click(x, y);
+    await expect(pad).toHaveAttribute("aria-label", /next case/);
+    await expect(time).not.toHaveText("0.00");
+    await expect(page.getByTestId("drill-session-list").locator("li")).toHaveCount(1);
+  });
+
   test("per-variant evidence produces a switch recommendation", async ({ page }) => {
     test.setTimeout(90_000);
     await page.goto("/learn/333/drill?set=pll&order=random");

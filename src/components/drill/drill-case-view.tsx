@@ -86,7 +86,11 @@ export function DrillCaseView({
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="relative grid place-items-center" style={{ width: size, height: size }}>
+      {/* 3D: a drag turns the cube rather than scrolling the page (cubing.js sets no touch-action). */}
+      <div
+        className={cn("relative grid place-items-center", visualization === "3D" && "touch-none")}
+        style={{ width: size, height: size }}
+      >
         {!ready && <CubeLoader size={40} label="Loading cube" className="absolute" />}
         <div ref={containerRef} className="grid place-items-center" />
       </div>

@@ -5,6 +5,48 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-07 — Drill Lab redesign, step 2b: start pad; dragging the cube no longer starts a rep
+
+**Request:** Dragging the 3D cube to look at the case started the timer, because the whole
+stage started a rep on pointer down. Only a dedicated start pad should start one.
+
+### Changed
+
+- `start-pad.tsx` (new): a real button under the digits with the phase's label (Start /
+  Stop / Next case) and a short hint. It fires on pointer down (primary pointer, main
+  button), calling the same `press(performance.now())` as before, so tap-to-start latency is
+  unchanged. A pointer's click afterwards does nothing. Accessible name
+  "Drill timer: <hint>". Colours by phase from tokens (`surface-raised`, `timer-running`);
+  pressed feedback is `scale 0.98` over `--duration-fast` with `ease-standard`, instant while
+  running and for reduced motion.
+- `drill-lab.tsx`: the stage is a plain region ("Drill stage"), no longer `role="button"`,
+  `touch-none` or a pointer target. While a rep runs, a transparent layer covers the whole
+  stage and any tap on it stops the rep; it unmounts as soon as the phase leaves running. The
+  +2 / DNF / delete row always keeps its height, so the pad doesn't move when a rep stops.
+- `drill-case-view.tsx`: the 3D cube's box is `touch-none`. cubing.js sets no
+  `touch-action`, and the stage no longer does, so without it a drag on a phone scrolled the
+  page instead of turning the cube.
+- Keyboard unchanged: Space start/stop/next, any key stops, Esc abandons, 1/2/D.
+
+### Departure from the prompt
+
+- The prompt said the pad's `onClick` should do nothing. Pointer clicks are ignored, but a
+  keyboard click (`detail === 0`, i.e. Enter on the focused pad) presses once, so the pad
+  works like any button from the keyboard. Space still goes only through the window listener,
+  which also blocks its keyup activation, so nothing fires twice.
+
+### Verification
+
+- `npm run validate` (577 unit tests), `check:colors` OK.
+- Drill e2e on the production build (local stand-in): 7 passed, including the new test: drag
+  80px across the 3D cube → time stays 0.00; the pad starts the rep; a tap on the cube while
+  running stops it.
+- Phone check (Pixel 7 emulation, raw touch events): dragging the cube turns it, the timer
+  stays at 0.00 and the page doesn't scroll; tapping the pad starts the rep.
+- Pressed feedback measured: `scale: 0.98` while the pad is held.
+
+---
+
 ## 2026-11-07 — Drill Lab redesign, step 2a: Recognition split removed
 
 **Request:** Remove the recognition split (founder's call, which includes changing
