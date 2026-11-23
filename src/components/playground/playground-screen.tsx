@@ -315,13 +315,13 @@ export function PlaygroundScreen({
     setupKind === "case" ? "Case setup" : setupKind === "link" ? "Start position" : "Scramble";
 
   return (
-    // md and up: exactly one screen under the navbar (h-14), one grid, nothing
+    // md and up: exactly one screen (the sidebar sits beside it), one grid, nothing
     // scrolls but the move list. Phones: header, cube, buttons and pad fill the
     // screen above the bottom nav; the panels follow below it.
     <div
       className={cn(
         "flex w-full flex-1 flex-col gap-4 px-4 pb-6",
-        "md:grid md:h-[calc(100dvh-3.5rem)] md:gap-x-4 md:gap-y-3 md:overflow-hidden md:pb-4",
+        "md:grid md:h-dvh md:gap-x-4 md:gap-y-3 md:overflow-hidden md:pb-4",
         // Tablet: cube on top taking what's left, then the pad, then the panels.
         "md:grid-rows-[auto_minmax(16rem,1fr)_auto_auto]",
         // Desktop: pad | cube | notation, one row under the header.

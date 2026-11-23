@@ -91,6 +91,8 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 - *Learn's sub-items come from a cached, cookie-free read* (`getLearnNav()`, `unstable_cache`, 1 hour) so the app layout doesn't add a database round trip to every page. Next 16 recommends `"use cache"` instead, but that needs Cache Components switched on project-wide, which is a bigger change than this step.
 - *The shadcn CLI added an npm package called `cn`* and pointed the new primitives' imports at it. Reverted: the primitives import `cn` from `@/lib/utils` like the rest of `components/ui`, and `package.json` is unchanged.
 
+**`navbar.tsx` stays.** The plan says delete it once nothing imports it; the marketing header (`components/marketing/marketing-header.tsx`) still renders it on the landing page, so it remains, used by `(marketing)` only.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.

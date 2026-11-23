@@ -5,6 +5,29 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — App shell step 6: swap the shell
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 6.
+
+### Changed
+
+- `(app)/layout.tsx`: always the sidebar (md and up) beside `<main>`; the navbar is no longer
+  rendered in `(app)`; the `NEXT_PUBLIC_SIDEBAR` flag is gone. The bottom nav stays below md.
+- Offsets that assumed the 56 px navbar: `playground-screen.tsx` (`md:h-dvh`), `drill-lab.tsx`
+  (`lg:h-dvh`), `stats-screen.tsx` (sticky bar at `top-0` on every width), `step-toc.tsx`
+  (`top-8`). Comments updated, including `(app)/not-found.tsx`.
+
+### Kept on purpose
+
+- `navbar.tsx`, still used by the landing page's header.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`; in Chromium the drill and playground
+fill exactly one 760 px screen with no page scroll, Stats and the phone timer look as before.
+
+---
+
 ## 2026-11-24 — App shell step 5: sidebar behind NEXT_PUBLIC_SIDEBAR=1
 
 **Request:** Overnight run, `docs/app-shell-plan.md` step 5.

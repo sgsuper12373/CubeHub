@@ -393,7 +393,7 @@ export function StatsScreen({ userId }: { userId: string | null }) {
 
       {/* ── Filters: above everything they affect, and kept in reach on scroll ── */}
       <div
-        className="sticky top-0 z-30 -mx-4 flex flex-col gap-2 border-b border-border/60 bg-background/90 px-4 py-2 backdrop-blur-sm md:top-14"
+        className="sticky top-0 z-30 -mx-4 flex flex-col gap-2 border-b border-border/60 bg-background/90 px-4 py-2 backdrop-blur-sm"
         data-testid="stats-filters"
       >
         <EventPills value={puzzle} counts={counts} onChange={setPuzzle} />

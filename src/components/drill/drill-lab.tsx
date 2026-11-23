@@ -346,10 +346,10 @@ export function DrillLab({
   ];
 
   return (
-    // lg and up: exactly the viewport under the navbar (h-14 plus its 1px
-    // bottom border); panes scroll inside themselves, never the page. Below lg
+    // lg and up: exactly the viewport (the app sidebar sits beside it, not
+    // above); panes scroll inside themselves, never the page. Below lg
     // the panes stack and the page scrolls.
-    <div className="flex w-full flex-col gap-3 p-4 lg:h-[calc(100dvh-3.5rem-1px)] lg:overflow-hidden">
+    <div className="flex w-full flex-col gap-3 p-4 lg:h-dvh lg:overflow-hidden">
       <DrillToolbar
         puzzle={puzzle}
         subsets={subsets}
