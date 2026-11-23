@@ -5,6 +5,29 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — Home step 2: stats, learning, drill and streak cards
+
+**Request:** Overnight run, `docs/home-plan.md` step 2.
+
+### Changed
+
+- `src/lib/home/snapshot.ts` (new, pure): PB single, current-session Ao5/Ao12, last 30 times and a
+  trend word, this week's solves and days, streak, today, the last 14 days.
+- `src/components/home/use-home-snapshot.ts` (new): loads the main puzzle's metrics and PBs through
+  the timer's repository (Supabase or local, as `/stats` does); one load serves both cards.
+- `stats-card.tsx`, `streak-card.tsx` (client), `learning-card.tsx`, `drill-card.tsx` (async
+  server), `static-cards.tsx` (the guest/empty versions, kept free of server-only imports).
+- `src/lib/home/daily-goal.ts` (new): the daily solve goal (default 25), read with
+  `useSyncExternalStore`.
+- `member-home.tsx`, `guest-home.tsx`: render the new cards.
+- Tests: `home-snapshot.test.ts`, `home-daily-goal.test.ts` (new).
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`; looked at as a member.
+
+---
+
 ## 2026-11-24 — Home step 1: page, routing, greeting and quick start
 
 **Request:** Overnight run, `docs/home-plan.md` step 1.

@@ -3,6 +3,11 @@ import { Suspense } from "react";
 import { HomeCardSkeleton } from "@/components/home/home-card";
 import { HomeGrid } from "@/components/home/home-grid";
 import { QuickStart } from "@/components/home/quick-start";
+import { DrillCard } from "@/components/home/drill-card";
+import { LearningCard } from "@/components/home/learning-card";
+import { DrillIntroCard } from "@/components/home/static-cards";
+import { StatsCard } from "@/components/home/stats-card";
+import { StreakCard } from "@/components/home/streak-card";
 import { WelcomeCard } from "@/components/home/welcome-card";
 import type { CurrentProfile } from "@/lib/auth/dal";
 import { detectVisitor, homeCards, type CardId, type HomeLayout } from "@/lib/home/cards";
@@ -35,6 +40,14 @@ export async function MemberHome({ profile, layout }: { profile: CurrentProfile;
     switch (id) {
       case "welcome":
         return <WelcomeCard key={id} member solveCount={summary.solveCount} pllLearned={pllLearned} />;
+      case "stats":
+        return <StatsCard key={id} userId={profile.id} />;
+      case "streak":
+        return <StreakCard key={id} userId={profile.id} />;
+      case "learning":
+        return <LearningCard key={id} username={profile.username} />;
+      case "drill":
+        return visitor === "member-new" && summary.solveCount === 0 ? <DrillIntroCard key={id} /> : <DrillCard key={id} />;
       default:
         return null;
     }

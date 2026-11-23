@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 
 import { HomeCardSkeleton } from "@/components/home/home-card";
 import { HomeGrid } from "@/components/home/home-grid";
+import { DrillIntroCard, LearningStartCard } from "@/components/home/static-cards";
+import { StatsCard } from "@/components/home/stats-card";
+import { StreakCard } from "@/components/home/streak-card";
 import { WelcomeCard } from "@/components/home/welcome-card";
 import { detectVisitor, homeCards, type CardId } from "@/lib/home/cards";
 import { localRepo } from "@/lib/timer/repo-local";
@@ -40,6 +43,14 @@ export function GuestHome() {
     switch (id) {
       case "welcome":
         return <WelcomeCard key={id} member={false} />;
+      case "stats":
+        return <StatsCard key={id} userId={null} />;
+      case "streak":
+        return <StreakCard key={id} userId={null} />;
+      case "learning":
+        return <LearningStartCard key={id} />;
+      case "drill":
+        return <DrillIntroCard key={id} />;
       default:
         return null;
     }

@@ -107,6 +107,12 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **Saved layouts are `{ hidden, shown, order? }`**, not just `{ hidden, order }`: Streak and goal is off by default and can be switched on, which needs a list of cards switched on. Unknown ids are dropped on read.
 
+**The stats card's line is the last 30 solve times, not `spreadTrend()`.** The plan names `spreadTrend()` for a "30-solve trend sparkline", but that function charts the spread over 25-solve chunks and needs 50+ solves to draw anything. The card draws the last 30 counted times with the existing `Sparkline` and says "improving / steady / slower" by comparing the two halves (2% band); the Stats page keeps the spread chart.
+
+**No case diagram on the Continue learning card yet.** Drawing one needs cubing.js, and the plan also says Home loads no cubing.js up front; the card shows the next case's name and main algorithm instead. A lazy diagram can follow with the daily scramble's lazy cube preview.
+
+**The daily goal is stored per device** (`cubehub.home.dailyGoal`): `goal-storage.ts` holds per-puzzle time goals, and syncing it would need another `user_settings` column. Home's stats and streak look back 90 days and use the last-used puzzle's solves (the timer's per-device event).
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.
