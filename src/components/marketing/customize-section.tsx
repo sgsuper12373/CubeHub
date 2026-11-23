@@ -5,6 +5,7 @@ import {
   ArrowRight,
   Check,
   EyeOff,
+  Image as ImageIcon,
   LayoutGrid,
   Maximize,
   Mic,
@@ -14,7 +15,9 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
+import { CubeMark } from "@/components/layout/logo";
 import { SectionHeading } from "@/components/marketing/section-heading";
+import { appHref } from "@/lib/marketing/links";
 import { formatMs } from "@/lib/timer/format";
 import { CLIENT_DEFAULTS, loadClientSettings, saveClientSettings } from "@/lib/timer/settings-persistence";
 import {
@@ -81,6 +84,17 @@ const MORE = [
   { icon: Upload, label: "Import from csTimer" },
 ] as const;
 
+/**
+ * More of what's adjustable, each linking to where it lives in the app: the
+ * background and panel layout are on the timer's toolbar, the timer font size
+ * in Settings.
+ */
+const TILES: { icon: typeof ImageIcon; label: string; hint: string; href: string }[] = [
+  { icon: ImageIcon, label: "Background", hint: "Your own photo behind the timer", href: appHref("/timer") },
+  { icon: Type, label: "Font size", hint: "Make the digits as big as you like", href: appHref("/settings") },
+  { icon: LayoutGrid, label: "Layout", hint: "Drag and resize every panel", href: appHref("/timer") },
+];
+
 export function CustomizeSection() {
   const theme = useSyncExternalStore(subscribeTheme, getThemeSnapshot, getThemeServerSnapshot);
   const [settings, update] = useClientSettings();
@@ -105,18 +119,18 @@ export function CustomizeSection() {
   return (
     <section
       id="customize"
-      className="relative scroll-mt-20 overflow-hidden border-y border-border/60 bg-card/40"
+      className="relative flex min-h-[100svh] scroll-mt-16 items-center overflow-hidden border-y border-border/60 bg-card/40"
     >
       <div
         aria-hidden
         className="pointer-events-none absolute -right-40 top-10 size-[30rem] rounded-full bg-accent-2/10 blur-3xl"
       />
-      <div className="relative mx-auto max-w-6xl px-4 py-20 md:py-28">
+      <div className="relative mx-auto w-full max-w-6xl px-4 py-20 md:py-24">
         <SectionHeading
-          eyebrow="Make it yours"
+          eyebrow="Customise"
           icon={SlidersHorizontal}
-          title="A timer that fits your hands, not ours"
-          lead="Change these now — they're the real settings, saved on this device, and the timer opens already set up the way you like it."
+          title="Make it yours."
+          lead="Themes, fonts, layouts and backgrounds, like monkeytype for cubers. These are the real settings: pick a theme and the whole page changes with it, and the timer opens set up your way."
         />
 
         <div className="mt-12 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
@@ -198,7 +212,11 @@ export function CustomizeSection() {
           <div className="reveal flex flex-col gap-4">
             <div className="relative flex flex-col overflow-hidden rounded-3xl border border-border bg-background p-5 shadow-xl shadow-primary/5">
               <div className="flex items-center justify-between font-mono text-[11px] tracking-wider text-muted-foreground uppercase">
-                <span>Preview</span>
+                {/* The CH mark in the active theme's colours (the hero keeps the classic palette). */}
+                <span className="flex items-center gap-2">
+                  <CubeMark className="size-6" />
+                  Preview
+                </span>
                 <span
                   aria-live="polite"
                   className={cn(
@@ -225,6 +243,21 @@ export function CustomizeSection() {
               <HoldTester holdMs={settings.holdMs} />
             </div>
 
+            <ul className="grid grid-cols-3 gap-3">
+              {TILES.map(({ icon: Icon, label, hint, href }) => (
+                <li key={label}>
+                  <Link
+                    href={href}
+                    className="flex h-full flex-col gap-2 rounded-2xl border border-border bg-card p-3 transition-colors hover:border-primary/50 hover:bg-muted/40"
+                  >
+                    <Icon className="size-5 text-primary" aria-hidden />
+                    <span className="text-sm font-semibold text-foreground">{label}</span>
+                    <span className="text-xs text-muted-foreground">{hint}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
             <div className="rounded-3xl border border-border bg-card p-5">
               <p className="text-sm font-semibold text-foreground">And in the timer&apos;s quick settings</p>
               <ul className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
@@ -236,7 +269,7 @@ export function CustomizeSection() {
                 ))}
               </ul>
               <Link
-                href="/timer"
+                href={appHref("/timer")}
                 className="group mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary"
               >
                 Open the timer

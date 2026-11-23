@@ -80,6 +80,8 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **Phones get the finished visual.** Below lg (and with reduced motion) `PinnedChapter` holds progress at 1, as the plan's "plain full-screen sections" implies; the server renders that state too.
 
+**"Make it yours" tiles link to where each setting lives,** not all to Settings: the background and panel layout are on the timer's toolbar, the font size is in Settings (step 6). The section's theme picker already changed the whole page through `setTheme()`; the step adds a CH mark in the active theme's colours to the preview, while the hero keeps its classic palette.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.

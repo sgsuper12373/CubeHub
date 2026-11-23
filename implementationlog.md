@@ -5,6 +5,25 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — Landing step 6: Make it yours, enlarged
+
+**Request:** Overnight run, `docs/landing-plan.md` step 6.
+
+### Changed
+
+- `customize-section.tsx`: full-screen (`100svh`), the plan's copy ("Make it yours. Themes, fonts,
+  layouts and backgrounds, like monkeytype for cubers."), a theme-coloured CH mark in the preview,
+  and three tiles (Background, Font size, Layout) linking to where each lives. The timer settings
+  (precision, hold time, preview style) are unchanged; links go through `appHref()`.
+- `customize-section-lazy.tsx`: placeholder heights re-measured (360–1536 px) so nothing shifts
+  when the section loads.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`; looked at in Chromium.
+
+---
+
 ## 2026-11-24 — Landing step 5: feature chapters
 
 **Request:** Overnight run, `docs/landing-plan.md` step 5.
