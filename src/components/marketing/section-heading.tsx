@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
  * text where scroll-driven animations aren't supported.
  */
 export function SectionHeading({
+  id,
   eyebrow,
   icon: Icon,
   title,
@@ -19,6 +20,8 @@ export function SectionHeading({
   align = "left",
   className,
 }: {
+  /** The h2's id, for a section's aria-labelledby. */
+  id?: string;
   eyebrow: string;
   icon?: LucideIcon;
   title: React.ReactNode;
@@ -35,7 +38,7 @@ export function SectionHeading({
       )}
     >
       <Eyebrow icon={Icon}>{eyebrow}</Eyebrow>
-      <h2 className="max-w-3xl text-3xl font-bold tracking-tight text-balance text-foreground sm:text-4xl">
+      <h2 id={id} className="max-w-3xl text-3xl font-bold tracking-tight text-balance text-foreground sm:text-4xl">
         {title}
       </h2>
       {lead && (

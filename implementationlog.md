@@ -5,6 +5,30 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — Landing step 4: Try a solve section
+
+**Request:** Overnight run, `docs/landing-plan.md` step 4.
+
+### Changed
+
+- `src/components/marketing/try-solve-section.tsx` (new): a full-screen section, "Try a solve right
+  here.", with keyboard instructions, holding the timer card (wider: `max-w-xl`).
+- `hero-section.tsx`: the card leaves the hero, which is now one centred column.
+- `hero-timer-card.tsx`: after a live solve, "Nice, 14.32. Your next one counts in the real timer."
+  with **Keep going** → the timer. The demo's times still never leave the card. Timer links go
+  through `appHref()`. The opt-in rule (Try a solve here; scroll-away or Escape releases) is unchanged.
+- `section-heading.tsx`: optional `id` for the h2.
+- `(marketing)/page.tsx`: the section follows the hero.
+- Tests: `landing-hero.spec.ts` checks the nudge and that scrolling away releases Space;
+  `landing.spec.ts`'s reduced-motion check allows the loading cube, which is slowed rather than
+  stopped on purpose.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, the landing e2e specs against a production build.
+
+---
+
 ## 2026-11-24 — Landing step 3: header and hero
 
 **Request:** Overnight run, `docs/landing-plan.md` step 3.

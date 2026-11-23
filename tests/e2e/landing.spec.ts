@@ -50,5 +50,7 @@ test("with reduced motion, nothing on the page is animating", async ({ page }) =
       .filter((a) => a.playState === "running" && a instanceof CSSAnimation)
       .map((a) => (a as CSSAnimation).animationName),
   );
-  expect(running).toEqual([]);
+  // The loading cube is the one deliberate exception: slowed to 6 s rather
+  // than stopped (globals.css), because it signals that something is loading.
+  expect(running.filter((name) => name !== "cube-loader-tumble")).toEqual([]);
 });

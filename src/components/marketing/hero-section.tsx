@@ -6,7 +6,6 @@ import { ArrowRight, IndianRupee, Pause, Play, ShieldCheck, WifiOff } from "luci
 import { useState } from "react";
 
 import { BrandLockup } from "@/components/layout/logo";
-import { HeroTimerCard } from "@/components/marketing/hero-timer-card";
 import { FadeUp } from "@/components/marketing/motion/fade-up";
 import { FloatingField } from "@/components/marketing/motion/floating-field";
 import { RevealText } from "@/components/marketing/motion/reveal-text";
@@ -64,8 +63,8 @@ export function HeroSection() {
         className="pointer-events-none absolute -top-40 left-1/2 -z-10 size-[36rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
       />
 
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-12 md:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
-        <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+      <div className="mx-auto w-full max-w-4xl px-4 py-12 md:py-16">
+        <div className="flex flex-col items-center text-center">
           {/* Stacks below sm: same as `stacked`, without a second copy in the DOM. */}
           <BrandLockup className="hero-lockup max-sm:flex-col max-sm:text-center" />
 
@@ -75,11 +74,11 @@ export function HeroSection() {
             trigger="load"
             delayMs={650}
             staggerMs={45}
-            className="mt-8 max-w-xl text-4xl font-bold tracking-tight text-balance text-foreground sm:text-5xl lg:text-6xl"
+            className="mt-10 max-w-3xl text-4xl font-bold tracking-tight text-balance text-foreground sm:text-5xl lg:text-7xl"
           />
 
           <FadeUp trigger="load" delayMs={1000}>
-            <p className="mt-5 max-w-xl text-base text-pretty text-muted-foreground sm:text-lg md:text-xl md:leading-relaxed">
+            <p className="mx-auto mt-5 max-w-2xl text-base text-pretty text-muted-foreground sm:text-lg md:text-xl md:leading-relaxed">
               A fast WCA timer, every OLL and PLL in 3D, a drill that finds your slow cases, and friends
               to race. Free, and built for Indian cubers.
             </p>
@@ -106,7 +105,7 @@ export function HeroSection() {
           </FadeUp>
 
           <FadeUp trigger="load" delayMs={1300} as="div" className="mt-8">
-            <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground lg:justify-start">
+            <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
               {TRUST.map(({ icon: Icon, label }) => (
                 <li key={label} className="flex items-center gap-1.5">
                   <Icon className="size-4 text-primary" aria-hidden />
@@ -116,8 +115,6 @@ export function HeroSection() {
             </ul>
           </FadeUp>
         </div>
-
-        <HeroTimerCard className="mx-auto max-w-md lg:max-w-none" />
       </div>
 
       {/* Visitors decide whether the background moves. */}

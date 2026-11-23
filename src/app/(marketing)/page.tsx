@@ -5,6 +5,7 @@ import { CtaBand, SiteFooter } from "@/components/marketing/cta-band";
 import { LazyCustomizeSection } from "@/components/marketing/customize-section-lazy";
 import { FeatureBento } from "@/components/marketing/feature-bento";
 import { HeroSection } from "@/components/marketing/hero-section";
+import { TrySolveSection } from "@/components/marketing/try-solve-section";
 
 export const metadata: Metadata = {
   title: "CuberHub — Speedcubing Timer, Tutorials & Stats",
@@ -25,6 +26,7 @@ export default function Home() {
   return (
     <>
       <HeroSection />
+      <TrySolveSection />
       <FeatureBento />
       <LazyCustomizeSection />
       <CtaBand />
