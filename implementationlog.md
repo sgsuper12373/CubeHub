@@ -5,6 +5,33 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — Landing step 3: header and hero
+
+**Request:** Overnight run, `docs/landing-plan.md` step 3.
+
+### Changed
+
+- `src/components/marketing/marketing-header.tsx`: rewritten as one responsive header. Logo;
+  Features, Learn, Roadmap, FAQ; Sign in (text) and Open app (button), or avatar and Open app when
+  signed in (same no-flash CSS trick as before); transparent over the hero, `bg-background/80` +
+  blur + hairline once scrolled past 24 px; a menu sheet on phones.
+- `src/app/(marketing)/layout.tsx`: uses it (the separate phone header is gone).
+- `src/lib/marketing/links.ts` (new): `appHref()`, the header links, Open app / Sign in targets.
+- `src/components/marketing/hero-section.tsx`: full-screen (`100svh`, under the transparent header),
+  the headline as the page's one `h1` (`RevealText`), the lockup as a `div` with a draw-in, new
+  sub-line and buttons, `FloatingField` behind. The timer card stays here until step 4.
+- `src/components/ui/sheet.tsx`: the same file as on `feat/app-shell`, so the branches merge clean.
+- `src/app/globals.css`: hero lockup draw-in.
+- `tests/e2e/landing.spec.ts` (new): no-JS hero, header links and scroll state, phone menu,
+  nothing animating under reduced motion.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build` (`/` still `○`); looked at in Chromium,
+dark and light, desktop and phone.
+
+---
+
 ## 2026-11-24 — Landing step 2: motion pieces
 
 **Request:** Overnight run, `docs/landing-plan.md` step 2.

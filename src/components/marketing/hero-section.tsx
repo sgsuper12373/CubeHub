@@ -7,7 +7,11 @@ import { useState } from "react";
 
 import { BrandLockup } from "@/components/layout/logo";
 import { HeroTimerCard } from "@/components/marketing/hero-timer-card";
+import { FadeUp } from "@/components/marketing/motion/fade-up";
+import { FloatingField } from "@/components/marketing/motion/floating-field";
+import { RevealText } from "@/components/marketing/motion/reveal-text";
 import { buttonVariants } from "@/components/ui/button";
+import { appHref } from "@/lib/marketing/links";
 import { cn } from "@/lib/utils";
 
 // Client-only canvas; nothing for the server to render.
@@ -22,65 +26,95 @@ const ScrambleMatrix = dynamic(
  */
 const LANDING_LOGO_STYLE: "classic" | "theme" = "classic";
 
+/**
+ * The hero headline (docs/landing-plan.md → Hero, open question 1). The other
+ * two candidates, for A/B tests later: "Time it. Learn it. Drill it. Share
+ * it." and "Your whole cubing practice, in one tab."
+ */
+export const HERO_HEADLINE = "Every part of cubing. One hub.";
+
 const TRUST = [
   { icon: ShieldCheck, label: "WCA random-state scrambles" },
   { icon: WifiOff, label: "Works offline" },
   { icon: IndianRupee, label: "Built for India" },
 ] as const;
 
+/**
+ * The first screen (docs/landing-plan.md → Hero). Motion, all CSS so the text
+ * and buttons need no JavaScript: the mark's wireframe draws in, the wordmark
+ * fades up, the headline reveals word by word, then the buttons; under 1.6 s
+ * in all. Behind it: the notation field and the floating cube pieces.
+ */
 export function HeroSection() {
   const [paused, setPaused] = useState(false);
 
   return (
     <section
       data-logo={LANDING_LOGO_STYLE === "classic" ? "classic" : undefined}
-      className="relative isolate overflow-hidden bg-background"
+      className="relative isolate -mt-14 flex min-h-[100svh] items-center overflow-hidden bg-background pt-14"
     >
       {/* Interactive notation field. Decorative and pointer-events-none, so it
           never eats a tap or a scroll; it fades out towards the copy. */}
       <div className="absolute inset-0 -z-10 opacity-80 [mask-image:radial-gradient(ellipse_at_70%_40%,black_35%,transparent_80%)] max-lg:[mask-image:radial-gradient(ellipse_at_50%_70%,black_25%,transparent_75%)]">
         <ScrambleMatrix className="size-full" paused={paused} />
       </div>
+      <FloatingField className="-z-10" />
       <div
         aria-hidden
         className="pointer-events-none absolute -top-40 left-1/2 -z-10 size-[36rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
       />
 
-      <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 pt-12 pb-16 md:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-28">
+      <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-12 md:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
         <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
           {/* Stacks below sm: same as `stacked`, without a second copy in the DOM. */}
-          <BrandLockup as="h1" className="max-sm:flex-col max-sm:text-center" />
+          <BrandLockup className="hero-lockup max-sm:flex-col max-sm:text-center" />
 
-          <p className="mt-5 max-w-xl text-base text-pretty text-muted-foreground sm:text-lg md:text-xl md:leading-relaxed">
-            Time a solve the moment you land. Then track every average, learn
-            OLL and PLL with 3D cases, drill your weakest algorithms, and
-            compare with friends — all in one place.
-          </p>
+          <RevealText
+            as="h1"
+            text={HERO_HEADLINE}
+            trigger="load"
+            delayMs={650}
+            staggerMs={45}
+            className="mt-8 max-w-xl text-4xl font-bold tracking-tight text-balance text-foreground sm:text-5xl lg:text-6xl"
+          />
 
-          <div className="mt-8 flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
+          <FadeUp trigger="load" delayMs={1000}>
+            <p className="mt-5 max-w-xl text-base text-pretty text-muted-foreground sm:text-lg md:text-xl md:leading-relaxed">
+              A fast WCA timer, every OLL and PLL in 3D, a drill that finds your slow cases, and friends
+              to race. Free, and built for Indian cubers.
+            </p>
+          </FadeUp>
+
+          <FadeUp
+            trigger="load"
+            delayMs={1150}
+            className="mt-8 flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center"
+          >
             <Link
-              href="/timer"
+              href={appHref("/timer")}
               className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-7 text-base font-semibold shadow-lg shadow-primary/25 hover:bg-primary/90")}
             >
               Start timing free
               <ArrowRight data-icon="inline-end" className="size-4" />
             </Link>
             <Link
-              href="/learn"
+              href={appHref("/learn")}
               className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-12 rounded-full bg-background/60 px-7 text-base font-semibold backdrop-blur")}
             >
-              Explore tutorials
+              Explore Learn
             </Link>
-          </div>
+          </FadeUp>
 
-          <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground lg:justify-start">
-            {TRUST.map(({ icon: Icon, label }) => (
-              <li key={label} className="flex items-center gap-1.5">
-                <Icon className="size-4 text-primary" aria-hidden />
-                {label}
-              </li>
-            ))}
-          </ul>
+          <FadeUp trigger="load" delayMs={1300} as="div" className="mt-8">
+            <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground lg:justify-start">
+              {TRUST.map(({ icon: Icon, label }) => (
+                <li key={label} className="flex items-center gap-1.5">
+                  <Icon className="size-4 text-primary" aria-hidden />
+                  {label}
+                </li>
+              ))}
+            </ul>
+          </FadeUp>
         </div>
 
         <HeroTimerCard className="mx-auto max-w-md lg:max-w-none" />

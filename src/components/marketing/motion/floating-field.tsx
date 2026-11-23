@@ -53,7 +53,7 @@ function PieceShape({ piece }: { piece: Placed }) {
   }
   if (piece.kind === "glyph") {
     return (
-      <span className="block font-mono font-semibold text-muted-foreground/50" style={{ fontSize: piece.size }}>
+      <span className="block font-mono font-semibold text-muted-foreground/30" style={{ fontSize: piece.size }}>
         {piece.text}
       </span>
     );

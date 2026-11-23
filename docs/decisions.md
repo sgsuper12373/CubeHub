@@ -70,6 +70,12 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **Text reveals and fades are CSS, not `motion`** (landing plan step 2, 2026-11-24). The plan asks for the motion pieces "on the `motion` package". The codebase already moved the landing page off JS text animation on purpose (`section-heading.tsx`: the old GSAP headings painted blank; `globals.css` → "Landing reveal": "Text is never hidden before the animation can run"). Following that pattern, `RevealText` and `FadeUp` are pure CSS (load-time keyframes, scroll-driven `animation-timeline: view()` where supported): the hero text is in the HTML, readable with JS off, costs no client JS and can't delay the largest paint. `FloatingField` (pointer parallax), `CountUp` and `PinnedChapter` (`useScroll`) use `motion/react`.
 
+**Hero headline: "Every part of cubing. One hub."** (open question 1; the plan gives three options and no pick, so the first, which carries the "hub" of the name). The other two are kept in a comment beside `HERO_HEADLINE` for A/B tests.
+
+**Product links go through `appHref()`, which returns the path for now** (`src/lib/marketing/links.ts`). `feat/landing` branches from the rename, not the app shell, so `appUrl()` doesn't exist here; step 11 (not in this run) swaps one function. "Open app" points at `/timer` until Home merges (the plan says `/home`, which doesn't exist on this branch).
+
+**The lockup's "draw-in" is a stroke draw on the wireframe plus fades,** not a letter-by-letter wordmark: the wordmark is one text node inside the shared `BrandLockup`, and splitting it for the landing page would fork the brand component. Headline, sub-line, buttons and trust row follow in sequence, all done by 1.45 s.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.

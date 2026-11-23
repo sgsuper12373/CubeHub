@@ -310,6 +310,32 @@
   }
 }
 
+/* ── Hero lockup draw-in (components/marketing/hero-section.tsx) ──────────
+   The CH mark's wireframe draws (600ms), its letters and the wordmark fade up
+   after it. Reduced motion: at rest. */
+@keyframes hero-draw {
+  from {
+    stroke-dashoffset: 620;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-lockup .chm-wire path {
+    stroke-dasharray: 620;
+    animation: hero-draw 600ms ease-out both;
+  }
+  .hero-lockup .chm-letters,
+  .hero-lockup .chm-nodes {
+    animation: reveal-piece 400ms ease-out 300ms both;
+  }
+  .hero-lockup .chm-lockup-text {
+    animation: reveal-piece 450ms ease-out 450ms both;
+  }
+}
+
 /* ── Floating field (components/marketing/motion/floating-field.tsx) ───────
    Slow drift on the compositor; paused off screen and in hidden tabs (the
    component sets data-floating-field), and off for reduced motion. */
