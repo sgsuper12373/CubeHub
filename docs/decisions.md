@@ -84,6 +84,13 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **No two-origin e2e test yet.** `localhost` and `app.localhost` are different sites to the browser (no public-suffix entry), so the receiver iframe would get partitioned storage locally and a local test would fail for a reason production doesn't have. The logic is unit-tested (`handoff.test.ts`, the handoff block in `host-routing.test.ts`); the real check is manual, on a preview with both custom domains, before go-live (listed in the overnight report).
 
+**Sidebar implementation choices** (app shell step 5).
+- *Widths are CSS, not `motion`.* The browse default ("Rail between md and lg, Expanded from lg") depends on the width, which the server doesn't know; keyed CSS on `data-sidebar-state` gets the first paint right with no flash, and a 200 ms `transition-[width]` (off under `prefers-reduced-motion`) does what the plan asked of `motion`.
+- *The cookie stores only explicit choices.* A group with no entry uses its default, so a user who never touched the sidebar keeps the width-dependent default. The value is URI-encoded JSON; the plan's plain JSON form is also read.
+- *Shortcuts lock while the timer is holding, ready, inspecting or running,* not while it shows a stopped result: "while the timer is not idle" read literally would block Ctrl+B between solves. The timer sets the lock in the sidebar store; the sidebar never reads the timer store.
+- *Learn's sub-items come from a cached, cookie-free read* (`getLearnNav()`, `unstable_cache`, 1 hour) so the app layout doesn't add a database round trip to every page. Next 16 recommends `"use cache"` instead, but that needs Cache Components switched on project-wide, which is a bigger change than this step.
+- *The shadcn CLI added an npm package called `cn`* and pointed the new primitives' imports at it. Reverted: the primitives import `cn` from `@/lib/utils` like the rest of `components/ui`, and `package.json` is unchanged.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.

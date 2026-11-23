@@ -26,6 +26,7 @@ import { SessionTrend } from "@/components/stats/session-trend";
 import { LayoutControls, LayoutShell } from "@/components/timer/layout-shell";
 import type { PanelId } from "@/lib/timer/layout";
 import { useLayoutStore } from "@/stores/layout-store";
+import { useSidebarStore } from "@/stores/sidebar-store";
 import { generateScramble } from "@/lib/timer/scrambler";
 import { loadLastEvent, saveLastEvent } from "@/lib/timer/events";
 import { detectRecords, RECORD_LABEL, type RecordHit } from "@/lib/timer/pb-detect";
@@ -370,6 +371,15 @@ export function TimerScreen(props: {
   // is CSS keyed on an <html> attribute (globals.css) so it also reaches the
   // navbar and bottom nav, which live outside this screen.
   const focusHidden = isFocusMode && isFocusHidden(phase, inInspection);
+
+  // The sidebar's Ctrl+B / Ctrl+\ shortcuts wait while a solve is under way
+  // (inspection included). The sidebar never reads the timer store itself.
+  const setSidebarLocked = useSidebarStore((s) => s.setShortcutsLocked);
+  const sidebarLocked = phase !== "idle" && phase !== "stopped";
+  useEffect(() => {
+    setSidebarLocked(sidebarLocked);
+    return () => setSidebarLocked(false);
+  }, [sidebarLocked, setSidebarLocked]);
   useEffect(() => {
     const root = document.documentElement;
     root.toggleAttribute(FOCUS_ATTR, focusHidden);

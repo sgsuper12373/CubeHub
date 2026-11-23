@@ -1,7 +1,10 @@
 import {
   BarChart3,
   Box,
+  Contact,
   GraduationCap,
+  House,
+  Settings,
   Target,
   Timer,
   User,
@@ -19,7 +22,13 @@ export type NavItem = {
    * both tabs would light up.
    */
   match?: RegExp;
+  /** The sidebar section it sits in (docs/app-shell-plan.md → Content). */
+  group?: NavGroup;
+  /** Sub-items: Learn's puzzles and series, filled in from the Learn index at render time. */
+  children?: NavItem[];
 };
+
+export type NavGroup = "main" | "practice" | "community";
 
 export const navItems: NavItem[] = [
   { label: "Timer", href: "/timer", icon: Timer },
@@ -36,6 +45,49 @@ export const navItems: NavItem[] = [
   // Someone else's profile doesn't (see activeNavHref).
   { label: "Profile", href: "/profile", icon: User, match: /^\/(profile|settings|people|friends)(\/|$)/ },
 ];
+
+const HOME: NavItem = {
+  label: "Home",
+  href: "/home",
+  icon: House,
+  group: "main",
+  // "/" too: in single-host mode the landing page is the way into the app.
+  match: /^\/(home(\/|$)|$)/,
+};
+
+/**
+ * The app sidebar's items, in order, grouped (docs/app-shell-plan.md → Content).
+ * Profile isn't here: it's the account row at the bottom of the sidebar, with
+ * Settings and the notifications bell. Compete and Shop stay out until they
+ * exist; they'll go under Community and Practice.
+ */
+export const sidebarItems: NavItem[] = [
+  HOME,
+  { label: "Timer", href: "/timer", icon: Timer, group: "main" },
+  { label: "Stats", href: "/stats", icon: BarChart3, group: "main" },
+  { label: "Learn", href: "/learn", icon: GraduationCap, group: "practice" },
+  {
+    label: "Drill Lab",
+    href: "/learn/333/drill",
+    icon: Target,
+    group: "practice",
+    match: /^\/learn\/[^/]+\/drill(\/|$)/,
+  },
+  { label: "Playground", href: "/playground", icon: Box, group: "practice" },
+  { label: "Clubs", href: "/clubs", icon: Users, group: "community" },
+  { label: "People", href: "/people", icon: Contact, group: "community", match: /^\/(people|friends)(\/|$)/ },
+];
+
+/** The sidebar's pinned bottom links (the account row is its own component). */
+export const sidebarFooterItems: NavItem[] = [
+  { label: "Settings", href: "/settings", icon: Settings },
+];
+
+export const NAV_GROUP_LABEL: Record<NavGroup, string | null> = {
+  main: null,
+  practice: "Practice",
+  community: "Community",
+};
 
 /**
  * The one tab to highlight for a path: a tab with its own `match` wins over a

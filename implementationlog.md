@@ -5,6 +5,40 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — App shell step 5: sidebar behind NEXT_PUBLIC_SIDEBAR=1
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 5.
+
+### Changed
+
+- `src/components/ui/dropdown-menu.tsx`, `sheet.tsx`, `tooltip.tsx` (new, shadcn CLI, base-nova on
+  Base UI). Their `cn` import fixed to `@/lib/utils` (see decisions).
+- `src/lib/navigation.ts`: `group` and `children` on `NavItem`; `sidebarItems` (Home first, People
+  added), `sidebarFooterItems`, `NAV_GROUP_LABEL`. Home lights on `/home` and `/`. `navItems` unchanged.
+- `src/lib/sidebar.ts` (new): states, page groups, defaults, cookie parse/serialize, shortcut toggles.
+- `src/stores/sidebar-store.ts` (new): per-group state, writes the `cubehub-sidebar` cookie
+  (parent domain when split), the timer's shortcut lock.
+- `src/components/layout/app-sidebar.tsx` (new): Expanded / Rail / Hidden; hover-to-peek overlay
+  (150 ms in, 300 ms out) and a show button when hidden; Learn accordion (expanded) or hover flyout
+  (rail) from the Learn index; notifications, Settings, account menu (Profile, Edit profile, Sign
+  out) or Sign in; collapse and hide buttons; Ctrl/⌘+B and Ctrl/⌘+\ (not while typing or solving);
+  `nav aria-label="Main"`, `data-tour="sidebar"`, `aria-current`, rail tooltips; menus take
+  `useOverlayLock()`; `data-focus-hide`.
+- `src/app/globals.css`: widths and label hiding per state.
+- `src/lib/learn/public-dal.ts`: `getLearnNav()` (cached, cookie-free).
+- `notification-bell.tsx`: `side`, `label` and `className` props; takes the overlay lock while open.
+- `timer-screen.tsx`: sets the sidebar's shortcut lock during a solve.
+- `(app)/layout.tsx`: with `NEXT_PUBLIC_SIDEBAR=1`, reads the cookie and renders the sidebar beside
+  the old navbar.
+- Tests: `sidebar.test.ts` (new), sidebar cases in `navigation.test.ts`.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`; a `NEXT_PUBLIC_SIDEBAR=1` build looked at in Chromium:
+expanded, rail on /timer, auto at 900 px, Ctrl+B, edge peek, rail Learn flyout.
+
+---
+
 ## 2026-11-24 — App shell step 4: handoff pages
 
 **Request:** Overnight run, `docs/app-shell-plan.md` step 4.

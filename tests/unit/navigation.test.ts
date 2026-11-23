@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { activeNavHref, mobileNavItems, navItems } from "@/lib/navigation";
+import { activeNavHref, mobileNavItems, navItems, sidebarItems } from "@/lib/navigation";
 
 describe("nav active tab", () => {
   it("highlights exactly one tab, the most specific", () => {
@@ -51,5 +51,40 @@ describe("Clubs in the nav", () => {
     expect(activeNavHref("/clubs/join/abc", navItems)).toBe("/clubs");
     expect(mobileNavItems.some((i) => i.href === "/clubs")).toBe(false);
     expect(mobileNavItems).toHaveLength(5);
+  });
+});
+
+describe("sidebar items", () => {
+  it("starts with Home, which lights on /home and on / (single-host mode)", () => {
+    expect(sidebarItems[0]).toMatchObject({ label: "Home", href: "/home", group: "main" });
+    expect(activeNavHref("/home", sidebarItems)).toBe("/home");
+    expect(activeNavHref("/home/daily", sidebarItems)).toBe("/home");
+    expect(activeNavHref("/", sidebarItems)).toBe("/home");
+    expect(activeNavHref("/homework", sidebarItems)).toBeNull();
+  });
+
+  it("keeps Drill and Learn apart", () => {
+    expect(activeNavHref("/learn/333/drill", sidebarItems)).toBe("/learn/333/drill");
+    expect(activeNavHref("/learn/333/pll/21", sidebarItems)).toBe("/learn");
+  });
+
+  it("People covers the old /friends address; profiles light nothing", () => {
+    expect(activeNavHref("/people", sidebarItems)).toBe("/people");
+    expect(activeNavHref("/friends", sidebarItems)).toBe("/people");
+    expect(activeNavHref("/profile/someone", sidebarItems, "me")).toBeNull();
+    expect(activeNavHref("/profile/me", sidebarItems, "me")).toBeNull();
+  });
+
+  it("groups items into main, practice and community, with no Compete or Shop", () => {
+    expect(sidebarItems.map((i) => `${i.group}:${i.label}`)).toEqual([
+      "main:Home",
+      "main:Timer",
+      "main:Stats",
+      "practice:Learn",
+      "practice:Drill Lab",
+      "practice:Playground",
+      "community:Clubs",
+      "community:People",
+    ]);
   });
 });

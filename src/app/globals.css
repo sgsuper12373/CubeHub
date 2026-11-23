@@ -170,6 +170,31 @@
   transition-duration: 150ms;
 }
 
+/* ── App sidebar (src/components/layout/app-sidebar.tsx) ─────────────────
+   Widths per state live here so the server-rendered first paint is right:
+   "auto" (the browse default) is a rail between md and lg, expanded from lg,
+   which the server can't know. Labels in the rail stay in the accessibility
+   tree (sr-only), so every link keeps its name; tooltips show it visually. */
+.app-sidebar { width: 232px; }
+.app-sidebar[data-sidebar-state="rail"] { width: 4rem; }
+.app-sidebar[data-sidebar-state="hidden"] { width: 0; border-right-width: 0; visibility: hidden; }
+.app-sidebar .sidebar-rail-only { display: none; }
+.app-sidebar[data-sidebar-state="rail"] .sidebar-label {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border-width: 0;
+}
+.app-sidebar[data-sidebar-state="rail"] .sidebar-rail-only { display: block; }
+.app-sidebar[data-sidebar-state="rail"] .sidebar-expanded-only { display: none; }
+@media (max-width: 1023.98px) {
+  .app-sidebar[data-sidebar-state="auto"] { width: 4rem; }
+  .app-sidebar[data-sidebar-state="auto"] .sidebar-label {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap; border-width: 0;
+  }
+  .app-sidebar[data-sidebar-state="auto"] .sidebar-rail-only { display: block; }
+  .app-sidebar[data-sidebar-state="auto"] .sidebar-expanded-only { display: none; }
+}
+
 /* Hide the scrollbar on the horizontally-scrolling stat strip while keeping it
    scrollable (referenced by <StatTiles/>). */
 .hide-scrollbar {
