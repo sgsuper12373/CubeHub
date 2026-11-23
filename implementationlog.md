@@ -5,6 +5,30 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — Landing step 8: final call to action and footer
+
+**Request:** Overnight run, `docs/landing-plan.md` step 8.
+
+### Changed
+
+- `cta-band.tsx`: `CtaBand` is one full-screen band, "Your next PB starts here." (`RevealText`
+  h2), the existing signed-in/out buttons (`CtaBandActions`: Open the timer; Create a free account,
+  or Drill your weakest cases when signed in), and the floating cube field again at 40%.
+  `SiteFooter` has the wordmark and "The unified cubing platform", and Product / Community /
+  Company / Legal columns (social links and Contribute only when their URLs are set), keeping the
+  cubing.js credit.
+- `cta-band-actions.tsx`: links through `appHref()`.
+
+### Note
+
+- Roadmap, About, Privacy and Terms link to pages added in step 9.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`; looked at in Chromium.
+
+---
+
 ## 2026-11-24 — Landing step 7: community, roadmap, FAQ, waitlist files
 
 **Request:** Overnight run, `docs/landing-plan.md` step 7 (waitlist: migration and server action only).

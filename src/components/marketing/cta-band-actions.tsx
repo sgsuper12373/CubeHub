@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 
 import { useViewer } from "@/components/marketing/use-viewer";
 import { buttonVariants } from "@/components/ui/button";
+import { appHref, SIGN_UP_HREF } from "@/lib/marketing/links";
 import { cn } from "@/lib/utils";
 
 /**
@@ -26,14 +27,14 @@ export function CtaBandActions() {
       </p>
       <div className="mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
         <Link
-          href="/timer"
+          href={appHref("/timer")}
           className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-7 text-base font-semibold shadow-lg shadow-primary/25 hover:bg-primary/90")}
         >
           Open the timer
           <ArrowRight data-icon="inline-end" className="size-4" />
         </Link>
         <Link
-          href={signedIn ? "/learn/333/drill" : "/signup"}
+          href={signedIn ? appHref("/learn/333/drill") : SIGN_UP_HREF}
           className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-12 rounded-full px-7 text-base font-semibold")}
         >
           {signedIn ? "Drill your weakest cases" : "Create a free account"}
