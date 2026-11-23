@@ -16,7 +16,18 @@ import { PinnedChapter } from "@/components/marketing/motion/pinned-chapter";
 import { RevealText } from "@/components/marketing/motion/reveal-text";
 
 beforeAll(() => {
-  // jsdom has neither; the components only need them to exist.
+  // A desktop window: matchMedia says lg and up.
+  window.matchMedia ??= ((query: string) => ({
+    matches: true,
+    media: query,
+    onchange: null,
+    addEventListener() {},
+    removeEventListener() {},
+    addListener() {},
+    removeListener() {},
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia;
+  // jsdom has no IntersectionObserver; the components only need it to exist.
   globalThis.IntersectionObserver ??= class {
     observe() {}
     unobserve() {}

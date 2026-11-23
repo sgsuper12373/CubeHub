@@ -76,6 +76,10 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **The lockup's "draw-in" is a stroke draw on the wireframe plus fades,** not a letter-by-letter wordmark: the wordmark is one text node inside the shared `BrandLockup`, and splitting it for the landing page would fork the brand component. Headline, sub-line, buttons and trust row follow in sequence, all done by 1.45 s.
 
+**Feature chapter visuals are animated SVG/HTML scenes, not recorded videos** (step 5). Recording five clips from the real app needs a person to judge them; the plan allows "or animated SVG". Each scene is driven by the chapter's scroll progress, follows the theme tokens, and costs no media download. Learn and Playground don't load a live cubing.js cube either: a 2D T-perm diagram and an isometric cube stand in, so the landing page never pulls in cubing.js. Real clips or live cubes can replace any scene later without touching the chapter text.
+
+**Phones get the finished visual.** Below lg (and with reduced motion) `PinnedChapter` holds progress at 1, as the plan's "plain full-screen sections" implies; the server renders that state too.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.

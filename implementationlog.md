@@ -5,6 +5,33 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — Landing step 5: feature chapters
+
+**Request:** Overnight run, `docs/landing-plan.md` step 5.
+
+### Changed
+
+- `src/components/marketing/feature-chapters.tsx` (new): Timer and stats, Learn, Drill Lab,
+  Playground, Profiles and clubs. Each has an eyebrow, a real h2, body, three points and a link
+  through `appHref()`; the visual is an animated scene driven by the chapter's scroll progress (timer
+  digits and averages counting, trend line drawing; a T perm name typing out with its arrows; two Ua
+  algorithms racing with "main" landing on the faster; a turning isometric cube with notation; a
+  profile card flipping to PBs and badges, club posts sliding in). Section ids give the header's
+  "Features" anchor.
+- `motion/pinned-chapter.tsx`: the grid row carries the extra height (the first version left the
+  lower part of each chapter empty); phones hold progress at 1.
+- `feature-bento.tsx` removed; `(marketing)/page.tsx` loads the chapters with `next/dynamic` (own
+  chunk, still server-rendered).
+- Tests: `landing-motion.test.tsx` stubs `matchMedia`; `landing.spec.ts` checks the five headings
+  and links.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build` (`/` is `○`); each chapter looked at
+mid-scroll on desktop, and on a phone.
+
+---
+
 ## 2026-11-24 — Landing step 4: Try a solve section
 
 **Request:** Overnight run, `docs/landing-plan.md` step 4.

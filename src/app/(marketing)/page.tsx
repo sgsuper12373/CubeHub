@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 
 import { ComingNext } from "@/components/marketing/coming-next";
 import { CtaBand, SiteFooter } from "@/components/marketing/cta-band";
 import { LazyCustomizeSection } from "@/components/marketing/customize-section-lazy";
-import { FeatureBento } from "@/components/marketing/feature-bento";
 import { HeroSection } from "@/components/marketing/hero-section";
 import { TrySolveSection } from "@/components/marketing/try-solve-section";
+
+// Below the fold: its own chunk, still server-rendered (the chapter text is for search engines too).
+const FeatureChapters = dynamic(() =>
+  import("@/components/marketing/feature-chapters").then((m) => m.FeatureChapters),
+);
 
 export const metadata: Metadata = {
   title: "CuberHub — Speedcubing Timer, Tutorials & Stats",
@@ -27,7 +32,7 @@ export default function Home() {
     <>
       <HeroSection />
       <TrySolveSection />
-      <FeatureBento />
+      <FeatureChapters />
       <LazyCustomizeSection />
       <CtaBand />
       <ComingNext />

@@ -54,3 +54,18 @@ test("with reduced motion, nothing on the page is animating", async ({ page }) =
   // than stopped (globals.css), because it signals that something is loading.
   expect(running.filter((name) => name !== "cube-loader-tumble")).toEqual([]);
 });
+
+test("the five feature chapters each have a heading and a link into the app", async ({ page }) => {
+  await page.goto("/");
+  for (const [title, link] of [
+    ["A timer that disappears when you solve.", "/timer"],
+    ["Every OLL and PLL, in 3D.", "/learn"],
+    ["Find out which alg is actually faster for your hands.", "/learn/333/drill"],
+    ["A cube you can turn right here.", "/playground"],
+    ["Your PBs, your progress, your college club.", "/clubs"],
+  ]) {
+    const heading = page.getByRole("heading", { level: 2, name: title });
+    await expect(heading).toHaveCount(1);
+    await expect(page.locator("section", { has: heading }).locator(`a[href="${link}"]`).first()).toHaveCount(1);
+  }
+});

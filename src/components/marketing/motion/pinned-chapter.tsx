@@ -1,11 +1,18 @@
 "use client";
 
 import { motionValue, useReducedMotion, useScroll, type MotionValue } from "motion/react";
-import { useRef } from "react";
+import { useRef, useSyncExternalStore } from "react";
 
 import { cn } from "@/lib/utils";
 
 const DONE = motionValue(1);
+const LG = "(min-width: 1024px)";
+
+function subscribeLg(onChange: () => void) {
+  const q = window.matchMedia(LG);
+  q.addEventListener("change", onChange);
+  return () => q.removeEventListener("change", onChange);
+}
 
 /**
  * A feature chapter whose visual pins while its text scrolls past
@@ -34,7 +41,10 @@ export function PinnedChapter({
   const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const progress = reduced ? DONE : scrollYProgress;
+  // Phones get plain sections: the visual shows its finished state. The
+  // server assumes a phone, so the first paint never shows a half-built visual.
+  const isLg = useSyncExternalStore(subscribeLg, () => window.matchMedia(LG).matches, () => false);
+  const progress = reduced || !isLg ? DONE : scrollYProgress;
 
   return (
     <section
@@ -43,15 +53,21 @@ export function PinnedChapter({
       data-pinned={reduced ? "off" : "on"}
       className={cn(
         "relative mx-auto w-full max-w-6xl scroll-mt-16 px-4",
-        !reduced && "lg:min-h-[170svh]",
         className,
       )}
     >
-      <div className={cn("grid gap-8 py-16 lg:grid-cols-2 lg:gap-16 lg:py-0", reverse && "lg:[&>*:first-child]:order-2")}>
+      {/* The row is taller than the screen, so the sticky visual has room to stay put while the text passes. */}
+      <div
+        className={cn(
+          "grid gap-8 py-16 lg:grid-cols-2 lg:gap-16 lg:py-0",
+          !reduced && "lg:min-h-[170svh]",
+          reverse && "lg:[&>*:first-child]:order-2",
+        )}
+      >
         <div className={cn("flex items-center", !reduced && "lg:sticky lg:top-0 lg:h-[100svh]")}>
           <div className="w-full">{visual(progress)}</div>
         </div>
-        <div className={cn("flex flex-col justify-center", !reduced && "lg:min-h-[100svh]")}>{children}</div>
+        <div className="flex flex-col justify-center lg:py-24">{children}</div>
       </div>
     </section>
   );
