@@ -76,7 +76,7 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **The lockup's "draw-in" is a stroke draw on the wireframe plus fades,** not a letter-by-letter wordmark: the wordmark is one text node inside the shared `BrandLockup`, and splitting it for the landing page would fork the brand component. Headline, sub-line, buttons and trust row follow in sequence, all done by 1.45 s.
 
-**Feature chapter visuals are animated SVG/HTML scenes, not recorded videos** (step 5). Recording five clips from the real app needs a person to judge them; the plan allows "or animated SVG". Each scene is driven by the chapter's scroll progress, follows the theme tokens, and costs no media download. Learn and Playground don't load a live cubing.js cube either: a 2D T-perm diagram and an isometric cube stand in, so the landing page never pulls in cubing.js. Real clips or live cubes can replace any scene later without touching the chapter text.
+**Feature chapter visuals are animated SVG/HTML scenes, not recorded videos** (step 5). Recording five clips from the real app needs a person to judge them; the plan allows "or animated SVG". Each scene is driven by the chapter's scroll progress, follows the theme tokens, and costs no media download. The Playground chapter has the page's one live cube (cubing.js through `ScramblePreview`, loaded only when the chapter is near the viewport, as the old bento's showcase was; `cubing-runtime.spec.ts` guards it). The Learn chapter uses a 2D T-perm diagram instead of a second live cube. Real clips or live cubes can replace any scene later without touching the chapter text.
 
 **Phones get the finished visual.** Below lg (and with reduced motion) `PinnedChapter` holds progress at 1, as the plan's "plain full-screen sections" implies; the server renders that state too.
 
@@ -89,6 +89,10 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 **FAQ answers were checked against the app, and one changed:** the plan's "3x3 and 2x2 today" is true for Learn but not the timer, which has eight events; the answer says both.
 
 **The "Profiles and clubs" chapter's id is `profiles`**, so `#community` is the Built-in-India section.
+
+**/privacy and /terms are factual drafts, noindex** (step 9). They describe what the code actually does (local storage for guests, Supabase for accounts, cookie-less Vercel analytics), but they're not reviewed legal text, so they're `robots: noindex` and out of the sitemap until the founder has them reviewed. The footer links to them so the site has no dead ends.
+
+**The home page's SEO metadata and JSON-LD landed with step 9** (title "CuberHub: Speedcubing Timer, OLL/PLL Tutorials and Drills", a 147-character description, canonical `/`, `WebApplication` and `Organization`), next to the feature pages it supports. The Open Graph image was regenerated in step 1.
 
 ## Product
 

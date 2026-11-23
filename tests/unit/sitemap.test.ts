@@ -12,6 +12,12 @@ describe("buildSitemapEntries", () => {
       "https://cubehub.example/timer",
       "https://cubehub.example/learn",
       "https://cubehub.example/playground",
+      "https://cubehub.example/features/timer",
+      "https://cubehub.example/features/drill-lab",
+      "https://cubehub.example/features/learn",
+      "https://cubehub.example/features/playground",
+      "https://cubehub.example/roadmap",
+      "https://cubehub.example/about",
     ]);
   });
 

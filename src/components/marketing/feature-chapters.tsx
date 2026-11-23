@@ -1,13 +1,14 @@
 "use client";
 
 import { ArrowRight, BarChart3, Box, GraduationCap, Target, Users, type LucideIcon } from "lucide-react";
-import { motion, useMotionValueEvent, useTransform, type MotionValue } from "motion/react";
+import { motion, motionValue, useMotionValueEvent, useTransform, type MotionValue } from "motion/react";
 import Link from "next/link";
 import { useRef } from "react";
 
 import { PinnedChapter } from "@/components/marketing/motion/pinned-chapter";
 import { Eyebrow } from "@/components/marketing/section-heading";
 import { appHref } from "@/lib/marketing/links";
+import { ScramblePreview } from "@/components/timer/scramble-preview";
 import { formatMs } from "@/lib/timer/format";
 import { cn } from "@/lib/utils";
 
@@ -181,53 +182,33 @@ function DrillVisual({ progress }: { progress: MotionValue<number> }) {
 
 // ── 4. Playground ───────────────────────────────────────────────────────────
 
-const FACES = {
-  top: ["u", "r", "u", "u", "u", "f", "u", "u", "l"],
-  left: ["f", "f", "u", "f", "f", "f", "b", "f", "f"],
-  right: ["r", "r", "r", "u", "r", "r", "r", "r", "d"],
-} as const;
-
-const FILL = { u: "fill-sticker-u", d: "fill-sticker-d", f: "fill-sticker-f", b: "fill-sticker-b", l: "fill-sticker-l", r: "fill-sticker-r" } as const;
-
-function PlaygroundVisual({ progress }: { progress: MotionValue<number> }) {
-  const rotate = useTransform(progress, [0, 1], [-14, 14]);
+/**
+ * The one live cube on the landing page: cubing.js through
+ * lib/cubing/runtime.ts (via ScramblePreview), loaded only once the chapter is
+ * near the viewport, so the page never fetches it on load. Draggable on
+ * desktop; display-only on touch, so a swipe over it scrolls the page.
+ */
+function PlaygroundVisual() {
   const moves = ["R", "U", "R'", "F2", "M", "U'"];
-  // Isometric projection of a 3x3 cube: top, left and right faces.
-  const iso = (face: "top" | "left" | "right", i: number) => {
-    const c = i % 3;
-    const r = Math.floor(i / 3);
-    const s = 34;
-    if (face === "top") {
-      const x = 150 + (c - r) * s * 0.866;
-      const y = 40 + (c + r) * s * 0.5;
-      return `M${x},${y} l${s * 0.866},${s * 0.5} l${-s * 0.866},${s * 0.5} l${-s * 0.866},${-s * 0.5} Z`;
-    }
-    if (face === "left") {
-      const x = 150 - 3 * s * 0.866 + c * s * 0.866;
-      const y = 40 + 3 * s * 0.5 + c * s * 0.5 + r * s;
-      return `M${x},${y} l${s * 0.866},${s * 0.5} l0,${s} l${-s * 0.866},${-s * 0.5} Z`;
-    }
-    const x = 150 + c * s * 0.866;
-    const y = 40 + 6 * s * 0.5 - c * s * 0.5 + r * s;
-    return `M${x},${y} l${s * 0.866},${-s * 0.5} l0,${s} l${-s * 0.866},${s * 0.5} Z`;
-  };
   return (
-    <Frame>
-      <motion.svg viewBox="0 0 300 260" className="mx-auto w-64" style={{ rotate }}>
-        {(["top", "left", "right"] as const).map((face) =>
-          FACES[face].map((sticker, i) => (
-            <path key={`${face}${i}`} d={iso(face, i)} className={cn(FILL[sticker], "stroke-sticker-outline")} strokeWidth={3} strokeLinejoin="round" />
-          )),
-        )}
-      </motion.svg>
-      <div className="mt-4 flex flex-wrap justify-center gap-1.5">
+    <div className="relative mx-auto w-full max-w-md overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-xl shadow-primary/5">
+      <div aria-hidden className="absolute top-1/2 left-1/2 size-56 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/15 blur-3xl" />
+      <ScramblePreview
+        alg="R U R' U' F' U F R2 U' R' U R U' R' F R F'"
+        puzzle="333"
+        size={240}
+        visualization="3D"
+        deferUntilNear
+        className="relative flex min-h-[240px] items-center justify-center max-md:pointer-events-none md:cursor-grab md:active:cursor-grabbing"
+      />
+      <div aria-hidden className="relative mt-4 flex flex-wrap justify-center gap-1.5">
         {moves.map((m) => (
           <span key={m} className="rounded-md border border-border bg-muted/50 px-2 py-1 font-mono text-sm text-foreground">
             {m}
           </span>
         ))}
       </div>
-    </Frame>
+    </div>
   );
 }
 
@@ -370,4 +351,22 @@ export function FeatureChapters() {
       ))}
     </div>
   );
+}
+
+const FINISHED = motionValue(1);
+
+export type ChapterId = "timer" | "learn" | "drill-lab" | "playground" | "profiles";
+
+const VISUALS: Record<ChapterId, Chapter["Visual"]> = {
+  timer: TimerVisual,
+  learn: LearnVisual,
+  "drill-lab": DrillVisual,
+  playground: PlaygroundVisual,
+  profiles: ProfileVisual,
+};
+
+/** A chapter's visual in its finished state, for the feature pages. */
+export function ChapterVisual({ id }: { id: ChapterId }) {
+  const Visual = VISUALS[id];
+  return <Visual progress={FINISHED} />;
 }

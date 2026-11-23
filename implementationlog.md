@@ -5,6 +5,33 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — Landing step 9: feature pages, /roadmap, /about, /privacy, /terms
+
+**Request:** Overnight run, `docs/landing-plan.md` step 9.
+
+### Changed
+
+- `src/content/features.ts` (new), `src/components/marketing/feature-page.tsx` (new): one template
+  (h1, the chapter's visual in its finished state via the new `ChapterVisual`, short sections, a
+  link into the app, links to the other features).
+- `/features/timer`, `/features/drill-lab`, `/features/learn`, `/features/playground` (new), each
+  with its own title, description and canonical.
+- `/roadmap` (the shared `RoadmapBoard`), `/about`, `/privacy`, `/terms` (new; the last two are
+  noindex drafts), on a small `ProsePage` wrapper.
+- `(marketing)/page.tsx`: title, description, canonical; `WebApplication` and `Organization` JSON-LD.
+- `src/lib/seo/sitemap.ts` (+ test): lists the feature pages, /roadmap and /about.
+- `tests/e2e/landing.spec.ts`: every new page answers 200 with one h1.
+- `feature-chapters.tsx`: the Playground chapter's visual is a live 3D cube again (`ScramblePreview`
+  with `deferUntilNear`, as the removed bento had), as the plan specifies. The batch's e2e run
+  caught it: `cubing-runtime.spec.ts` checks that the landing page loads cubing.js only on scroll.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build` (all new pages `○`); looked at in Chromium;
+the cubing runtime and landing e2e specs pass.
+
+---
+
 ## 2026-11-24 — Landing step 8: final call to action and footer
 
 **Request:** Overnight run, `docs/landing-plan.md` step 8.

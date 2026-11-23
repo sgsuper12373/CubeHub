@@ -87,3 +87,21 @@ test("section ids are unique", async ({ page }) => {
   const ids = await page.evaluate(() => [...document.querySelectorAll("[id]")].map((e) => e.id));
   expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([]);
 });
+
+test("feature pages, roadmap and about each have one h1 and work as entry points", async ({ page }) => {
+  for (const [path, link] of [
+    ["/features/timer", "/timer"],
+    ["/features/drill-lab", "/learn/333/drill"],
+    ["/features/learn", "/learn"],
+    ["/features/playground", "/playground"],
+  ]) {
+    await page.goto(path);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+    await expect(page.locator(`article a[href="${link}"]`).first()).toBeVisible();
+  }
+  for (const path of ["/roadmap", "/about", "/privacy", "/terms"]) {
+    const res = await page.goto(path);
+    expect(res?.status()).toBe(200);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+  }
+});

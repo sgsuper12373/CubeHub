@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 
+import { SITE_URL } from "@/lib/site-url";
+
 import { CommunitySection } from "@/components/marketing/community-section";
 import { CtaBand, SiteFooter } from "@/components/marketing/cta-band";
 import { LazyCustomizeSection } from "@/components/marketing/customize-section-lazy";
@@ -15,10 +17,33 @@ const FeatureChapters = dynamic(() =>
 );
 
 export const metadata: Metadata = {
-  title: "CuberHub — Speedcubing Timer, Tutorials & Stats",
+  title: { absolute: "CuberHub: Speedcubing Timer, OLL/PLL Tutorials and Drills" },
   description:
-    "A speedcubing timer that works the moment you land — WCA scrambles, inspection, sessions and stats. Plus OLL and PLL tutorials, an algorithm drill and cuber profiles.",
+    "A free WCA speedcubing timer, every OLL and PLL in 3D, a drill that finds your slow cases, and clubs for Indian cubers. No sign-up needed to start.",
+  alternates: { canonical: "/" },
 };
+
+/** WebApplication and Organization structured data (docs/landing-plan.md → SEO and sharing). */
+const SITE_JSON_LD = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "CuberHub",
+    url: SITE_URL,
+    applicationCategory: "GameApplication",
+    operatingSystem: "Any (web browser)",
+    description: "Speedcubing timer, OLL and PLL tutorials in 3D, algorithm drills, profiles and clubs.",
+    offers: { "@type": "Offer", price: "0", priceCurrency: "INR" },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "CuberHub",
+    url: SITE_URL,
+    logo: `${SITE_URL}/apple-icon.png`,
+  },
+];
+
 
 /**
  * Full-screen chapters (docs/landing-plan.md → Page structure): hero → try a
@@ -45,6 +70,10 @@ export default function Home() {
         type="application/ld+json"
         // JSON.stringify output, with "<" escaped so no string can close the script tag.
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd()).replace(/</g, "\\u003c") }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(SITE_JSON_LD).replace(/</g, "\\u003c") }}
       />
     </>
   );

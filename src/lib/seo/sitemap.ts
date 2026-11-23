@@ -14,6 +14,14 @@ const FIXED: Entry[] = [
   { url: "/timer", changeFrequency: "monthly", priority: 0.9 },
   { url: "/learn", changeFrequency: "weekly", priority: 0.9 },
   { url: "/playground", changeFrequency: "monthly", priority: 0.6 },
+  // Marketing pages (docs/landing-plan.md → SEO). /privacy and /terms are
+  // noindex drafts until reviewed, so they're left out.
+  { url: "/features/timer", changeFrequency: "monthly", priority: 0.8 },
+  { url: "/features/drill-lab", changeFrequency: "monthly", priority: 0.8 },
+  { url: "/features/learn", changeFrequency: "monthly", priority: 0.8 },
+  { url: "/features/playground", changeFrequency: "monthly", priority: 0.7 },
+  { url: "/roadmap", changeFrequency: "weekly", priority: 0.6 },
+  { url: "/about", changeFrequency: "monthly", priority: 0.5 },
 ];
 
 /** Sitemap entries for the fixed pages plus every published Learn page. */
