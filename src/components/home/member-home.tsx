@@ -6,6 +6,8 @@ import { QuickStart } from "@/components/home/quick-start";
 import { DrillCard } from "@/components/home/drill-card";
 import { LearningCard } from "@/components/home/learning-card";
 import { DrillIntroCard, PlaygroundCard } from "@/components/home/static-cards";
+import { CustomizeSheet } from "@/components/home/customize-sheet";
+import { LayoutCopyUp } from "@/components/home/layout-copy-up";
 import { ClubsCard, FriendsCard } from "@/components/home/social-cards";
 import { StatsCard } from "@/components/home/stats-card";
 import { StreakCard } from "@/components/home/streak-card";
@@ -13,8 +15,8 @@ import { TipCard } from "@/components/home/tip-card";
 import { WelcomeCard } from "@/components/home/welcome-card";
 import { WhatsNewCard } from "@/components/home/whats-new-card";
 import type { CurrentProfile } from "@/lib/auth/dal";
-import { detectVisitor, homeCards, type CardId, type HomeLayout } from "@/lib/home/cards";
-import { getDrillQueue, getHomeSummary, pickContinueSeries } from "@/lib/home/dal";
+import { detectVisitor, homeCards, type CardId } from "@/lib/home/cards";
+import { getDrillQueue, getHomeLayout, getHomeSummary, pickContinueSeries } from "@/lib/home/dal";
 
 /** The quick-start row with the member's real drill and Learn state. */
 export async function MemberQuickStart({ username }: { username: string }) {
@@ -33,8 +35,8 @@ export async function MemberQuickStart({ username }: { username: string }) {
  * (new or regular); each card then loads in its own Suspense boundary, so a
  * slow query never holds up the rest.
  */
-export async function MemberHome({ profile, layout }: { profile: CurrentProfile; layout: HomeLayout | null }) {
-  const summary = await getHomeSummary(profile.username);
+export async function MemberHome({ profile }: { profile: CurrentProfile }) {
+  const [summary, layout] = await Promise.all([getHomeSummary(profile.username), getHomeLayout(profile.id)]);
   const visitor = detectVisitor({ signedIn: true, solveCount: summary.solveCount });
   const pllLearned = summary.learning.some((l) => l.slug === "pll" && l.learned > 0);
   const { main, rail } = homeCards(visitor, layout);
@@ -69,5 +71,13 @@ export async function MemberHome({ profile, layout }: { profile: CurrentProfile;
     const card = render(id);
     return card && <Suspense key={id} fallback={<HomeCardSkeleton />}>{card}</Suspense>;
   };
-  return <HomeGrid main={main.map(wrap)} rail={rail.map(wrap)} />;
+  return (
+    <>
+      <div className="-mt-3 flex justify-end">
+        <CustomizeSheet visitor={visitor} layout={layout} signedIn />
+      </div>
+      {layout === null && <LayoutCopyUp />}
+      <HomeGrid main={main.map(wrap)} rail={rail.map(wrap)} />
+    </>
+  );
 }

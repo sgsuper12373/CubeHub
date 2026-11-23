@@ -3,6 +3,9 @@ import { cache } from "react";
 
 import { getDrillData } from "@/lib/drill/dal";
 import { getPublicProfile, type LearningProgress } from "@/lib/profile/dal";
+import { createClient } from "@/lib/supabase/server";
+
+import { parseHomeLayout, type HomeLayout } from "./cards";
 
 import { summariseDrillQueue, type DrillQueue } from "./drill-queue";
 
@@ -53,3 +56,18 @@ export const getNextUnlearnedCase = cache(
     return { name: next.name, caseNumber: next.caseNumber, moves: main?.moves ?? null };
   },
 );
+
+/**
+ * The signed-in cuber's saved Home layout, or null for the default. Also null
+ * (logged once) if the `home_layout` column doesn't exist yet: the migration
+ * is applied by hand, and Home must work before it is.
+ */
+export const getHomeLayout = cache(async (userId: string): Promise<HomeLayout | null> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("user_settings").select("home_layout").eq("user_id", userId).maybeSingle();
+  if (error) {
+    console.error("getHomeLayout failed (is 20261124000000_home_layout.sql applied?):", error.message);
+    return null;
+  }
+  return parseHomeLayout((data as { home_layout?: unknown } | null)?.home_layout ?? null);
+});

@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+
+import { CustomizeSheet } from "@/components/home/customize-sheet";
 
 import { HomeCardSkeleton } from "@/components/home/home-card";
 import { HomeGrid } from "@/components/home/home-grid";
@@ -10,7 +12,8 @@ import { StreakCard } from "@/components/home/streak-card";
 import { TipCard } from "@/components/home/tip-card";
 import { WelcomeCard } from "@/components/home/welcome-card";
 import { WhatsNewCard } from "@/components/home/whats-new-card";
-import { detectVisitor, homeCards, type CardId } from "@/lib/home/cards";
+import { detectVisitor, homeCards, parseHomeLayout, type CardId } from "@/lib/home/cards";
+import { homeLayoutSnapshot, subscribeHomeLayout } from "@/lib/home/layout-storage";
 import { localRepo } from "@/lib/timer/repo-local";
 
 /**
@@ -20,6 +23,7 @@ import { localRepo } from "@/lib/timer/repo-local";
  */
 export function GuestHome() {
   const [solveCount, setSolveCount] = useState<number | null>(null);
+  const rawLayout = useSyncExternalStore(subscribeHomeLayout, homeLayoutSnapshot, () => null);
 
   useEffect(() => {
     let live = true;
@@ -40,7 +44,8 @@ export function GuestHome() {
   }
 
   const visitor = detectVisitor({ signedIn: false, solveCount });
-  const { main, rail } = homeCards(visitor, null);
+  const layout = parseHomeLayout(rawLayout);
+  const { main, rail } = homeCards(visitor, layout);
   const render = (id: CardId) => {
     switch (id) {
       case "welcome":
@@ -63,5 +68,12 @@ export function GuestHome() {
         return null;
     }
   };
-  return <HomeGrid main={main.map(render)} rail={rail.map(render)} />;
+  return (
+    <>
+      <div className="-mt-3 flex justify-end">
+        <CustomizeSheet visitor={visitor} layout={layout} signedIn={false} />
+      </div>
+      <HomeGrid main={main.map(render)} rail={rail.map(render)} />
+    </>
+  );
 }

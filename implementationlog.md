@@ -5,6 +5,33 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — Home step 4: Customize sheet, storage, sign-in copy-up
+
+**Request:** Overnight run, `docs/home-plan.md` step 4.
+
+### Changed
+
+- `supabase/migrations/20261124000000_home_layout.sql` (new, **not applied**): nullable
+  `user_settings.home_layout jsonb` with a shape check.
+- `src/lib/home/actions.ts` (new): `saveHomeLayout` server action (validates, empty → null).
+- `src/lib/home/dal.ts`: `getHomeLayout()` (null on a missing column, so Home works before the
+  migration).
+- `src/lib/home/layout-storage.ts` (new): guests' `cubehub.home.v1`.
+- `src/components/home/customize-sheet.tsx` (new): switches per available card, Reset to default,
+  overlay lock while open. `layout-copy-up.tsx` (new): copies a guest layout to the account once.
+- `member-home.tsx`, `guest-home.tsx`, `home/page.tsx`: apply the saved layout.
+- `tests/e2e/home.spec.ts`: a guest's hidden card stays hidden after a reload.
+
+### Needs the founder
+
+- Apply the migration before shipping `feat/home`.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run test:e2e:prod` (batch end; see the overnight report).
+
+---
+
 ## 2026-11-24 — Home step 3: friends, clubs, what's new, Cubby's tip
 
 **Request:** Overnight run, `docs/home-plan.md` step 3.

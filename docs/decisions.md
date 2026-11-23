@@ -117,6 +117,10 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **Dismissals are per device.** "What's new" dismissals and "hide today's tip" live in localStorage (`cubehub.home.dismissedChanges`, `cubehub.home.tipDismissedOn`), not on the account. The tip has no "Cubby off" check yet because there's no Cubby setting.
 
+**`user_settings.home_layout` is a migration file, not applied** (`supabase/migrations/20261124000000_home_layout.sql`), per the overnight rules. Until it's applied, `getHomeLayout()` logs the error and returns null (the default layout), so Home works; a signed-in cuber's Customize changes show "Couldn't save your layout". Guests are unaffected (localStorage `cubehub.home.v1`). No new RLS policy: `settings_all` covers the column. A check constraint keeps the value a JSON object under 4 KB.
+
+**The Customize button sits right-aligned just above the cards**, not in the greeting row: which cards a member can switch depends on their visitor state, which streams in with the cards, and the greeting row renders before that.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.

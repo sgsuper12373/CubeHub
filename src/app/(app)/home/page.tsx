@@ -43,7 +43,7 @@ export default async function HomePage() {
         </header>
         {profile ? (
           <Suspense fallback={null}>
-            <MemberHome profile={profile} layout={null} />
+            <MemberHome profile={profile} />
           </Suspense>
         ) : (
           <GuestHome />

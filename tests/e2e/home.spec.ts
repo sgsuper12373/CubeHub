@@ -26,6 +26,26 @@ test.describe("guest", () => {
   });
 });
 
+test.describe("guest layout", () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  test("hiding a card persists across reloads", async ({ page }) => {
+    await page.goto("/home");
+    await expect(page.getByRole("region", { name: "Playground" })).toBeVisible();
+    await page.getByRole("button", { name: "Customize" }).click();
+    await page.getByRole("dialog", { name: "Customize Home" }).getByRole("switch", { name: "Playground" }).uncheck();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("region", { name: "Playground" })).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByRole("region", { name: "Start here" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Playground" })).toHaveCount(0);
+  });
+});
+
+// Member layouts persist through user_settings.home_layout, which needs
+// supabase/migrations/20261124000000_home_layout.sql applied first; the e2e
+// for that waits until it is (docs/overnight-report.md).
+
 test.describe("member", () => {
   test.skip(!hasE2eUsers(), "E2E_USER_A/B credentials not set");
   test.use({ viewport: { width: 1280, height: 800 }, storageState: E2E_USERS[0].state });
