@@ -20,7 +20,7 @@ test.describe("header", () => {
     await page.goto("/");
     const nav = page.getByRole("navigation", { name: "Site" });
     await expect(nav.getByRole("link", { name: "Features" })).toHaveAttribute("href", "/#features");
-    await expect(nav.getByRole("link", { name: "Open app" })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Open app" })).toHaveAttribute("href", "/home");
     const header = page.locator("header").first();
     await expect(header).toHaveClass(/border-transparent/);
     await page.mouse.wheel(0, 600);

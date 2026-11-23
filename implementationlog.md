@@ -5,6 +5,23 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — Landing step 11 (part): product links through appUrl(), Open app → /home
+
+**Request:** After merging the four branches into local `main`: do the `appHref` switch so Open app goes to `/home`.
+
+### Changed
+
+- `src/lib/marketing/links.ts`: `appHref()` returns `appUrl(path)` (absolute, app host) when the hosts
+  are split, and the relative path otherwise, so previews, local dev and the e2e server keep linking
+  to themselves. `OPEN_APP_HREF` is `/home`.
+- `tests/unit/marketing-links.test.ts` (new): both modes. `tests/e2e/landing.spec.ts`: Open app → `/home`.
+
+### Verified
+
+`tsc`, eslint and the new unit test. The full `validate`/e2e run was interrupted; run them while checking.
+
+---
+
 ## 2026-11-24 — Home step 4: Customize sheet, storage, sign-in copy-up
 
 **Request:** Overnight run, `docs/home-plan.md` step 4.
