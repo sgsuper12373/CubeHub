@@ -5,6 +5,35 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — App shell step 8: phones
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 8.
+
+### Changed
+
+- `src/lib/navigation.ts`: `mobileNavItems` is Home, Timer, Learn, Drill (`MOBILE_HIDDEN` replaced
+  by `MOBILE_TABS`, comment rewritten); `mobileMoreItems` is Stats, Playground, Clubs, People,
+  Profile, Settings.
+- `src/components/layout/bottom-nav.tsx`: four tabs plus **More**, a bottom sheet (the new `sheet`
+  primitive) with the other pages and Sign out / Sign in. More lights up on its pages and carries
+  the unread dot; the sheet takes `useOverlayLock()`. `aria-label="Tabs"` on the nav.
+- `docs/roadmap.md`: navigation note.
+- `tests/unit/navigation.test.ts`: phone bar cases. `tests/e2e/app-shell.spec.ts` (new): no Zen
+  toggle, sidebar state per group across reloads, Ctrl+B, Space blocked under the Learn flyout,
+  Focus mode hiding the sidebar, the phone More sheet. `tests/e2e/profile.spec.ts`: "the nav's
+  Profile tab" became "the phone More sheet's Profile link" (Profile left the tabs).
+
+### Not here
+
+- The slim top bar on `/home` (bell and avatar): with the Home page, `feat/home`.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run test:e2e:prod` (batch end; results in the
+overnight report).
+
+---
+
 ## 2026-11-24 — App shell step 7: timer modes
 
 **Request:** Overnight run, `docs/app-shell-plan.md` step 7.

@@ -17,10 +17,16 @@ test("an unknown username is a 404 with no ELO anywhere", async ({ page }) => {
   await expect(page.getByText(/ELO/)).toHaveCount(0);
 });
 
-test("the nav's Profile tab goes to /profile", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 800 });
+// The app shell moved Profile out of the tabs: on desktop it's the sidebar's
+// account row (signed in only), on phones it's in the More sheet.
+test("the phone More sheet's Profile link goes to /profile", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 800 });
   await page.goto("/timer");
-  await expect(page.getByRole("link", { name: "Profile" }).first()).toHaveAttribute("href", "/profile");
+  await page.getByRole("navigation", { name: "Tabs" }).getByRole("button", { name: /More/ }).click();
+  await expect(page.getByRole("dialog", { name: "More" }).getByRole("link", { name: "Profile" })).toHaveAttribute(
+    "href",
+    "/profile",
+  );
 });
 
 test("editing a profile needs an account", async ({ page }) => {

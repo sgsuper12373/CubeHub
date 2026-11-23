@@ -116,13 +116,19 @@ function isOtherProfile(pathname: string, ownUsername: string | null): boolean {
 }
 
 /**
- * The bottom bar fits five tabs on a phone; a sixth makes every target too
- * narrow to hit reliably. Playground drops: it is linked from the Learn page
- * instead, a side trip from learning, not a daily destination like the timer.
- * Stats took the slot Shop had (Shop is out of the nav until it exists).
- * Clubs drops too: phones reach it from People's Clubs tab and the Clubs row
- * on profiles (docs/clubs.md → Where it lives). Revisit after the beta.
+ * The phone bottom bar (below md): Home, Timer, Learn, Drill, and a More tab
+ * that opens a sheet with everything else (docs/app-shell-plan.md → Phones).
+ * Five targets is the most a phone bar holds before they get too narrow to hit
+ * reliably. Before the app shell it was Timer, Stats, Learn, Drill, Profile,
+ * with Playground and Clubs reachable only from other pages.
  */
-const MOBILE_HIDDEN: ReadonlySet<string> = new Set(["/playground", "/clubs"]);
+const MOBILE_TABS: ReadonlySet<string> = new Set(["/home", "/timer", "/learn", "/learn/333/drill"]);
 
-export const mobileNavItems: NavItem[] = navItems.filter((item) => !MOBILE_HIDDEN.has(item.href));
+export const mobileNavItems: NavItem[] = sidebarItems.filter((item) => MOBILE_TABS.has(item.href));
+
+/** The More sheet's links, in order. Sign in / Sign out is added by the sheet. */
+export const mobileMoreItems: NavItem[] = [
+  ...sidebarItems.filter((item) => !MOBILE_TABS.has(item.href)),
+  { label: "Profile", href: "/profile", icon: User, match: /^\/profile(\/|$)/ },
+  ...sidebarFooterItems,
+];

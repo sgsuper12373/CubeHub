@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { activeNavHref, mobileNavItems, navItems, sidebarItems } from "@/lib/navigation";
+import { activeNavHref, mobileMoreItems, mobileNavItems, navItems, sidebarItems } from "@/lib/navigation";
 
 describe("nav active tab", () => {
   it("highlights exactly one tab, the most specific", () => {
@@ -31,16 +31,10 @@ describe("nav active tab", () => {
     expect(activeNavHref("/profile/someone", navItems, null)).toBeNull();
   });
 
-  it("the phone bar keeps five tabs, with Drill in it", () => {
-    expect(mobileNavItems).toHaveLength(5);
-    expect(mobileNavItems.map((i) => i.label)).toContain("Drill");
-  });
-
   it("leaves out Compete and Shop until they exist", () => {
     const labels = navItems.map((i) => i.label);
     expect(labels).not.toContain("Compete");
     expect(labels).not.toContain("Shop");
-    expect(mobileNavItems.map((i) => i.label)).toEqual(["Timer", "Stats", "Learn", "Drill", "Profile"]);
   });
 });
 
@@ -50,7 +44,7 @@ describe("Clubs in the nav", () => {
     expect(activeNavHref("/clubs/pune-cubers/manage", navItems)).toBe("/clubs");
     expect(activeNavHref("/clubs/join/abc", navItems)).toBe("/clubs");
     expect(mobileNavItems.some((i) => i.href === "/clubs")).toBe(false);
-    expect(mobileNavItems).toHaveLength(5);
+    expect(mobileMoreItems.some((i) => i.href === "/clubs")).toBe(true);
   });
 });
 
@@ -86,5 +80,29 @@ describe("sidebar items", () => {
       "community:Clubs",
       "community:People",
     ]);
+  });
+});
+
+describe("phone bottom bar", () => {
+  it("has Home, Timer, Learn and Drill as tabs (More is the fifth)", () => {
+    expect(mobileNavItems.map((i) => i.href)).toEqual(["/home", "/timer", "/learn", "/learn/333/drill"]);
+  });
+
+  it("puts everything else in the More sheet", () => {
+    expect(mobileMoreItems.map((i) => i.label)).toEqual([
+      "Stats",
+      "Playground",
+      "Clubs",
+      "People",
+      "Profile",
+      "Settings",
+    ]);
+  });
+
+  it("lights no tab for a More page, so the bar can light More instead", () => {
+    expect(activeNavHref("/stats", mobileNavItems)).toBeNull();
+    expect(activeNavHref("/stats", mobileMoreItems)).toBe("/stats");
+    expect(activeNavHref("/profile/me", mobileMoreItems, "me")).toBe("/profile");
+    expect(activeNavHref("/learn/333/drill", mobileNavItems)).toBe("/learn/333/drill");
   });
 });

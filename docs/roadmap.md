@@ -41,6 +41,12 @@ bar until they exist, and their landing-page tiles are "Soon" teasers without li
 nav: Timer, Stats, Learn, Drill, Playground, Profile. Phone bar: Timer, Stats, Learn, Drill,
 Profile (Stats took Shop's slot).
 
+**Navigation with the app shell (2026-11-24, `docs/app-shell-plan.md`):** the desktop navbar is
+replaced by a left sidebar (Home, Timer, Stats · Practice: Learn, Drill Lab, Playground ·
+Community: Clubs, People · Notifications, Settings, account). Phone bar: Home, Timer, Learn,
+Drill, **More** (a sheet with Stats, Playground, Clubs, People, Profile, Settings, sign in/out).
+Compete and Shop stay out until they exist.
+
 ## Status
 
 **Phase 0 — Foundation: complete.**
