@@ -5,6 +5,32 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — App shell step 3: cookies across hosts
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 3.
+
+### Changed
+
+- `src/lib/site-url.ts`: `cookieDomainFor()` / `COOKIE_DOMAIN` (`.cuberhub.me` when split; undefined
+  in single-host mode, on localhost and on IPs).
+- `src/lib/supabase/client.ts`, `server.ts`, `proxy.ts`: pass `cookieOptions: { domain }` (the
+  option name checked in `@supabase/ssr` 0.12's types) only when `COOKIE_DOMAIN` is set.
+- `src/lib/theme.ts`: the `cubehub-theme` cookie gets the same domain. Name unchanged.
+- `(auth)/layout.tsx`: signed-in visitors go to `/home`.
+- `src/app/(app)/home/page.tsx` (new): placeholder redirecting to `/timer` until `feat/home`.
+- `tests/unit/cookie-domain.test.ts` (new).
+
+### Kept on purpose
+
+- `proxy.ts` still runs nothing between `createServerClient()` and `getClaims()`.
+- `lib/auth/actions.ts` and `/auth/callback` still land on `/timer`; the Home plan moves them.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`.
+
+---
+
 ## 2026-11-24 — App shell step 2: robots and sitemaps per host
 
 **Request:** Overnight run, `docs/app-shell-plan.md` step 2.

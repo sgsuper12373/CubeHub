@@ -23,7 +23,7 @@ export default async function AuthLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   // Already signed in? No reason to show login/signup.
   if (await getUser()) {
-    redirect("/timer");
+    redirect("/home");
   }
 
   return (

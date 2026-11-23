@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { COOKIE_DOMAIN } from "@/lib/site-url";
+
 /**
  * Refreshes the Supabase auth session on each request and keeps the
  * session cookies in sync between the browser and Server Components.
@@ -30,8 +32,10 @@ export async function updateSession(request: NextRequest) {
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,    
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      // Parent-domain cookies when the hosts are split (lib/supabase/client.ts).
+      ...(COOKIE_DOMAIN ? { cookieOptions: { domain: COOKIE_DOMAIN } } : {}),
       cookies: {
         getAll() {
           return request.cookies.getAll();

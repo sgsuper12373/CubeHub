@@ -19,3 +19,19 @@ export const HOST_SPLIT = APP_URL !== SITE_URL;
 
 export const siteUrl = (path = "/") => `${SITE_URL}${path}`;
 export const appUrl = (path = "/") => `${APP_URL}${path}`;
+
+/**
+ * The parent domain both hosts share cookies on (`.cuberhub.me`), or undefined
+ * in single-host mode and on localhost, where a host-only cookie is right
+ * (browsers refuse `domain=.localhost`).
+ */
+export function cookieDomainFor(siteUrl: string, split: boolean): string | undefined {
+  if (!split) return undefined;
+  const { hostname } = new URL(siteUrl);
+  if (hostname === "localhost" || hostname.endsWith(".localhost") || /^[\d.]+$/.test(hostname)) {
+    return undefined;
+  }
+  return `.${hostname.replace(/^www\./, "")}`;
+}
+
+export const COOKIE_DOMAIN = cookieDomainFor(SITE_URL, HOST_SPLIT);

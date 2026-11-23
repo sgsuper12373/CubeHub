@@ -76,6 +76,10 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **App pages take the app origin as `metadataBase`.** `(app)/layout.tsx` and `(auth)/layout.tsx` export `metadataBase: new URL(APP_URL)`, so relative canonicals and `og:url` (the case pages use them) resolve to `app.cuberhub.me`. That was the whole canonical audit: no other code builds absolute URLs from `SITE_URL`.
 
+**`COOKIE_DOMAIN` is undefined on localhost.** Browsers refuse `domain=.localhost`, so a local split-host setup (`localhost` + `app.localhost`) can test redirects but not a shared sign-in; that check needs the real domains (or a preview with custom domains).
+
+**`/home` exists on `feat/app-shell` as a placeholder that redirects to `/timer`.** Step 3 sends signed-in visitors of `/login` to `/home`, step 1 sends the app host's `/` there, and the sidebar logo links there, but the Home page is `feat/home`'s job. The placeholder keeps every link working if the shell merges first; `feat/home` replaces it.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.
