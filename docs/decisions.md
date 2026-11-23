@@ -95,6 +95,18 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **Phones: the slim top bar with the bell and avatar is part of the Home page** (`feat/home`), since `/home` is a placeholder on `feat/app-shell`. Until then, unread notifications show as a dot on the More tab and a count on Profile inside the More sheet (before, the dot sat on the Profile tab).
 
+## Home
+
+**Home follows the Stats page for solve data** (2026-11-24, home plan steps 1–4). The plan has signed-in cards as async server components; the stats and streak cards instead read solves in the browser through the timer's repository (`createSupabaseRepo(userId)` or `localRepo`), exactly as `/stats` does, so a guest and a member see the same numbers computed the same way. Cards whose data only exists on the server (learning, drill queue, friends, clubs) are async server components in their own `<Suspense>`.
+
+**Visitor detection.** Members: solve count from their own profile stats (`getPublicProfile`), under 20 is "new". Guests: local solve count across events. A first-time guest also gets a Playground card (the plan's "Learn and Playground cards"), so `playground` is a card id.
+
+**"Continue learning" picks the series with the most cases learned that isn't finished.** The profile stats have no "last touched" time per series, which "most recent activity" would need.
+
+**The welcome card's "Pick your main puzzle" ticks once the timer has a saved event** (`cubehub.timer.event`), the only per-user puzzle choice the app stores today.
+
+**Saved layouts are `{ hidden, shown, order? }`**, not just `{ hidden, order }`: Streak and goal is off by default and can be switched on, which needs a list of cards switched on. Unknown ids are dropped on read.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.

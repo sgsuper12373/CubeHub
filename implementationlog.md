@@ -5,6 +5,35 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — Home step 1: page, routing, greeting and quick start
+
+**Request:** Overnight run, `docs/home-plan.md` step 1.
+
+### Changed
+
+- `src/app/(app)/home/page.tsx`: the real page replaces the shell's placeholder. Greeting (h1),
+  quick start, cards; members' quick start and cards stream behind Suspense; guests' are decided
+  in the browser. Phone-only top bar with the bell and avatar (`home-mobile-bar.tsx`).
+- `src/lib/home/cards.ts` (new): card ids and meta, visitor detection, default sets per visitor,
+  layout parse/merge (unknown ids ignored), switch on/off, greeting and button labels.
+- `src/lib/home/drill-queue.ts` (new): due count, slowest three, switch suggestion.
+- `src/lib/home/dal.ts` (new): `getHomeSummary` (solve count, learning), `pickContinueSeries`,
+  `getDrillQueue`, `getNextUnlearnedCase`, all over existing DALs.
+- `src/components/home/`: `home-card.tsx` (frame with h2, "See all", `data-tour="home-<id>"`),
+  `home-grid.tsx` (880 px main, 300 px rail from xl), `home-greeting.tsx`, `quick-start.tsx`
+  (Start {puzzle} session / Drill {n} due cases / Continue {series}; Enter, never Space),
+  `welcome-card.tsx`, `guest-home.tsx`, `member-home.tsx`.
+- Sign-in lands on `/home`: `lib/auth/actions.ts` default, `/auth/callback`, `/auth/confirm`, the
+  Google button default. (`(auth)` layout already did, from the shell.)
+- Tests: `home-cards.test.ts`, `home-drill-queue.test.ts` (new); `tests/e2e/home.spec.ts` (new).
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build` (`/home` is `ƒ`); looked at as a guest,
+a member and on a phone.
+
+---
+
 ## 2026-11-24 — App shell step 8: phones
 
 **Request:** Overnight run, `docs/app-shell-plan.md` step 8.

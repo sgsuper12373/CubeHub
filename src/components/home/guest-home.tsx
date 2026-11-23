@@ -1,0 +1,48 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+import { HomeCardSkeleton } from "@/components/home/home-card";
+import { HomeGrid } from "@/components/home/home-grid";
+import { WelcomeCard } from "@/components/home/welcome-card";
+import { detectVisitor, homeCards, type CardId } from "@/lib/home/cards";
+import { localRepo } from "@/lib/timer/repo-local";
+
+/**
+ * Home for a guest. Everything a guest has is in this browser, so the cards
+ * are decided here: no local solves is a first visit, some is a returning
+ * guest (docs/home-plan.md → Who sees what).
+ */
+export function GuestHome() {
+  const [solveCount, setSolveCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    void localRepo
+      .loadEventCounts()
+      .then((counts) => Object.values(counts).reduce((n, c) => n + (c ?? 0), 0))
+      .catch(() => 0)
+      .then((n) => {
+        if (live) setSolveCount(n);
+      });
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  if (solveCount === null) {
+    return <HomeGrid main={<HomeCardSkeleton className="lg:col-span-2" />} rail={null} />;
+  }
+
+  const visitor = detectVisitor({ signedIn: false, solveCount });
+  const { main, rail } = homeCards(visitor, null);
+  const render = (id: CardId) => {
+    switch (id) {
+      case "welcome":
+        return <WelcomeCard key={id} member={false} />;
+      default:
+        return null;
+    }
+  };
+  return <HomeGrid main={main.map(render)} rail={rail.map(render)} />;
+}

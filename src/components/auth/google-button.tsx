@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
-export function GoogleButton({ next = "/timer" }: { next?: string }) {
+export function GoogleButton({ next = "/home" }: { next?: string }) {
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
