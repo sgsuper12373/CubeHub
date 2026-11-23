@@ -82,6 +82,14 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **"Make it yours" tiles link to where each setting lives,** not all to Settings: the background and panel layout are on the timer's toolbar, the font size is in Settings (step 6). The section's theme picker already changed the whole page through `setTheme()`; the step adds a CH mark in the active theme's colours to the preview, while the hero keeps its classic palette.
 
+**Waitlist: migration and server action only, no form** (step 7, per the overnight instructions). `supabase/migrations/20261124000100_waitlist.sql` (not applied) creates `public.waitlist` with RLS on, no policies and no table grants for anon/authenticated, and a security-definer `join_waitlist()` that only inserts and ignores duplicates. `src/lib/waitlist/actions.ts` validates, rate-limits per IP (5 per 10 minutes, in memory) and calls it. The roadmap section shows the board without the "Notify me" form: a form whose only outcome is an error would be worse than none. `email` is a lower-cased `text` with a unique constraint rather than `citext`: same uniqueness, no extension. `supabase/tests/waitlist_test.sql` checks it once applied.
+
+**Open questions 2 and 3 (Discord, Contribute link):** Discord is left out until a server exists (the suggested answer). The plan suggests no answer for the Contribute link (GitHub or a contact form), so the strip shows its text and renders a link only once `CONTRIBUTE_URL` is set in `src/content/community.ts`. Instagram and YouTube links likewise render only once their real URLs are filled in; none were invented. Open question 4 (email provider) doesn't block collecting addresses.
+
+**FAQ answers were checked against the app, and one changed:** the plan's "3x3 and 2x2 today" is true for Learn but not the timer, which has eight events; the answer says both.
+
+**The "Profiles and clubs" chapter's id is `profiles`**, so `#community` is the Built-in-India section.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.

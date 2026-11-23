@@ -331,7 +331,7 @@ const CHAPTERS: Chapter[] = [
     Visual: PlaygroundVisual,
   },
   {
-    id: "community",
+    id: "profiles",
     eyebrow: "Profiles and clubs",
     icon: Users,
     title: "Your PBs, your progress, your college club.",

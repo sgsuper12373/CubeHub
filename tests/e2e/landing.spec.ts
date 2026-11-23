@@ -9,7 +9,7 @@ test.describe("without JavaScript", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Every part of cubing. One hub.");
     await expect(page.getByRole("link", { name: /Start timing free/ })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Explore Learn" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Explore Learn" }).first()).toBeVisible();
   });
 });
 
@@ -68,4 +68,22 @@ test("the five feature chapters each have a heading and a link into the app", as
     await expect(heading).toHaveCount(1);
     await expect(page.locator("section", { has: heading }).locator(`a[href="${link}"]`).first()).toHaveCount(1);
   }
+});
+
+test("roadmap and FAQ: three columns, answers that open, and FAQPage data", async ({ page }) => {
+  await page.goto("/");
+  for (const col of ["Now", "Next", "Later"]) {
+    await expect(page.locator("#roadmap").getByRole("heading", { name: col, exact: true })).toBeVisible();
+  }
+  const faq = page.locator("#faq");
+  await faq.getByText("Do I need an account?").click();
+  await expect(faq.getByText(/Sign in to sync them across devices/)).toBeVisible();
+  const ld = await page.locator('script[type="application/ld+json"]').allTextContents();
+  expect(ld.some((t) => JSON.parse(t)["@type"] === "FAQPage")).toBe(true);
+});
+
+test("section ids are unique", async ({ page }) => {
+  await page.goto("/");
+  const ids = await page.evaluate(() => [...document.querySelectorAll("[id]")].map((e) => e.id));
+  expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([]);
 });

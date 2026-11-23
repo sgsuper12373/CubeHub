@@ -5,6 +5,35 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — Landing step 7: community, roadmap, FAQ, waitlist files
+
+**Request:** Overnight run, `docs/landing-plan.md` step 7 (waitlist: migration and server action only).
+
+### Changed
+
+- `src/content/roadmap.ts` (new): Now / Next / Later with Shipped / Building / Planned, shared with
+  `/roadmap` (step 9). `roadmap-board.tsx`, `roadmap-section.tsx` (new) replace `coming-next.tsx`.
+- `community-section.tsx` (new), `src/content/community.ts` (new): three India-first points (two
+  marked Coming), social links only when real URLs exist, the Contribute strip.
+- `faq-section.tsx` (new), `src/content/faq.ts` (new): details/summary accordion, answers checked
+  against the app; `FAQPage` JSON-LD in `(marketing)/page.tsx`.
+- `supabase/migrations/20261124000100_waitlist.sql` (new, **not applied**), `src/lib/waitlist/`
+  (new: `validate.ts`, `actions.ts`), `supabase/tests/waitlist_test.sql` (new).
+- `feature-chapters.tsx`: the profiles chapter's id is `profiles` (it clashed with `#community`).
+- Tests: `waitlist.test.ts`, `roadmap-content.test.ts` (new); `landing.spec.ts`: roadmap columns,
+  FAQ opening, FAQPage data, unique ids.
+
+### Needs the founder
+
+- Apply the waitlist migration, then add the form; fill in community URLs and the Contribute link;
+  confirm the Contribute wording.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, landing e2e specs; sections looked at in Chromium.
+
+---
+
 ## 2026-11-24 — Landing step 6: Make it yours, enlarged
 
 **Request:** Overnight run, `docs/landing-plan.md` step 6.
