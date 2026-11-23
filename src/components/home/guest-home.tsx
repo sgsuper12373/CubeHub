@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 
 import { HomeCardSkeleton } from "@/components/home/home-card";
 import { HomeGrid } from "@/components/home/home-grid";
-import { DrillIntroCard, LearningStartCard } from "@/components/home/static-cards";
+import { DrillIntroCard, LearningStartCard, PlaygroundCard } from "@/components/home/static-cards";
 import { StatsCard } from "@/components/home/stats-card";
 import { StreakCard } from "@/components/home/streak-card";
+import { TipCard } from "@/components/home/tip-card";
 import { WelcomeCard } from "@/components/home/welcome-card";
+import { WhatsNewCard } from "@/components/home/whats-new-card";
 import { detectVisitor, homeCards, type CardId } from "@/lib/home/cards";
 import { localRepo } from "@/lib/timer/repo-local";
 
@@ -51,6 +53,12 @@ export function GuestHome() {
         return <LearningStartCard key={id} />;
       case "drill":
         return <DrillIntroCard key={id} />;
+      case "tip":
+        return <TipCard key={id} />;
+      case "playground":
+        return <PlaygroundCard key={id} />;
+      case "whatsnew":
+        return <WhatsNewCard key={id} />;
       default:
         return null;
     }

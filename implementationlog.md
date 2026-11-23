@@ -5,6 +5,32 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — Home step 3: friends, clubs, what's new, Cubby's tip
+
+**Request:** Overnight run, `docs/home-plan.md` step 3.
+
+### Changed
+
+- `src/components/home/social-cards.tsx` (new, server): Friends activity (last five from
+  `getActivityFeed("following", 7)`; empty state with two `getSuggestions()`), Your clubs (newest
+  post's first line per club; empty state links to /clubs).
+- `whats-new-card.tsx`, `tip-card.tsx` (new, client): latest two changelog items, each dismissible;
+  one tip a day from the pool, dismissible for the day, CH mark for Cubby's face.
+- `static-cards.tsx`: `PlaygroundCard` for first-time guests.
+- `src/content/changelog.json`, `src/content/cubby-tips.json` (new); `src/lib/home/content.ts`,
+  `src/lib/home/dismissals.ts` (new).
+- `src/components/social/feed-line.tsx` (new): People's feed line and date, moved out of
+  `people/page.tsx` so Home reuses them. No change to People's output.
+- `member-home.tsx`, `guest-home.tsx`: render the new cards.
+- `tests/unit/home-content.test.ts` (new).
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`; looked at as a member (rail at 1440)
+and a guest.
+
+---
+
 ## 2026-11-24 — Home step 2: stats, learning, drill and streak cards
 
 **Request:** Overnight run, `docs/home-plan.md` step 2.

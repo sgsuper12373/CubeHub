@@ -38,3 +38,17 @@ export function DrillIntroCard() {
   );
 }
 
+
+/** For a first-time guest: the cube to turn when there's no cube to hand. */
+export function PlaygroundCard() {
+  return (
+    <HomeCard id="playground" title="Playground">
+      <p className="text-sm text-muted-foreground">
+        No cube to hand? Turn one in the browser: drag to turn, or type moves in notation.
+      </p>
+      <Link href="/playground" className={buttonVariants({ size: "sm", variant: "outline", className: "mt-3" })}>
+        Open the Playground
+      </Link>
+    </HomeCard>
+  );
+}

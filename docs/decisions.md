@@ -113,6 +113,10 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **The daily goal is stored per device** (`cubehub.home.dailyGoal`): `goal-storage.ts` holds per-puzzle time goals, and syncing it would need another `user_settings` column. Home's stats and streak look back 90 days and use the last-used puzzle's solves (the timer's per-device event).
 
+**No unread counts on the clubs card.** The app has no per-member "last read" state for club posts, so there is nothing to count; the card shows each club's newest post's first line (up to three clubs, one query each). Unread counts need a read-marker table first.
+
+**Dismissals are per device.** "What's new" dismissals and "hide today's tip" live in localStorage (`cubehub.home.dismissedChanges`, `cubehub.home.tipDismissedOn`), not on the account. The tip has no "Cubby off" check yet because there's no Cubby setting.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.

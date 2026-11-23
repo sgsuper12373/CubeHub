@@ -5,10 +5,13 @@ import { HomeGrid } from "@/components/home/home-grid";
 import { QuickStart } from "@/components/home/quick-start";
 import { DrillCard } from "@/components/home/drill-card";
 import { LearningCard } from "@/components/home/learning-card";
-import { DrillIntroCard } from "@/components/home/static-cards";
+import { DrillIntroCard, PlaygroundCard } from "@/components/home/static-cards";
+import { ClubsCard, FriendsCard } from "@/components/home/social-cards";
 import { StatsCard } from "@/components/home/stats-card";
 import { StreakCard } from "@/components/home/streak-card";
+import { TipCard } from "@/components/home/tip-card";
 import { WelcomeCard } from "@/components/home/welcome-card";
+import { WhatsNewCard } from "@/components/home/whats-new-card";
 import type { CurrentProfile } from "@/lib/auth/dal";
 import { detectVisitor, homeCards, type CardId, type HomeLayout } from "@/lib/home/cards";
 import { getDrillQueue, getHomeSummary, pickContinueSeries } from "@/lib/home/dal";
@@ -48,6 +51,16 @@ export async function MemberHome({ profile, layout }: { profile: CurrentProfile;
         return <LearningCard key={id} username={profile.username} />;
       case "drill":
         return visitor === "member-new" && summary.solveCount === 0 ? <DrillIntroCard key={id} /> : <DrillCard key={id} />;
+      case "tip":
+        return <TipCard key={id} />;
+      case "playground":
+        return <PlaygroundCard key={id} />;
+      case "friends":
+        return <FriendsCard key={id} />;
+      case "clubs":
+        return <ClubsCard key={id} />;
+      case "whatsnew":
+        return <WhatsNewCard key={id} />;
       default:
         return null;
     }
