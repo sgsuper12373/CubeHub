@@ -70,6 +70,12 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **`NEXT_PUBLIC_APP_URL=""` counts as unset** (`||`, not `??`), so an empty Vercel variable can't split the hosts by accident.
 
+**The app host's sitemap lists public profiles, minus placeholder handles.** The plan adds public profiles (before, no profile was in any sitemap). Profiles still on the signup trigger's `user_<12 hex>` handle are skipped: nobody has set them up, so there's nothing to index. Private profiles are never listed (`is_public = true` only).
+
+**The app host's robots.txt also allows `/_next/`, `/cubing/` and `/images/`.** The plan says allow `/learn/` and `/profile/` and disallow the rest; without these three, Google can't fetch the scripts, styles and images those pages need to render.
+
+**App pages take the app origin as `metadataBase`.** `(app)/layout.tsx` and `(auth)/layout.tsx` export `metadataBase: new URL(APP_URL)`, so relative canonicals and `og:url` (the case pages use them) resolve to `app.cuberhub.me`. That was the whole canonical audit: no other code builds absolute URLs from `SITE_URL`.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.

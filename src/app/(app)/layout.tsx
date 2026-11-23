@@ -1,8 +1,17 @@
+import type { Metadata } from "next";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Navbar } from "@/components/layout/navbar";
 import { UsernameOnboarding } from "@/components/auth/username-onboarding";
 import { getProfile } from "@/lib/auth/dal";
 import { getNotifications } from "@/lib/notifications/dal";
+import { APP_URL } from "@/lib/site-url";
+
+/**
+ * App pages resolve relative canonical and Open Graph URLs against the app
+ * origin, not the marketing one the root layout sets (docs/app-shell-plan.md →
+ * Robots and sitemaps). The same origin in single-host mode.
+ */
+export const metadata: Metadata = { metadataBase: new URL(APP_URL) };
 
 /**
  * The signed-in app shell: navbar + mobile bottom nav.

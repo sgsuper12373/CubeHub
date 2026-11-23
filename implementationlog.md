@@ -5,6 +5,28 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — App shell step 2: robots and sitemaps per host
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 2.
+
+### Changed
+
+- `src/lib/seo/sitemap.ts`: split into `buildMarketingSitemapEntries` (root host),
+  `buildAppSitemapEntries` (app host: fixed app pages, Learn, public profiles) and the unchanged
+  single-host `buildSitemapEntries`; `buildAppRobots`.
+- `src/app/app-robots.txt/route.ts`, `src/app/app-sitemap.xml/route.ts` (new): the app host's
+  files; `src/proxy.ts` rewrites to them (step 1). Both build as static (`○`).
+- `src/app/sitemap.ts`, `robots.ts`: marketing-only / allow-all when `HOST_SPLIT`; unchanged otherwise.
+- `src/lib/profile/public-dal.ts` (new): cookie-free public profile usernames.
+- `(app)/layout.tsx`, `(auth)/layout.tsx`: `metadataBase` is `APP_URL` (canonical audit).
+- `tests/unit/sitemap.test.ts`: per-host cases.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`.
+
+---
+
 ## 2026-11-24 — App shell step 1: host helpers behind the flag
 
 **Request:** Overnight run, `docs/app-shell-plan.md` step 1.
