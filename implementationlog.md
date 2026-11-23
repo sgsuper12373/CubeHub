@@ -5,6 +5,27 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — Landing step 2: motion pieces
+
+**Request:** Overnight run, `docs/landing-plan.md` step 2.
+
+### Changed
+
+- `src/components/marketing/motion/` (new): `reveal-text.tsx` (word/letter stagger, `aria-label`
+  on the wrapper, pieces `aria-hidden`), `fade-up.tsx`, `count-up.tsx` (final number in the HTML;
+  counts once in view), `floating-field.tsx` (sticker-token squares, cubies and notation glyphs;
+  CSS drift paused off screen and in hidden tabs; pointer parallax through motion values),
+  `pinned-chapter.tsx` (sticky visual from lg with `useScroll` progress; plain below lg).
+- `src/app/globals.css`: "Landing text reveal and load fades" and "Floating field" keyframes, all
+  inside `prefers-reduced-motion: no-preference`.
+- `tests/unit/landing-motion.test.tsx` (new): assistive-tech text, stagger, reduced-motion paths.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`.
+
+---
+
 ## 2026-11-24 — CuberHub rename (landing plan, implementation step 1)
 
 **Request:** Overnight run, item 1: `docs/landing-plan.md` step 1 only. Visible CubeHub →
