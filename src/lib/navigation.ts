@@ -1,7 +1,10 @@
 import {
   BarChart3,
   Box,
+  Contact,
   GraduationCap,
+  House,
+  Settings,
   Target,
   Timer,
   User,
@@ -19,7 +22,13 @@ export type NavItem = {
    * both tabs would light up.
    */
   match?: RegExp;
+  /** The sidebar section it sits in (docs/app-shell-plan.md → Content). */
+  group?: NavGroup;
+  /** Sub-items: Learn's puzzles and series, filled in from the Learn index at render time. */
+  children?: NavItem[];
 };
+
+export type NavGroup = "main" | "practice" | "community";
 
 export const navItems: NavItem[] = [
   { label: "Timer", href: "/timer", icon: Timer },
@@ -36,6 +45,49 @@ export const navItems: NavItem[] = [
   // Someone else's profile doesn't (see activeNavHref).
   { label: "Profile", href: "/profile", icon: User, match: /^\/(profile|settings|people|friends)(\/|$)/ },
 ];
+
+const HOME: NavItem = {
+  label: "Home",
+  href: "/home",
+  icon: House,
+  group: "main",
+  // "/" too: in single-host mode the landing page is the way into the app.
+  match: /^\/(home(\/|$)|$)/,
+};
+
+/**
+ * The app sidebar's items, in order, grouped (docs/app-shell-plan.md → Content).
+ * Profile isn't here: it's the account row at the bottom of the sidebar, with
+ * Settings and the notifications bell. Compete and Shop stay out until they
+ * exist; they'll go under Community and Practice.
+ */
+export const sidebarItems: NavItem[] = [
+  HOME,
+  { label: "Timer", href: "/timer", icon: Timer, group: "main" },
+  { label: "Stats", href: "/stats", icon: BarChart3, group: "main" },
+  { label: "Learn", href: "/learn", icon: GraduationCap, group: "practice" },
+  {
+    label: "Drill Lab",
+    href: "/learn/333/drill",
+    icon: Target,
+    group: "practice",
+    match: /^\/learn\/[^/]+\/drill(\/|$)/,
+  },
+  { label: "Playground", href: "/playground", icon: Box, group: "practice" },
+  { label: "Clubs", href: "/clubs", icon: Users, group: "community" },
+  { label: "People", href: "/people", icon: Contact, group: "community", match: /^\/(people|friends)(\/|$)/ },
+];
+
+/** The sidebar's pinned bottom links (the account row is its own component). */
+export const sidebarFooterItems: NavItem[] = [
+  { label: "Settings", href: "/settings", icon: Settings },
+];
+
+export const NAV_GROUP_LABEL: Record<NavGroup, string | null> = {
+  main: null,
+  practice: "Practice",
+  community: "Community",
+};
 
 /**
  * The one tab to highlight for a path: a tab with its own `match` wins over a
@@ -64,13 +116,19 @@ function isOtherProfile(pathname: string, ownUsername: string | null): boolean {
 }
 
 /**
- * The bottom bar fits five tabs on a phone; a sixth makes every target too
- * narrow to hit reliably. Playground drops: it is linked from the Learn page
- * instead, a side trip from learning, not a daily destination like the timer.
- * Stats took the slot Shop had (Shop is out of the nav until it exists).
- * Clubs drops too: phones reach it from People's Clubs tab and the Clubs row
- * on profiles (docs/clubs.md → Where it lives). Revisit after the beta.
+ * The phone bottom bar (below md): Home, Timer, Learn, Drill, and a More tab
+ * that opens a sheet with everything else (docs/app-shell-plan.md → Phones).
+ * Five targets is the most a phone bar holds before they get too narrow to hit
+ * reliably. Before the app shell it was Timer, Stats, Learn, Drill, Profile,
+ * with Playground and Clubs reachable only from other pages.
  */
-const MOBILE_HIDDEN: ReadonlySet<string> = new Set(["/playground", "/clubs"]);
+const MOBILE_TABS: ReadonlySet<string> = new Set(["/home", "/timer", "/learn", "/learn/333/drill"]);
 
-export const mobileNavItems: NavItem[] = navItems.filter((item) => !MOBILE_HIDDEN.has(item.href));
+export const mobileNavItems: NavItem[] = sidebarItems.filter((item) => MOBILE_TABS.has(item.href));
+
+/** The More sheet's links, in order. Sign in / Sign out is added by the sheet. */
+export const mobileMoreItems: NavItem[] = [
+  ...sidebarItems.filter((item) => !MOBILE_TABS.has(item.href)),
+  { label: "Profile", href: "/profile", icon: User, match: /^\/profile(\/|$)/ },
+  ...sidebarFooterItems,
+];

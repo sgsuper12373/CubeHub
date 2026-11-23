@@ -5,6 +5,321 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — Home step 4: Customize sheet, storage, sign-in copy-up
+
+**Request:** Overnight run, `docs/home-plan.md` step 4.
+
+### Changed
+
+- `supabase/migrations/20261124000000_home_layout.sql` (new, **not applied**): nullable
+  `user_settings.home_layout jsonb` with a shape check.
+- `src/lib/home/actions.ts` (new): `saveHomeLayout` server action (validates, empty → null).
+- `src/lib/home/dal.ts`: `getHomeLayout()` (null on a missing column, so Home works before the
+  migration).
+- `src/lib/home/layout-storage.ts` (new): guests' `cubehub.home.v1`.
+- `src/components/home/customize-sheet.tsx` (new): switches per available card, Reset to default,
+  overlay lock while open. `layout-copy-up.tsx` (new): copies a guest layout to the account once.
+- `member-home.tsx`, `guest-home.tsx`, `home/page.tsx`: apply the saved layout.
+- `tests/e2e/home.spec.ts`: a guest's hidden card stays hidden after a reload.
+
+### Needs the founder
+
+- Apply the migration before shipping `feat/home`.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run test:e2e:prod` (batch end; see the overnight report).
+
+---
+
+## 2026-11-24 — Home step 3: friends, clubs, what's new, Cubby's tip
+
+**Request:** Overnight run, `docs/home-plan.md` step 3.
+
+### Changed
+
+- `src/components/home/social-cards.tsx` (new, server): Friends activity (last five from
+  `getActivityFeed("following", 7)`; empty state with two `getSuggestions()`), Your clubs (newest
+  post's first line per club; empty state links to /clubs).
+- `whats-new-card.tsx`, `tip-card.tsx` (new, client): latest two changelog items, each dismissible;
+  one tip a day from the pool, dismissible for the day, CH mark for Cubby's face.
+- `static-cards.tsx`: `PlaygroundCard` for first-time guests.
+- `src/content/changelog.json`, `src/content/cubby-tips.json` (new); `src/lib/home/content.ts`,
+  `src/lib/home/dismissals.ts` (new).
+- `src/components/social/feed-line.tsx` (new): People's feed line and date, moved out of
+  `people/page.tsx` so Home reuses them. No change to People's output.
+- `member-home.tsx`, `guest-home.tsx`: render the new cards.
+- `tests/unit/home-content.test.ts` (new).
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`; looked at as a member (rail at 1440)
+and a guest.
+
+---
+
+## 2026-11-24 — Home step 2: stats, learning, drill and streak cards
+
+**Request:** Overnight run, `docs/home-plan.md` step 2.
+
+### Changed
+
+- `src/lib/home/snapshot.ts` (new, pure): PB single, current-session Ao5/Ao12, last 30 times and a
+  trend word, this week's solves and days, streak, today, the last 14 days.
+- `src/components/home/use-home-snapshot.ts` (new): loads the main puzzle's metrics and PBs through
+  the timer's repository (Supabase or local, as `/stats` does); one load serves both cards.
+- `stats-card.tsx`, `streak-card.tsx` (client), `learning-card.tsx`, `drill-card.tsx` (async
+  server), `static-cards.tsx` (the guest/empty versions, kept free of server-only imports).
+- `src/lib/home/daily-goal.ts` (new): the daily solve goal (default 25), read with
+  `useSyncExternalStore`.
+- `member-home.tsx`, `guest-home.tsx`: render the new cards.
+- Tests: `home-snapshot.test.ts`, `home-daily-goal.test.ts` (new).
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`; looked at as a member.
+
+---
+
+## 2026-11-24 — Home step 1: page, routing, greeting and quick start
+
+**Request:** Overnight run, `docs/home-plan.md` step 1.
+
+### Changed
+
+- `src/app/(app)/home/page.tsx`: the real page replaces the shell's placeholder. Greeting (h1),
+  quick start, cards; members' quick start and cards stream behind Suspense; guests' are decided
+  in the browser. Phone-only top bar with the bell and avatar (`home-mobile-bar.tsx`).
+- `src/lib/home/cards.ts` (new): card ids and meta, visitor detection, default sets per visitor,
+  layout parse/merge (unknown ids ignored), switch on/off, greeting and button labels.
+- `src/lib/home/drill-queue.ts` (new): due count, slowest three, switch suggestion.
+- `src/lib/home/dal.ts` (new): `getHomeSummary` (solve count, learning), `pickContinueSeries`,
+  `getDrillQueue`, `getNextUnlearnedCase`, all over existing DALs.
+- `src/components/home/`: `home-card.tsx` (frame with h2, "See all", `data-tour="home-<id>"`),
+  `home-grid.tsx` (880 px main, 300 px rail from xl), `home-greeting.tsx`, `quick-start.tsx`
+  (Start {puzzle} session / Drill {n} due cases / Continue {series}; Enter, never Space),
+  `welcome-card.tsx`, `guest-home.tsx`, `member-home.tsx`.
+- Sign-in lands on `/home`: `lib/auth/actions.ts` default, `/auth/callback`, `/auth/confirm`, the
+  Google button default. (`(auth)` layout already did, from the shell.)
+- Tests: `home-cards.test.ts`, `home-drill-queue.test.ts` (new); `tests/e2e/home.spec.ts` (new).
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build` (`/home` is `ƒ`); looked at as a guest,
+a member and on a phone.
+
+---
+
+## 2026-11-24 — App shell step 8: phones
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 8.
+
+### Changed
+
+- `src/lib/navigation.ts`: `mobileNavItems` is Home, Timer, Learn, Drill (`MOBILE_HIDDEN` replaced
+  by `MOBILE_TABS`, comment rewritten); `mobileMoreItems` is Stats, Playground, Clubs, People,
+  Profile, Settings.
+- `src/components/layout/bottom-nav.tsx`: four tabs plus **More**, a bottom sheet (the new `sheet`
+  primitive) with the other pages and Sign out / Sign in. More lights up on its pages and carries
+  the unread dot; the sheet takes `useOverlayLock()`. `aria-label="Tabs"` on the nav.
+- `docs/roadmap.md`: navigation note.
+- `tests/unit/navigation.test.ts`: phone bar cases. `tests/e2e/app-shell.spec.ts` (new): no Zen
+  toggle, sidebar state per group across reloads, Ctrl+B, Space blocked under the Learn flyout,
+  Focus mode hiding the sidebar, the phone More sheet. `tests/e2e/profile.spec.ts`: "the nav's
+  Profile tab" became "the phone More sheet's Profile link" (Profile left the tabs).
+
+### Not here
+
+- The slim top bar on `/home` (bell and avatar): with the Home page, `feat/home`.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run test:e2e:prod` (batch end; results in the
+overnight report).
+
+---
+
+## 2026-11-24 — App shell step 7: timer modes
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 7.
+
+### Changed
+
+- `timer-modes.tsx`: the Zen toggle is gone; Focus is labelled "Hide UI while solving".
+- `layout-store.ts`: `isZenMode` / `setZenMode` removed; `navbar.tsx`, `bottom-nav.tsx` and
+  `timer-screen.tsx` no longer check it (the "Exit Zen Mode" button and its Escape handler went too).
+- `lib/timer/focus.ts`: `loadFocusMode()` is true when nothing is saved; a saved "0" stays off.
+- The sidebar, its hover zone and show button carry `data-focus-hide`, so the existing
+  `data-focus-solving` rule in `globals.css` hides them mid-solve (no CSS change needed).
+- The solve dim (`fadeWhileSolving`) stays as the fallback when Focus is off; comment updated.
+- Landing copy in `customize-section.tsx`: "Hide-UI, full-screen and blind modes".
+- `docs/timer.md` → Modes; `tests/unit/focus-mode.test.ts` for the new default.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`.
+
+---
+
+## 2026-11-24 — App shell step 6: swap the shell
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 6.
+
+### Changed
+
+- `(app)/layout.tsx`: always the sidebar (md and up) beside `<main>`; the navbar is no longer
+  rendered in `(app)`; the `NEXT_PUBLIC_SIDEBAR` flag is gone. The bottom nav stays below md.
+- Offsets that assumed the 56 px navbar: `playground-screen.tsx` (`md:h-dvh`), `drill-lab.tsx`
+  (`lg:h-dvh`), `stats-screen.tsx` (sticky bar at `top-0` on every width), `step-toc.tsx`
+  (`top-8`). Comments updated, including `(app)/not-found.tsx`.
+
+### Kept on purpose
+
+- `navbar.tsx`, still used by the landing page's header.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`; in Chromium the drill and playground
+fill exactly one 760 px screen with no page scroll, Stats and the phone timer look as before.
+
+---
+
+## 2026-11-24 — App shell step 5: sidebar behind NEXT_PUBLIC_SIDEBAR=1
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 5.
+
+### Changed
+
+- `src/components/ui/dropdown-menu.tsx`, `sheet.tsx`, `tooltip.tsx` (new, shadcn CLI, base-nova on
+  Base UI). Their `cn` import fixed to `@/lib/utils` (see decisions).
+- `src/lib/navigation.ts`: `group` and `children` on `NavItem`; `sidebarItems` (Home first, People
+  added), `sidebarFooterItems`, `NAV_GROUP_LABEL`. Home lights on `/home` and `/`. `navItems` unchanged.
+- `src/lib/sidebar.ts` (new): states, page groups, defaults, cookie parse/serialize, shortcut toggles.
+- `src/stores/sidebar-store.ts` (new): per-group state, writes the `cubehub-sidebar` cookie
+  (parent domain when split), the timer's shortcut lock.
+- `src/components/layout/app-sidebar.tsx` (new): Expanded / Rail / Hidden; hover-to-peek overlay
+  (150 ms in, 300 ms out) and a show button when hidden; Learn accordion (expanded) or hover flyout
+  (rail) from the Learn index; notifications, Settings, account menu (Profile, Edit profile, Sign
+  out) or Sign in; collapse and hide buttons; Ctrl/⌘+B and Ctrl/⌘+\ (not while typing or solving);
+  `nav aria-label="Main"`, `data-tour="sidebar"`, `aria-current`, rail tooltips; menus take
+  `useOverlayLock()`; `data-focus-hide`.
+- `src/app/globals.css`: widths and label hiding per state.
+- `src/lib/learn/public-dal.ts`: `getLearnNav()` (cached, cookie-free).
+- `notification-bell.tsx`: `side`, `label` and `className` props; takes the overlay lock while open.
+- `timer-screen.tsx`: sets the sidebar's shortcut lock during a solve.
+- `(app)/layout.tsx`: with `NEXT_PUBLIC_SIDEBAR=1`, reads the cookie and renders the sidebar beside
+  the old navbar.
+- Tests: `sidebar.test.ts` (new), sidebar cases in `navigation.test.ts`.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`; a `NEXT_PUBLIC_SIDEBAR=1` build looked at in Chromium:
+expanded, rail on /timer, auto at 900 px, Ctrl+B, edge peek, rail Learn flyout.
+
+---
+
+## 2026-11-24 — App shell step 4: handoff pages
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 4.
+
+### Changed
+
+- `src/lib/handoff.ts` (new): `HANDOFF_UNTIL` (2027-03-01), the `cubehub-handoff-done` cookie,
+  pure helpers (collect/apply `cubehub` keys without overwriting, `safeNextPath`, message guard).
+- `src/lib/host-routing.ts`: on the root host an app page load is rewritten to
+  `/handoff?next=…` until the cookie is set or the date passes; `/handoff` joins `ROOT_PATHS`.
+  `src/proxy.ts` passes the method and the cookie.
+- `src/app/handoff/page.tsx` + `components/handoff/handoff-sender.tsx` (root host, no chrome):
+  nothing to move → cookie and redirect; otherwise a hidden iframe to `/handoff/receive`, post the
+  keys and the timer background (IndexedDB) to `APP_URL`, cookie and redirect on `done`, redirect
+  without the cookie after 5 s.
+- `src/app/handoff/receive/page.tsx` + `handoff-receiver.tsx` (app host, noindex): accepts
+  messages from `SITE_URL` only, writes only absent keys and an absent background, replies `done`.
+- Tests: `tests/unit/handoff.test.ts` (new), handoff cases in `host-routing.test.ts`.
+
+### Kept on purpose
+
+- Old data is never deleted. No two-origin e2e (see `decisions.md` → Hosts and app shell).
+
+### Verified
+
+`npm run validate`, `npm run check:colors`.
+
+---
+
+## 2026-11-24 — App shell step 3: cookies across hosts
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 3.
+
+### Changed
+
+- `src/lib/site-url.ts`: `cookieDomainFor()` / `COOKIE_DOMAIN` (`.cuberhub.me` when split; undefined
+  in single-host mode, on localhost and on IPs).
+- `src/lib/supabase/client.ts`, `server.ts`, `proxy.ts`: pass `cookieOptions: { domain }` (the
+  option name checked in `@supabase/ssr` 0.12's types) only when `COOKIE_DOMAIN` is set.
+- `src/lib/theme.ts`: the `cubehub-theme` cookie gets the same domain. Name unchanged.
+- `(auth)/layout.tsx`: signed-in visitors go to `/home`.
+- `src/app/(app)/home/page.tsx` (new): placeholder redirecting to `/timer` until `feat/home`.
+- `tests/unit/cookie-domain.test.ts` (new).
+
+### Kept on purpose
+
+- `proxy.ts` still runs nothing between `createServerClient()` and `getClaims()`.
+- `lib/auth/actions.ts` and `/auth/callback` still land on `/timer`; the Home plan moves them.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`.
+
+---
+
+## 2026-11-24 — App shell step 2: robots and sitemaps per host
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 2.
+
+### Changed
+
+- `src/lib/seo/sitemap.ts`: split into `buildMarketingSitemapEntries` (root host),
+  `buildAppSitemapEntries` (app host: fixed app pages, Learn, public profiles) and the unchanged
+  single-host `buildSitemapEntries`; `buildAppRobots`.
+- `src/app/app-robots.txt/route.ts`, `src/app/app-sitemap.xml/route.ts` (new): the app host's
+  files; `src/proxy.ts` rewrites to them (step 1). Both build as static (`○`).
+- `src/app/sitemap.ts`, `robots.ts`: marketing-only / allow-all when `HOST_SPLIT`; unchanged otherwise.
+- `src/lib/profile/public-dal.ts` (new): cookie-free public profile usernames.
+- `(app)/layout.tsx`, `(auth)/layout.tsx`: `metadataBase` is `APP_URL` (canonical audit).
+- `tests/unit/sitemap.test.ts`: per-host cases.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`.
+
+---
+
+## 2026-11-24 — App shell step 1: host helpers behind the flag
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 1.
+
+### Changed
+
+- `src/lib/site-url.ts`: `APP_URL` (falls back to `SITE_URL`), `HOST_SPLIT`, `siteUrl()`, `appUrl()`.
+- `src/lib/host-routing.ts` (new): pure `routeForHost(host, pathname, search, config?)` and the
+  `ROOT_PATHS` list. Single-host mode passes; internals, `/api`, files and metadata images pass on
+  both hosts; app host `/` → 307 `/home`; app host robots/sitemap rewrite to `/app-robots.txt` and
+  `/app-sitemap.xml`; wrong-host paths 308 with the query kept; other hosts pass.
+- `src/proxy.ts`: runs `routeForHost` before `updateSession()` and returns early on a redirect or
+  rewrite, so the session-refresh rules in `docs/architecture.md` still hold. Matcher unchanged.
+- `tests/unit/host-routing.test.ts` (new): every row of the plan's path table on both hosts.
+
+### Kept on purpose
+
+- With `NEXT_PUBLIC_APP_URL` unset nothing changes. Decisions in `docs/decisions.md` → Hosts and app shell.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`.
+
+---
+
 ## 2026-11-07 — Drill Lab redesign, step 1: full-height layout, toolbar, options popover
 
 **Request:** Prompt 1 of the seven-step Drill Lab redesign. At lg and up the drill fills the

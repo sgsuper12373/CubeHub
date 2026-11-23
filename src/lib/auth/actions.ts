@@ -9,7 +9,8 @@ import { isReservedUsername } from "@/lib/profile/validate";
 
 export type AuthState = { error: string } | undefined;
 
-const DEFAULT_LANDING = "/timer";
+// Home is the app's front door (docs/home-plan.md → Routing changes).
+const DEFAULT_LANDING = "/home";
 
 function readCredentials(formData: FormData) {
   return {

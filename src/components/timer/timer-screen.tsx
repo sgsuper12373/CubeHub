@@ -26,6 +26,7 @@ import { SessionTrend } from "@/components/stats/session-trend";
 import { LayoutControls, LayoutShell } from "@/components/timer/layout-shell";
 import type { PanelId } from "@/lib/timer/layout";
 import { useLayoutStore } from "@/stores/layout-store";
+import { useSidebarStore } from "@/stores/sidebar-store";
 import { generateScramble } from "@/lib/timer/scrambler";
 import { loadLastEvent, saveLastEvent } from "@/lib/timer/events";
 import { detectRecords, RECORD_LABEL, type RecordHit } from "@/lib/timer/pb-detect";
@@ -40,7 +41,6 @@ import { confirm } from "@/stores/confirm-store";
 import { formatMs } from "@/lib/timer/format";
 import { cn } from "@/lib/utils";
 import { FOCUS_ATTR, isFocusHidden } from "@/lib/timer/focus";
-import { Expand } from "lucide-react";
 
 /**
  * Frosted pill behind the top controls when a background image is set, so
@@ -91,21 +91,9 @@ export function TimerScreen(props: {
   const scrim = useTimerScrim();
   const hasBackground = useTimerBackgroundStore((s) => s.url !== null);
   const editingLayout = useLayoutStore((s) => s.editing);
-  const isZenMode = useLayoutStore((s) => s.isZenMode);
   const isFocusMode = useLayoutStore((s) => s.isFocusMode);
   const inInspection = useTimerStore((s) => s.inspectionStartedAt !== null);
-  const setZenMode = useLayoutStore((s) => s.setZenMode);
   const celebrateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setZenMode(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [setZenMode]);
 
   useEffect(() => {
     return () => {
@@ -368,16 +356,27 @@ export function TimerScreen(props: {
 
   // Focus Mode: while a solve is under way, only the digits stay. The hiding
   // is CSS keyed on an <html> attribute (globals.css) so it also reaches the
-  // navbar and bottom nav, which live outside this screen.
+  // sidebar and bottom nav, which live outside this screen.
   const focusHidden = isFocusMode && isFocusHidden(phase, inInspection);
+
+  // The sidebar's Ctrl+B / Ctrl+\ shortcuts wait while a solve is under way
+  // (inspection included). The sidebar never reads the timer store itself.
+  const setSidebarLocked = useSidebarStore((s) => s.setShortcutsLocked);
+  const sidebarLocked = phase !== "idle" && phase !== "stopped";
+  useEffect(() => {
+    setSidebarLocked(sidebarLocked);
+    return () => setSidebarLocked(false);
+  }, [sidebarLocked, setSidebarLocked]);
   useEffect(() => {
     const root = document.documentElement;
     root.toggleAttribute(FOCUS_ATTR, focusHidden);
     return () => root.removeAttribute(FOCUS_ATTR);
   }, [focusHidden]);
 
-  // Zen mode (design brief §4): everything except the digits dims to ~10% once
-  // an attempt is under way — dimmed, not gone. It leaves fast (150ms) and
+  // The solve dim (design brief §4): everything except the digits dims to ~10%
+  // once an attempt is under way — dimmed, not gone. The calm fallback when
+  // "Hide UI while solving" (Focus mode) is off; Zen mode, which did the same
+  // for the whole page, was retired with the app shell. It leaves fast (150ms) and
   // returns gracefully (300ms ease-out) when the solve lands.
   const fadeWhileSolving = cn(
     "transition-opacity",
@@ -661,19 +660,6 @@ export function TimerScreen(props: {
         onNotes={handleNotes}
       />
 
-      {/* Zen Mode Exit Button */}
-      {isZenMode && !solving && (
-        <div className="fixed top-2 left-1/2 -translate-x-1/2 z-50">
-          <button
-            type="button"
-            onClick={() => setZenMode(false)}
-            className="flex items-center gap-2 rounded-full bg-background/50 border border-border/50 px-4 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-md transition-all duration-300 opacity-0 hover:opacity-100 hover:text-foreground hover:bg-background/80"
-          >
-            <Expand className="size-3" />
-            Exit Zen Mode
-          </button>
-        </div>
-      )}
     </div>
   );
 }

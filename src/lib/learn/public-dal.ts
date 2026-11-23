@@ -1,5 +1,7 @@
 import "server-only";
 import { createPublicClient } from "@/lib/supabase/public";
+import { unstable_cache } from "next/cache";
+import { getPuzzleName } from "@/lib/learn/puzzle-names";
 
 /**
  * Cookie-free reads of published Learn content, for the sitemap and the case
@@ -113,3 +115,55 @@ export async function getPublicCase(
     return null;
   }
 }
+
+export type LearnNavPuzzle = {
+  puzzle: string;
+  /** Short name for the menu: "3x3", "2x2". */
+  name: string;
+  series: { slug: string; name: string }[];
+};
+
+/**
+ * The puzzles and published series the Learn index lists, for the sidebar's
+ * Learn sub-items (tutorials first, then algorithm sets, each in their own
+ * order). Cookie-free and cached for an hour across requests, so the app
+ * layout doesn't query the database on every page. Empty on any failure: the
+ * sidebar then shows Learn without sub-items.
+ */
+export const getLearnNav = unstable_cache(
+  async (): Promise<LearnNavPuzzle[]> => {
+    try {
+      const supabase = createPublicClient();
+      const [{ data: tutorials }, { data: subsets }] = await Promise.all([
+        supabase
+          .from("tutorial_series")
+          .select("puzzle_type, slug, title")
+          .eq("is_published", true)
+          .order("order_index"),
+        supabase
+          .from("algorithm_subsets")
+          .select("puzzle_type, slug, name")
+          .eq("is_published", true)
+          .order("order_index"),
+      ]);
+      const byPuzzle = new Map<string, LearnNavPuzzle>();
+      const add = (puzzle: string, slug: string, name: string) => {
+        if (!byPuzzle.has(puzzle)) {
+          byPuzzle.set(puzzle, { puzzle, name: getPuzzleName(puzzle).replace(/ Cube$/, ""), series: [] });
+        }
+        const entry = byPuzzle.get(puzzle)!;
+        if (!entry.series.some((s) => s.slug === slug)) entry.series.push({ slug, name });
+      };
+      for (const t of tutorials ?? []) add(t.puzzle_type as string, t.slug as string, t.title as string);
+      for (const s of subsets ?? []) add(s.puzzle_type as string, s.slug as string, s.name as string);
+      // 3x3 first, then by id: the order the Learn index shows them.
+      return [...byPuzzle.values()].sort((a, b) =>
+        a.puzzle === "333" ? -1 : b.puzzle === "333" ? 1 : a.puzzle.localeCompare(b.puzzle),
+      );
+    } catch {
+      return [];
+    }
+  },
+  ["learn-nav"],
+  { revalidate: 3600 },
+);

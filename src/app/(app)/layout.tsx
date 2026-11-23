@@ -1,11 +1,27 @@
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
+
+import { AppSidebar } from "@/components/layout/app-sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
-import { Navbar } from "@/components/layout/navbar";
 import { UsernameOnboarding } from "@/components/auth/username-onboarding";
 import { getProfile } from "@/lib/auth/dal";
+import { getLearnNav } from "@/lib/learn/public-dal";
 import { getNotifications } from "@/lib/notifications/dal";
+import { parseSidebarCookie, SIDEBAR_COOKIE } from "@/lib/sidebar";
+import { APP_URL } from "@/lib/site-url";
 
 /**
- * The signed-in app shell: navbar + mobile bottom nav.
+ * App pages resolve relative canonical and Open Graph URLs against the app
+ * origin, not the marketing one the root layout sets (docs/app-shell-plan.md →
+ * Robots and sitemaps). The same origin in single-host mode.
+ */
+export const metadata: Metadata = { metadataBase: new URL(APP_URL) };
+
+/**
+ * The app shell: the sidebar from md up (docs/app-shell-plan.md → The
+ * sidebar), the bottom nav below md. The sidebar's width comes from the
+ * `cubehub-sidebar` cookie, read here so the first paint is right; this
+ * layout already reads auth cookies, so it costs no static rendering.
  *
  * This group is a *chrome* boundary, not an access boundary — /timer,
  * /learn, /compete and /shop are all public. Routes that require an
@@ -16,14 +32,20 @@ import { getNotifications } from "@/lib/notifications/dal";
 export default async function AppLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const [profile, notifications] = await Promise.all([getProfile(), getNotifications()]);
+  const [profile, notifications, cookieStore, learnNav] = await Promise.all([
+    getProfile(),
+    getNotifications(),
+    cookies(),
+    getLearnNav(),
+  ]);
+  const sidebarPrefs = parseSidebarCookie(cookieStore.get(SIDEBAR_COOKIE)?.value);
 
   return (
-    <>
-      <Navbar profile={profile} notifications={notifications} />
-      <main className="flex flex-1 flex-col pb-16 md:pb-0">{children}</main>
+    <div className="flex flex-1">
+      <AppSidebar profile={profile} notifications={notifications} initialPrefs={sidebarPrefs} learnNav={learnNav} />
+      <main className="flex min-w-0 flex-1 flex-col pb-16 md:pb-0">{children}</main>
       <BottomNav unread={notifications.unread} username={profile?.username ?? null} />
       <UsernameOnboarding profile={profile} />
-    </>
+    </div>
   );
 }

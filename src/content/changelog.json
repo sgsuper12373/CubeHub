@@ -1,0 +1,37 @@
+[
+  {
+    "id": "2026-11-home",
+    "date": "2026-11-24",
+    "title": "A new Home and a sidebar",
+    "line": "Start a session, drill your slow cases and pick up where you left off in Learn, all from one page.",
+    "link": "/home"
+  },
+  {
+    "id": "2026-11-drill-layout",
+    "date": "2026-11-07",
+    "title": "Drill Lab, redesigned",
+    "line": "A full-height layout, one toolbar, and options that stay out of the way.",
+    "link": "/learn/333/drill"
+  },
+  {
+    "id": "2026-10-clubs",
+    "date": "2026-10-17",
+    "title": "Clubs",
+    "line": "Start or join your college club: posts, algorithms, videos and invite links.",
+    "link": "/clubs"
+  },
+  {
+    "id": "2026-10-social",
+    "date": "2026-10-14",
+    "title": "Follow other cubers",
+    "line": "See friends' PBs, compare head to head, and get notified when someone follows you.",
+    "link": "/people"
+  },
+  {
+    "id": "2026-10-playground",
+    "date": "2026-10-06",
+    "title": "Playground",
+    "line": "A cube you can turn in the browser, with notation input.",
+    "link": "/playground"
+  }
+]

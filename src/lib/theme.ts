@@ -22,6 +22,8 @@ import {
   type ThemePreference,
 } from "@/themes/preference";
 
+import { COOKIE_DOMAIN } from "@/lib/site-url";
+
 export type { ThemePreference } from "@/themes/preference";
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
@@ -78,7 +80,10 @@ export function setTheme(pref: ThemePreference): void {
 
   applyTheme(pref);
 
-  document.cookie = `${THEME_COOKIE}=${pref}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+  // On `.cuberhub.me` when the hosts are split, so a theme picked on the
+  // landing page carries into the app. The name stays `cubehub-theme`.
+  const domain = COOKIE_DOMAIN ? `; domain=${COOKIE_DOMAIN}` : "";
+  document.cookie = `${THEME_COOKIE}=${pref}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax${domain}`;
 
   for (const listener of listeners) listener();
 }

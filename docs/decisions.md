@@ -60,6 +60,67 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **They render only when `VERCEL=1`.** Off Vercel the scripts at `/_vercel/*` don't exist, so they would 404 in `next start` and in Playwright. The e2e tests check that no request fails, and test traffic would count as visits. The components have no "off" setting (`mode` is `auto`, `development` or `production`, and development fetches a debug script from `va.vercel-scripts.com`), so the layout doesn't render them at all off Vercel. `tests/e2e/analytics.spec.ts` checks that they stay off.
 
+## Hosts and app shell
+
+**Two hosts, one deployment** (app shell plan D1–D7, 2026-11-24). `cuberhub.me` serves marketing pages, `app.cuberhub.me` the product. `routeForHost()` in `src/lib/host-routing.ts` decides; `src/proxy.ts` acts on it before the session refresh. With `NEXT_PUBLIC_APP_URL` unset (previews, local dev, and production until go-live) it passes everything.
+
+**Unknown paths on the root host go to the app host.** The plan says both "anything not on the root list belongs to the app host" and "unknown paths pass, so each host renders its own 404". Both can't hold without a list of app paths, which the plan rules out (a new app route must need no routing change). The single `ROOT_PATHS` list wins: an unknown path on `cuberhub.me` 308s to `app.cuberhub.me`, which renders the 404. On the app host, unknown paths pass.
+
+**Requests to any third host pass.** A `*.vercel.app` deployment URL keeps serving every page, so a production deployment can still be checked by its own URL.
+
+**`NEXT_PUBLIC_APP_URL=""` counts as unset** (`||`, not `??`), so an empty Vercel variable can't split the hosts by accident.
+
+**The app host's sitemap lists public profiles, minus placeholder handles.** The plan adds public profiles (before, no profile was in any sitemap). Profiles still on the signup trigger's `user_<12 hex>` handle are skipped: nobody has set them up, so there's nothing to index. Private profiles are never listed (`is_public = true` only).
+
+**The app host's robots.txt also allows `/_next/`, `/cubing/` and `/images/`.** The plan says allow `/learn/` and `/profile/` and disallow the rest; without these three, Google can't fetch the scripts, styles and images those pages need to render.
+
+**App pages take the app origin as `metadataBase`.** `(app)/layout.tsx` and `(auth)/layout.tsx` export `metadataBase: new URL(APP_URL)`, so relative canonicals and `og:url` (the case pages use them) resolve to `app.cuberhub.me`. That was the whole canonical audit: no other code builds absolute URLs from `SITE_URL`.
+
+**`COOKIE_DOMAIN` is undefined on localhost.** Browsers refuse `domain=.localhost`, so a local split-host setup (`localhost` + `app.localhost`) can test redirects but not a shared sign-in; that check needs the real domains (or a preview with custom domains).
+
+**`/home` exists on `feat/app-shell` as a placeholder that redirects to `/timer`.** Step 3 sends signed-in visitors of `/login` to `/home`, step 1 sends the app host's `/` there, and the sidebar logo links there, but the Home page is `feat/home`'s job. The placeholder keeps every link working if the shell merges first; `feat/home` replaces it.
+
+**Handoff details** (app shell step 4). `HANDOFF_UNTIL` is 2027-03-01 IST, as suggested. Only GET/HEAD are handed off (a form post to an app path on the root host gets the plain 308). The sender reads the destination from the address bar (a rewrite keeps the original URL) and falls back to `?next=`; both pass `safeNextPath()`, which only allows same-origin paths. The receiver answers only messages from `SITE_URL` sent by its parent frame. On timeout the visitor goes on without the cookie, so the next visit retries. It relies on the two hosts being the same *site*, so the iframe's storage isn't partitioned.
+
+**No two-origin e2e test yet.** `localhost` and `app.localhost` are different sites to the browser (no public-suffix entry), so the receiver iframe would get partitioned storage locally and a local test would fail for a reason production doesn't have. The logic is unit-tested (`handoff.test.ts`, the handoff block in `host-routing.test.ts`); the real check is manual, on a preview with both custom domains, before go-live (listed in the overnight report).
+
+**Sidebar implementation choices** (app shell step 5).
+- *Widths are CSS, not `motion`.* The browse default ("Rail between md and lg, Expanded from lg") depends on the width, which the server doesn't know; keyed CSS on `data-sidebar-state` gets the first paint right with no flash, and a 200 ms `transition-[width]` (off under `prefers-reduced-motion`) does what the plan asked of `motion`.
+- *The cookie stores only explicit choices.* A group with no entry uses its default, so a user who never touched the sidebar keeps the width-dependent default. The value is URI-encoded JSON; the plan's plain JSON form is also read.
+- *Shortcuts lock while the timer is holding, ready, inspecting or running,* not while it shows a stopped result: "while the timer is not idle" read literally would block Ctrl+B between solves. The timer sets the lock in the sidebar store; the sidebar never reads the timer store.
+- *Learn's sub-items come from a cached, cookie-free read* (`getLearnNav()`, `unstable_cache`, 1 hour) so the app layout doesn't add a database round trip to every page. Next 16 recommends `"use cache"` instead, but that needs Cache Components switched on project-wide, which is a bigger change than this step.
+- *The shadcn CLI added an npm package called `cn`* and pointed the new primitives' imports at it. Reverted: the primitives import `cn` from `@/lib/utils` like the rest of `components/ui`, and `package.json` is unchanged.
+
+**`navbar.tsx` stays.** The plan says delete it once nothing imports it; the marketing header (`components/marketing/marketing-header.tsx`) still renders it on the landing page, so it remains, used by `(marketing)` only.
+
+**Phones: the slim top bar with the bell and avatar is part of the Home page** (`feat/home`), since `/home` is a placeholder on `feat/app-shell`. Until then, unread notifications show as a dot on the More tab and a count on Profile inside the More sheet (before, the dot sat on the Profile tab).
+
+## Home
+
+**Home follows the Stats page for solve data** (2026-11-24, home plan steps 1–4). The plan has signed-in cards as async server components; the stats and streak cards instead read solves in the browser through the timer's repository (`createSupabaseRepo(userId)` or `localRepo`), exactly as `/stats` does, so a guest and a member see the same numbers computed the same way. Cards whose data only exists on the server (learning, drill queue, friends, clubs) are async server components in their own `<Suspense>`.
+
+**Visitor detection.** Members: solve count from their own profile stats (`getPublicProfile`), under 20 is "new". Guests: local solve count across events. A first-time guest also gets a Playground card (the plan's "Learn and Playground cards"), so `playground` is a card id.
+
+**"Continue learning" picks the series with the most cases learned that isn't finished.** The profile stats have no "last touched" time per series, which "most recent activity" would need.
+
+**The welcome card's "Pick your main puzzle" ticks once the timer has a saved event** (`cubehub.timer.event`), the only per-user puzzle choice the app stores today.
+
+**Saved layouts are `{ hidden, shown, order? }`**, not just `{ hidden, order }`: Streak and goal is off by default and can be switched on, which needs a list of cards switched on. Unknown ids are dropped on read.
+
+**The stats card's line is the last 30 solve times, not `spreadTrend()`.** The plan names `spreadTrend()` for a "30-solve trend sparkline", but that function charts the spread over 25-solve chunks and needs 50+ solves to draw anything. The card draws the last 30 counted times with the existing `Sparkline` and says "improving / steady / slower" by comparing the two halves (2% band); the Stats page keeps the spread chart.
+
+**No case diagram on the Continue learning card yet.** Drawing one needs cubing.js, and the plan also says Home loads no cubing.js up front; the card shows the next case's name and main algorithm instead. A lazy diagram can follow with the daily scramble's lazy cube preview.
+
+**The daily goal is stored per device** (`cubehub.home.dailyGoal`): `goal-storage.ts` holds per-puzzle time goals, and syncing it would need another `user_settings` column. Home's stats and streak look back 90 days and use the last-used puzzle's solves (the timer's per-device event).
+
+**No unread counts on the clubs card.** The app has no per-member "last read" state for club posts, so there is nothing to count; the card shows each club's newest post's first line (up to three clubs, one query each). Unread counts need a read-marker table first.
+
+**Dismissals are per device.** "What's new" dismissals and "hide today's tip" live in localStorage (`cubehub.home.dismissedChanges`, `cubehub.home.tipDismissedOn`), not on the account. The tip has no "Cubby off" check yet because there's no Cubby setting.
+
+**`user_settings.home_layout` is a migration file, not applied** (`supabase/migrations/20261124000000_home_layout.sql`), per the overnight rules. Until it's applied, `getHomeLayout()` logs the error and returns null (the default layout), so Home works; a signed-in cuber's Customize changes show "Couldn't save your layout". Guests are unaffected (localStorage `cubehub.home.v1`). No new RLS policy: `settings_all` covers the column. A check constraint keeps the value a JSON object under 4 KB.
+
+**The Customize button sits right-aligned just above the cards**, not in the greeting row: which cards a member can switch depends on their visitor state, which streams in with the cards, and the greeting row renders before that.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.

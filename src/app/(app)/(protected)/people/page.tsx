@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { ClubCard, ClubGrid } from "@/components/clubs/club-card";
 import { EmptyState, PersonList, PersonRow } from "@/components/social/person-row";
+import { feedDate, feedLine } from "@/components/social/feed-line";
 import { FollowButton } from "@/components/social/follow-button";
 import { PeopleSearch } from "@/components/social/people-search";
 import { RequestActions } from "@/components/social/row-actions";
@@ -11,8 +12,6 @@ import { getUser } from "@/lib/auth/dal";
 import { getMyClubs } from "@/lib/clubs/dal";
 import { createClient } from "@/lib/supabase/server";
 import { getActivityFeed, getPendingRequests, getSuggestions } from "@/lib/social/dal";
-import type { FeedItem } from "@/lib/social/types";
-import { eventLabel, isTimerEvent } from "@/lib/timer/events";
 import { formatMs } from "@/lib/timer/format";
 import { cn } from "@/lib/utils";
 
@@ -30,14 +29,6 @@ interface Props {
 type Tab = "feed" | "find" | "clubs" | "requests";
 
 const FEED_DAYS = 30;
-
-const CATEGORY_LABEL: Record<string, string> = {
-  single: "single",
-  mean3: "Mo3",
-  ao5: "Ao5",
-  ao12: "Ao12",
-  ao100: "Ao100",
-};
 
 export default async function PeoplePage({ searchParams }: Props) {
   const sp = await searchParams;
@@ -194,47 +185,6 @@ async function Feed({ scope }: { scope: "following" | "everyone" }) {
       )}
     </section>
   );
-}
-
-function eventName(puzzle: string | null): string {
-  if (!puzzle) return "";
-  return isTimerEvent(puzzle) ? eventLabel(puzzle) : puzzle;
-}
-
-function feedLine(item: FeedItem): React.ReactNode {
-  const time = (ms: number | null) =>
-    ms === null ? null : <span className="font-mono font-semibold text-foreground tabular-nums">{formatMs(ms)}</span>;
-  switch (item.kind) {
-    case "pb":
-      return (
-        <>
-          New {eventName(item.puzzleType)} {CATEGORY_LABEL[item.category ?? ""] ?? item.category} PB {time(item.timeMs)}
-        </>
-      );
-    case "practice":
-      return (
-        <>
-          {item.n} {eventName(item.puzzleType)} solve{item.n === 1 ? "" : "s"}
-          {item.timeMs !== null && <> · best {time(item.timeMs)}</>}
-        </>
-      );
-    case "badge":
-      return (
-        <>
-          Earned <span className="font-medium text-foreground">{item.label}</span>
-        </>
-      );
-    case "learned":
-      return (
-        <>
-          Learned {item.n} {item.label} case{item.n === 1 ? "" : "s"}
-        </>
-      );
-  }
-}
-
-function feedDate(at: string): string {
-  return new Date(at).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" });
 }
 
 function Requests({ requests }: { requests: Awaited<ReturnType<typeof getPendingRequests>> }) {

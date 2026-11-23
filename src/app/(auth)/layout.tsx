@@ -1,8 +1,17 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { CubeMark } from "@/components/layout/logo";
 import { getUser } from "@/lib/auth/dal";
+import { APP_URL } from "@/lib/site-url";
+
+/**
+ * App pages resolve relative canonical and Open Graph URLs against the app
+ * origin, not the marketing one the root layout sets (docs/app-shell-plan.md →
+ * Robots and sitemaps). The same origin in single-host mode.
+ */
+export const metadata: Metadata = { metadataBase: new URL(APP_URL) };
 
 /**
  * Sign-in / sign-up pages. Deliberately outside the `(app)` group so they
@@ -14,7 +23,7 @@ export default async function AuthLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   // Already signed in? No reason to show login/signup.
   if (await getUser()) {
-    redirect("/timer");
+    redirect("/home");
   }
 
   return (

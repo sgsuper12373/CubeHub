@@ -43,7 +43,7 @@ export function StepToc({ steps }: StepTocProps) {
 
   return (
     <aside className="hidden lg:block w-72 shrink-0">
-      <div className="sticky top-24 space-y-3 p-4 rounded-2xl bg-muted/10 border border-border backdrop-blur-md">
+      <div className="sticky top-8 space-y-3 p-4 rounded-2xl bg-muted/10 border border-border backdrop-blur-md">
         <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-2">
           Tutorial Steps
         </h4>

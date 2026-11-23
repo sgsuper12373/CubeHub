@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { markAllNotificationsRead } from "@/lib/notifications/actions";
 import { notificationHref, notificationText, timeAgo, type NotificationItem } from "@/lib/notifications/types";
 import { cn } from "@/lib/utils";
+import { useOverlayLock } from "@/stores/overlay-store";
 
 /**
  * The bell: unread count, and the latest notifications in a popover. Opening
@@ -23,13 +24,23 @@ export function NotificationBell({
   items,
   unread,
   onRead,
+  side = "bottom",
+  label = false,
+  className,
 }: {
   items: NotificationItem[];
   unread: number;
   onRead?: () => void;
+  /** Where the list opens: below the navbar's bell, beside the sidebar's. */
+  side?: "bottom" | "right";
+  /** Show "Notifications" beside the bell (the expanded sidebar). */
+  label?: boolean;
+  className?: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  // Space must not reach the timer behind the open list.
+  useOverlayLock(open);
   const [, startTransition] = useTransition();
 
   function onOpenChange(next: boolean) {
@@ -51,20 +62,23 @@ export function NotificationBell({
         render={
           <Button
             variant="ghost"
-            size="icon-sm"
-            className="relative"
+            size={label ? "sm" : "icon-sm"}
+            className={cn("relative", className)}
             aria-label={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"}
           />
         }
       >
-        <Bell />
-        {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] leading-4 font-bold text-primary-foreground">
-            {unread > 9 ? "9+" : unread}
-          </span>
-        )}
+        <span className="relative inline-flex">
+          <Bell />
+          {unread > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 flex min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] leading-4 font-bold text-primary-foreground">
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
+        </span>
+        {label && <span className="sidebar-label truncate">Notifications</span>}
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 gap-1 p-1.5">
+      <PopoverContent align="end" side={side} className="w-80 gap-1 p-1.5">
         <div className="flex items-center justify-between px-2 pt-1 pb-1.5">
           <p className="text-sm font-semibold text-foreground">Notifications</p>
           <Link href="/people" onClick={() => setOpen(false)} className="text-xs font-medium text-primary hover:underline">
