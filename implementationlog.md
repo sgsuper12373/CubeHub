@@ -5,6 +5,35 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — App shell step 4: handoff pages
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 4.
+
+### Changed
+
+- `src/lib/handoff.ts` (new): `HANDOFF_UNTIL` (2027-03-01), the `cubehub-handoff-done` cookie,
+  pure helpers (collect/apply `cubehub` keys without overwriting, `safeNextPath`, message guard).
+- `src/lib/host-routing.ts`: on the root host an app page load is rewritten to
+  `/handoff?next=…` until the cookie is set or the date passes; `/handoff` joins `ROOT_PATHS`.
+  `src/proxy.ts` passes the method and the cookie.
+- `src/app/handoff/page.tsx` + `components/handoff/handoff-sender.tsx` (root host, no chrome):
+  nothing to move → cookie and redirect; otherwise a hidden iframe to `/handoff/receive`, post the
+  keys and the timer background (IndexedDB) to `APP_URL`, cookie and redirect on `done`, redirect
+  without the cookie after 5 s.
+- `src/app/handoff/receive/page.tsx` + `handoff-receiver.tsx` (app host, noindex): accepts
+  messages from `SITE_URL` only, writes only absent keys and an absent background, replies `done`.
+- Tests: `tests/unit/handoff.test.ts` (new), handoff cases in `host-routing.test.ts`.
+
+### Kept on purpose
+
+- Old data is never deleted. No two-origin e2e (see `decisions.md` → Hosts and app shell).
+
+### Verified
+
+`npm run validate`, `npm run check:colors`.
+
+---
+
 ## 2026-11-24 — App shell step 3: cookies across hosts
 
 **Request:** Overnight run, `docs/app-shell-plan.md` step 3.

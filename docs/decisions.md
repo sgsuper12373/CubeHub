@@ -80,6 +80,10 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **`/home` exists on `feat/app-shell` as a placeholder that redirects to `/timer`.** Step 3 sends signed-in visitors of `/login` to `/home`, step 1 sends the app host's `/` there, and the sidebar logo links there, but the Home page is `feat/home`'s job. The placeholder keeps every link working if the shell merges first; `feat/home` replaces it.
 
+**Handoff details** (app shell step 4). `HANDOFF_UNTIL` is 2027-03-01 IST, as suggested. Only GET/HEAD are handed off (a form post to an app path on the root host gets the plain 308). The sender reads the destination from the address bar (a rewrite keeps the original URL) and falls back to `?next=`; both pass `safeNextPath()`, which only allows same-origin paths. The receiver answers only messages from `SITE_URL` sent by its parent frame. On timeout the visitor goes on without the cookie, so the next visit retries. It relies on the two hosts being the same *site*, so the iframe's storage isn't partitioned.
+
+**No two-origin e2e test yet.** `localhost` and `app.localhost` are different sites to the browser (no public-suffix entry), so the receiver iframe would get partitioned storage locally and a local test would fail for a reason production doesn't have. The logic is unit-tested (`handoff.test.ts`, the handoff block in `host-routing.test.ts`); the real check is manual, on a preview with both custom domains, before go-live (listed in the overnight report).
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.

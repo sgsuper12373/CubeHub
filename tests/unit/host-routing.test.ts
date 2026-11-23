@@ -7,8 +7,10 @@ const SINGLE: HostConfig = { siteUrl: "https://cuberhub.me", appUrl: "https://cu
 const ROOT = "cuberhub.me";
 const APP = "app.cuberhub.me";
 
+// Most cases are about a browser that has already been handed off; the
+// handoff rule has its own block below.
 const route = (host: string, path: string, search = "", config = SPLIT) =>
-  routeForHost(host, path, search, config);
+  routeForHost(host, path, search, config, { handoffDone: true });
 
 describe("routeForHost", () => {
   it("passes everything in single-host mode", () => {
@@ -117,6 +119,52 @@ describe("routeForHost", () => {
     });
     // Same hostname, different port: a different host.
     expect(route("localhost:3100", "/timer", "", local)).toEqual({ kind: "pass" });
+  });
+});
+
+describe("routeForHost: guest data handoff", () => {
+  const BEFORE = new Date("2026-12-01T12:00:00Z");
+  const AFTER = new Date("2027-03-02T00:00:00Z");
+
+  it("shows the handoff page for an app path on the root host until the cookie is set", () => {
+    expect(routeForHost(ROOT, "/timer", "?x=1", SPLIT, { now: BEFORE })).toEqual({
+      kind: "rewrite",
+      to: "/handoff?next=%2Ftimer%3Fx%3D1",
+    });
+    expect(routeForHost(ROOT, "/timer", "?x=1", SPLIT, { now: BEFORE, handoffDone: true })).toEqual({
+      kind: "redirect",
+      to: "https://app.cuberhub.me/timer?x=1",
+      status: 308,
+    });
+  });
+
+  it("switches off after HANDOFF_UNTIL", () => {
+    expect(routeForHost(ROOT, "/timer", "", SPLIT, { now: AFTER })).toMatchObject({ kind: "redirect", status: 308 });
+  });
+
+  it("only hands off page loads, not form posts", () => {
+    expect(routeForHost(ROOT, "/timer", "", SPLIT, { now: BEFORE, method: "POST" })).toMatchObject({
+      kind: "redirect",
+    });
+    expect(routeForHost(ROOT, "/timer", "", SPLIT, { now: BEFORE, method: "HEAD" })).toMatchObject({
+      kind: "rewrite",
+    });
+  });
+
+  it("leaves marketing pages, the handoff pages and the app host alone", () => {
+    for (const path of ["/", "/features/timer", "/handoff"]) {
+      expect(routeForHost(ROOT, path, "", SPLIT, { now: BEFORE })).toEqual({ kind: "pass" });
+    }
+    expect(routeForHost(ROOT, "/handoff/receive", "", SPLIT, { now: BEFORE })).toMatchObject({
+      kind: "redirect",
+      to: "https://app.cuberhub.me/handoff/receive",
+    });
+    expect(routeForHost(APP, "/timer", "", SPLIT, { now: BEFORE })).toEqual({ kind: "pass" });
+    expect(routeForHost(APP, "/handoff/receive", "", SPLIT, { now: BEFORE })).toEqual({ kind: "pass" });
+  });
+
+  it("never applies in single-host mode", () => {
+    expect(routeForHost(ROOT, "/timer", "", SINGLE, { now: BEFORE })).toEqual({ kind: "pass" });
   });
 });
 

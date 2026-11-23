@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { HANDOFF_COOKIE } from "@/lib/handoff";
 import { routeForHost } from "@/lib/host-routing";
 import { updateSession } from "@/lib/supabase/proxy";
 
@@ -16,6 +17,8 @@ export async function proxy(request: NextRequest) {
     request.headers.get("host") ?? "",
     request.nextUrl.pathname,
     request.nextUrl.search,
+    undefined,
+    { method: request.method, handoffDone: request.cookies.has(HANDOFF_COOKIE) },
   );
   if (decision.kind === "redirect") return NextResponse.redirect(decision.to, decision.status);
   if (decision.kind === "rewrite") return NextResponse.rewrite(new URL(decision.to, request.url));

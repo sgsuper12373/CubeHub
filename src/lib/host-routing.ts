@@ -1,3 +1,4 @@
+import { HANDOFF_UNTIL } from "@/lib/handoff";
 import { APP_URL, SITE_URL } from "@/lib/site-url";
 
 /**
@@ -23,6 +24,16 @@ export interface HostConfig {
 
 const DEFAULT_CONFIG: HostConfig = { siteUrl: SITE_URL, appUrl: APP_URL };
 
+/** Per-request facts the guest data handoff rule needs (lib/handoff.ts). */
+export interface RequestState {
+  /** The request method; only page loads (GET, HEAD) are handed off. */
+  method?: string;
+  /** Whether the `cubehub-handoff-done` cookie is present. */
+  handoffDone?: boolean;
+  /** Now, for the HANDOFF_UNTIL cut-off. */
+  now?: Date;
+}
+
 /**
  * Paths served by the marketing host: exact paths, or prefixes when they end
  * in "/**". Anything not listed belongs to the app host, so a new app route
@@ -35,6 +46,9 @@ export const ROOT_PATHS: readonly string[] = [
   "/about",
   "/privacy",
   "/terms",
+  // The guest data handoff sender (src/app/handoff). Its receiver,
+  // /handoff/receive, is an app path.
+  "/handoff",
 ];
 
 /** Metadata image routes Next generates, at any depth (e.g. a case's opengraph-image). */
@@ -71,6 +85,7 @@ export function routeForHost(
   pathname: string,
   search: string,
   config: HostConfig = DEFAULT_CONFIG,
+  state: RequestState = {},
 ): HostDecision {
   const siteHost = hostOf(config.siteUrl);
   const appHost = hostOf(config.appUrl);
@@ -100,6 +115,17 @@ export function routeForHost(
     return { kind: "redirect", to: `${config.siteUrl}${pathname}${search}`, status: 308 };
   }
   if (onRoot && !belongsOnRoot) {
+    // Until HANDOFF_UNTIL, a browser that hasn't been handed off yet gets the
+    // handoff page first, so a guest's local solves follow them to the app host.
+    const method = (state.method ?? "GET").toUpperCase();
+    if (
+      !state.handoffDone &&
+      (method === "GET" || method === "HEAD") &&
+      (state.now ?? new Date()) < HANDOFF_UNTIL &&
+      !pathname.startsWith("/handoff/")
+    ) {
+      return { kind: "rewrite", to: `/handoff?next=${encodeURIComponent(pathname + search)}` };
+    }
     return { kind: "redirect", to: `${config.appUrl}${pathname}${search}`, status: 308 };
   }
 
