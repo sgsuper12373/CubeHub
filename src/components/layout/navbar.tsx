@@ -11,7 +11,6 @@ import type { CurrentProfile } from "@/lib/auth/dal";
 import { activeNavHref, navItems } from "@/lib/navigation";
 import type { NotificationItem } from "@/lib/notifications/types";
 import { cn } from "@/lib/utils";
-import { useLayoutStore } from "@/stores/layout-store";
 
 export function Navbar({
   profile,
@@ -28,10 +27,6 @@ export function Navbar({
 }) {
   const pathname = usePathname();
   const activeHref = activeNavHref(pathname, navItems, profile?.username ?? null);
-  const isZenMode = useLayoutStore((s) => s.isZenMode);
-
-  if (isZenMode) return null;
-
   return (
     <header className="sticky top-0 z-40 hidden border-b bg-background/80 backdrop-blur-sm md:block" data-focus-hide>
       <nav className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 lg:gap-6">

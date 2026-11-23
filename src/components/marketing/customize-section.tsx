@@ -77,7 +77,7 @@ const MORE = [
   { icon: EyeOff, label: "Hide time while solving" },
   { icon: Type, label: "Timer size" },
   { icon: LayoutGrid, label: "Drag-and-drop panel layout" },
-  { icon: Maximize, label: "Zen, full-screen and blind modes" },
+  { icon: Maximize, label: "Hide-UI, full-screen and blind modes" },
   { icon: Upload, label: "Import from csTimer" },
 ] as const;
 

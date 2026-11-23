@@ -5,6 +5,28 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — App shell step 7: timer modes
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 7.
+
+### Changed
+
+- `timer-modes.tsx`: the Zen toggle is gone; Focus is labelled "Hide UI while solving".
+- `layout-store.ts`: `isZenMode` / `setZenMode` removed; `navbar.tsx`, `bottom-nav.tsx` and
+  `timer-screen.tsx` no longer check it (the "Exit Zen Mode" button and its Escape handler went too).
+- `lib/timer/focus.ts`: `loadFocusMode()` is true when nothing is saved; a saved "0" stays off.
+- The sidebar, its hover zone and show button carry `data-focus-hide`, so the existing
+  `data-focus-solving` rule in `globals.css` hides them mid-solve (no CSS change needed).
+- The solve dim (`fadeWhileSolving`) stays as the fallback when Focus is off; comment updated.
+- Landing copy in `customize-section.tsx`: "Hide-UI, full-screen and blind modes".
+- `docs/timer.md` → Modes; `tests/unit/focus-mode.test.ts` for the new default.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`.
+
+---
+
 ## 2026-11-24 — App shell step 6: swap the shell
 
 **Request:** Overnight run, `docs/app-shell-plan.md` step 6.

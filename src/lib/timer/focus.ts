@@ -21,11 +21,15 @@ export const FOCUS_ATTR = "data-focus-solving";
 
 const STORAGE_KEY = "cubehub-focus-mode";
 
+/**
+ * On by default (docs/app-shell-plan.md → Timer: retiring Zen mode): a new
+ * user, with no saved choice, gets it. Anyone who turned it off keeps it off.
+ */
 export function loadFocusMode(): boolean {
   try {
-    return localStorage.getItem(STORAGE_KEY) === "1";
+    return localStorage.getItem(STORAGE_KEY) !== "0";
   } catch {
-    return false;
+    return true;
   }
 }
 

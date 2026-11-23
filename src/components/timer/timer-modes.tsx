@@ -1,6 +1,6 @@
 "use client";
 
-import { Monitor, Expand, EyeOff, Trophy, Settings2, Focus } from "lucide-react";
+import { Monitor, EyeOff, Trophy, Settings2, Focus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -11,8 +11,6 @@ import { cn } from "@/lib/utils";
 import type { TimerSettings } from "@/lib/timer/types";
 
 export function TimerModes({ isAuthed }: { isAuthed?: boolean }) {
-  const isZenMode = useLayoutStore((s) => s.isZenMode);
-  const setZenMode = useLayoutStore((s) => s.setZenMode);
   const isFocusMode = useLayoutStore((s) => s.isFocusMode);
   const setFocusMode = useLayoutStore((s) => s.setFocusMode);
   const settings = useTimerStore((s) => s.settings);
@@ -47,15 +45,9 @@ export function TimerModes({ isAuthed }: { isAuthed?: boolean }) {
         
         <div className="flex flex-col gap-1">
           <ModeToggle
-            icon={Expand}
-            label="Zen Mode"
-            active={isZenMode}
-            onToggle={(v) => setZenMode(v)}
-          />
-          <ModeToggle
             icon={Focus}
-            label="Focus Mode"
-            hint="Hide everything but the timer while solving"
+            label="Hide UI while solving"
+            hint="Everything but the timer, including the sidebar and bottom nav"
             active={isFocusMode}
             onToggle={(v) => setFocusMode(v)}
           />

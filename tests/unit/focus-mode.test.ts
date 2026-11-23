@@ -27,10 +27,17 @@ describe("isFocusHidden", () => {
 describe("Focus Mode persistence", () => {
   beforeEach(() => localStorage.clear());
 
-  it("defaults to off and round-trips through localStorage", () => {
+  it("defaults to on for new users and round-trips through localStorage", () => {
+    expect(loadFocusMode()).toBe(true);
+    saveFocusMode(false);
     expect(loadFocusMode()).toBe(false);
     saveFocusMode(true);
     expect(loadFocusMode()).toBe(true);
+  });
+
+  it("keeps it off for users who turned it off", () => {
+    localStorage.setItem("cubehub-focus-mode", "0");
+    expect(loadFocusMode()).toBe(false);
   });
 
   it("is saved by the layout store and restored on hydrate", () => {

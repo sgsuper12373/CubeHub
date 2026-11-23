@@ -91,8 +91,12 @@ both rules over the imported solves, oldest first. Database side:
 `20261021000000_misstops.sql` and `docs/database.md` → Which solves count.
 
 ### Modes
-- **Zen:** everything but the digits dims while solving.
-- **Focus:** everything but the digits is hidden while solving, including the navigation.
+- **Hide UI while solving** (Focus mode): everything but the digits is hidden while solving,
+  including the sidebar (and its hover zone) and the bottom nav. **On by default** for new users
+  (no saved `cubehub-focus-mode`); anyone who turned it off keeps it off. With it off, everything
+  but the digits still dims while solving.
+- Zen mode was retired with the app shell (Nov 2026, `docs/app-shell-plan.md` D7): a hidden
+  sidebar plus Focus mode covers it.
 - **Blind:** the time is hidden while running.
 - **Fullscreen.**
 - **WCA / competition:** 15s inspection.
