@@ -35,7 +35,7 @@ export function Navbar({
   return (
     <header className="sticky top-0 z-40 hidden border-b bg-background/80 backdrop-blur-sm md:block" data-focus-hide>
       <nav className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 lg:gap-6">
-        <Link href="/" aria-label="CubeHub home" className="text-lg">
+        <Link href="/" aria-label="CuberHub home" className="text-lg">
           <Logo />
         </Link>
         {/* Labels show from lg up; between md and lg eight labelled links

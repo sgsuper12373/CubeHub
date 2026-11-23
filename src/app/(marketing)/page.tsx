@@ -7,7 +7,7 @@ import { FeatureBento } from "@/components/marketing/feature-bento";
 import { HeroSection } from "@/components/marketing/hero-section";
 
 export const metadata: Metadata = {
-  title: "CubeHub — Speedcubing Timer, Tutorials & Stats",
+  title: "CuberHub — Speedcubing Timer, Tutorials & Stats",
   description:
     "A speedcubing timer that works the moment you land — WCA scrambles, inspection, sessions and stats. Plus OLL and PLL tutorials, an algorithm drill and cuber profiles.",
 };

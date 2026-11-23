@@ -16,11 +16,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const puzzleData = await getPuzzle(resolvedParams.puzzle);
   
   if (!puzzleData) {
-    return { title: "Not Found | CubeHub" };
+    return { title: "Not Found | CuberHub" };
   }
 
   return {
-    title: `${puzzleData.name} | Learn | CubeHub`,
+    title: `${puzzleData.name} | Learn | CuberHub`,
     description: puzzleData.description,
   };
 }

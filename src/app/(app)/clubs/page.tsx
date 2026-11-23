@@ -10,7 +10,7 @@ import { getMyClubs, searchClubs } from "@/lib/clubs/dal";
 import { CLUB_TAGS, CLUB_TYPES } from "@/lib/clubs/types";
 
 export const metadata: Metadata = {
-  title: "Clubs — CubeHub",
+  title: "Clubs — CuberHub",
   description: "Cubing clubs for schools, colleges, cities and online crews.",
 };
 

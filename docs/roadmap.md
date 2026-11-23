@@ -1,6 +1,6 @@
 # Roadmap
 
-## What CubeHub is
+## What CuberHub is
 
 A single destination for speedcubers — timer, tutorials, competition, and buying advice — replacing the need to juggle csTimer, jperm.net, forums, and shopping sites. India-first: INR pricing, Indian sellers, regional leaderboards. Dark-mode-first, minimal, fast.
 

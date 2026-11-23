@@ -6,7 +6,7 @@ import type { Solve, TimerPuzzle } from "./types";
 /**
  * An average as plain text, in the shape cubers already paste from csTimer:
  *
- *   3x3 Ao5: 12.34 · CubeHub · 11 Oct 2026
+ *   3x3 Ao5: 12.34 · CuberHub · 11 Oct 2026
  *
  *   1. 11.20   R U R' …
  *   2. (10.90)   F2 D …
@@ -51,7 +51,7 @@ export function formatAverageText(
     .map((row, i) => `${i + 1}. ${row.time}${row.scramble ? `   ${row.scramble.replace(/\s*\n\s*/g, " ")}` : ""}`);
 
   return [
-    `${eventLabel(puzzle)} ${WINDOW_LABEL[n]}: ${value} · CubeHub · ${dateLine(when)}`,
+    `${eventLabel(puzzle)} ${WINDOW_LABEL[n]}: ${value} · CuberHub · ${dateLine(when)}`,
     "",
     ...lines,
   ].join("\n");
@@ -60,7 +60,7 @@ export function formatAverageText(
 /** A single as text: the time and its scramble. */
 export function formatSingleText(solve: Solve, puzzle: TimerPuzzle, when: Date = new Date()): string {
   return [
-    `${eventLabel(puzzle)} single: ${formatResult(solve.timeMs, solve.penalty)} · CubeHub · ${dateLine(when)}`,
+    `${eventLabel(puzzle)} single: ${formatResult(solve.timeMs, solve.penalty)} · CuberHub · ${dateLine(when)}`,
     "",
     solve.scramble.replace(/\s*\n\s*/g, " "),
   ].join("\n");

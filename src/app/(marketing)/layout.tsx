@@ -25,7 +25,7 @@ export default function MarketingLayout({
       <MarketingNavbar />
 
       <header className="sticky top-0 z-40 flex h-14 items-center border-b border-border bg-background/80 px-4 backdrop-blur-sm md:hidden">
-        <Link href="/" aria-label="CubeHub home">
+        <Link href="/" aria-label="CuberHub home">
           <Logo />
         </Link>
         <div className="ml-auto">

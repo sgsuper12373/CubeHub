@@ -5,7 +5,7 @@ import { FeatureSection } from "@/components/learn/feature-section";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Learn | CubeHub",
+  title: "Learn | CuberHub",
   description: "Learn how to solve Rubik's Cubes of all types with our free tutorials.",
 };
 

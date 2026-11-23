@@ -36,7 +36,7 @@ export function ClubReportMenu({ clubId, name }: { clubId: string; name: string 
         open={open}
         onOpenChange={setOpen}
         title={`Report ${name}`}
-        description="Reports are private and go to the CubeHub team. The club's admins aren't told who sent one."
+        description="Reports are private and go to the CuberHub team. The club's admins aren't told who sent one."
         reasons={CLUB_REPORT_REASONS}
         onSubmit={(reason, note) => reportClubContent({ clubId }, reason, note)}
       />

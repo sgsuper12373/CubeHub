@@ -22,11 +22,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getSeries(resolvedParams.puzzle, resolvedParams.series);
 
   if (!data) {
-    return { title: "Not Found | CubeHub" };
+    return { title: "Not Found | CuberHub" };
   }
 
   return {
-    title: `${data.series.name} | CubeHub`,
+    title: `${data.series.name} | CuberHub`,
     description: data.series.description,
   };
 }

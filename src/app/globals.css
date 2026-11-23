@@ -294,7 +294,7 @@
   }
 }
 
-/* ── CubeHub brand mark + wordmark (src/components/layout/logo.tsx) ────────
+/* ── CuberHub brand mark + wordmark (src/components/layout/logo.tsx) ────────
    Driven by --logo-c / --logo-h / --logo-wire, falling back to the theme's
    --primary / --foreground. Shades are derived with color-mix() so any theme
    gets a matching 3D look. data-logo="classic" on an ancestor gives the

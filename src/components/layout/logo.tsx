@@ -1,14 +1,14 @@
 import { cn } from "@/lib/utils";
 
 /**
- * CubeHub "CH" mark: an isometric wireframe cube with a 3D C wrapped around
+ * CuberHub "CH" mark: an isometric wireframe cube with a 3D C wrapped around
  * its left corner and an H standing on its right face.
  *
  * Colours come from theme tokens, so the mark recolours with the theme:
  *   --logo-c     C, wireframe, nodes, glow  (default --primary)
  *   --logo-h     H and the small cube       (default --foreground)
  *   --logo-wire  wireframe                  (default: same as --logo-c)
- * Face shading is derived with color-mix() in src/app/globals.css ("CubeHub
+ * Face shading is derived with color-mix() in src/app/globals.css ("CuberHub
  * brand mark + wordmark"). See docs/brand.md.
  * Set data-logo="classic" on any ancestor for the original blue/orange look.
  */
@@ -89,7 +89,7 @@ export function Logo({
     <span className={cn("inline-flex items-center gap-2", className)}>
       <CubeMark className={cn("size-8", markClassName)} />
       <span className="chm-wordmark text-lg">
-        cube<span className="chm-wordmark-hub">hub</span>
+        cuber<span className="chm-wordmark-hub">hub</span>
       </span>
     </span>
   );
@@ -124,7 +124,7 @@ export function BrandLockup({
       <CubeMark className="chm-lockup-mark" />
       <span className="chm-lockup-text">
         <span className="chm-wordmark chm-lockup-word">
-          cube<span className="chm-wordmark-hub">hub</span>
+          cuber<span className="chm-wordmark-hub">hub</span>
         </span>
         {tagline ? <span className="chm-tagline">{tagline}</span> : null}
       </span>

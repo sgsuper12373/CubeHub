@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("CubeHub Auth Smoke & Route Gating Tests", () => {
+test.describe("CuberHub Auth Smoke & Route Gating Tests", () => {
   test("1 & 2. Homepage loads logged-out navbar with Sign In button that navigates to /login", async ({ page }) => {
     await page.goto("/");
 

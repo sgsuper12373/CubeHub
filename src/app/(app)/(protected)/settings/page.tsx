@@ -9,7 +9,7 @@ import { UnblockButton } from "@/components/social/row-actions";
 import { getMyBlocks } from "@/lib/social/dal";
 
 export const metadata: Metadata = {
-  title: "Settings — CubeHub",
+  title: "Settings — CuberHub",
 };
 
 export default async function SettingsPage() {

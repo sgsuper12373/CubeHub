@@ -5,7 +5,7 @@ import { parseCsTimer, toSolves } from "@/lib/timer/import-cstimer";
 import type { Session, Solve } from "@/lib/timer/types";
 
 /**
- * A backup you cannot restore is not a backup. CubeHub's own JSON export must
+ * A backup you cannot restore is not a backup. CuberHub's own JSON export must
  * come back through the importer with nothing lost, and importing the same
  * file twice must produce the same ids, so the repositories' upsert-on-id
  * makes the second import a no-op instead of doubling the history.
@@ -56,7 +56,7 @@ function restore(json: string) {
   return { parse, ...toSolves(parse, "333", 5) };
 }
 
-describe("CubeHub backup round trip", () => {
+describe("CuberHub backup round trip", () => {
   it("restores every solve with ids, times, penalties, scrambles, notes and timestamps intact", () => {
     const { parse, sessions: outSessions, solves: outSolves } = restore(toJson("333", sessions, solves));
 

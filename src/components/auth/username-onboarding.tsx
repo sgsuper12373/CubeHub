@@ -54,7 +54,7 @@ export function UsernameOnboarding({
           </div>
           <div>
             <h2 className="text-lg font-semibold tracking-tight">
-              Choose your CubeHub handle
+              Choose your CuberHub handle
             </h2>
             <p className="text-xs text-muted-foreground">
               Personalize your identity for leaderboards and profiles.

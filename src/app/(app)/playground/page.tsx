@@ -5,7 +5,7 @@ import { MAX_ALG_CHARS } from "@/lib/playground/alg-input";
 import { DEFAULT_PLAYGROUND_PUZZLE, isPlaygroundPuzzle } from "@/lib/playground/puzzles";
 
 export const metadata: Metadata = {
-  title: "Playground — CubeHub",
+  title: "Playground — CuberHub",
   description: "Turn, scramble and solve a virtual 3x3 or 2x2 in your browser, and try any algorithm.",
 };
 

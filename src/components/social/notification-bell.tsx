@@ -78,7 +78,7 @@ export function NotificationBell({
         ) : (
           <ul className="max-h-96 overflow-y-auto">
             {items.map((n) => {
-              const name = n.actor ? n.actor.displayName || n.actor.username : "CubeHub";
+              const name = n.actor ? n.actor.displayName || n.actor.username : "CuberHub";
               return (
                 <li key={n.id}>
                   <Link

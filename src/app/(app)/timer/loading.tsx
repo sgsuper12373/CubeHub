@@ -8,7 +8,7 @@ import { CubeMark } from "@/components/layout/logo";
 export default function TimerLoading() {
   return (
     <div role="status" className="flex flex-1 flex-col items-center justify-center gap-4">
-      <CubeMark title="CubeHub" className="size-16 motion-safe:animate-pulse" />
+      <CubeMark title="CuberHub" className="size-16 motion-safe:animate-pulse" />
       <p className="text-sm text-muted-foreground">Loading your timer…</p>
     </div>
   );

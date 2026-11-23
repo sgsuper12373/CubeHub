@@ -31,7 +31,7 @@ describe("UsernameOnboarding Component", () => {
       vi.advanceTimersByTime(1000);
     });
 
-    expect(screen.queryByText("Choose your CubeHub handle")).toBeNull();
+    expect(screen.queryByText("Choose your CuberHub handle")).toBeNull();
   });
 
   it("renders modal automatically when profile handle matches default pattern user_<12 hex>", () => {
@@ -50,7 +50,7 @@ describe("UsernameOnboarding Component", () => {
       vi.advanceTimersByTime(700);
     });
 
-    expect(screen.getByText("Choose your CubeHub handle")).toBeDefined();
+    expect(screen.getByText("Choose your CuberHub handle")).toBeDefined();
     expect(screen.getByPlaceholderText("speedcuber_in")).toBeDefined();
   });
 
@@ -76,6 +76,6 @@ describe("UsernameOnboarding Component", () => {
     });
 
     expect(sessionStorage.getItem("cubehub_skip_username_onboarding")).toBe("true");
-    expect(screen.queryByText("Choose your CubeHub handle")).toBeNull();
+    expect(screen.queryByText("Choose your CuberHub handle")).toBeNull();
   });
 });

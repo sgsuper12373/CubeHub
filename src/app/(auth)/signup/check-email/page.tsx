@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Confirm your email — CubeHub",
+  title: "Confirm your email — CuberHub",
 };
 
 export default async function CheckEmailPage({

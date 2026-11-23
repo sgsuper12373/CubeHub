@@ -19,7 +19,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { puzzle } = await params;
   const data = await getPuzzle(puzzle);
-  return { title: data ? `Drill Lab — ${data.name} | CubeHub` : "Not Found | CubeHub" };
+  return { title: data ? `Drill Lab — ${data.name} | CuberHub` : "Not Found | CuberHub" };
 }
 
 function param(v: string | string[] | undefined): string | null {

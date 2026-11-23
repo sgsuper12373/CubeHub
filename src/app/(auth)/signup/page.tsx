@@ -12,7 +12,7 @@ import {
 import { SignupForm } from "./signup-form";
 
 export const metadata: Metadata = {
-  title: "Sign up — CubeHub",
+  title: "Sign up — CuberHub",
 };
 
 export default async function SignupPage({
@@ -28,7 +28,7 @@ export default async function SignupPage({
       <CardHeader>
         <CardTitle className="text-lg">Create your account</CardTitle>
         <CardDescription>
-          Join CubeHub to track solves, learn, and compete.
+          Join CuberHub to track solves, learn, and compete.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">

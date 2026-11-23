@@ -8,7 +8,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
-  return { title: `Following · @${username} — CubeHub`, robots: { index: false } };
+  return { title: `Following · @${username} — CuberHub`, robots: { index: false } };
 }
 
 export default async function FollowingPage({ params }: Props) {

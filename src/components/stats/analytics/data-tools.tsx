@@ -105,7 +105,7 @@ export function DataMenu({
             <Menu.Separator className="my-1 h-px bg-border" />
             <Menu.Item onClick={onImport} className={itemClass}>
               <Upload className="size-4" aria-hidden />
-              Import (csTimer or CubeHub)
+              Import (csTimer or CuberHub)
             </Menu.Item>
           </Menu.Popup>
         </Menu.Positioner>
@@ -215,7 +215,7 @@ export function useImportFlow({
                 {preview.totalSolves > 0 && (
                   <>
                     <Dialog.Description className="mt-1 text-sm text-muted-foreground">
-                      From a {preview.source === "cubehub" ? "CubeHub backup" : "csTimer export"}.
+                      From a {preview.source === "cubehub" ? "CuberHub backup" : "csTimer export"}.
                       Imported sessions are added alongside your existing ones; nothing is
                       replaced.
                     </Dialog.Description>

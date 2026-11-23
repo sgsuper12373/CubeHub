@@ -351,7 +351,7 @@ function AccountSection({
           <div>
             <p className="text-sm font-medium">Sign out</p>
             <p className="text-xs text-muted-foreground">
-              Log out of your CubeHub account on this device.
+              Log out of your CuberHub account on this device.
             </p>
           </div>
           <Button

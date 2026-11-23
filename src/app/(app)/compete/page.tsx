@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Compete — CubeHub",
+  title: "Compete — CuberHub",
 };
 
 export default function CompetePage() {

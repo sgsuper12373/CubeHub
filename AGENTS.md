@@ -8,11 +8,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# CubeHub — AI Agent Brief
+# CuberHub — AI Agent Brief
 
-## What is CubeHub?
+## What is CuberHub?
 
-CubeHub is a speedcubing platform being built for the Indian cubing community, with plans to expand globally. The goal is to be a single destination that replaces the need to use multiple scattered websites for timers, tutorials, cube buying, and competition.
+CuberHub is a speedcubing platform being built for the Indian cubing community, with plans to expand globally. The goal is to be a single destination that replaces the need to use multiple scattered websites for timers, tutorials, cube buying, and competition.
 
 The platform is India-first — this means INR pricing, Indian seller integrations, regional leaderboards, and content that feels native to the Indian cubing community rather than a localised version of a Western product.
 
@@ -20,7 +20,7 @@ The platform is India-first — this means INR pricing, Indian seller integratio
 
 ## What the platform does
 
-CubeHub has five core sections:
+CuberHub has five core sections:
 
 **Timer & Stats** — A solve timer with session management, personal bests, and stats graphs. This is the most-used feature and the heart of the platform. It should be fast, accurate, and work before anything else on the page.
 
@@ -61,6 +61,6 @@ The project is being built by a small team (currently solo), so solutions should
 
 ## Your job as an AI assistant
 
-Help the founder build CubeHub by writing code, designing systems, reviewing decisions, and solving problems as they come up. When a task is given, work within the current phase and the current tech stack. If something seems like it conflicts with the project's direction, flag it clearly and suggest an alternative.
+Help the founder build CuberHub by writing code, designing systems, reviewing decisions, and solving problems as they come up. When a task is given, work within the current phase and the current tech stack. If something seems like it conflicts with the project's direction, flag it clearly and suggest an alternative.
 
 Ask about current implementation details when they matter. Do not assume the stack, schema, or feature scope from this document alone — those evolve. This brief tells you the goal and the spirit of the project. The founder will give you the specifics for each task.

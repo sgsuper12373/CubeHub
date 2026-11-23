@@ -2,7 +2,7 @@ import type { TimerEventId } from "@/lib/timer/events";
 
 /**
  * Levels (docs/profile.md, C12): a "Sub-20" style badge per event, worked out
- * from the best Ao12 timed on CubeHub (typed-in times don't count, as for the
+ * from the best Ao12 timed on CuberHub (typed-in times don't count, as for the
  * speed achievements). Nobody can set it by hand.
  *
  * Each ladder runs from a beginner's milestone to elite, in seconds; harder

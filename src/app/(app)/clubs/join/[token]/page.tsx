@@ -11,7 +11,7 @@ import { getUser } from "@/lib/auth/dal";
 import { getInvitePreview, getMembership } from "@/lib/clubs/dal";
 import { clubTypeLabel } from "@/lib/clubs/types";
 
-export const metadata: Metadata = { title: "Club invite — CubeHub", robots: { index: false } };
+export const metadata: Metadata = { title: "Club invite — CuberHub", robots: { index: false } };
 
 interface Props {
   params: Promise<{ token: string }>;

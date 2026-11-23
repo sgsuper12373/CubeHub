@@ -1,4 +1,4 @@
-# CubeHub
+# CuberHub
 
 All-in-one speedcubing platform for the Indian cubing community — timer & stats, tutorials, ranked real-time matches, and cube buying guidance.
 

@@ -65,14 +65,14 @@ const PB_CATEGORIES = [
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
   const profile = await getPublicProfile(username);
-  if (!profile) return { title: "User not found — CubeHub" };
+  if (!profile) return { title: "User not found — CuberHub" };
 
   const name = profile.displayName || profile.username;
   return {
-    title: `${name} (@${profile.username}) — CubeHub`,
+    title: `${name} (@${profile.username}) — CuberHub`,
     description: profile.isPublic
-      ? `${name}'s solve stats and personal bests on CubeHub.`
-      : `${name} on CubeHub.`,
+      ? `${name}'s solve stats and personal bests on CuberHub.`
+      : `${name} on CuberHub.`,
   };
 }
 
@@ -421,7 +421,7 @@ function EventSection({
         {level && (
           <span
             className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary"
-            title={`From the best Ao12 timed on CubeHub (${formatMs(profile.stats.levels[selected])}), level ${level.tier} of ${level.of}`}
+            title={`From the best Ao12 timed on CuberHub (${formatMs(profile.stats.levels[selected])}), level ${level.tier} of ${level.of}`}
           >
             {level.label} · Ao12
           </span>

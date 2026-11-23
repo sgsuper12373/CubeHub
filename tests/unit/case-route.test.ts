@@ -70,10 +70,10 @@ describe("caseHeading", () => {
 describe("caseMetaTitle", () => {
   it("names the set only when the heading doesn't", () => {
     expect(caseMetaTitle("OLL 27 (Sune)", "OLL", "3x3 Cube", 4)).toBe(
-      "OLL 27 (Sune) Algorithms · 3x3 Cube | CubeHub",
+      "OLL 27 (Sune) Algorithms · 3x3 Cube | CuberHub",
     );
     expect(caseMetaTitle("Aa Perm", "PLL", "3x3 Cube", 1)).toBe(
-      "Aa Perm Algorithm · PLL · 3x3 Cube | CubeHub",
+      "Aa Perm Algorithm · PLL · 3x3 Cube | CuberHub",
     );
   });
 });

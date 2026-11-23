@@ -5,6 +5,47 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — CuberHub rename (landing plan, implementation step 1)
+
+**Request:** Overnight run, item 1: `docs/landing-plan.md` step 1 only. Visible CubeHub →
+CuberHub across the app; wordmark; metadata; OG image.
+
+### Changed
+
+- Every visible "CubeHub" under `src/` (≈50 files): page titles and descriptions, root
+  metadata (`title`, `siteName`, Open Graph, Twitter), aria-labels ("CuberHub home"),
+  `CubeMark title`, onboarding ("Choose your CuberHub handle"), report dialogs, the
+  notification fallback actor, import labels and warnings, share text ("· CuberHub ·"), the
+  PB share line, the club address hint (`cuberhub/clubs/…`), comments.
+- `logo.tsx`: the wordmark reads `cuber`**`hub`** in `Logo` and `BrandLockup`.
+- OG card: `scripts/render-og-card.mjs` (new) re-renders the card from the old SVG's
+  background and mark with the wordmark set in Outfit; output
+  `public/brand/cuberhub-og-{slate,classic}.png`, slate copied to
+  `src/app/opengraph-image.png`; `.alt.txt` updated.
+- `tests/unit/brand-name.test.ts` (new): no whole-word "CubeHub" left in `src/`.
+- Tests that asserted the old strings (unit and e2e).
+- Docs: `README.md`, `AGENTS.md`, `docs/brand.md` (rename note, file table), `docs/roadmap.md`
+  intro, `docs/decisions.md` → Brand.
+
+### Kept on purpose
+
+- Storage keys and cookies (`cubehub.timer.v1`, `cubehub-theme`, …), the IndexedDB name
+  `cubehub`, the package name, identifiers (`isCubeHubExport`), `.chm*` classes, migrations.
+- The backup format: it has no brand field (see `decisions.md` → Brand).
+- The press lockups in `public/brand/cubehub-lockup-*` still show "cubehub"; not used by the app.
+
+### Not done here (needs the founder)
+
+- Supabase email templates (dashboard) and `NEXT_PUBLIC_SITE_URL=https://cuberhub.me` in
+  Vercel production: settings, not code.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run test:e2e:prod`; navbar lockup checked at
+360 px.
+
+---
+
 ## 2026-11-07 — Drill Lab redesign, step 1: full-height layout, toolbar, options popover
 
 **Request:** Prompt 1 of the seven-step Drill Lab redesign. At lg and up the drill fills the

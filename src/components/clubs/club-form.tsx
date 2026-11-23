@@ -83,7 +83,7 @@ export function ClubForm({
         />
       </Field>
 
-      <Field id="slug" label="Address" hint={`cubehub/clubs/${slug || "…"}`} error={fieldError("slug")}>
+      <Field id="slug" label="Address" hint={`cuberhub/clubs/${slug || "…"}`} error={fieldError("slug")}>
         <Input
           id="slug"
           name="slug"

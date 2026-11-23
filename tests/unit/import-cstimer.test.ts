@@ -49,7 +49,7 @@ describe("parseCsTimer & toSolves", () => {
     expect(solves[0].puzzle).toBe("333");
   });
 
-  it("parses native CubeHub ExportEnvelope JSON and preserves original UUIDs", () => {
+  it("parses native CuberHub ExportEnvelope JSON and preserves original UUIDs", () => {
     const originalSolveId = "11111111-2222-3333-4444-555555555555";
     const originalSessionId = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
 

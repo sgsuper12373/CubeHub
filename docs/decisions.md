@@ -60,6 +60,12 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **They render only when `VERCEL=1`.** Off Vercel the scripts at `/_vercel/*` don't exist, so they would 404 in `next start` and in Playwright. The e2e tests check that no request fails, and test traffic would count as visits. The components have no "off" setting (`mode` is `auto`, `development` or `production`, and development fetches a debug script from `va.vercel-scripts.com`), so the layout doesn't render them at all off Vercel. `tests/e2e/analytics.spec.ts` checks that they stay off.
 
+## Brand
+
+**The product is CuberHub; internal names keep `cubehub`** (2026-11-24, landing plan step 1). Visible text, metadata, the wordmark and the OG card say CuberHub. Storage keys, cookies, the IndexedDB name, the package name, database objects, file/component names and `.chm*` classes keep the old spelling, because renaming a storage key or cookie silently resets users' data. `tests/unit/brand-name.test.ts` fails on any whole-word "CubeHub" under `src/`.
+
+**Backup files have no brand field, so nothing to rename there.** The landing plan asked for exports to write `source: "cuberhub"` and imports to accept both. The code detects a CuberHub backup by shape (`version`, `sessions`, `solves`); `source: "cubehub"` is only the in-memory parse result, never written to a file. Followed the code: the export format is unchanged and old backups import as before; only the visible label changed ("CuberHub backup").
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.

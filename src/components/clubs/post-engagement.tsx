@@ -238,7 +238,7 @@ function Comments({
         open={reporting !== null}
         onOpenChange={(open) => !open && setReporting(null)}
         title="Report this comment"
-        description="Reports are private and go to the CubeHub team, not the club."
+        description="Reports are private and go to the CuberHub team, not the club."
         reasons={CLUB_REPORT_REASONS}
         onSubmit={(reason, note) => reportClubContent({ commentId: reporting!.id }, reason, note)}
       />

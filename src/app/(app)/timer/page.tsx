@@ -5,7 +5,7 @@ import { TimerScreen } from "@/components/timer/timer-screen";
 import { getUser, getTimerSettings } from "@/lib/auth/dal";
 
 export const metadata: Metadata = {
-  title: "Timer — CubeHub",
+  title: "Timer — CuberHub",
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

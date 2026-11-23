@@ -16,7 +16,7 @@ import { eventLabel, isTimerEvent } from "@/lib/timer/events";
 import { formatMs } from "@/lib/timer/format";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "People — CubeHub", robots: { index: false } };
+export const metadata: Metadata = { title: "People — CuberHub", robots: { index: false } };
 
 interface Props {
   searchParams: Promise<{ tab?: string; q?: string; scope?: string }>;

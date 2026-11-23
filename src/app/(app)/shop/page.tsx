@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Shop — CubeHub",
+  title: "Shop — CuberHub",
 };
 
 export default function ShopPage() {
