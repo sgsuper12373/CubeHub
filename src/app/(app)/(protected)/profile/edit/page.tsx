@@ -8,7 +8,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getEditableProfile } from "@/lib/profile/dal";
 
-export const metadata: Metadata = { title: "Edit profile — CubeHub" };
+export const metadata: Metadata = { title: "Edit profile — CuberHub" };
 
 /** Edit your own profile. The (protected) layout already sends signed-out visitors to log in. */
 export default async function EditProfilePage() {

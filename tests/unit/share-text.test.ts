@@ -34,7 +34,7 @@ describe("formatAverageText", () => {
     ];
     expect(formatAverageText(solves, 5, "333", WHEN)).toBe(
       [
-        "3x3 Ao5: 12.33 · CubeHub · 11 Oct 2026",
+        "3x3 Ao5: 12.33 · CuberHub · 11 Oct 2026",
         "",
         "1. 11.20   D F",
         "2. (10.90)   U2 R'",
@@ -48,7 +48,7 @@ describe("formatAverageText", () => {
   it("uses only the newest n and trims nothing for Mo3", () => {
     const solves = [solve(3000), solve(4000), solve(5000), solve(99000)];
     const text = formatAverageText(solves, 3, "pyra", WHEN)!;
-    expect(text.split("\n")[0]).toBe("Pyraminx Mo3: 4.00 · CubeHub · 11 Oct 2026");
+    expect(text.split("\n")[0]).toBe("Pyraminx Mo3: 4.00 · CuberHub · 11 Oct 2026");
     expect(text).not.toContain("(");
     expect(text).not.toContain("1:39");
   });
@@ -73,7 +73,7 @@ describe("formatAverageText", () => {
 describe("single and record text", () => {
   it("formats a single with its scramble", () => {
     expect(formatSingleText(solve(9870, "none", "R U R'"), "333", WHEN)).toBe(
-      "3x3 single: 9.87 · CubeHub · 11 Oct 2026\n\nR U R'",
+      "3x3 single: 9.87 · CuberHub · 11 Oct 2026\n\nR U R'",
     );
   });
 

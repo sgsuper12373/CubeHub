@@ -104,7 +104,7 @@ export function HeroSection() {
                />
                <Image 
                  src="/images/learn/hero_cube.webp" 
-                 alt="CubeHub Hero Cube" 
+                 alt="CuberHub Hero Cube" 
                  fill 
                  className="object-contain md:drop-shadow-[0_20px_40px_color-mix(in_oklch,var(--primary)_20%,transparent)] md:hover:drop-shadow-[0_30px_60px_color-mix(in_oklch,var(--primary)_40%,transparent)] transition-all duration-500"
                  // The box is 320px, 450px from md. /learn's LCP image.

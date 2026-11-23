@@ -111,7 +111,7 @@ export function PbCelebration({
             // Blur so the next Space reaches the timer, not this button.
             e.currentTarget.blur();
             if (!image) return;
-            const text = `New ${eventLabel(puzzle)} ${RECORD_LABEL[head.category]} PB: ${formatMs(head.timeMs)} on CubeHub`;
+            const text = `New ${eventLabel(puzzle)} ${RECORD_LABEL[head.category]} PB: ${formatMs(head.timeMs)} on CuberHub`;
             void shareImage(image, text).then((result) => {
               if (result === "saved") {
                 toast({ kind: "info", message: "Image saved and copied", durationMs: 3000 });

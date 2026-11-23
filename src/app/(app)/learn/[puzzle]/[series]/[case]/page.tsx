@@ -50,7 +50,7 @@ async function load(params: Props["params"]) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await load(params);
-  if (!data) return { title: "Not Found | CubeHub" };
+  if (!data) return { title: "Not Found | CuberHub" };
 
   const { puzzle, series, algCase } = data;
   const heading = caseHeading(algCase, series.name);
@@ -60,8 +60,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = main
     ? `${heading}: ${main.moves} (${main.move_count} moves)${
         others > 0 ? `, plus ${others} alternative${others > 1 ? "s" : ""}` : ""
-      }. Watch it in 3D, then drill it on CubeHub.`
-    : `${heading} on CubeHub.`;
+      }. Watch it in 3D, then drill it on CuberHub.`
+    : `${heading} on CuberHub.`;
   const path = casePath(puzzle.id, series.slug, algCase.case_number);
 
   return {

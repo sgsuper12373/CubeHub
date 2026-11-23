@@ -1,22 +1,55 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 
-import { ComingNext } from "@/components/marketing/coming-next";
+import { SITE_URL } from "@/lib/site-url";
+
+import { CommunitySection } from "@/components/marketing/community-section";
 import { CtaBand, SiteFooter } from "@/components/marketing/cta-band";
 import { LazyCustomizeSection } from "@/components/marketing/customize-section-lazy";
-import { FeatureBento } from "@/components/marketing/feature-bento";
+import { FaqSection, faqJsonLd } from "@/components/marketing/faq-section";
 import { HeroSection } from "@/components/marketing/hero-section";
+import { RoadmapSection } from "@/components/marketing/roadmap-section";
+import { TrySolveSection } from "@/components/marketing/try-solve-section";
+
+// Below the fold: its own chunk, still server-rendered (the chapter text is for search engines too).
+const FeatureChapters = dynamic(() =>
+  import("@/components/marketing/feature-chapters").then((m) => m.FeatureChapters),
+);
 
 export const metadata: Metadata = {
-  title: "CubeHub — Speedcubing Timer, Tutorials & Stats",
+  title: { absolute: "CuberHub: Speedcubing Timer, OLL/PLL Tutorials and Drills" },
   description:
-    "A speedcubing timer that works the moment you land — WCA scrambles, inspection, sessions and stats. Plus OLL and PLL tutorials, an algorithm drill and cuber profiles.",
+    "A free WCA speedcubing timer, every OLL and PLL in 3D, a drill that finds your slow cases, and clubs for Indian cubers. No sign-up needed to start.",
+  alternates: { canonical: "/" },
 };
 
+/** WebApplication and Organization structured data (docs/landing-plan.md → SEO and sharing). */
+const SITE_JSON_LD = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "CuberHub",
+    url: SITE_URL,
+    applicationCategory: "GameApplication",
+    operatingSystem: "Any (web browser)",
+    description: "Speedcubing timer, OLL and PLL tutorials in 3D, algorithm drills, profiles and clubs.",
+    offers: { "@type": "Offer", price: "0", priceCurrency: "INR" },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "CuberHub",
+    url: SITE_URL,
+    logo: `${SITE_URL}/apple-icon.png`,
+  },
+];
+
+
 /**
- * Hero (timer replay + opt-in try-it) → the product as a bento → real
- * settings to tweak → CTA → one "Coming next" strip. Only what ships today is
- * advertised above the strip. The landing page never captures Space or
- * touches unless the visitor asks it to; see `hero-timer-card.tsx`.
+ * Full-screen chapters (docs/landing-plan.md → Page structure): hero → try a
+ * solve → five feature chapters → make it yours → built for India → roadmap
+ * → FAQ → final call to action and footer. The landing page never captures
+ * Space or touches unless the visitor asks it to; see `hero-timer-card.tsx`.
  *
  * Statically rendered: nothing here or in the layouts reads cookies. What
  * depends on the visitor (navbar, CTA copy) is filled in on the client.
@@ -25,11 +58,23 @@ export default function Home() {
   return (
     <>
       <HeroSection />
-      <FeatureBento />
+      <TrySolveSection />
+      <FeatureChapters />
       <LazyCustomizeSection />
+      <CommunitySection />
+      <RoadmapSection />
+      <FaqSection />
       <CtaBand />
-      <ComingNext />
       <SiteFooter />
+      <script
+        type="application/ld+json"
+        // JSON.stringify output, with "<" escaped so no string can close the script tag.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd()).replace(/</g, "\\u003c") }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(SITE_JSON_LD).replace(/</g, "\\u003c") }}
+      />
     </>
   );
 }

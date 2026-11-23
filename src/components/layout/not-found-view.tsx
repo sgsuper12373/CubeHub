@@ -10,7 +10,7 @@ import { buttonVariants } from "@/components/ui/button";
 export function NotFoundView() {
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-6 px-4 py-16 text-center">
-      <CubeMark title="CubeHub" className="size-20" />
+      <CubeMark title="CuberHub" className="size-20" />
       <div className="space-y-2">
         <p className="font-mono text-sm text-muted-foreground">404</p>
         <h1 className="text-3xl font-bold tracking-tight">This page doesn&apos;t exist</h1>

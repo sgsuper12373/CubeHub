@@ -52,7 +52,7 @@ export function caseHeading(
   return qualifier ? `${c.name} (${qualifier})` : c.name;
 }
 
-/** The page's <title>, e.g. "OLL 27 (Sune) Algorithm · 3x3 Cube | CubeHub". */
+/** The page's <title>, e.g. "OLL 27 (Sune) Algorithm · 3x3 Cube | CuberHub". */
 export function caseMetaTitle(
   heading: string,
   setName: string,
@@ -61,5 +61,5 @@ export function caseMetaTitle(
 ): string {
   const noun = algorithmCount > 1 ? "Algorithms" : "Algorithm";
   const set = heading.includes(setName) ? "" : ` · ${setName}`;
-  return `${heading} ${noun}${set} · ${puzzleName} | CubeHub`;
+  return `${heading} ${noun}${set} · ${puzzleName} | CuberHub`;
 }

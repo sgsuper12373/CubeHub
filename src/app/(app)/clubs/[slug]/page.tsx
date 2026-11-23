@@ -41,10 +41,10 @@ const TABS: { id: Tab; label: string }[] = [
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const club = await getClubBySlug((await params).slug);
-  if (!club) return { title: "Club not found — CubeHub" };
+  if (!club) return { title: "Club not found — CuberHub" };
   return {
-    title: `${club.name} — CubeHub`,
-    description: club.description ?? `${clubTypeLabel(club.type)} cubing club on CubeHub.`,
+    title: `${club.name} — CuberHub`,
+    description: club.description ?? `${clubTypeLabel(club.type)} cubing club on CuberHub.`,
     // Private clubs show their name in search, but their page has nothing to index.
     robots: club.isPublic ? undefined : { index: false },
   };

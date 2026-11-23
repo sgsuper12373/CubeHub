@@ -18,7 +18,7 @@ async function openCase(page: Page, path: string) {
 test("a case page has its own title, player and algorithms", async ({ page }) => {
   await openCase(page, "/learn/333/oll/27");
 
-  await expect(page).toHaveTitle(/^OLL 27\b.*Algorithm.*\| CubeHub$/);
+  await expect(page).toHaveTitle(/^OLL 27\b.*Algorithm.*\| CuberHub$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^OLL 27\b/);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/learn\/333\/oll\/27$/);
 

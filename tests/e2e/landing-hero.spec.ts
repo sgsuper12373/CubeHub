@@ -36,8 +36,23 @@ test.describe("landing hero timer", () => {
     await page.keyboard.down("Space");
     await page.keyboard.up("Space");
     await expect(page.getByText("stopped", { exact: true })).toBeVisible();
+    // The nudge to the real timer, which the demo's time never reaches.
+    await expect(page.getByRole("status").filter({ hasText: "Your next one counts in the real timer" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Keep going" })).toHaveAttribute("href", "/timer");
 
     await page.getByRole("button", { name: "Done" }).click();
     await expect(page.getByText("Replay", { exact: true })).toBeVisible();
+  });
+
+  test("scrolling away hands the page back, so Space no longer reaches the demo", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Try a solve here" }).click();
+    await expect(page.getByRole("button", { name: /Practice timer/ })).toBeFocused();
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect(page.getByText("Replay", { exact: true })).toBeVisible();
+    await page.keyboard.down("Space");
+    await page.waitForTimeout(450);
+    await page.keyboard.up("Space");
+    await expect(page.getByText("Live", { exact: true })).toHaveCount(0);
   });
 });

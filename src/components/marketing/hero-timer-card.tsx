@@ -5,6 +5,7 @@ import { ArrowRight, Hand, Play, X } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { appHref } from "@/lib/marketing/links";
 import { formatMs } from "@/lib/timer/format";
 import { generateScramble } from "@/lib/timer/scrambler";
 import { cn } from "@/lib/utils";
@@ -461,6 +462,21 @@ export function HeroTimerCard({ className }: { className?: string }) {
           </span>
         </div>
 
+        {/* After the first solve: where real solves go. The demo's times are
+            never carried over (docs/architecture.md: the demo keeps its own state). */}
+        {live && view === "stopped" && times.length > 0 && (
+          <div role="status" className="flex flex-wrap items-center justify-between gap-2 border-t border-border/70 bg-primary/5 px-5 py-2.5 text-sm">
+            <span className="text-foreground">
+              Nice, <span className="font-mono font-semibold tabular-nums">{formatMs(times[0])}</span>. Your next one counts
+              in the real timer.
+            </span>
+            <Link href={appHref("/timer")} className="inline-flex items-center gap-1 font-semibold text-primary hover:underline">
+              Keep going
+              <ArrowRight className="size-3.5" aria-hidden />
+            </Link>
+          </div>
+        )}
+
         {/* Recent */}
         <div className="flex min-h-11 items-center gap-2 overflow-x-auto border-t border-border/70 px-5 py-2.5 font-mono text-xs tabular-nums hide-scrollbar">
           {shown.length === 0 ? (
@@ -511,7 +527,7 @@ export function HeroTimerCard({ className }: { className?: string }) {
             </button>
           )}
           <Link
-            href="/timer"
+            href={appHref("/timer")}
             className="group inline-flex h-9 items-center gap-1 rounded-full px-3 text-sm font-semibold text-foreground transition-colors hover:text-primary"
           >
             Full timer

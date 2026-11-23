@@ -97,7 +97,7 @@ test("clicking Ao5 copies the average as csTimer-style text", async ({ page, con
 
   const text = await page.evaluate(() => navigator.clipboard.readText());
   const lines = text.split("\n");
-  expect(lines[0]).toMatch(/^3x3 Ao5: \d+\.\d{2} · CubeHub · /);
+  expect(lines[0]).toMatch(/^3x3 Ao5: \d+\.\d{2} · CuberHub · /);
   expect(lines.slice(2)).toHaveLength(5);
   // The fastest (first) and slowest (last) solves are trimmed.
   expect(lines[2]).toMatch(/^1\. \(\d+\.\d{2}\) {3}\S/);

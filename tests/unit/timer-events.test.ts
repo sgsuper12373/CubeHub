@@ -128,7 +128,7 @@ describe("bestAverageOfN with Mo3", () => {
 });
 
 describe("imports with the new events", () => {
-  it("accepts a CubeHub backup for Pyraminx", () => {
+  it("accepts a CuberHub backup for Pyraminx", () => {
     const backup = {
       version: 1,
       puzzle: "pyra",

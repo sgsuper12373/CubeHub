@@ -297,6 +297,97 @@
   }
 }
 
+/* ── Landing text reveal and load fades (components/marketing/motion) ──────
+   Each piece fades in and rises 10px, staggered by --reveal-delay. "load"
+   plays once when the page loads; "view" is scroll-driven where supported.
+   Without support, or with reduced motion, the text simply stands at rest:
+   nothing is hidden before it can animate. Only opacity and transform move. */
+@keyframes reveal-piece {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.reveal-piece {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal-text="load"] .reveal-piece,
+  .fade-up-load {
+    animation: reveal-piece 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    [data-reveal-text="view"] .reveal-piece {
+      animation: reveal-piece linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 70%;
+    }
+  }
+}
+
+/* ── Hero lockup draw-in (components/marketing/hero-section.tsx) ──────────
+   The CH mark's wireframe draws (600ms), its letters and the wordmark fade up
+   after it. Reduced motion: at rest. */
+@keyframes hero-draw {
+  from {
+    stroke-dashoffset: 620;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-lockup .chm-wire path {
+    stroke-dasharray: 620;
+    animation: hero-draw 600ms ease-out both;
+  }
+  .hero-lockup .chm-letters,
+  .hero-lockup .chm-nodes {
+    animation: reveal-piece 400ms ease-out 300ms both;
+  }
+  .hero-lockup .chm-lockup-text {
+    animation: reveal-piece 450ms ease-out 450ms both;
+  }
+}
+
+/* ── Floating field (components/marketing/motion/floating-field.tsx) ───────
+   Slow drift on the compositor; paused off screen and in hidden tabs (the
+   component sets data-floating-field), and off for reduced motion. */
+@keyframes float-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate3d(6px, -10px, 0) rotate(6deg);
+  }
+  66% {
+    transform: translate3d(-5px, 6px, 0) rotate(-4deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .floating-piece {
+    animation-name: float-drift;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+  [data-floating-field="paused"] .floating-piece {
+    animation-play-state: paused;
+  }
+}
+
 /* ── Learn hero float (src/components/learn/hero-section.tsx) ────────────────
    The hero cube bobs 10px up and down forever. As a CSS animation of
    `transform` it runs on the compositor, so the drop-shadow under it is
@@ -319,7 +410,7 @@
   }
 }
 
-/* ── CubeHub brand mark + wordmark (src/components/layout/logo.tsx) ────────
+/* ── CuberHub brand mark + wordmark (src/components/layout/logo.tsx) ────────
    Driven by --logo-c / --logo-h / --logo-wire, falling back to the theme's
    --primary / --foreground. Shades are derived with color-mix() so any theme
    gets a matching 3D look. data-logo="classic" on an ancestor gives the

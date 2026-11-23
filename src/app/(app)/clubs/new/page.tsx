@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/social/person-row";
 import { getCreateEligibility } from "@/lib/clubs/dal";
 import { OWNED_MAX } from "@/lib/clubs/types";
 
-export const metadata: Metadata = { title: "Create a club — CubeHub", robots: { index: false } };
+export const metadata: Metadata = { title: "Create a club — CuberHub", robots: { index: false } };
 
 /** Signed in, with a chosen username, owning fewer than 3 clubs (create_club checks again). */
 export default async function NewClubPage() {

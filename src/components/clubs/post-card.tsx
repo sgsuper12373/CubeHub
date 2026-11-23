@@ -188,7 +188,7 @@ export function PostCard({
           open={reporting}
           onOpenChange={setReporting}
           title="Report this post"
-          description="Reports are private and go to the CubeHub team, not the club."
+          description="Reports are private and go to the CuberHub team, not the club."
           reasons={CLUB_REPORT_REASONS}
           onSubmit={(reason, note) => reportClubContent({ postId: post.id }, reason, note)}
         />

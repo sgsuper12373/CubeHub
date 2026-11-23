@@ -12,7 +12,7 @@ import {
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
-  title: "Sign in — CubeHub",
+  title: "Sign in — CuberHub",
 };
 
 export default async function LoginPage({
@@ -27,7 +27,7 @@ export default async function LoginPage({
     <Card>
       <CardHeader>
         <CardTitle className="text-lg">Welcome back</CardTitle>
-        <CardDescription>Sign in to your CubeHub account.</CardDescription>
+        <CardDescription>Sign in to your CuberHub account.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <GoogleButton next={next} />

@@ -214,7 +214,7 @@ function parseCubeHubExport(root: Record<string, unknown>, activePuzzle?: TimerP
   if (skippedUnsupportedPuzzle > 0) {
     const names = Array.from(unsupportedPuzzleNames).join(", ");
     warnings.push(
-      `${skippedUnsupportedPuzzle} solve${skippedUnsupportedPuzzle === 1 ? "" : "s"} skipped because puzzle (${names}) is not currently supported by CubeHub.`,
+      `${skippedUnsupportedPuzzle} solve${skippedUnsupportedPuzzle === 1 ? "" : "s"} skipped because puzzle (${names}) is not currently supported by CuberHub.`,
     );
   }
   if (skippedMalformed > 0) {
@@ -248,7 +248,7 @@ export function parseCsTimer(raw: string, activePuzzle?: TimerPuzzle): CsTimerPa
       dnfCount: 0,
       earliest: null,
       latest: null,
-      warnings: ["This file isn't valid JSON — is it a csTimer or CubeHub backup?"],
+      warnings: ["This file isn't valid JSON — is it a csTimer or CuberHub backup?"],
     };
   }
 
@@ -261,7 +261,7 @@ export function parseCsTimer(raw: string, activePuzzle?: TimerPuzzle): CsTimerPa
       dnfCount: 0,
       earliest: null,
       latest: null,
-      warnings: ["Unexpected file shape — expected a csTimer export or CubeHub backup object."],
+      warnings: ["Unexpected file shape — expected a csTimer export or CuberHub backup object."],
     };
   }
 

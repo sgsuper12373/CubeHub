@@ -19,7 +19,7 @@ import {
 import { canManage, roleLabel } from "@/lib/clubs/types";
 import { timeAgo } from "@/lib/notifications/types";
 
-export const metadata: Metadata = { title: "Manage club — CubeHub", robots: { index: false } };
+export const metadata: Metadata = { title: "Manage club — CuberHub", robots: { index: false } };
 
 interface Props {
   params: Promise<{ slug: string }>;

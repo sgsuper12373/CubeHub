@@ -127,7 +127,7 @@ test("Now strip, PB solves and what the next solve needs", async ({ page, contex
 
   await dialog.getByRole("button", { name: "Copy as text" }).click();
   const text = await page.evaluate(() => navigator.clipboard.readText());
-  expect(text.split("\n")[0]).toMatch(/^3x3 Ao5: 22\.00 · CubeHub · /);
+  expect(text.split("\n")[0]).toMatch(/^3x3 Ao5: 22\.00 · CuberHub · /);
 });
 
 test("trend chart: stars, hollow mis-stops, open a solve, by date, drag to zoom", async ({ page }) => {

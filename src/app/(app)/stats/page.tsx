@@ -4,7 +4,7 @@ import { StatsScreen } from "@/components/stats/analytics/stats-screen";
 import { getUser } from "@/lib/auth/dal";
 
 export const metadata: Metadata = {
-  title: "Stats — CubeHub",
+  title: "Stats — CuberHub",
   description:
     "Your solve history: trend, distribution, consistency and practice over time.",
 };

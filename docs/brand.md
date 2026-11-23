@@ -1,16 +1,22 @@
 # Brand
 
+The product is **CuberHub** (renamed from CubeHub in Nov 2026; domain `cuberhub.me`). Everything a
+visitor reads says CuberHub. Internal names keep the old spelling on purpose: browser storage keys
+and cookies (`cubehub.timer.v1`, `cubehub-theme`, …; renaming them would reset users' data), the
+package name, database objects, file and component names, and the `.chm*` CSS classes. The CH mark
+is unchanged: "CH" still reads as CuberHub.
+
 ## The CH mark and wordmark
 
 All logo components are in `src/components/layout/logo.tsx`. They are inline SVG plus live
 text: there are no image requests, the text stays crisp and selectable, and everything
-recolours with the theme. Styles are the "CubeHub brand mark + wordmark" section of
+recolours with the theme. Styles are the "CuberHub brand mark + wordmark" section of
 `src/app/globals.css` (`.chm*` classes).
 
 | Component | Use |
 |---|---|
-| `<CubeMark />` | The mark alone. Pass `title="CubeHub"` when it stands without the wordmark, so it gets an accessible name; otherwise it's `aria-hidden`. `glow={false}` turns off the glow, which only shows in dark themes anyway. |
-| `<Logo />` | Navbar lockup: a 32px mark plus the "cube**hub**" wordmark. |
+| `<CubeMark />` | The mark alone. Pass `title="CuberHub"` when it stands without the wordmark, so it gets an accessible name; otherwise it's `aria-hidden`. `glow={false}` turns off the glow, which only shows in dark themes anyway. |
+| `<Logo />` | Navbar lockup: a 32px mark plus the "cuber**hub**" wordmark. |
 | `<BrandLockup />` | Landing hero: a large mark, the wordmark, and the "The unified cubing platform" tagline. `stacked` puts the mark above the text. `as="h1"` makes it the page heading. `tagline={null}` hides the tagline. |
 
 The wordmark and tagline use **Outfit** (`--font-brand`, loaded in `src/app/layout.tsx`).
@@ -91,8 +97,9 @@ logo today.
 |---|---|
 | `src/app/icon.png`, `apple-icon.png` | Static tab and home-screen icons |
 | `src/app/opengraph-image.png` + `.alt.txt` | Social card (the Slate OG image, 1200×630) |
-| `public/brand/cubehub-{lockup,mark}-{slate,classic,paper}.{svg,png,webp}` | Pre-rendered lockups and marks, for press, docs and email. The app UI doesn't use them. The WebP files are lossless copies of the PNGs, 30–65% smaller, for web pages; keep the PNGs for email (patchy WebP support) and existing links. |
+| `public/brand/cubehub-{lockup,mark}-{slate,classic,paper}.{svg,png,webp}` | Still the pre-rename "cubehub" wordmark in the lockups (the marks are unaffected); regenerate before using them anywhere public. Pre-rendered lockups and marks, for press, docs and email. The app UI doesn't use them. The WebP files are lossless copies of the PNGs, 30–65% smaller, for web pages; keep the PNGs for email (patchy WebP support) and existing links. |
 | `public/brand/cubehub-lockup-{slate,classic}-transparent.*` | The same, without a background (alpha kept in the WebP) |
-| `public/brand/cubehub-og-{slate,classic}.{svg,png}` | OG card sources. Copy one to `src/app/opengraph-image.png` to switch. PNG only: social cards need PNG or JPEG. |
+| `public/brand/cuberhub-og-{slate,classic}.png` | The current OG cards, with the "cuberhub" wordmark, rendered by `node scripts/render-og-card.mjs`. Copy one to `src/app/opengraph-image.png` to switch. PNG only: social cards need PNG or JPEG. |
+| `public/brand/cubehub-og-{slate,classic}.{svg,png}` | The pre-rename cards ("cubehub"). The script reads their background and mark; don't serve them. |
 | `docs/brand/cubehub-avatar-{slate,classic}.*` | YouTube and social avatars. Not served. |
 | `docs/brand/raster/` | The earlier raster logo set. Social media only; don't use in the app. |

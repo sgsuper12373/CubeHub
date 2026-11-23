@@ -11,7 +11,7 @@ import { getPuzzleName } from "@/lib/learn/puzzle-names";
  * (`force-static` + `revalidate`). An unknown case gets a generic image.
  */
 
-export const alt = "A CubeHub algorithm case";
+export const alt = "A CuberHub algorithm case";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const dynamic = "force-static";
@@ -27,7 +27,7 @@ export default async function CaseOpengraphImage({
   const c = n === null ? null : await getPublicCase(puzzle, series, n);
 
   const heading = c ? caseHeading(c, c.setName) : "Algorithm tutorials";
-  const subtitle = c ? `${getPuzzleName(puzzle)} · ${c.setName}` : "CubeHub Learn";
+  const subtitle = c ? `${getPuzzleName(puzzle)} · ${c.setName}` : "CuberHub Learn";
 
   return new ImageResponse(
     (

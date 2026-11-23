@@ -1,42 +1,104 @@
-import { Sparkles } from "lucide-react";
+import Link from "next/link";
 
 import { Logo } from "@/components/layout/logo";
 import { CtaBandActions } from "@/components/marketing/cta-band-actions";
-import { Eyebrow } from "@/components/marketing/section-heading";
+import { FloatingField } from "@/components/marketing/motion/floating-field";
+import { RevealText } from "@/components/marketing/motion/reveal-text";
+import { COMMUNITY_LINKS, CONTRIBUTE_URL } from "@/content/community";
+import { appHref } from "@/lib/marketing/links";
 
-/** Signed in, the sign-up pitch gives way to the next thing to practise (CtaBandActions). */
+/**
+ * The last screen (docs/landing-plan.md → Final call to action): one line,
+ * two buttons (signed in, the sign-up pitch gives way to the drill;
+ * CtaBandActions), and the hero's cube field again, faintly.
+ */
 export function CtaBand() {
   return (
-    <section className="px-4 pb-20 md:pb-28">
-      <div className="reveal relative mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-border bg-card px-6 py-16 text-center sm:px-12 md:py-20">
-        {/* Grid-paper texture and a soft glow, the same motifs as Learn. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(var(--border)_1px,transparent_1px),linear-gradient(90deg,var(--border)_1px,transparent_1px)] [background-size:32px_32px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_70%)] opacity-60"
+    <section
+      className="relative isolate flex min-h-[100svh] items-center justify-center overflow-hidden px-4 py-24"
+    >
+      <FloatingField className="-z-10 opacity-40" intensity={0.5} />
+      <div aria-hidden className="pointer-events-none absolute top-1/2 left-1/2 -z-10 size-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/12 blur-3xl" />
+      <div className="flex max-w-3xl flex-col items-center gap-6 text-center">
+        <RevealText
+          as="h2"
+          text="Your next PB starts here."
+          className="text-4xl font-bold tracking-tight text-balance text-foreground sm:text-6xl"
         />
-        <div aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 size-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/15 blur-3xl" />
-
-        <div className="relative flex flex-col items-center gap-5">
-          <Eyebrow icon={Sparkles}>Ready when you are</Eyebrow>
-          <h2 className="max-w-2xl text-3xl font-bold tracking-tight text-balance text-foreground sm:text-5xl">
-            Start your next practice session
-          </h2>
-          <CtaBandActions />
-        </div>
+        <CtaBandActions />
       </div>
     </section>
   );
 }
 
+type FooterLink = { label: string; href: string; external?: boolean };
+
+const SOCIAL: FooterLink[] = COMMUNITY_LINKS.filter((l) => l.url).map((l) => ({ label: l.name, href: l.url!, external: true }));
+
+const COLUMNS: { title: string; links: FooterLink[] }[] = [
+  {
+    title: "Product",
+    links: [
+      { label: "Timer", href: appHref("/timer") },
+      { label: "Learn", href: appHref("/learn") },
+      { label: "Drill Lab", href: appHref("/learn/333/drill") },
+      { label: "Playground", href: appHref("/playground") },
+      { label: "Stats", href: appHref("/stats") },
+    ],
+  },
+  { title: "Community", links: [{ label: "Clubs", href: appHref("/clubs") }, ...SOCIAL] },
+  {
+    title: "Company",
+    links: [
+      { label: "Roadmap", href: "/roadmap" },
+      { label: "About", href: "/about" },
+      ...(CONTRIBUTE_URL ? [{ label: "Contribute", href: CONTRIBUTE_URL, external: true }] : []),
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
+    ],
+  },
+];
+
+/** The marketing footer (docs/landing-plan.md → Final call to action and footer). */
 export function SiteFooter() {
   return (
     <footer className="border-t border-border/60 bg-background">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-10 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-col gap-1.5">
-          <Logo className="opacity-80" />
-          <p className="text-xs">Built with pride for the Indian speedcubing community.</p>
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-[1.4fr_repeat(4,1fr)]">
+        <div className="flex flex-col gap-2">
+          <Link href="/" aria-label="CuberHub home" className="w-fit rounded-md">
+            <Logo />
+          </Link>
+          <p className="text-sm text-muted-foreground">The unified cubing platform</p>
+          <p className="mt-2 text-xs text-muted-foreground">Built with pride for the Indian speedcubing community.</p>
         </div>
-        <p className="text-xs">
+        {COLUMNS.map((col) => (
+          <nav key={col.title} aria-label={col.title}>
+            <p className="text-sm font-semibold text-foreground">{col.title}</p>
+            <ul className="mt-3 flex flex-col gap-2 text-sm">
+              {col.links.map((l) => (
+                <li key={l.label}>
+                  {l.external ? (
+                    <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">
+                      {l.label}
+                    </a>
+                  ) : (
+                    <Link href={l.href} className="text-muted-foreground hover:text-foreground">
+                      {l.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))}
+      </div>
+      <div className="border-t border-border/60">
+        <p className="mx-auto max-w-6xl px-4 py-5 text-xs text-muted-foreground">
           WCA scrambles powered by{" "}
           <a
             href="https://js.cubing.net/cubing/"

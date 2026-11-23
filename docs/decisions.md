@@ -60,6 +60,40 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **They render only when `VERCEL=1`.** Off Vercel the scripts at `/_vercel/*` don't exist, so they would 404 in `next start` and in Playwright. The e2e tests check that no request fails, and test traffic would count as visits. The components have no "off" setting (`mode` is `auto`, `development` or `production`, and development fetches a debug script from `va.vercel-scripts.com`), so the layout doesn't render them at all off Vercel. `tests/e2e/analytics.spec.ts` checks that they stay off.
 
+## Brand
+
+**The product is CuberHub; internal names keep `cubehub`** (2026-11-24, landing plan step 1). Visible text, metadata, the wordmark and the OG card say CuberHub. Storage keys, cookies, the IndexedDB name, the package name, database objects, file/component names and `.chm*` classes keep the old spelling, because renaming a storage key or cookie silently resets users' data. `tests/unit/brand-name.test.ts` fails on any whole-word "CubeHub" under `src/`.
+
+**Backup files have no brand field, so nothing to rename there.** The landing plan asked for exports to write `source: "cuberhub"` and imports to accept both. The code detects a CuberHub backup by shape (`version`, `sessions`, `solves`); `source: "cubehub"` is only the in-memory parse result, never written to a file. Followed the code: the export format is unchanged and old backups import as before; only the visible label changed ("CuberHub backup").
+
+## Landing
+
+**Text reveals and fades are CSS, not `motion`** (landing plan step 2, 2026-11-24). The plan asks for the motion pieces "on the `motion` package". The codebase already moved the landing page off JS text animation on purpose (`section-heading.tsx`: the old GSAP headings painted blank; `globals.css` → "Landing reveal": "Text is never hidden before the animation can run"). Following that pattern, `RevealText` and `FadeUp` are pure CSS (load-time keyframes, scroll-driven `animation-timeline: view()` where supported): the hero text is in the HTML, readable with JS off, costs no client JS and can't delay the largest paint. `FloatingField` (pointer parallax), `CountUp` and `PinnedChapter` (`useScroll`) use `motion/react`.
+
+**Hero headline: "Every part of cubing. One hub."** (open question 1; the plan gives three options and no pick, so the first, which carries the "hub" of the name). The other two are kept in a comment beside `HERO_HEADLINE` for A/B tests.
+
+**Product links go through `appHref()`, which returns the path for now** (`src/lib/marketing/links.ts`). `feat/landing` branches from the rename, not the app shell, so `appUrl()` doesn't exist here; step 11 (not in this run) swaps one function. "Open app" points at `/timer` until Home merges (the plan says `/home`, which doesn't exist on this branch).
+
+**The lockup's "draw-in" is a stroke draw on the wireframe plus fades,** not a letter-by-letter wordmark: the wordmark is one text node inside the shared `BrandLockup`, and splitting it for the landing page would fork the brand component. Headline, sub-line, buttons and trust row follow in sequence, all done by 1.45 s.
+
+**Feature chapter visuals are animated SVG/HTML scenes, not recorded videos** (step 5). Recording five clips from the real app needs a person to judge them; the plan allows "or animated SVG". Each scene is driven by the chapter's scroll progress, follows the theme tokens, and costs no media download. The Playground chapter has the page's one live cube (cubing.js through `ScramblePreview`, loaded only when the chapter is near the viewport, as the old bento's showcase was; `cubing-runtime.spec.ts` guards it). The Learn chapter uses a 2D T-perm diagram instead of a second live cube. Real clips or live cubes can replace any scene later without touching the chapter text.
+
+**Phones get the finished visual.** Below lg (and with reduced motion) `PinnedChapter` holds progress at 1, as the plan's "plain full-screen sections" implies; the server renders that state too.
+
+**"Make it yours" tiles link to where each setting lives,** not all to Settings: the background and panel layout are on the timer's toolbar, the font size is in Settings (step 6). The section's theme picker already changed the whole page through `setTheme()`; the step adds a CH mark in the active theme's colours to the preview, while the hero keeps its classic palette.
+
+**Waitlist: migration and server action only, no form** (step 7, per the overnight instructions). `supabase/migrations/20261124000100_waitlist.sql` (not applied) creates `public.waitlist` with RLS on, no policies and no table grants for anon/authenticated, and a security-definer `join_waitlist()` that only inserts and ignores duplicates. `src/lib/waitlist/actions.ts` validates, rate-limits per IP (5 per 10 minutes, in memory) and calls it. The roadmap section shows the board without the "Notify me" form: a form whose only outcome is an error would be worse than none. `email` is a lower-cased `text` with a unique constraint rather than `citext`: same uniqueness, no extension. `supabase/tests/waitlist_test.sql` checks it once applied.
+
+**Open questions 2 and 3 (Discord, Contribute link):** Discord is left out until a server exists (the suggested answer). The plan suggests no answer for the Contribute link (GitHub or a contact form), so the strip shows its text and renders a link only once `CONTRIBUTE_URL` is set in `src/content/community.ts`. Instagram and YouTube links likewise render only once their real URLs are filled in; none were invented. Open question 4 (email provider) doesn't block collecting addresses.
+
+**FAQ answers were checked against the app, and one changed:** the plan's "3x3 and 2x2 today" is true for Learn but not the timer, which has eight events; the answer says both.
+
+**The "Profiles and clubs" chapter's id is `profiles`**, so `#community` is the Built-in-India section.
+
+**/privacy and /terms are factual drafts, noindex** (step 9). They describe what the code actually does (local storage for guests, Supabase for accounts, cookie-less Vercel analytics), but they're not reviewed legal text, so they're `robots: noindex` and out of the sitemap until the founder has them reviewed. The footer links to them so the site has no dead ends.
+
+**The home page's SEO metadata and JSON-LD landed with step 9** (title "CuberHub: Speedcubing Timer, OLL/PLL Tutorials and Drills", a 147-character description, canonical `/`, `WebApplication` and `Organization`), next to the feature pages it supports. The Open Graph image was regenerated in step 1.
+
 ## Hosts and app shell
 
 **Two hosts, one deployment** (app shell plan D1–D7, 2026-11-24). `cuberhub.me` serves marketing pages, `app.cuberhub.me` the product. `routeForHost()` in `src/lib/host-routing.ts` decides; `src/proxy.ts` acts on it before the session refresh. With `NEXT_PUBLIC_APP_URL` unset (previews, local dev, and production until go-live) it passes everything.

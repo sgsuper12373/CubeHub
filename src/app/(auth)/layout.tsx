@@ -28,7 +28,7 @@ export default async function AuthLayout({
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-4 py-12">
-      <Link href="/" aria-label="CubeHub home" className="mb-8">
+      <Link href="/" aria-label="CuberHub home" className="mb-8">
         <CubeMark className="size-20" />
       </Link>
       <div className="w-full max-w-sm">{children}</div>

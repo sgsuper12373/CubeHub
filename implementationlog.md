@@ -320,6 +320,245 @@ expanded, rail on /timer, auto at 900 px, Ctrl+B, edge peek, rail Learn flyout.
 
 ---
 
+## 2026-11-24 — Landing step 9: feature pages, /roadmap, /about, /privacy, /terms
+
+**Request:** Overnight run, `docs/landing-plan.md` step 9.
+
+### Changed
+
+- `src/content/features.ts` (new), `src/components/marketing/feature-page.tsx` (new): one template
+  (h1, the chapter's visual in its finished state via the new `ChapterVisual`, short sections, a
+  link into the app, links to the other features).
+- `/features/timer`, `/features/drill-lab`, `/features/learn`, `/features/playground` (new), each
+  with its own title, description and canonical.
+- `/roadmap` (the shared `RoadmapBoard`), `/about`, `/privacy`, `/terms` (new; the last two are
+  noindex drafts), on a small `ProsePage` wrapper.
+- `(marketing)/page.tsx`: title, description, canonical; `WebApplication` and `Organization` JSON-LD.
+- `src/lib/seo/sitemap.ts` (+ test): lists the feature pages, /roadmap and /about.
+- `tests/e2e/landing.spec.ts`: every new page answers 200 with one h1.
+- `feature-chapters.tsx`: the Playground chapter's visual is a live 3D cube again (`ScramblePreview`
+  with `deferUntilNear`, as the removed bento had), as the plan specifies. The batch's e2e run
+  caught it: `cubing-runtime.spec.ts` checks that the landing page loads cubing.js only on scroll.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build` (all new pages `○`); looked at in Chromium;
+the cubing runtime and landing e2e specs pass.
+
+---
+
+## 2026-11-24 — Landing step 8: final call to action and footer
+
+**Request:** Overnight run, `docs/landing-plan.md` step 8.
+
+### Changed
+
+- `cta-band.tsx`: `CtaBand` is one full-screen band, "Your next PB starts here." (`RevealText`
+  h2), the existing signed-in/out buttons (`CtaBandActions`: Open the timer; Create a free account,
+  or Drill your weakest cases when signed in), and the floating cube field again at 40%.
+  `SiteFooter` has the wordmark and "The unified cubing platform", and Product / Community /
+  Company / Legal columns (social links and Contribute only when their URLs are set), keeping the
+  cubing.js credit.
+- `cta-band-actions.tsx`: links through `appHref()`.
+
+### Note
+
+- Roadmap, About, Privacy and Terms link to pages added in step 9.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`; looked at in Chromium.
+
+---
+
+## 2026-11-24 — Landing step 7: community, roadmap, FAQ, waitlist files
+
+**Request:** Overnight run, `docs/landing-plan.md` step 7 (waitlist: migration and server action only).
+
+### Changed
+
+- `src/content/roadmap.ts` (new): Now / Next / Later with Shipped / Building / Planned, shared with
+  `/roadmap` (step 9). `roadmap-board.tsx`, `roadmap-section.tsx` (new) replace `coming-next.tsx`.
+- `community-section.tsx` (new), `src/content/community.ts` (new): three India-first points (two
+  marked Coming), social links only when real URLs exist, the Contribute strip.
+- `faq-section.tsx` (new), `src/content/faq.ts` (new): details/summary accordion, answers checked
+  against the app; `FAQPage` JSON-LD in `(marketing)/page.tsx`.
+- `supabase/migrations/20261124000100_waitlist.sql` (new, **not applied**), `src/lib/waitlist/`
+  (new: `validate.ts`, `actions.ts`), `supabase/tests/waitlist_test.sql` (new).
+- `feature-chapters.tsx`: the profiles chapter's id is `profiles` (it clashed with `#community`).
+- Tests: `waitlist.test.ts`, `roadmap-content.test.ts` (new); `landing.spec.ts`: roadmap columns,
+  FAQ opening, FAQPage data, unique ids.
+
+### Needs the founder
+
+- Apply the waitlist migration, then add the form; fill in community URLs and the Contribute link;
+  confirm the Contribute wording.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, landing e2e specs; sections looked at in Chromium.
+
+---
+
+## 2026-11-24 — Landing step 6: Make it yours, enlarged
+
+**Request:** Overnight run, `docs/landing-plan.md` step 6.
+
+### Changed
+
+- `customize-section.tsx`: full-screen (`100svh`), the plan's copy ("Make it yours. Themes, fonts,
+  layouts and backgrounds, like monkeytype for cubers."), a theme-coloured CH mark in the preview,
+  and three tiles (Background, Font size, Layout) linking to where each lives. The timer settings
+  (precision, hold time, preview style) are unchanged; links go through `appHref()`.
+- `customize-section-lazy.tsx`: placeholder heights re-measured (360–1536 px) so nothing shifts
+  when the section loads.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`; looked at in Chromium.
+
+---
+
+## 2026-11-24 — Landing step 5: feature chapters
+
+**Request:** Overnight run, `docs/landing-plan.md` step 5.
+
+### Changed
+
+- `src/components/marketing/feature-chapters.tsx` (new): Timer and stats, Learn, Drill Lab,
+  Playground, Profiles and clubs. Each has an eyebrow, a real h2, body, three points and a link
+  through `appHref()`; the visual is an animated scene driven by the chapter's scroll progress (timer
+  digits and averages counting, trend line drawing; a T perm name typing out with its arrows; two Ua
+  algorithms racing with "main" landing on the faster; a turning isometric cube with notation; a
+  profile card flipping to PBs and badges, club posts sliding in). Section ids give the header's
+  "Features" anchor.
+- `motion/pinned-chapter.tsx`: the grid row carries the extra height (the first version left the
+  lower part of each chapter empty); phones hold progress at 1.
+- `feature-bento.tsx` removed; `(marketing)/page.tsx` loads the chapters with `next/dynamic` (own
+  chunk, still server-rendered).
+- Tests: `landing-motion.test.tsx` stubs `matchMedia`; `landing.spec.ts` checks the five headings
+  and links.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build` (`/` is `○`); each chapter looked at
+mid-scroll on desktop, and on a phone.
+
+---
+
+## 2026-11-24 — Landing step 4: Try a solve section
+
+**Request:** Overnight run, `docs/landing-plan.md` step 4.
+
+### Changed
+
+- `src/components/marketing/try-solve-section.tsx` (new): a full-screen section, "Try a solve right
+  here.", with keyboard instructions, holding the timer card (wider: `max-w-xl`).
+- `hero-section.tsx`: the card leaves the hero, which is now one centred column.
+- `hero-timer-card.tsx`: after a live solve, "Nice, 14.32. Your next one counts in the real timer."
+  with **Keep going** → the timer. The demo's times still never leave the card. Timer links go
+  through `appHref()`. The opt-in rule (Try a solve here; scroll-away or Escape releases) is unchanged.
+- `section-heading.tsx`: optional `id` for the h2.
+- `(marketing)/page.tsx`: the section follows the hero.
+- Tests: `landing-hero.spec.ts` checks the nudge and that scrolling away releases Space;
+  `landing.spec.ts`'s reduced-motion check allows the loading cube, which is slowed rather than
+  stopped on purpose.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, the landing e2e specs against a production build.
+
+---
+
+## 2026-11-24 — Landing step 3: header and hero
+
+**Request:** Overnight run, `docs/landing-plan.md` step 3.
+
+### Changed
+
+- `src/components/marketing/marketing-header.tsx`: rewritten as one responsive header. Logo;
+  Features, Learn, Roadmap, FAQ; Sign in (text) and Open app (button), or avatar and Open app when
+  signed in (same no-flash CSS trick as before); transparent over the hero, `bg-background/80` +
+  blur + hairline once scrolled past 24 px; a menu sheet on phones.
+- `src/app/(marketing)/layout.tsx`: uses it (the separate phone header is gone).
+- `src/lib/marketing/links.ts` (new): `appHref()`, the header links, Open app / Sign in targets.
+- `src/components/marketing/hero-section.tsx`: full-screen (`100svh`, under the transparent header),
+  the headline as the page's one `h1` (`RevealText`), the lockup as a `div` with a draw-in, new
+  sub-line and buttons, `FloatingField` behind. The timer card stays here until step 4.
+- `src/components/ui/sheet.tsx`: the same file as on `feat/app-shell`, so the branches merge clean.
+- `src/app/globals.css`: hero lockup draw-in.
+- `tests/e2e/landing.spec.ts` (new): no-JS hero, header links and scroll state, phone menu,
+  nothing animating under reduced motion.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build` (`/` still `○`); looked at in Chromium,
+dark and light, desktop and phone.
+
+---
+
+## 2026-11-24 — Landing step 2: motion pieces
+
+**Request:** Overnight run, `docs/landing-plan.md` step 2.
+
+### Changed
+
+- `src/components/marketing/motion/` (new): `reveal-text.tsx` (word/letter stagger, `aria-label`
+  on the wrapper, pieces `aria-hidden`), `fade-up.tsx`, `count-up.tsx` (final number in the HTML;
+  counts once in view), `floating-field.tsx` (sticker-token squares, cubies and notation glyphs;
+  CSS drift paused off screen and in hidden tabs; pointer parallax through motion values),
+  `pinned-chapter.tsx` (sticky visual from lg with `useScroll` progress; plain below lg).
+- `src/app/globals.css`: "Landing text reveal and load fades" and "Floating field" keyframes, all
+  inside `prefers-reduced-motion: no-preference`.
+- `tests/unit/landing-motion.test.tsx` (new): assistive-tech text, stagger, reduced-motion paths.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`.
+
+---
+
+## 2026-11-24 — CuberHub rename (landing plan, implementation step 1)
+
+**Request:** Overnight run, item 1: `docs/landing-plan.md` step 1 only. Visible CubeHub →
+CuberHub across the app; wordmark; metadata; OG image.
+
+### Changed
+
+- Every visible "CubeHub" under `src/` (≈50 files): page titles and descriptions, root
+  metadata (`title`, `siteName`, Open Graph, Twitter), aria-labels ("CuberHub home"),
+  `CubeMark title`, onboarding ("Choose your CuberHub handle"), report dialogs, the
+  notification fallback actor, import labels and warnings, share text ("· CuberHub ·"), the
+  PB share line, the club address hint (`cuberhub/clubs/…`), comments.
+- `logo.tsx`: the wordmark reads `cuber`**`hub`** in `Logo` and `BrandLockup`.
+- OG card: `scripts/render-og-card.mjs` (new) re-renders the card from the old SVG's
+  background and mark with the wordmark set in Outfit; output
+  `public/brand/cuberhub-og-{slate,classic}.png`, slate copied to
+  `src/app/opengraph-image.png`; `.alt.txt` updated.
+- `tests/unit/brand-name.test.ts` (new): no whole-word "CubeHub" left in `src/`.
+- Tests that asserted the old strings (unit and e2e).
+- Docs: `README.md`, `AGENTS.md`, `docs/brand.md` (rename note, file table), `docs/roadmap.md`
+  intro, `docs/decisions.md` → Brand.
+
+### Kept on purpose
+
+- Storage keys and cookies (`cubehub.timer.v1`, `cubehub-theme`, …), the IndexedDB name
+  `cubehub`, the package name, identifiers (`isCubeHubExport`), `.chm*` classes, migrations.
+- The backup format: it has no brand field (see `decisions.md` → Brand).
+- The press lockups in `public/brand/cubehub-lockup-*` still show "cubehub"; not used by the app.
+
+### Not done here (needs the founder)
+
+- Supabase email templates (dashboard) and `NEXT_PUBLIC_SITE_URL=https://cuberhub.me` in
+  Vercel production: settings, not code.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run test:e2e:prod`; navbar lockup checked at
+360 px.
+
+---
+
 ## 2026-11-07 — Drill Lab redesign, step 1: full-height layout, toolbar, options popover
 
 **Request:** Prompt 1 of the seven-step Drill Lab redesign. At lg and up the drill fills the

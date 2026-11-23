@@ -19,7 +19,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
-  return { title: `You vs @${username} — CubeHub`, robots: { index: false } };
+  return { title: `You vs @${username} — CuberHub`, robots: { index: false } };
 }
 
 const CATEGORIES = [
