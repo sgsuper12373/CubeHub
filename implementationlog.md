@@ -5,6 +5,31 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — App shell step 1: host helpers behind the flag
+
+**Request:** Overnight run, `docs/app-shell-plan.md` step 1.
+
+### Changed
+
+- `src/lib/site-url.ts`: `APP_URL` (falls back to `SITE_URL`), `HOST_SPLIT`, `siteUrl()`, `appUrl()`.
+- `src/lib/host-routing.ts` (new): pure `routeForHost(host, pathname, search, config?)` and the
+  `ROOT_PATHS` list. Single-host mode passes; internals, `/api`, files and metadata images pass on
+  both hosts; app host `/` → 307 `/home`; app host robots/sitemap rewrite to `/app-robots.txt` and
+  `/app-sitemap.xml`; wrong-host paths 308 with the query kept; other hosts pass.
+- `src/proxy.ts`: runs `routeForHost` before `updateSession()` and returns early on a redirect or
+  rewrite, so the session-refresh rules in `docs/architecture.md` still hold. Matcher unchanged.
+- `tests/unit/host-routing.test.ts` (new): every row of the plan's path table on both hosts.
+
+### Kept on purpose
+
+- With `NEXT_PUBLIC_APP_URL` unset nothing changes. Decisions in `docs/decisions.md` → Hosts and app shell.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`.
+
+---
+
 ## 2026-11-07 — Drill Lab redesign, step 1: full-height layout, toolbar, options popover
 
 **Request:** Prompt 1 of the seven-step Drill Lab redesign. At lg and up the drill fills the

@@ -60,6 +60,16 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **They render only when `VERCEL=1`.** Off Vercel the scripts at `/_vercel/*` don't exist, so they would 404 in `next start` and in Playwright. The e2e tests check that no request fails, and test traffic would count as visits. The components have no "off" setting (`mode` is `auto`, `development` or `production`, and development fetches a debug script from `va.vercel-scripts.com`), so the layout doesn't render them at all off Vercel. `tests/e2e/analytics.spec.ts` checks that they stay off.
 
+## Hosts and app shell
+
+**Two hosts, one deployment** (app shell plan D1–D7, 2026-11-24). `cuberhub.me` serves marketing pages, `app.cuberhub.me` the product. `routeForHost()` in `src/lib/host-routing.ts` decides; `src/proxy.ts` acts on it before the session refresh. With `NEXT_PUBLIC_APP_URL` unset (previews, local dev, and production until go-live) it passes everything.
+
+**Unknown paths on the root host go to the app host.** The plan says both "anything not on the root list belongs to the app host" and "unknown paths pass, so each host renders its own 404". Both can't hold without a list of app paths, which the plan rules out (a new app route must need no routing change). The single `ROOT_PATHS` list wins: an unknown path on `cuberhub.me` 308s to `app.cuberhub.me`, which renders the 404. On the app host, unknown paths pass.
+
+**Requests to any third host pass.** A `*.vercel.app` deployment URL keeps serving every page, so a production deployment can still be checked by its own URL.
+
+**`NEXT_PUBLIC_APP_URL=""` counts as unset** (`||`, not `??`), so an empty Vercel variable can't split the hosts by accident.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.
