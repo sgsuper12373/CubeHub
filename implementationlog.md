@@ -5,6 +5,24 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Next batch step 4: press lockups with the cuberhub wordmark
+
+**Request:** Regenerate `public/brand/cubehub-lockup-*` as `cuberhub-*`; keep the old files.
+
+### Added
+
+- `scripts/render-lockups.mjs`: keeps each old lockup's background and mark, re-sets the wordmark
+  and tagline in Outfit as outlined paths, rasterises at 2× in Chromium, WebP (lossless) via sharp.
+- `scripts/outline-text.py`: fontTools glyph outlines for a run of text (no kerning).
+- `public/brand/cuberhub-lockup-{slate,classic,paper,slate-transparent,classic-transparent}.{svg,png,webp}` (15 files).
+- `docs/brand.md` Files table; `docs/decisions.md` → Brand.
+
+### Verified
+
+Looked at the slate, paper and classic-transparent PNGs; `npm run validate`, `npm run check:colors`.
+
+---
+
 ## 2026-11-25 — Next batch step 3: public_stats() and RealStats
 
 **Request:** A security-definer function with aggregate counts only (solves, cubers, cases drilled), a
