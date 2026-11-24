@@ -5,6 +5,28 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Next batch step 2: docs (landing step 12, app shell step 10)
+
+**Request:** Update brand.md, architecture.md, roadmap.md, timer.md; mark finished steps in the three plans.
+
+### Changed
+
+- `docs/architecture.md`: routes tree and table (marketing pages, `/home`, `/clubs`, handoff, per-host
+  robots/sitemaps, sidebar shell, `(auth)` → `/home`); new **Hosts** section (switch, routing table,
+  links, handoff) and **Cookies** table; env notes for `NEXT_PUBLIC_SITE_URL`/`NEXT_PUBLIC_APP_URL`;
+  the smoke test now covers single-host and split-host checks.
+- `docs/brand.md`: "Writing the name"; where `<Logo />` and `<BrandLockup />` are used now.
+- `docs/roadmap.md`: Nov rows (rename, app shell, Home, landing, this batch); domain decided
+  (`cuberhub.me` + `app.cuberhub.me`), open question 1 closed.
+- `docs/timer.md`: sidebar shortcuts lock while the timer is busy.
+- `docs/landing-plan.md`, `docs/app-shell-plan.md`, `docs/home-plan.md`: status lines; ✅ on done steps with short notes.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`.
+
+---
+
 ## 2026-11-25 — Next batch step 1: waitlist "Notify me" form
 
 **Request:** Unattended batch (`feat/next-batch`), step 1: the form from `docs/landing-plan.md` §7 on

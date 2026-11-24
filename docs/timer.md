@@ -95,6 +95,9 @@ both rules over the imported solves, oldest first. Database side:
   including the sidebar (and its hover zone) and the bottom nav. **On by default** for new users
   (no saved `cubehub-focus-mode`); anyone who turned it off keeps it off. With it off, everything
   but the digits still dims while solving.
+- While the timer is holding, ready, inspecting or running, the sidebar's shortcuts (`Ctrl/⌘+B`,
+  `Ctrl/⌘+\`) are locked, so a stray chord can't move the layout mid-solve. They work again once
+  a result shows.
 - Zen mode was retired with the app shell (Nov 2026, `docs/app-shell-plan.md` D7): a hidden
   sidebar plus Focus mode covers it.
 - **Blind:** the time is hidden while running.

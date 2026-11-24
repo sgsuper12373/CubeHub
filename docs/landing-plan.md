@@ -1,6 +1,6 @@
 # Landing plan: `cuberhub.me`
 
-> **Status:** draft for review, Nov 23, 2026 · Sumit Garad
+> **Status:** steps 1–9, 11 and 12 done (Nov 24–25, 2026); step 10 (Meet Cubby) waits on the art · Sumit Garad
 > **For:** Claude Code. Read `AGENTS.md`, `docs/architecture.md` (the two timer rules and the
 > `(marketing)` static-rendering notes) and `docs/brand.md` first.
 > **Related:** `docs/app-shell-plan.md` (hosts, cookies), `docs/home-plan.md`,
@@ -302,22 +302,22 @@ longer shares a bundle with the timer.
 
 Each step is one PR with `npm run validate` and `npm run test:e2e:prod` green.
 
-1. **Rename.** Visible CubeHub → CuberHub across the app and emails; wordmark; metadata; OG image;
-   `NEXT_PUBLIC_SITE_URL` fixed in production. Ship this first, on its own.
-2. **Motion pieces.** `RevealText`, `FloatingField`, `CountUp`, `FadeUp`, `PinnedChapter`, with unit
+1. ✅ **Rename.** Visible CubeHub → CuberHub across the app and emails; wordmark; metadata; OG image;
+   `NEXT_PUBLIC_SITE_URL` fixed in production. Ship this first, on its own. *(done; the Vercel variable and the Supabase email templates are still the founder's)*
+2. ✅ **Motion pieces.** `RevealText`, `FloatingField`, `CountUp`, `FadeUp`, `PinnedChapter`, with unit
    tests for the reduced-motion paths.
-3. **Header and hero.**
-4. **Try a solve section.**
-5. **Feature chapters.** Record the videos from the real app (Playwright can script the screen
-   recordings so they're easy to redo after UI changes).
-6. **Make it yours** enlarged, whole-page theme preview.
-7. **Community, roadmap with waitlist** (migration + server action), **FAQ**.
-8. **Final CTA and footer.**
-9. **Feature pages and `/roadmap`.**
+3. ✅ **Header and hero.**
+4. ✅ **Try a solve section.** *(later merged into the Timer chapter)*
+5. ✅ **Feature chapters.** Record the videos from the real app (Playwright can script the screen
+   recordings so they're easy to redo after UI changes). *(animated scenes instead of videos; see decisions.md)*
+6. ✅ **Make it yours** enlarged, whole-page theme preview.
+7. ✅ **Community, roadmap with waitlist** (migration + server action), **FAQ**. *(Notify me form added Nov 25)*
+8. ✅ **Final CTA and footer.**
+9. ✅ **Feature pages and `/roadmap`.**
 10. **Meet Cubby** when the companion art is ready.
-11. **Links to the app host.** Switch every product link to `appUrl()` once `app.cuberhub.me` is live
-    (app shell step 9). Until then `appUrl()` returns the same host, so this can be merged early.
-12. Docs: `docs/brand.md` (rename, wordmark), `docs/architecture.md` (marketing routes), `docs/roadmap.md`.
+11. ✅ **Links to the app host.** Switch every product link to `appUrl()` once `app.cuberhub.me` is live
+    (app shell step 9). Until then `appUrl()` returns the same host, so this can be merged early. *(takes effect when `NEXT_PUBLIC_APP_URL` is set)*
+12. ✅ Docs: `docs/brand.md` (rename, wordmark), `docs/architecture.md` (marketing routes), `docs/roadmap.md`.
 
 ## Tests
 

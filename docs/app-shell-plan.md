@@ -1,6 +1,6 @@
 # App shell plan: domain split and sidebar
 
-> **Status:** draft for review, Nov 23, 2026 · Sumit Garad
+> **Status:** steps 1–8 and 10 done (Nov 24–25, 2026); step 9 (go-live) is the founder's · Sumit Garad
 > **For:** Claude Code. Read `AGENTS.md` and `docs/architecture.md` first. This is Next.js 16: check
 > `node_modules/next/dist/docs/` before writing proxy, routing or metadata code.
 > **Related:** `docs/home-plan.md` (the `/home` page this shell hosts), `docs/landing-plan.md`
@@ -363,19 +363,19 @@ A `⌘K` / `Ctrl+K` palette, like chess.com's search, makes the hidden sidebar p
 
 Each step is one PR with `npm run validate` and `npm run test:e2e:prod` green.
 
-1. **Host helpers, behind the flag.** `site-url.ts` additions, `src/lib/host-routing.ts` with unit tests,
+1. ✅ **Host helpers, behind the flag.** `site-url.ts` additions, `src/lib/host-routing.ts` with unit tests,
    proxy wiring. With `NEXT_PUBLIC_APP_URL` unset nothing changes.
-2. **Robots and sitemaps per host.** `app-robots.txt`, `app-sitemap.xml`, canonical audit.
-3. **Cookies across hosts.** `COOKIE_DOMAIN`, Supabase clients, theme cookie, `(auth)` redirect to `/home`.
-4. **Handoff pages.** `/handoff`, `/handoff/receive`, the handoff rule, tests with two origins.
-5. **Sidebar.** Store, cookie, component, `navigation.ts` changes, unit tests. Render it behind a
+2. ✅ **Robots and sitemaps per host.** `app-robots.txt`, `app-sitemap.xml`, canonical audit.
+3. ✅ **Cookies across hosts.** `COOKIE_DOMAIN`, Supabase clients, theme cookie, `(auth)` redirect to `/home`.
+4. ✅ **Handoff pages.** `/handoff`, `/handoff/receive`, the handoff rule, tests with two origins. *(unit-tested; no two-origin e2e, see decisions.md)*
+5. ✅ **Sidebar.** Store, cookie, component, `navigation.ts` changes, unit tests. Render it behind a
    `NEXT_PUBLIC_SIDEBAR=1` flag next to the old navbar so it can be reviewed in a preview.
-6. **Swap the shell.** `(app)/layout.tsx` uses the sidebar, navbar removed from `(app)`, layout offsets fixed.
-7. **Timer modes.** Zen removed, Focus default on and hides the sidebar.
-8. **Phones.** Bottom nav with More sheet.
+6. ✅ **Swap the shell.** `(app)/layout.tsx` uses the sidebar, navbar removed from `(app)`, layout offsets fixed.
+7. ✅ **Timer modes.** Zen removed, Focus default on and hides the sidebar.
+8. ✅ **Phones.** Bottom nav with More sheet.
 9. **Go live.** Add `app.cuberhub.me` in Vercel and Namecheap (CNAME to the value Vercel shows), set
    `NEXT_PUBLIC_APP_URL`, update Supabase and Google settings, deploy, run the checks below.
-10. **Docs.** `architecture.md` (routes table, hosts, cookies), `roadmap.md` (domain decided),
+10. ✅ **Docs.** `architecture.md` (routes table, hosts, cookies), `roadmap.md` (domain decided),
     `decisions.md` (D1–D7), `timer.md` (modes), manual smoke test table.
 11. Command palette (optional).
 

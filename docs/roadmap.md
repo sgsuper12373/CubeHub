@@ -6,7 +6,7 @@ A single destination for speedcubers — timer, tutorials, competition, and buyi
 
 Design principles: the timer loads in under a second and works before anything else on the page; a new user can start timing within five seconds of landing; mobile-ready (many cubers practice with a phone on the desk); accessible by default.
 
-## Where we are (2026-10-19)
+## Where we are (updated 2026-11-25)
 
 The phase numbers below are the original plan. The build has not followed them strictly:
 Playground, Drill Lab and Profiles were added before the Shop, because they make the free core
@@ -28,13 +28,21 @@ shop. This is the order things were actually built, and what comes next:
 | 11 | Social v1: follows and requests, block, report, Friends hub, notifications, compare | ✅ Live | Oct 14 |
 | 11b | Clubs v1: clubs, joining, roles and bans, posts, reactions, comments, invite links (`docs/clubs.md`) | ✅ Live | Oct 17 |
 | 11c | Pre-beta round: Learn case side panel and switcher, misfire guard, a11y links, Learn difficulty from the content, e2e suite green again | ✅ Done | Oct 15–19 |
+| 11d | Drill Lab redesign, step 1 (full-height layout, toolbar, options popover) | ✅ Done | Nov 7 |
+| 11e | **CuberHub rename** (visible name, wordmark, OG card; storage keys unchanged) | ✅ Merged locally | Nov 24 |
+| 11f | **App shell** steps 1–8: host routing behind `NEXT_PUBLIC_APP_URL`, per-host robots/sitemaps, cross-host cookies, guest handoff, sidebar, Zen retired, phone bar with More | ✅ Merged locally; go-live (step 9) waits on DNS/Vercel | Nov 24 |
+| 11g | **Home** (`/home`) steps 1–4: cards for stats, learning, drills, streak, friends, clubs, what's new, Cubby's tip; Customize | ✅ Merged locally; `home_layout` migration not applied | Nov 24 |
+| 11h | **Landing** steps 2–9 and 11: new landing page, feature pages, `/roadmap`, `/about`, draft `/privacy` and `/terms`; product links through `appUrl()`; polish round | ✅ On `feat/landing-polish` | Nov 24 |
+| 11i | Waitlist "Notify me" form, `public_stats()`, daily scramble (next batch) | 🔄 On `feat/next-batch` | Nov 25 |
 | 12 | **Beta with 10–15 real users** | Planned | |
-| 13 | Decide access tiers and the domain, using what the beta shows | After the beta | |
+| 13 | Decide access tiers, using what the beta shows | After the beta | |
 | 14 | Phase 4 — Shop | Planned | |
 | 15 | Phase 5 — Arena (bots first, then live races) | Planned | |
 | 16 | Phase 6 — Polish & scale | Planned | |
 
-Access tiers and the domain are deliberately **not** decided before the beta.
+Access tiers are deliberately **not** decided before the beta. **The domain is decided**
+(2026-11-24): `cuberhub.me` for the marketing site and `app.cuberhub.me` for the product, one
+Vercel deployment serving both (`docs/app-shell-plan.md`, `architecture.md` → Hosts).
 
 **Navigation for the beta (2026-10-14):** Compete and Shop are out of the navbar and the phone
 bar until they exist, and their landing-page tiles are "Soon" teasers without links. Desktop
@@ -410,7 +418,7 @@ dependency) are still worth filing, but nothing here waits on them any more.
 
 ## Open questions
 
-1. **Domain** — `cubehub.in` or `cubehub.io`? *Decided after the beta.*
+1. ~~**Domain**~~ — *decided 2026-11-24: `cuberhub.me` (marketing) and `app.cuberhub.me` (app), with the product renamed CuberHub.*
 2. **Tutorial authorship** — solo, or community contributions? *The schema has effectively answered this: `algorithms.submitted_by` + `is_approved` exist, i.e. moderated contributions.*
 3. **Algorithm sourcing** — SpeedSolving Wiki (check the licence) or an own curated set?
 4. ~~**csTimer import format**~~ — *resolved in Phase 2: import works and was checked against a real export.*

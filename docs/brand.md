@@ -6,6 +6,14 @@ and cookies (`cubehub.timer.v1`, `cubehub-theme`, …; renaming them would reset
 package name, database objects, file and component names, and the `.chm*` CSS classes. The CH mark
 is unchanged: "CH" still reads as CuberHub.
 
+### Writing the name
+
+- In prose, titles and metadata: **CuberHub** (capital C and H, one word).
+- The wordmark is lower case, "cuber" in the foreground colour and "**hub**" in the logo colour.
+  Only the logo components render it; don't type it as text elsewhere.
+- `tests/unit/brand-name.test.ts` fails on any whole-word "CubeHub" under `src/`. The landing
+  hero's headline is "Every part of cubing. One hub." (`HERO_HEADLINE`), which leans on the name.
+
 ## The CH mark and wordmark
 
 All logo components are in `src/components/layout/logo.tsx`. They are inline SVG plus live
@@ -16,8 +24,8 @@ recolours with the theme. Styles are the "CuberHub brand mark + wordmark" sectio
 | Component | Use |
 |---|---|
 | `<CubeMark />` | The mark alone. Pass `title="CuberHub"` when it stands without the wordmark, so it gets an accessible name; otherwise it's `aria-hidden`. `glow={false}` turns off the glow, which only shows in dark themes anyway. |
-| `<Logo />` | Navbar lockup: a 32px mark plus the "cuber**hub**" wordmark. |
-| `<BrandLockup />` | Landing hero: a large mark, the wordmark, and the "The unified cubing platform" tagline. `stacked` puts the mark above the text. `as="h1"` makes it the page heading. `tagline={null}` hides the tagline. |
+| `<Logo />` | The everyday lockup: a 32px mark plus the "cuber**hub**" wordmark. Used by the expanded sidebar, the marketing header and footer (and the old navbar). The sidebar's Rail state shows `<CubeMark />` alone. |
+| `<BrandLockup />` | A large mark, the wordmark, and the "The unified cubing platform" tagline. `stacked` puts the mark above the text. `as="h1"` makes it the page heading. `tagline={null}` hides the tagline. Unused since the landing hero dropped it (Nov 2026); kept for press pages. |
 
 The wordmark and tagline use **Outfit** (`--font-brand`, loaded in `src/app/layout.tsx`).
 Nothing else does; body text stays Geist. Outfit is a variable font, so it's loaded without
