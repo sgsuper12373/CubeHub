@@ -2,9 +2,10 @@ import { CountUp } from "@/components/marketing/motion/count-up";
 import { getPublicStats, showableStats } from "@/lib/marketing/public-stats";
 
 /**
- * A slot for real numbers (solves timed, cubers, college clubs). Renders
- * nothing unless at least one count was read from the database and is big
- * enough to mean something (STAT_MINIMUM); never a placeholder. Read when the
+ * A slot for real numbers (solves timed, cubers, cases drilled, college
+ * clubs) from `public_stats()`. Renders nothing when that function is missing
+ * or returns nothing, or unless at least one count is big enough to mean
+ * something (STAT_MINIMUM); never a placeholder. Read when the
  * landing page is built and refreshed hourly (the page's `revalidate`).
  */
 export async function RealStats() {

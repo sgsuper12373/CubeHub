@@ -5,6 +5,31 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Next batch step 3: public_stats() and RealStats
+
+**Request:** A security-definer function with aggregate counts only (solves, cubers, cases drilled), a
+SQL test, and RealStats wired to it, hidden when the function is missing or returns nothing.
+
+### Changed
+
+- `supabase/migrations/20261125000000_public_stats.sql` (new, **not applied**): `public_stats()` →
+  `(solves, cubers, cases_drilled)`; `security definer`, `search_path = ''`, execute for anon/authenticated only.
+- `supabase/tests/public_stats_test.sql` (new): 7 checks, rolls back.
+- `src/lib/marketing/public-stats.ts`: reads the function (+ the club count); `parsePublicStatsRow()`;
+  `getPublicStats()` is null when the function is missing/empty; "cases drilled" stat (minimum 1,000).
+- `real-stats.tsx` comment; `tests/unit/public-stats.test.ts` rewritten (5 tests).
+
+### Needs the founder
+
+- `supabase db push`, then `supabase db query --linked -f supabase/tests/public_stats_test.sql`.
+
+### Verified
+
+SQL test 7/7 PASS on a local throwaway `supabase/postgres:15.8.1.060` container with all migrations
+applied; `npm run validate` (674 tests); `npm run check:colors`.
+
+---
+
 ## 2026-11-25 — Next batch step 2: docs (landing step 12, app shell step 10)
 
 **Request:** Update brand.md, architecture.md, roadmap.md, timer.md; mark finished steps in the three plans.

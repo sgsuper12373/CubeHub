@@ -3,41 +3,66 @@ import "server-only";
 import { createPublicClient } from "@/lib/supabase/public";
 
 /**
- * Real numbers for the landing page's social proof. Each is null unless it
- * was read from the database; nothing here is ever a placeholder.
- *
- * - cubers: every profile (anon can read `profiles`).
- * - clubs: every club (anon can read `clubs`).
- * - solves: always null for now. `solves` is owner-only under RLS, so a total
- *   needs a security-definer `public_stats()` function first.
+ * Real numbers for the landing page's social proof. Totals come from the
+ * security-definer `public_stats()` function
+ * (supabase/migrations/20261125000000_public_stats.sql), which returns
+ * aggregate counts only; the club count is a plain read (anon can read
+ * `clubs`). Nothing here is ever a placeholder.
  */
-export type PublicStats = { cubers: number | null; clubs: number | null; solves: number | null };
+export type PublicStats = {
+  solves: number | null;
+  cubers: number | null;
+  casesDrilled: number | null;
+  clubs: number | null;
+};
 
 /** A stat renders only at or above its minimum: "4 cubers" is real, but not proof of anything. */
-export const STAT_MINIMUM = { cubers: 100, clubs: 5, solves: 10_000 } as const;
+export const STAT_MINIMUM = { solves: 10_000, cubers: 100, casesDrilled: 1_000, clubs: 5 } as const;
 
-export async function getPublicStats(): Promise<PublicStats> {
+function count(value: unknown): number | null {
+  const n = typeof value === "string" ? Number(value) : value;
+  return typeof n === "number" && Number.isFinite(n) && n >= 0 ? Math.floor(n) : null;
+}
+
+/**
+ * The function's one row (bigints may arrive as numbers or strings), or null
+ * when there's no usable row. `clubs` is read separately.
+ */
+export function parsePublicStatsRow(data: unknown): Omit<PublicStats, "clubs"> | null {
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row || typeof row !== "object") return null;
+  const r = row as Record<string, unknown>;
+  const stats = { solves: count(r.solves), cubers: count(r.cubers), casesDrilled: count(r.cases_drilled) };
+  return stats.solves === null && stats.cubers === null && stats.casesDrilled === null ? null : stats;
+}
+
+/**
+ * The landing totals, or null when `public_stats()` is missing (migration not
+ * applied), fails, or returns nothing. Null hides the whole slot.
+ */
+export async function getPublicStats(): Promise<PublicStats | null> {
   try {
     const supabase = createPublicClient();
-    const [profiles, clubs] = await Promise.all([
-      supabase.from("profiles").select("id", { count: "exact", head: true }),
+    const [totals, clubs] = await Promise.all([
+      supabase.rpc("public_stats"),
       supabase.from("clubs").select("id", { count: "exact", head: true }),
     ]);
-    return {
-      cubers: profiles.error ? null : profiles.count,
-      clubs: clubs.error ? null : clubs.count,
-      solves: null,
-    };
+    if (totals.error) return null;
+    const parsed = parsePublicStatsRow(totals.data);
+    if (!parsed) return null;
+    return { ...parsed, clubs: clubs.error ? null : clubs.count };
   } catch {
-    return { cubers: null, clubs: null, solves: null };
+    return null;
   }
 }
 
 /** The stats worth showing, in display order. Empty means render nothing. */
-export function showableStats(stats: PublicStats): { key: keyof PublicStats; label: string; value: number }[] {
+export function showableStats(stats: PublicStats | null): { key: keyof PublicStats; label: string; value: number }[] {
+  if (!stats) return [];
   const rows: { key: keyof PublicStats; label: string }[] = [
     { key: "solves", label: "solves timed" },
     { key: "cubers", label: "cubers" },
+    { key: "casesDrilled", label: "cases drilled" },
     { key: "clubs", label: "college clubs" },
   ];
   return rows.flatMap(({ key, label }) => {
