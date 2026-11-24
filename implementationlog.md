@@ -5,6 +5,31 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Next batch step 1: waitlist "Notify me" form
+
+**Request:** Unattended batch (`feat/next-batch`), step 1: the form from `docs/landing-plan.md` §7 on
+the landing roadmap section and `/roadmap`, using the existing `joinWaitlist()`.
+
+### Changed
+
+- `src/lib/waitlist/actions.ts`: errors carry `reason` (`invalid`, `rate-limited`, `error`);
+  `joinWaitlistFromForm(prev, formData)` for `useActionState`.
+- `src/components/marketing/waitlist-form.tsx` (new, client): email + Notify me, pending state,
+  success line replaces the form (same for duplicates), alert for errors, "One email when something
+  ships. No spam." + Privacy link.
+- `roadmap-section.tsx` (`landing-roadmap`) and `(marketing)/roadmap/page.tsx` (`roadmap-page`) render it.
+- Tests: `tests/unit/waitlist-form.test.tsx` (new, 4); `landing.spec.ts` drives the invalid path only.
+
+### Needs the founder
+
+- Apply `20261124000100_waitlist.sql` before this reaches production; until then submits show the error state.
+
+### Verified
+
+`npm run validate` (672 tests), `npm run check:colors`.
+
+---
+
 ## 2026-11-24 — Landing page polish: shorter page, one CTA per screen, nav, performance, SEO
 
 **Request:** Improve the landing page in ten groups (hero fold, theme pill, signed-in copy, repetition and

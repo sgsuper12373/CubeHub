@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { ProsePage } from "@/components/marketing/prose-page";
 import { RoadmapBoard } from "@/components/marketing/roadmap-board";
+import { WaitlistForm } from "@/components/marketing/waitlist-form";
 
 export const metadata: Metadata = {
   title: "Roadmap | CuberHub",
@@ -20,6 +21,12 @@ export default function RoadmapPage() {
       <div className="-mx-4 sm:mx-0">
         <RoadmapBoard headingLevel={2} />
       </div>
+      <section aria-labelledby="notify-heading" className="mt-4 flex flex-col gap-3">
+        <h2 id="notify-heading" className="text-xl font-semibold text-foreground">
+          Get told when the next thing ships
+        </h2>
+        <WaitlistForm source="roadmap-page" />
+      </section>
     </ProsePage>
   );
 }

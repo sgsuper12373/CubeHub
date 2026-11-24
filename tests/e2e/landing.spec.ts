@@ -82,6 +82,22 @@ test("roadmap and FAQ: three columns, answers that open, and FAQPage data", asyn
   expect(ld.some((t) => JSON.parse(t)["@type"] === "FAQPage")).toBe(true);
 });
 
+test("the Notify me form checks the address on the server and keeps the page usable", async ({ page }) => {
+  // Only the invalid path: it's refused before the database is called, so the
+  // test never writes to the real waitlist.
+  for (const path of ["/#roadmap", "/roadmap"]) {
+    await page.goto(path);
+    const form = page.getByTestId("waitlist");
+    await form.scrollIntoViewIfNeeded();
+    await expect(form.getByText("One email when something ships. No spam.")).toBeVisible();
+    await expect(form.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/privacy");
+    await form.getByLabel("Email address").fill("not-an-email");
+    await form.getByRole("button", { name: "Notify me" }).click();
+    await expect(form.getByRole("alert")).toHaveText("Enter a valid email address.");
+    await expect(form.getByLabel("Email address")).toHaveAttribute("aria-invalid", "true");
+  }
+});
+
 test("section ids are unique", async ({ page }) => {
   await page.goto("/");
   const ids = await page.evaluate(() => [...document.querySelectorAll("[id]")].map((e) => e.id));

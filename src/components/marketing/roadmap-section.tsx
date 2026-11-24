@@ -3,13 +3,12 @@ import Link from "next/link";
 
 import { RoadmapBoard } from "@/components/marketing/roadmap-board";
 import { SectionHeading } from "@/components/marketing/section-heading";
+import { WaitlistForm } from "@/components/marketing/waitlist-form";
 
 /**
  * The roadmap (docs/landing-plan.md → section 7): Now, Next and Later from
- * src/content/roadmap.ts. The plan's "Notify me" waitlist form isn't here yet:
- * its migration and server action exist (supabase/migrations/…_waitlist.sql,
- * src/lib/waitlist/actions.ts) but aren't live, and a form that can only fail
- * would be worse than none.
+ * src/content/roadmap.ts, then the "Notify me" waitlist form (a client
+ * island, so the section stays static).
  */
 export function RoadmapSection() {
   return (
@@ -30,6 +29,10 @@ export function RoadmapSection() {
         The full roadmap, with details
         <ArrowRight className="size-4" aria-hidden />
       </Link>
+      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card/60 p-5 sm:p-6">
+        <h3 className="text-lg font-semibold text-foreground">Get told when the next thing ships</h3>
+        <WaitlistForm source="landing-roadmap" />
+      </div>
     </section>
   );
 }
