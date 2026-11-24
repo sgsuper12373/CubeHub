@@ -5,6 +5,32 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Migrations applied to the live project; daily scrambles loaded
+
+**Request:** Apply the migrations and load the daily scrambles (founder, after the batch).
+
+### Done
+
+- `supabase db push` applied four migrations (the dry run listed all four as pending):
+  `20261124000000_home_layout.sql`, `20261124000100_waitlist.sql`, `20261125000000_public_stats.sql`,
+  `20261125000100_daily_scramble.sql`.
+- SQL tests on the live project, each in a transaction that rolls back: waitlist 6/6, public_stats 7/7,
+  daily_scramble 14/14 PASS. `supabase db query` doesn't return NOTICEs, so the tests ran from scratchpad
+  copies that collect each line in a temp table and select it before the rollback; the repo files are unchanged.
+  Afterwards: 0 waitlist rows, 0 daily results, 0 test users.
+- Loaded `supabase/DataSeeds/20261125000000_daily_scrambles.sql`: 60 days, 2026-11-25 to 2027-01-23.
+
+### Verified
+
+`E2E_PROD=1` daily-scramble + landing specs against the live data: 14/14, the daily guest flow no longer skips.
+
+### Still to do
+
+Next scramble batch before 2027-01-23. The code that uses these (waitlist form, daily card, RealStats,
+Customize for members) ships when `feat/next-batch` / `feat/landing-polish` are merged and deployed.
+
+---
+
 ## 2026-11-25 — Next batch step 7: command palette (app shell step 11)
 
 **Request:** If time remains, the Ctrl/⌘+K palette from `docs/app-shell-plan.md` §7.

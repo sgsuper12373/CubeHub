@@ -95,6 +95,12 @@ only the invalid path, so test runs never write to the real list.
 The server printed "The destination stream closed early" about 38 times during the e2e run. That's
 known, harmless noise: a page closed mid-stream, as logged on 2026-10-13.
 
+## Applied after the run (founder's request, 2026-11-25)
+
+Steps 1–4 below are done: `supabase db push` applied `home_layout`, `waitlist`, `public_stats` and
+`daily_scramble`; their SQL tests passed on the live project (6/6, 7/7, 14/14, all rolled back); the
+60 daily scrambles are loaded. The daily e2e flow now runs against the real data (no skip).
+
 ## What you need to do by hand
 
 In order, before this branch reaches production:

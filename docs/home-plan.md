@@ -1,6 +1,6 @@
 # Home plan: `app.cuberhub.me/home`
 
-> **Status:** steps 1–5 done (Nov 24–25, 2026); step 5's migration and seed are not applied yet · Sumit Garad
+> **Status:** steps 1–5 done (Nov 24–25, 2026); migrations and the first scramble batch applied Nov 25 · Sumit Garad
 > **For:** Claude Code. Read `AGENTS.md`, `docs/architecture.md` and `docs/app-shell-plan.md` first.
 > Home is the first page of the new app shell, so the shell's steps 1–6 come before step 3 below.
 > **Related:** `docs/app-shell-plan.md` (sidebar and hosts), `docs/cubby-cubing-companion.md` (Cubby's
