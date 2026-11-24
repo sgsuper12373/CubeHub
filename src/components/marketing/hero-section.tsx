@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowRight, IndianRupee, Pause, Play, ShieldCheck, WifiOff } from "lucide-react";
 import { useState } from "react";
 
-import { BrandLockup } from "@/components/layout/logo";
 import { FadeUp } from "@/components/marketing/motion/fade-up";
 import { FloatingField } from "@/components/marketing/motion/floating-field";
 import { RevealText } from "@/components/marketing/motion/reveal-text";
@@ -18,12 +17,6 @@ const ScrambleMatrix = dynamic(
   () => import("@/components/react-bits/scramble-matrix").then((m) => m.ScrambleMatrix),
   { ssr: false, loading: () => <div className="size-full" /> },
 );
-
-/**
- * The hero lockup's palette. "classic" is the original blue C / orange H;
- * "theme" follows the active theme like the logo everywhere else.
- */
-const LANDING_LOGO_STYLE: "classic" | "theme" = "classic";
 
 /**
  * The hero headline (docs/landing-plan.md → Hero, open question 1). The other
@@ -39,19 +32,18 @@ const TRUST = [
 ] as const;
 
 /**
- * The first screen (docs/landing-plan.md → Hero). Motion, all CSS so the text
- * and buttons need no JavaScript: the mark's wireframe draws in, the wordmark
- * fades up, the headline reveals word by word, then the buttons; under 1.6 s
- * in all. Behind it: the notation field and the floating cube pieces.
+ * The first screen (docs/landing-plan.md → Hero). No logo lockup here: the
+ * header already carries the logo, and dropping it puts the headline, sub-line,
+ * both buttons and the trust row above the fold at 1366×768 and 390×844.
+ * Motion is all CSS, so the text and buttons need no JavaScript: the headline
+ * reveals word by word, then the sub-line, buttons and trust row, done by
+ * about 0.9 s. Behind it: the notation field and the floating cube pieces.
  */
 export function HeroSection() {
   const [paused, setPaused] = useState(false);
 
   return (
-    <section
-      data-logo={LANDING_LOGO_STYLE === "classic" ? "classic" : undefined}
-      className="relative isolate -mt-14 flex min-h-[100svh] items-center overflow-hidden bg-background pt-14"
-    >
+    <section className="relative isolate -mt-14 flex min-h-[100svh] items-center overflow-hidden bg-background pt-14">
       {/* Interactive notation field. Decorative and pointer-events-none, so it
           never eats a tap or a scroll; it fades out towards the copy. */}
       <div className="absolute inset-0 -z-10 opacity-80 [mask-image:radial-gradient(ellipse_at_70%_40%,black_35%,transparent_80%)] max-lg:[mask-image:radial-gradient(ellipse_at_50%_70%,black_25%,transparent_75%)]">
@@ -65,19 +57,16 @@ export function HeroSection() {
 
       <div className="mx-auto w-full max-w-4xl px-4 py-12 md:py-16">
         <div className="flex flex-col items-center text-center">
-          {/* Stacks below sm: same as `stacked`, without a second copy in the DOM. */}
-          <BrandLockup className="hero-lockup max-sm:flex-col max-sm:text-center" />
-
           <RevealText
             as="h1"
             text={HERO_HEADLINE}
             trigger="load"
-            delayMs={650}
+            delayMs={100}
             staggerMs={45}
-            className="mt-10 max-w-3xl text-4xl font-bold tracking-tight text-balance text-foreground sm:text-5xl lg:text-7xl"
+            className="max-w-3xl text-4xl font-bold tracking-tight text-balance text-foreground sm:text-5xl lg:text-7xl"
           />
 
-          <FadeUp trigger="load" delayMs={1000}>
+          <FadeUp trigger="load" delayMs={450}>
             <p className="mx-auto mt-5 max-w-2xl text-base text-pretty text-muted-foreground sm:text-lg md:text-xl md:leading-relaxed">
               A fast WCA timer, every OLL and PLL in 3D, a drill that finds your slow cases, and friends
               to race. Free, and built for Indian cubers.
@@ -86,7 +75,7 @@ export function HeroSection() {
 
           <FadeUp
             trigger="load"
-            delayMs={1150}
+            delayMs={600}
             className="mt-8 flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center"
           >
             <Link
@@ -104,7 +93,7 @@ export function HeroSection() {
             </Link>
           </FadeUp>
 
-          <FadeUp trigger="load" delayMs={1300} as="div" className="mt-8">
+          <FadeUp trigger="load" delayMs={750} as="div" className="mt-8">
             <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
               {TRUST.map(({ icon: Icon, label }) => (
                 <li key={label} className="flex items-center gap-1.5">

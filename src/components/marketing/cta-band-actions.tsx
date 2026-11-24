@@ -5,14 +5,15 @@ import { ArrowRight } from "lucide-react";
 
 import { useViewer } from "@/components/marketing/use-viewer";
 import { buttonVariants } from "@/components/ui/button";
-import { appHref, SIGN_UP_HREF } from "@/lib/marketing/links";
+import { appHref, SIGN_IN_HREF } from "@/lib/marketing/links";
 import { cn } from "@/lib/utils";
 
 /**
- * The CTA band's copy and buttons. Signed in, the sign-up pitch gives way to
- * the next thing to practise. A client island so the landing page stays
- * static; it's below the fold, so the cookie's guess is fine until
- * GET /api/viewer answers.
+ * The CTA band's copy and buttons. Signed out (the default, and what the
+ * static HTML shows): "Start timing free. No account needed." with signing in
+ * as the secondary action. Signed in: pick up where you left off, and drill.
+ * A client island so the landing page stays static; it's below the fold, so
+ * the cookie's guess is fine until GET /api/viewer answers.
  */
 export function CtaBandActions() {
   const { viewer, likelySignedIn } = useViewer();
@@ -23,21 +24,21 @@ export function CtaBandActions() {
       <p className="max-w-md text-base text-muted-foreground sm:text-lg">
         {signedIn
           ? "Pick up where you left off. Your times are synced across your devices."
-          : "No account needed to time solves. Sign in whenever you want your times synced across devices."}
+          : "Start timing free. No account needed."}
       </p>
       <div className="mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
         <Link
           href={appHref("/timer")}
           className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-7 text-base font-semibold shadow-lg shadow-primary/25 hover:bg-primary/90")}
         >
-          Open the timer
+          {signedIn ? "Open the timer" : "Start timing free"}
           <ArrowRight data-icon="inline-end" className="size-4" />
         </Link>
         <Link
-          href={signedIn ? appHref("/learn/333/drill") : SIGN_UP_HREF}
+          href={signedIn ? appHref("/learn/333/drill") : SIGN_IN_HREF}
           className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-12 rounded-full px-7 text-base font-semibold")}
         >
-          {signedIn ? "Drill your weakest cases" : "Create a free account"}
+          {signedIn ? "Drill your weakest cases" : "Sign in to sync across devices"}
         </Link>
       </div>
     </>

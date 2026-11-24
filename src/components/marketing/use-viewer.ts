@@ -2,7 +2,6 @@
 
 import { useSyncExternalStore } from "react";
 
-import { createClient } from "@/lib/supabase/client";
 import { AUTH_COOKIE_PATTERN, SIGNED_OUT_VIEWER, type Viewer } from "@/lib/auth/viewer";
 
 /**
@@ -44,17 +43,21 @@ function start(): void {
   started = true;
   void load();
   let lastUserId: string | null | undefined;
-  createClient().auth.onAuthStateChange((_event, session) => {
-    const userId = session?.user.id ?? null;
-    // The first event reports the current session; load() already covers it.
-    if (lastUserId === undefined) {
-      lastUserId = userId;
-      return;
-    }
-    if (userId !== lastUserId) {
-      lastUserId = userId;
-      void load();
-    }
+  // Imported here rather than at the top, so the Supabase client stays out of
+  // the static landing page's first load.
+  void import("@/lib/supabase/client").then(({ createClient }) => {
+    createClient().auth.onAuthStateChange((_event, session) => {
+      const userId = session?.user.id ?? null;
+      // The first event reports the current session; load() already covers it.
+      if (lastUserId === undefined) {
+        lastUserId = userId;
+        return;
+      }
+      if (userId !== lastUserId) {
+        lastUserId = userId;
+        void load();
+      }
+    });
   });
 }
 

@@ -1,15 +1,15 @@
 "use client";
 
-import { ArrowRight, BarChart3, Box, GraduationCap, Target, Users, type LucideIcon } from "lucide-react";
+import { ArrowRight, BarChart3, Box, GraduationCap, Target, Upload, Users, type LucideIcon } from "lucide-react";
 import { motion, motionValue, useMotionValueEvent, useTransform, type MotionValue } from "motion/react";
 import Link from "next/link";
 import { useRef } from "react";
 
+import { HeroTimerCard } from "@/components/marketing/hero-timer-card";
 import { PinnedChapter } from "@/components/marketing/motion/pinned-chapter";
 import { Eyebrow } from "@/components/marketing/section-heading";
 import { appHref } from "@/lib/marketing/links";
 import { ScramblePreview } from "@/components/timer/scramble-preview";
-import { formatMs } from "@/lib/timer/format";
 import { cn } from "@/lib/utils";
 
 /**
@@ -32,6 +32,8 @@ type Chapter = {
   body: string;
   points: string[];
   link: { href: string; label: string };
+  /** Anything that belongs under the chapter's link (the Timer's csTimer strip). */
+  extra?: React.ReactNode;
   Visual: (props: { progress: MotionValue<number> }) => React.ReactNode;
 };
 
@@ -44,7 +46,6 @@ function LiveText({ value, format }: { value: MotionValue<number>; format: (n: n
   return <span ref={ref}>{format(value.get())}</span>;
 }
 
-const asTime = (v: number) => formatMs(Math.round(v));
 
 function Frame({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
@@ -62,42 +63,25 @@ function Frame({ children, className }: { children: React.ReactNode; className?:
 
 // ── 1. Timer and stats ──────────────────────────────────────────────────────
 
-const TREND = [15.8, 15.1, 15.6, 14.7, 14.9, 14.2, 14.5, 13.8, 13.9, 13.4];
+/**
+ * The live demo timer is the Timer chapter's visual: a replay until the
+ * visitor clicks or taps it, then a working timer (hero-timer-card.tsx keeps
+ * its own state; it never touches the real timer's stores).
+ */
+function TimerVisual() {
+  return <HeroTimerCard className="mx-auto w-full max-w-md" />;
+}
 
-function TimerVisual({ progress }: { progress: MotionValue<number> }) {
-  const time = useTransform(progress, [0, 0.4], [0, 13420], { clamp: true });
-  const ao5 = useTransform(progress, [0.4, 0.65], [0, 13870], { clamp: true });
-  const ao12 = useTransform(progress, [0.45, 0.7], [0, 14310], { clamp: true });
-  const draw = useTransform(progress, [0.55, 0.95], [0, 1], { clamp: true });
-  const statsIn = useTransform(progress, [0.35, 0.5], [0, 1], { clamp: true });
-  const max = Math.max(...TREND);
-  const min = Math.min(...TREND);
-  const d = TREND.map((t, i) => `${i === 0 ? "M" : "L"}${(i / (TREND.length - 1)) * 300},${10 + ((t - min) / (max - min)) * 70}`).join(" ");
-
+/** The one place the landing page mentions csTimer import (besides the FAQ). */
+function CsTimerStrip() {
   return (
-    <Frame>
-      <p className="text-center font-mono text-xs tracking-widest text-muted-foreground">R U R&apos; U&apos; F2 D L2 B&apos; U2</p>
-      <p className="mt-4 text-center font-mono text-6xl font-bold tabular-nums text-foreground">
-        <LiveText value={time} format={asTime} />
-      </p>
-      <motion.div style={{ opacity: statsIn }} className="mt-6 grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-muted/50 px-3 py-2">
-          <p className="text-xs text-muted-foreground">Ao5</p>
-          <p className="font-mono text-xl font-semibold tabular-nums text-foreground">
-            <LiveText value={ao5} format={asTime} />
-          </p>
-        </div>
-        <div className="rounded-xl bg-muted/50 px-3 py-2">
-          <p className="text-xs text-muted-foreground">Ao12</p>
-          <p className="font-mono text-xl font-semibold tabular-nums text-foreground">
-            <LiveText value={ao12} format={asTime} />
-          </p>
-        </div>
-      </motion.div>
-      <svg viewBox="0 0 300 90" className="mt-5 w-full">
-        <motion.path d={d} fill="none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="stroke-chart-1" style={{ pathLength: draw }} />
-      </svg>
-    </Frame>
+    <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
+      <Upload className="size-4 shrink-0 text-primary" aria-hidden />
+      Coming from csTimer? Bring your times with you.
+      <Link href={appHref("/stats")} className="font-semibold text-primary hover:underline">
+        Import on the Stats page
+      </Link>
+    </p>
   );
 }
 
@@ -161,7 +145,7 @@ function DrillVisual({ progress }: { progress: MotionValue<number> }) {
             <div className="flex items-center justify-between gap-2">
               <p className="truncate font-mono text-xs text-foreground">{l.label}</p>
               {l.main && (
-                <motion.span style={{ opacity: badge }} className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+                <motion.span style={{ opacity: badge }} className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
                   main
                 </motion.span>
               )}
@@ -214,6 +198,15 @@ function PlaygroundVisual() {
 
 // ── 5. Profiles and clubs ───────────────────────────────────────────────────
 
+/** The profile and posts are made up; say so, so nobody reads them as a real cuber or a testimonial. */
+function ExampleTag({ children = "Example profile" }: { children?: string }) {
+  return (
+    <span className="absolute top-4 right-4 rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+      {children}
+    </span>
+  );
+}
+
 function ProfileVisual({ progress }: { progress: MotionValue<number> }) {
   const flip = useTransform(progress, [0.25, 0.55], [0, 180], { clamp: true });
   const back = useTransform(flip, (v) => v - 180);
@@ -223,6 +216,7 @@ function ProfileVisual({ progress }: { progress: MotionValue<number> }) {
     <div aria-hidden className="mx-auto w-full max-w-md">
       <div className="relative h-56 [perspective:1000px]">
         <motion.div style={{ rotateY: flip }} className="absolute inset-0 rounded-3xl border border-border bg-card p-6 [backface-visibility:hidden]">
+          <ExampleTag />
           <div className="flex items-center gap-3">
             <div className="flex size-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-lg font-bold text-primary">AK</div>
             <div>
@@ -237,6 +231,7 @@ function ProfileVisual({ progress }: { progress: MotionValue<number> }) {
           <p className="mt-1 text-xs text-muted-foreground">OLL · 36 of 57 learned</p>
         </motion.div>
         <motion.div style={{ rotateY: back }} className="absolute inset-0 rounded-3xl border border-border bg-card p-6 [backface-visibility:hidden]">
+          <ExampleTag />
           <p className="text-xs font-medium text-muted-foreground">Personal bests · 3x3</p>
           <div className="mt-3 grid grid-cols-3 gap-2">
             {[
@@ -245,7 +240,7 @@ function ProfileVisual({ progress }: { progress: MotionValue<number> }) {
               ["Ao12", "12.08"],
             ].map(([k, v]) => (
               <div key={k} className="rounded-xl bg-muted/50 px-2 py-2 text-center">
-                <p className="text-[10px] text-muted-foreground">{k}</p>
+                <p className="text-xs text-muted-foreground">{k}</p>
                 <p className="font-mono text-lg font-semibold tabular-nums text-foreground">{v}</p>
               </div>
             ))}
@@ -260,6 +255,7 @@ function ProfileVisual({ progress }: { progress: MotionValue<number> }) {
         </motion.div>
       </div>
       <motion.div style={{ y: posts, opacity: postsIn }} className="mt-4 flex flex-col gap-2">
+        <p className="text-xs font-medium text-muted-foreground">Example club posts</p>
         {["Meetup in the CS lab, Sunday 5 pm. Bring your cubes.", "New Ao12 PB: 12.08! The M-slice Ua finally clicked."].map((t) => (
           <div key={t} className="rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground">
             {t}
@@ -276,8 +272,9 @@ const CHAPTERS: Chapter[] = [
     eyebrow: "Timer and stats",
     icon: BarChart3,
     title: "A timer that disappears when you solve.",
-    body: "WCA random-state scrambles, inspection, sessions and every average from Mo3 to Ao100, with the rest of the screen out of the way while the clock runs.",
-    points: ["Works the moment the page loads, signed in or not", "Trend, distribution and practice days on the Stats page", "Import from csTimer"],
+    body: "Click the card to try it: hold Space or press and hold, release to start, press again to stop. Escape hands the page back. The real timer adds WCA inspection, sessions and every average to Ao100.",
+    points: ["Works the moment the page loads, signed in or not", "Personal bests, with a share card when you beat one", "Trend, distribution and practice days on the Stats page"],
+    extra: <CsTimerStrip />,
     link: { href: appHref("/timer"), label: "Open the timer" },
     Visual: TimerVisual,
   },
@@ -346,6 +343,7 @@ export function FeatureChapters() {
               {c.link.label}
               <ArrowRight className="size-4" aria-hidden />
             </Link>
+            {c.extra}
           </div>
         </PinnedChapter>
       ))}

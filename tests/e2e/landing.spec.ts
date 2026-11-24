@@ -8,7 +8,7 @@ test.describe("without JavaScript", () => {
   test("the hero's headline and buttons are in the HTML", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Every part of cubing. One hub.");
-    await expect(page.getByRole("link", { name: /Start timing free/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Start timing free/ }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Explore Learn" }).first()).toBeVisible();
   });
 });
@@ -104,4 +104,28 @@ test("feature pages, roadmap and about each have one h1 and work as entry points
     expect(res?.status()).toBe(200);
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
   }
+});
+
+test("header links are all on-page anchors, and the section in view is marked", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+  const nav = page.getByRole("navigation", { name: "Site" });
+  for (const [label, href] of [
+    ["Features", "/#features"],
+    ["Learn", "/#learn"],
+    ["Roadmap", "/#roadmap"],
+    ["FAQ", "/#faq"],
+  ]) {
+    await expect(nav.getByRole("link", { name: label })).toHaveAttribute("href", href);
+  }
+  await nav.getByRole("link", { name: "Roadmap" }).click();
+  await expect(nav.getByRole("link", { name: "Roadmap" })).toHaveAttribute("aria-current", "location");
+  await expect(page.locator("footer").getByRole("link", { name: "Roadmap" })).toHaveAttribute("href", "/#roadmap");
+});
+
+test("no theme pill on the landing page, and /favicon.ico answers", async ({ page, request }) => {
+  await page.goto("/");
+  await expect(page.getByRole("radiogroup", { name: "Theme (dev)" })).toHaveCount(0);
+  const res = await request.get("/favicon.ico");
+  expect(res.status()).toBe(200);
 });

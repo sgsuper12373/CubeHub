@@ -9,12 +9,14 @@ import { LazyCustomizeSection } from "@/components/marketing/customize-section-l
 import { FaqSection, faqJsonLd } from "@/components/marketing/faq-section";
 import { HeroSection } from "@/components/marketing/hero-section";
 import { RoadmapSection } from "@/components/marketing/roadmap-section";
-import { TrySolveSection } from "@/components/marketing/try-solve-section";
 
 // Below the fold: its own chunk, still server-rendered (the chapter text is for search engines too).
 const FeatureChapters = dynamic(() =>
   import("@/components/marketing/feature-chapters").then((m) => m.FeatureChapters),
 );
+
+/** Static, refreshed hourly so the real-stats slot (components/marketing/real-stats.tsx) stays current. */
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: { absolute: "CuberHub: Speedcubing Timer, OLL/PLL Tutorials and Drills" },
@@ -46,8 +48,8 @@ const SITE_JSON_LD = [
 
 
 /**
- * Full-screen chapters (docs/landing-plan.md → Page structure): hero → try a
- * solve → five feature chapters → make it yours → built for India → roadmap
+ * Sections (docs/landing-plan.md → Page structure): hero → five feature
+ * chapters (the Timer one holds the live "try a solve" demo) → make it yours → built for India → roadmap
  * → FAQ → final call to action and footer. The landing page never captures
  * Space or touches unless the visitor asks it to; see `hero-timer-card.tsx`.
  *
@@ -58,7 +60,6 @@ export default function Home() {
   return (
     <>
       <HeroSection />
-      <TrySolveSection />
       <FeatureChapters />
       <LazyCustomizeSection />
       <CommunitySection />

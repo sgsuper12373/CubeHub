@@ -15,7 +15,7 @@ import { appHref } from "@/lib/marketing/links";
 export function CtaBand() {
   return (
     <section
-      className="relative isolate flex min-h-[100svh] items-center justify-center overflow-hidden px-4 py-24"
+      className="relative isolate flex items-center justify-center overflow-hidden border-t border-border/60 px-4 py-16 md:py-20"
     >
       <FloatingField className="-z-10 opacity-40" intensity={0.5} />
       <div aria-hidden className="pointer-events-none absolute top-1/2 left-1/2 -z-10 size-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/12 blur-3xl" />
@@ -50,7 +50,7 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
   {
     title: "Company",
     links: [
-      { label: "Roadmap", href: "/roadmap" },
+      { label: "Roadmap", href: "/#roadmap" },
       { label: "About", href: "/about" },
       ...(CONTRIBUTE_URL ? [{ label: "Contribute", href: CONTRIBUTE_URL, external: true }] : []),
     ],

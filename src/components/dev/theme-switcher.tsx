@@ -1,6 +1,7 @@
 // TEMP(step 8): remove when the theme settings page ships.
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 
 import {
@@ -10,6 +11,7 @@ import {
   subscribeTheme,
   type ThemePreference,
 } from "@/lib/theme";
+import { isRootPath } from "@/lib/host-routing";
 import { cn } from "@/lib/utils";
 import { THEMES } from "@/themes";
 
@@ -28,15 +30,22 @@ const ENABLED =
  * Dev-only theme switcher for checking every theme visually. Shown in
  * `next dev`, or in a production build made with NEXT_PUBLIC_THEME_SWITCHER=1
  * (so it can be checked under `next build && next start`).
+ *
+ * Never on the marketing pages (the landing page, feature pages, roadmap,
+ * legal): there it covered content and the footer, and the landing page has
+ * its own theme picker in "Make it yours".
  */
 export const ThemeSwitcher = ENABLED ? Switcher : () => null;
 
 function Switcher() {
+  const pathname = usePathname();
   const current = useSyncExternalStore(
     subscribeTheme,
     getThemeSnapshot,
     getThemeServerSnapshot,
   );
+
+  if (isRootPath(pathname)) return null;
 
   return (
     <div

@@ -2,6 +2,7 @@
 
 import { Menu } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Logo } from "@/components/layout/logo";
@@ -59,10 +60,51 @@ function SignInLink({ className }: { className?: string }) {
   );
 }
 
+/**
+ * Which header link's sections are in view, on the landing page only: the
+ * section crossing a band just above the middle of the screen wins.
+ */
+function useActiveSection(): string | null {
+  const pathname = usePathname();
+  const [active, setActive] = useState<string | null>(null);
+  useEffect(() => {
+    if (pathname !== "/") return;
+    const ids = MARKETING_LINKS.flatMap((l) => l.sections);
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) setActive(e.target.id);
+      },
+      { rootMargin: "-40% 0px -55% 0px" },
+    );
+    // Sections can mount late (the customise section loads near the
+    // viewport), so observe again whenever the page's DOM changes.
+    const observeAll = () =>
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) io.observe(el);
+      });
+    observeAll();
+    const mo = new MutationObserver(observeAll);
+    mo.observe(document.querySelector("main") ?? document.body, { childList: true, subtree: true });
+    // Back at the top (the hero), nothing is highlighted.
+    const onScroll = () => {
+      if (window.scrollY < window.innerHeight * 0.5) setActive(null);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      io.disconnect();
+      mo.disconnect();
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [pathname]);
+  return pathname === "/" ? active : null;
+}
+
 export function MarketingHeader() {
   const { viewer, likelySignedIn } = useViewer();
   const solid = useScrolledPast(SOLID_AFTER);
   const [menuOpen, setMenuOpen] = useState(false);
+  const activeSection = useActiveSection();
 
   // Same elements throughout, only the classes change: swapping elements
   // mid-hydration dropped clicks made meanwhile.
@@ -84,16 +126,23 @@ export function MarketingHeader() {
         </Link>
 
         <ul className="mx-auto hidden items-center gap-1 md:flex">
-          {MARKETING_LINKS.map((l) => (
-            <li key={l.label}>
-              <Link
-                href={l.href}
-                className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {l.label}
-              </Link>
-            </li>
-          ))}
+          {MARKETING_LINKS.map((l) => {
+            const current = activeSection !== null && l.sections.includes(activeSection);
+            return (
+              <li key={l.label}>
+                <Link
+                  href={l.href}
+                  aria-current={current ? "location" : undefined}
+                  className={cn(
+                    "rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:text-foreground",
+                    current ? "bg-muted text-foreground" : "text-muted-foreground",
+                  )}
+                >
+                  {l.label}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
 
         <div className="ml-auto flex items-center gap-2 md:ml-0">
@@ -107,7 +156,7 @@ export function MarketingHeader() {
                   url={profile.avatar_url}
                   name={profile.display_name || profile.username}
                   size="xs"
-                  className="size-8 rounded-full text-[10px]"
+                  className="size-8 rounded-full text-xs"
                 />
               </Link>
             )}

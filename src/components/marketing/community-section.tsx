@@ -1,45 +1,64 @@
-import { Code2, Heart, IndianRupee, Trophy, Users } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { ArrowRight, Code2, Heart, Trophy, Users } from "lucide-react";
+import Link from "next/link";
 
+import { RealStats } from "@/components/marketing/real-stats";
 import { SectionHeading } from "@/components/marketing/section-heading";
 import { COMMUNITY_LINKS, CONTRIBUTE_URL } from "@/content/community";
+import { appHref } from "@/lib/marketing/links";
 
-const POINTS: { icon: LucideIcon; title: string; body: string; coming?: boolean }[] = [
-  { icon: IndianRupee, title: "Prices in ₹", body: "Cube picks for your level and budget, from sellers who ship in India.", coming: true },
-  { icon: Users, title: "College clubs", body: "Start your college's club today; tournament rooms for running your own competition are next." },
-  { icon: Trophy, title: "India-first rankings", body: "National and state leaderboards, and a calendar of competitions across India.", coming: true },
-];
-
-/** "Built in India, for Indian cubers" (docs/landing-plan.md → section 6). */
+/**
+ * "Built in India, for Indian cubers" (docs/landing-plan.md → section 6). It
+ * leads with what's live (college clubs) and keeps one thing that's coming;
+ * the rest (prices in ₹, the calendar) lives on the roadmap, not here twice.
+ */
 export function CommunitySection() {
   const links = COMMUNITY_LINKS.filter((l) => l.url);
   return (
     <section
       id="community"
       aria-labelledby="community-heading"
-      className="mx-auto flex min-h-[100svh] w-full max-w-6xl scroll-mt-16 flex-col justify-center gap-12 px-4 py-20"
+      className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-16 md:py-20"
     >
       <SectionHeading
         id="community-heading"
         eyebrow="Made here"
         icon={Heart}
         title="Built in India, for Indian cubers."
-        lead="Not a localised Western product: prices, clubs and rankings that start from how cubing works here."
+        lead="It starts from how cubing works here, beginning with your college club."
       />
-      <ul className="grid gap-4 md:grid-cols-3">
-        {POINTS.map(({ icon: Icon, title, body, coming }) => (
-          <li key={title} className="reveal rounded-3xl border border-border bg-card p-6">
-            <div className="flex items-center justify-between">
-              <Icon className="size-6 text-primary" aria-hidden />
-              {coming && (
-                <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">Coming</span>
-              )}
-            </div>
-            <h3 className="mt-4 text-lg font-semibold text-foreground">{title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
-          </li>
-        ))}
-      </ul>
+      <RealStats />
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="reveal flex flex-col rounded-3xl border border-primary/30 bg-card p-6 md:col-span-2">
+          <div className="flex items-center justify-between">
+            <Users className="size-6 text-primary" aria-hidden />
+            <span className="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-medium text-primary">Live</span>
+          </div>
+          <h3 className="mt-4 text-lg font-semibold text-foreground">College clubs</h3>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
+            Start your college&apos;s cubing club or join one: posts, algorithms and videos, invite links, and roles for
+            the people who run it. Tournament rooms for running your own competition are next.
+          </p>
+          <Link
+            href={appHref("/clubs")}
+            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+          >
+            Start or join a club
+            <ArrowRight className="size-4" aria-hidden />
+          </Link>
+        </div>
+        <div className="reveal flex flex-col rounded-3xl border border-border bg-card p-6">
+          <div className="flex items-center justify-between">
+            <Trophy className="size-6 text-primary" aria-hidden />
+            <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Coming</span>
+          </div>
+          <h3 className="mt-4 text-lg font-semibold text-foreground">India-first rankings</h3>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">National and state leaderboards.</p>
+          <Link href="/#roadmap" className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-semibold text-primary hover:underline">
+            More on the roadmap
+            <ArrowRight className="size-4" aria-hidden />
+          </Link>
+        </div>
+      </div>
 
       {links.length > 0 && (
         <ul className="flex flex-wrap gap-3" aria-label="CuberHub on social media">

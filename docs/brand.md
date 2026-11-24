@@ -53,14 +53,9 @@ The favicon reads the same hooks, so it follows automatically.
 `data-logo="classic"` on any ancestor gives the original blue C, orange H and blue
 wireframe (`[data-logo="classic"]` in `globals.css`), whatever the theme.
 
-The landing hero uses it, behind one constant in
-`src/components/marketing/hero-section.tsx`:
-
-```ts
-const LANDING_LOGO_STYLE: "classic" | "theme" = "classic";
-```
-
-Set it to `"theme"` for the hero to follow the active theme like the rest of the app.
+Nothing uses it today. The landing hero used it for its large lockup until
+the lockup was removed (Nov 2026: the header already shows the logo, and
+the hero's headline and buttons needed the room above the fold).
 
 Theme selectors are plain `[data-theme="…"]`, so a mark inside any element with
 `data-theme` takes that theme's colours. The glow is the exception: it is keyed on `.dark`
@@ -96,6 +91,7 @@ logo today.
 | File | Used for |
 |---|---|
 | `src/app/icon.png`, `apple-icon.png` | Static tab and home-screen icons |
+| `src/app/favicon.ico` | 16/32/48 px, made from `icon.png` (`magick src/app/icon.png -define icon:auto-resize=48,32,16 src/app/favicon.ico`), so `/favicon.ico` answers instead of 404ing |
 | `src/app/opengraph-image.png` + `.alt.txt` | Social card (the Slate OG image, 1200×630) |
 | `public/brand/cubehub-{lockup,mark}-{slate,classic,paper}.{svg,png,webp}` | Still the pre-rename "cubehub" wordmark in the lockups (the marks are unaffected); regenerate before using them anywhere public. Pre-rendered lockups and marks, for press, docs and email. The app UI doesn't use them. The WebP files are lossless copies of the PNGs, 30–65% smaller, for web pages; keep the PNGs for email (patchy WebP support) and existing links. |
 | `public/brand/cubehub-lockup-{slate,classic}-transparent.*` | The same, without a background (alpha kept in the WebP) |

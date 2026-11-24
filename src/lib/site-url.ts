@@ -10,8 +10,15 @@
  *   SITE_URL, HOST_SPLIT is false, and everything serves from one host.
  */
 
+/**
+ * Used when NEXT_PUBLIC_SITE_URL is unset or empty: the live domain in a
+ * production build, so `next build` can never publish localhost in og:url,
+ * og:image, canonicals, JSON-LD, sitemap.xml or robots.txt; localhost in dev.
+ */
+const DEFAULT_SITE_URL = process.env.NODE_ENV === "production" ? "https://cuberhub.me" : "http://localhost:3000";
+
 /** The marketing origin, e.g. https://cuberhub.me */
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/+$/, "");
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || DEFAULT_SITE_URL).replace(/\/+$/, "");
 /** The app origin, e.g. https://app.cuberhub.me. Falls back to SITE_URL (single-host mode). */
 export const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || SITE_URL).replace(/\/+$/, "");
 /** True only when the two origins differ: production and a local split-host setup. */

@@ -1,23 +1,22 @@
 "use client";
 
-import Link from "next/link";
 import {
-  ArrowRight,
+  Box,
   Check,
   EyeOff,
+  Hand,
   Image as ImageIcon,
   LayoutGrid,
   Maximize,
   Mic,
   SlidersHorizontal,
   Type,
-  Upload,
+  type LucideIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import { CubeMark } from "@/components/layout/logo";
 import { SectionHeading } from "@/components/marketing/section-heading";
-import { appHref } from "@/lib/marketing/links";
 import { formatMs } from "@/lib/timer/format";
 import { CLIENT_DEFAULTS, loadClientSettings, saveClientSettings } from "@/lib/timer/settings-persistence";
 import {
@@ -75,24 +74,20 @@ const THEME_OPTIONS: { value: ThemePreference; label: string; hint: string }[] =
   { value: "system", label: "System", hint: "Follows your device" },
 ];
 
-const MORE = [
+/**
+ * Everything else that's adjustable, as one compact grid of chips rather than
+ * more controls: the landing page shows the two settings that change the
+ * preview at a glance (theme, precision) and lists the rest.
+ */
+const MORE: { icon: LucideIcon; label: string }[] = [
+  { icon: Hand, label: "Hold-to-start time" },
+  { icon: Box, label: "2D or 3D scramble preview" },
+  { icon: ImageIcon, label: "Background image" },
+  { icon: Type, label: "Font size" },
+  { icon: LayoutGrid, label: "Drag-and-drop layout" },
   { icon: Mic, label: "15s inspection with voice callouts" },
   { icon: EyeOff, label: "Hide time while solving" },
-  { icon: Type, label: "Timer size" },
-  { icon: LayoutGrid, label: "Drag-and-drop panel layout" },
   { icon: Maximize, label: "Hide-UI, full-screen and blind modes" },
-  { icon: Upload, label: "Import from csTimer" },
-] as const;
-
-/**
- * More of what's adjustable, each linking to where it lives in the app: the
- * background and panel layout are on the timer's toolbar, the timer font size
- * in Settings.
- */
-const TILES: { icon: typeof ImageIcon; label: string; hint: string; href: string }[] = [
-  { icon: ImageIcon, label: "Background", hint: "Your own photo behind the timer", href: appHref("/timer") },
-  { icon: Type, label: "Font size", hint: "Make the digits as big as you like", href: appHref("/settings") },
-  { icon: LayoutGrid, label: "Layout", hint: "Drag and resize every panel", href: appHref("/timer") },
 ];
 
 export function CustomizeSection() {
@@ -117,26 +112,23 @@ export function CustomizeSection() {
   };
 
   return (
-    <section
-      id="customize"
-      className="relative flex min-h-[100svh] scroll-mt-16 items-center overflow-hidden border-y border-border/60 bg-card/40"
-    >
+    <section id="customize" className="relative overflow-hidden border-y border-border/60 bg-card/40">
       <div
         aria-hidden
         className="pointer-events-none absolute -right-40 top-10 size-[30rem] rounded-full bg-accent-2/10 blur-3xl"
       />
-      <div className="relative mx-auto w-full max-w-6xl px-4 py-20 md:py-24">
+      <div className="relative mx-auto w-full max-w-6xl px-4 py-16 md:py-20">
         <SectionHeading
           eyebrow="Customise"
           icon={SlidersHorizontal}
           title="Make it yours."
-          lead="Themes, fonts, layouts and backgrounds, like monkeytype for cubers. These are the real settings: pick a theme and the whole page changes with it, and the timer opens set up your way."
+          lead="Themes, fonts, layouts and backgrounds, like monkeytype for cubers. Pick a theme and the whole page follows."
         />
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="mt-8 grid gap-4 md:grid-cols-[1.1fr_0.9fr] md:gap-6">
           {/* Controls */}
           <div className="reveal flex flex-col divide-y divide-border/70 rounded-3xl border border-border bg-card">
-            <Row label="Theme" description="Applies to every page, instantly.">
+            <Row label="Theme">
               <div role="radiogroup" aria-label="Theme" className="grid grid-cols-3 gap-2">
                 {THEME_OPTIONS.map((opt) => (
                   <button
@@ -162,7 +154,7 @@ export function CustomizeSection() {
               </div>
             </Row>
 
-            <Row label="Time precision" description="Hundredths, or thousandths for the stats nerds.">
+            <Row label="Time precision" inline>
               <Segmented
                 label="Time precision"
                 value={String(settings.precision)}
@@ -174,44 +166,12 @@ export function CustomizeSection() {
               />
             </Row>
 
-            <Row
-              label="Hold to start"
-              description="How long you hold before the timer arms. Shorter feels snappier; longer prevents false starts."
-            >
-              <div className="flex items-center gap-3">
-                <input
-                  type="range"
-                  min={150}
-                  max={550}
-                  step={50}
-                  value={settings.holdMs}
-                  aria-label="Hold duration"
-                  onChange={(e) => change({ holdMs: Number(e.target.value) })}
-                  className="h-1.5 w-full cursor-pointer accent-primary"
-                />
-                <span className="w-14 shrink-0 text-right font-mono text-sm text-foreground tabular-nums">
-                  {settings.holdMs}ms
-                </span>
-              </div>
-            </Row>
-
-            <Row label="Scramble preview" description="A flat net, or a 3D cube you can spin.">
-              <Segmented
-                label="Scramble preview"
-                value={settings.previewDimension}
-                options={[
-                  { value: "2D", label: "2D net" },
-                  { value: "3D", label: "3D cube" },
-                ]}
-                onChange={(v) => change({ previewDimension: v === "3D" ? "3D" : "2D" })}
-              />
-            </Row>
           </div>
 
           {/* Live preview */}
           <div className="reveal flex flex-col gap-4">
-            <div className="relative flex flex-col overflow-hidden rounded-3xl border border-border bg-background p-5 shadow-xl shadow-primary/5">
-              <div className="flex items-center justify-between font-mono text-[11px] tracking-wider text-muted-foreground uppercase">
+            <div className="relative flex flex-col overflow-hidden rounded-3xl border border-border bg-background p-4 shadow-xl shadow-primary/5 md:p-5">
+              <div className="flex items-center justify-between font-mono text-xs tracking-wider text-muted-foreground uppercase">
                 {/* The CH mark in the active theme's colours (the hero keeps the classic palette). */}
                 <span className="flex items-center gap-2">
                   <CubeMark className="size-6" />
@@ -229,54 +189,35 @@ export function CustomizeSection() {
                 </span>
               </div>
 
-              <div className="mt-4 flex items-center gap-4">
-                <CubeGlyph dimension={settings.previewDimension} className="size-20 shrink-0" />
+              <div className="mt-3 flex items-center gap-4">
+                <CubeGlyph dimension={settings.previewDimension} className="size-16 shrink-0" />
                 <p className="font-mono text-xs leading-relaxed text-muted-foreground">
                   R2 D&apos; B2 U F2 D2 R2 U&apos; L2 F2 U&apos; B&apos; L&apos; D2 F&apos; R U&apos; F2 L&apos; B&apos;
                 </p>
               </div>
 
-              <p className="mt-4 text-center font-timer text-6xl font-bold text-timer-digits sm:text-7xl">
+              <p className="mt-3 text-center font-timer text-5xl font-bold text-timer-digits lg:text-6xl">
                 {formatMs(9_423, settings.precision)}
               </p>
 
               <HoldTester holdMs={settings.holdMs} />
             </div>
-
-            <ul className="grid grid-cols-3 gap-3">
-              {TILES.map(({ icon: Icon, label, hint, href }) => (
-                <li key={label}>
-                  <Link
-                    href={href}
-                    className="flex h-full flex-col gap-2 rounded-2xl border border-border bg-card p-3 transition-colors hover:border-primary/50 hover:bg-muted/40"
-                  >
-                    <Icon className="size-5 text-primary" aria-hidden />
-                    <span className="text-sm font-semibold text-foreground">{label}</span>
-                    <span className="text-xs text-muted-foreground">{hint}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-
-            <div className="rounded-3xl border border-border bg-card p-5">
-              <p className="text-sm font-semibold text-foreground">And in the timer&apos;s quick settings</p>
-              <ul className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-                {MORE.map(({ icon: Icon, label }) => (
-                  <li key={label} className="flex items-center gap-2">
-                    <Icon className="size-4 shrink-0 text-primary" aria-hidden />
-                    {label}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href={appHref("/timer")}
-                className="group mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary"
-              >
-                Open the timer
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
-              </Link>
-            </div>
           </div>
+        </div>
+
+        <div className="reveal mt-4 rounded-3xl border border-border bg-card p-4 md:p-5">
+          <p className="text-sm font-semibold text-foreground">Plus, in the timer&apos;s settings</p>
+          <ul className="mt-2.5 flex flex-wrap gap-2">
+            {MORE.map(({ icon: Icon, label }) => (
+              <li
+                key={label}
+                className="flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1 text-xs text-foreground"
+              >
+                <Icon className="size-3.5 shrink-0 text-primary" aria-hidden />
+                {label}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>
@@ -286,17 +227,20 @@ export function CustomizeSection() {
 function Row({
   label,
   description,
+  inline = false,
   children,
 }: {
   label: string;
-  description: string;
+  description?: string;
+  /** Label and control on one line, for a small control. */
+  inline?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-3 p-5 sm:p-6">
+    <div className={cn("flex gap-3 p-5", inline ? "flex-row flex-wrap items-center justify-between" : "flex-col")}>
       <div>
         <p className="text-sm font-semibold text-foreground">{label}</p>
-        <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+        {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
       </div>
       {children}
     </div>

@@ -18,7 +18,7 @@ const CustomizeSection = dynamic(
 /**
  * The section's own box (id, borders, background) at its rendered height per
  * breakpoint, so nothing below it moves when it loads. Heights re-measured
- * 2026-11-24 (landing plan step 6) from 360 to 1536px wide (Slate and Paper alike); text wrap moves
+ * 2026-11-24 (landing page polish: compact customise) from 360 to 1536px wide (Slate and Paper alike); text wrap moves
  * them by up to ~60px within a breakpoint. The swap happens about a screen before the
  * section is in view, so a stale height only shifts content off screen, but
  * re-measure when the section's layout changes.
@@ -29,7 +29,7 @@ function Placeholder({ ref }: { ref?: React.Ref<HTMLElement> }) {
       ref={ref}
       id="customize"
       aria-busy="true"
-      className="relative h-[1795px] scroll-mt-16 overflow-hidden border-y border-border/60 bg-card/40 sm:h-[1667px] md:h-[1663px] lg:h-[1124px]"
+      className="relative h-[1143px] overflow-hidden border-y border-border/60 bg-card/40 sm:h-[995px] md:h-[788px] lg:h-[766px]"
     />
   );
 }

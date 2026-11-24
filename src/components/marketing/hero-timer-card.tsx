@@ -314,9 +314,25 @@ export function HeroTimerCard({ className }: { className?: string }) {
       {/* No backdrop blur on phones: there the card sits over the animated
           ScrambleMatrix canvas, so the blur would be redone every frame.
           The card is 90% opaque, so it barely shows anyway. */}
-      <div className="relative overflow-hidden rounded-3xl border border-border bg-card/90 shadow-2xl shadow-primary/10 backdrop-blur-xl max-md:backdrop-blur-none">
+      {/* In replay, one click or tap anywhere on the card makes it live (the
+          "Try a solve here" button is the keyboard route). Buttons and links
+          inside keep their own clicks. */}
+      <div
+        onClick={
+          live
+            ? undefined
+            : (e) => {
+                if ((e.target as HTMLElement).closest("button, a")) return;
+                enterLive();
+              }
+        }
+        className={cn(
+          "relative overflow-hidden rounded-3xl border border-border bg-card/90 shadow-2xl shadow-primary/10 backdrop-blur-xl max-md:backdrop-blur-none",
+          !live && "cursor-pointer",
+        )}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 border-b border-border/70 px-5 py-3 font-mono text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+        <div className="flex items-center justify-between gap-3 border-b border-border/70 px-5 py-3 font-mono text-xs font-medium tracking-wider text-muted-foreground uppercase">
           <span className="flex items-center gap-2">
             <span
               aria-hidden
@@ -329,17 +345,18 @@ export function HeroTimerCard({ className }: { className?: string }) {
                 view === "stopped" && "bg-primary",
               )}
             />
-            {view}
+            {/* The replay is a recording, not a running timer: say so. */}
+            {live ? view : "Demo replay"}
           </span>
           <span className="flex items-center gap-2">
             3×3 · WCA
             <span
               className={cn(
-                "rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                "rounded-full px-2 py-0.5 text-xs font-semibold normal-case tracking-normal",
                 live ? "bg-primary text-primary-foreground" : "bg-surface-raised text-muted-foreground",
               )}
             >
-              {live ? "Live" : "Replay"}
+              {live ? "Live" : "Click to try"}
             </span>
           </span>
         </div>
@@ -457,7 +474,7 @@ export function HeroTimerCard({ className }: { className?: string }) {
                 <span className="sm:hidden">Press and hold here · release to start</span>
               </>
             ) : (
-              <span className="text-foreground-subtle">Time-lapsed replay · it won&apos;t react to taps</span>
+              <span className="text-muted-foreground">Time-lapsed demo · click or tap the card to try it yourself</span>
             )}
           </span>
         </div>
@@ -526,13 +543,6 @@ export function HeroTimerCard({ className }: { className?: string }) {
               Try a solve here
             </button>
           )}
-          <Link
-            href={appHref("/timer")}
-            className="group inline-flex h-9 items-center gap-1 rounded-full px-3 text-sm font-semibold text-foreground transition-colors hover:text-primary"
-          >
-            Full timer
-            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
-          </Link>
         </div>
       </div>
     </div>
@@ -541,7 +551,7 @@ export function HeroTimerCard({ className }: { className?: string }) {
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
-    <kbd className="mx-0.5 inline-flex h-5 items-center rounded border border-border bg-surface-raised px-1.5 font-mono text-[11px] font-semibold text-foreground">
+    <kbd className="mx-0.5 inline-flex h-5 items-center rounded border border-border bg-surface-raised px-1.5 font-mono text-xs font-semibold text-foreground">
       {children}
     </kbd>
   );

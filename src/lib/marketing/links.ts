@@ -18,10 +18,15 @@ export const OPEN_APP_HREF = appHref("/home");
 export const SIGN_IN_HREF = appHref("/login");
 export const SIGN_UP_HREF = appHref("/signup");
 
-/** The header's centre links: in-page anchors on /, which also work from any other page. */
-export const MARKETING_LINKS: { label: string; href: string }[] = [
-  { label: "Features", href: "/#features" },
-  { label: "Learn", href: appHref("/learn") },
-  { label: "Roadmap", href: "/#roadmap" },
-  { label: "FAQ", href: "/#faq" },
+/**
+ * The header's centre links: all in-page anchors on /, which also work from
+ * any other marketing page. `sections` are the ids that light the link up
+ * while they're in view (marketing-header.tsx). Learn's own pages are one
+ * click further, from the Learn chapter's "Explore Learn".
+ */
+export const MARKETING_LINKS: { label: string; href: string; sections: string[] }[] = [
+  { label: "Features", href: "/#features", sections: ["features", "drill-lab", "playground", "profiles", "customize"] },
+  { label: "Learn", href: "/#learn", sections: ["learn"] },
+  { label: "Roadmap", href: "/#roadmap", sections: ["roadmap"] },
+  { label: "FAQ", href: "/#faq", sections: ["faq"] },
 ];

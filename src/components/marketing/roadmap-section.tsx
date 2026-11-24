@@ -1,4 +1,5 @@
-import { Map as MapIcon } from "lucide-react";
+import { ArrowRight, Map as MapIcon } from "lucide-react";
+import Link from "next/link";
 
 import { RoadmapBoard } from "@/components/marketing/roadmap-board";
 import { SectionHeading } from "@/components/marketing/section-heading";
@@ -15,7 +16,7 @@ export function RoadmapSection() {
     <section
       id="roadmap"
       aria-labelledby="roadmap-heading"
-      className="mx-auto flex min-h-[100svh] w-full max-w-6xl scroll-mt-16 flex-col justify-center gap-12 px-4 py-20"
+      className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-16 md:py-20"
     >
       <SectionHeading
         id="roadmap-heading"
@@ -24,7 +25,11 @@ export function RoadmapSection() {
         title="What's live, what's next."
         lead="Built in the open. What you can use today, what's being built, and what's on the list."
       />
-      <RoadmapBoard />
+      <RoadmapBoard compact />
+      <Link href="/roadmap" className="-mt-4 inline-flex items-center gap-1.5 self-start text-sm font-semibold text-primary hover:underline">
+        The full roadmap, with details
+        <ArrowRight className="size-4" aria-hidden />
+      </Link>
     </section>
   );
 }

@@ -5,6 +5,55 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-24 — Landing page polish: shorter page, one CTA per screen, nav, performance, SEO
+
+**Request:** Improve the landing page in ten groups (hero fold, theme pill, signed-in copy, repetition and
+length, narrow-screen order, trust, demo fixes, navigation, performance, SEO).
+
+### Changed
+
+- **Hero:** the large lockup is gone (the header has the logo); H1, sub-line, both CTAs and the trust
+  row fit above the fold at 1366×768, 840×743 and 390×844. Lockup draw-in CSS removed; `docs/brand.md`.
+- **Dev theme pill** (`components/dev/theme-switcher.tsx`): not rendered on marketing pages (`isRootPath`).
+- **Final CTA** (`cta-band-actions.tsx`): signed out, "Start timing free. No account needed." with
+  Start timing free / Sign in to sync across devices; signed in unchanged.
+- **Repetition:** "Try a solve" merged into the Timer chapter (the demo card is its visual;
+  `try-solve-section.tsx` deleted; the card's "Full timer" link removed); one csTimer strip in the
+  Timer chapter; Customise keeps Theme, Time precision and the preview, the rest is a chip grid (no
+  timer link); Built in India leads with live college clubs, one "Coming" card, link to the roadmap.
+- **Length:** sections share `py-16 md:py-20` (no full-screen minimums); chapters and Customise are
+  two columns from md; pinned chapters 140svh; compact roadmap below lg (+ link to /roadmap);
+  FAQ in two columns from md. Customise placeholder heights re-measured.
+- **Narrow screens** (`pinned-chapter.tsx`): text first in the DOM and on phones; CSS `order` puts
+  the visual beside it from md. `overflow-x: clip` stops the demo card's glow widening phones.
+- **Trust:** "Example profile" tags and "Example club posts" caption; `RealStats` slot
+  (`real-stats.tsx`, `lib/marketing/public-stats.ts`) renders only real counts above a minimum; the
+  landing page revalidates hourly.
+- **Demo:** "Demo replay" label, "Click to try" pill, one click or tap on the card goes live;
+  all text ≥ 12px in the marketing components.
+- **Nav:** all header links are anchors (`/#learn`), footer Roadmap → `/#roadmap`,
+  `scroll-padding-top` on marketing pages, in-view highlight (`aria-current="location"`).
+- **Performance:** `AuthListener` and `use-viewer` import the Supabase client (and the session
+  store) lazily: First Load JS for `/` 356.1 → 290.8 KB gzipped.
+- **SEO:** production builds default `SITE_URL` to https://cuberhub.me (canonical, og:url, og:image,
+  JSON-LD, sitemap, robots); `src/app/favicon.ico` added; `.env.example`.
+- Tests: `public-stats.test.ts` (new); `landing-hero.spec.ts`, `landing.spec.ts` updated and extended.
+
+### Kept on purpose
+
+- The background canvas already paused off screen and on `visibilitychange`; the 3D cube and
+  cubing.js were already lazy. Hold-to-start default is already 300 ms (mid-range).
+- The FAQ's csTimer question. Solves-timed stat needs a `public_stats()` function first.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`; e2e:prod 96/102 then the failing landing
+specs fixed and re-run (26/26 with auth and social); remaining failure is the clubs posts daily
+limit. Screenshots at 390/840/1440 in Slate and Paper: hero CTAs above the fold, no horizontal
+scroll, nothing fixed over the footer. Page at 840×743: 10,949 → 7,046 px; 12 → 11 sections.
+
+---
+
 ## 2026-11-24 — Landing step 11 (part): product links through appUrl(), Open app → /home
 
 **Request:** After merging the four branches into local `main`: do the `appHref` switch so Open app goes to `/home`.
