@@ -5,6 +5,29 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Next batch step 5: playground-swipe flake fixed
+
+**Request:** Fix the flaky `playground-swipe` projection test, or quarantine it.
+
+### Cause
+
+Under load the cube's WebGL canvas hadn't drawn when the test screenshotted it (all stickers read as
+the page background); fixed sleeps (400/800 ms) were the only wait. Reproduced: 13/24 failures at 8 workers.
+
+### Changed (`tests/e2e/playground-swipe.spec.ts` only)
+
+- `waitForCubeDrawn()` after the loader goes: F and R centres must read green and red.
+- `setCamera()` uses `twistySceneModel.orbitCoordinatesRequest` and polls until the model reports the
+  angle (the props are a no-op when re-set to their old value after a drag), then two frames.
+- Projection and after-swipe colour checks poll (10 s) instead of sleeping.
+
+### Verified
+
+56/56 at 8 workers × 4 repeats; 162/162 (both playground specs) at 12 workers × 6;
+`npm run validate`, `npm run check:colors`.
+
+---
+
 ## 2026-11-25 — Next batch step 4: press lockups with the cuberhub wordmark
 
 **Request:** Regenerate `public/brand/cubehub-lockup-*` as `cuberhub-*`; keep the old files.

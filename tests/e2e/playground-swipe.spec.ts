@@ -52,19 +52,70 @@ async function openCube(page: Page, puzzle = "333") {
   await page.goto(`/playground?puzzle=${puzzle}`);
   await expect(page.locator("twisty-player").first()).toBeAttached({ timeout: 30_000 });
   await expect(page.getByRole("status", { name: /loading cube/i })).toHaveCount(0, { timeout: 30_000 });
+  await waitForCubeDrawn(page, puzzle === "222" ? 2 : 3);
+}
+
+/**
+ * The loader going away doesn't mean cubing has drawn a frame: under load
+ * (a full parallel e2e run) the WebGL canvas can still be blank when the
+ * test screenshots it, which made every sticker read as the page background.
+ * Wait until the F and R centre stickers at the default camera read as
+ * green and red (U is white, too close to the Paper theme's background to
+ * tell a blank canvas from a drawn one).
+ */
+async function waitForCubeDrawn(page: Page, size: number) {
+  const camera = VIEWS[0].camera;
+  await expect
+    .poll(
+      async () => {
+        const box = await cubeBox(page);
+        const viewport = { width: box.width, height: box.height };
+        const scale = (await page.evaluate(() => window.devicePixelRatio)) || 1;
+        const mid = Math.floor(size / 2);
+        const points = (["F", "R"] as Face[]).map((face) => {
+          const p = projectPoint(camera, viewport, stickerCenter({ face, row: mid, col: mid }, size));
+          return { x: p.x * scale, y: p.y * scale };
+        });
+        const png = await page.getByTestId("playground-cube").screenshot();
+        return (await sample(page, png, points)).map(colourName);
+      },
+      { message: "the cube's first frame is drawn", timeout: 20_000 },
+    )
+    .toEqual([FACE_COLOUR.F, FACE_COLOUR.R]);
 }
 
 async function setCamera(page: Page, camera: OrbitCamera) {
-  await page.evaluate(({ latitude, longitude }) => {
-    const player = document.querySelector("twisty-player") as unknown as {
-      cameraLatitude: number;
-      cameraLongitude: number;
-    };
-    player.cameraLatitude = latitude;
-    player.cameraLongitude = longitude;
-  }, camera);
-  // The orbit prop is async, and then a frame has to render.
-  await page.waitForTimeout(400);
+  // Through the same request cubing's own drag handler uses. Setting the
+  // cameraLatitude/cameraLongitude props isn't enough: after a drag has moved
+  // the camera, setting the props back to the values they already hold is a
+  // no-op. Re-requested on every poll until the model reports the angle, so
+  // leftover drag inertia can't win.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(async ({ latitude, longitude }) => {
+          type Coords = { latitude: number; longitude: number };
+          const player = document.querySelector("twisty-player") as unknown as {
+            experimentalModel: {
+              twistySceneModel: {
+                orbitCoordinates: { get(): Promise<Coords> };
+                orbitCoordinatesRequest: { set(c: Partial<Coords>): void };
+              };
+            };
+          };
+          const scene = player.experimentalModel.twistySceneModel;
+          const wrap = (deg: number) => Math.round((((deg + 540) % 360) + 360) % 360) - 180;
+          const o = await scene.orbitCoordinates.get();
+          const at = [Math.round(o.latitude), wrap(o.longitude)];
+          if (at[0] !== latitude || at[1] !== wrap(longitude)) scene.orbitCoordinatesRequest.set({ latitude, longitude });
+          return at;
+        }, camera),
+      { message: "the camera reached its angle", timeout: 10_000 },
+    )
+    .toEqual([camera.latitude, Math.round((((camera.longitude + 540) % 360) + 360) % 360) - 180]);
+  // Two animation frames, so the new angle has been drawn. (The pixel checks
+  // also poll, so a slow frame can't fail them.)
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 }
 
 async function cubeBox(page: Page) {
@@ -170,12 +221,6 @@ test.describe("Playground swipe-to-turn", () => {
       await setCamera(page, camera);
       const box = await cubeBox(page);
       const viewport = { width: box.width, height: box.height };
-      const png = await page.getByTestId("playground-cube").screenshot();
-      await testInfo.attach(`swipe-${name}`, { body: png, contentType: "image/png" });
-      if (process.env.SWIPE_SHOTS_DIR) {
-        const { writeFileSync } = await import("node:fs");
-        writeFileSync(`${process.env.SWIPE_SHOTS_DIR}/projection-${name}.png`, png);
-      }
 
       const stickers: { face: Face; x: number; y: number }[] = [];
       for (const face of Object.keys(FACE_COLOUR) as Face[]) {
@@ -189,13 +234,28 @@ test.describe("Playground swipe-to-turn", () => {
       expect(stickers.length).toBeGreaterThanOrEqual(18);
       // Screenshot pixels may be scaled by the device pixel ratio.
       const scale = (await page.evaluate(() => window.devicePixelRatio)) || 1;
-      const colours = await sample(
-        page,
-        png,
-        stickers.map((s) => ({ x: s.x * scale, y: s.y * scale })),
-      );
-      const got = stickers.map((s, i) => `${s.face}:${colourName(colours[i])}`);
-      expect(got).toEqual(stickers.map((s) => `${s.face}:${FACE_COLOUR[s.face]}`));
+      let png: Buffer = Buffer.alloc(0);
+      // Polled: under load the frame for the new angle can land a little
+      // after the camera reports it. A wrong projection never converges.
+      await expect
+        .poll(
+          async () => {
+            png = await page.getByTestId("playground-cube").screenshot();
+            const colours = await sample(
+              page,
+              png,
+              stickers.map((s) => ({ x: s.x * scale, y: s.y * scale })),
+            );
+            return stickers.map((s, i) => `${s.face}:${colourName(colours[i])}`);
+          },
+          { timeout: 10_000 },
+        )
+        .toEqual(stickers.map((s) => `${s.face}:${FACE_COLOUR[s.face]}`));
+      await testInfo.attach(`swipe-${name}`, { body: png, contentType: "image/png" });
+      if (process.env.SWIPE_SHOTS_DIR) {
+        const { writeFileSync } = await import("node:fs");
+        writeFileSync(`${process.env.SWIPE_SHOTS_DIR}/projection-${name}.png`, png);
+      }
     });
   }
 
@@ -246,16 +306,24 @@ test.describe("Playground swipe-to-turn", () => {
         await touchSwipe(page, from, s.dx, s.dy);
         await expect(history, label).toHaveText(s.move);
 
-        await page.waitForTimeout(800); // let the turn finish animating
+        // Polled until the turn has finished animating (and been drawn).
         const box = await cubeBox(page);
-        const png = await cube.screenshot();
+        let png: Buffer = Buffer.alloc(0);
+        await expect
+          .poll(
+            async () => {
+              png = await cube.screenshot();
+              const [rgb] = await sample(page, png, [{ x: (from.x - box.x) * scale, y: (from.y - box.y) * scale }]);
+              return colourName(rgb);
+            },
+            { message: `${label}: colour under the finger after ${s.move}`, timeout: 10_000 },
+          )
+          .toBe(FACE_COLOUR[s.arrives]);
         await testInfo.attach(`after-${view.name}-${s.move}`, { body: png, contentType: "image/png" });
         if (process.env.SWIPE_SHOTS_DIR && i === 0) {
           const { writeFileSync } = await import("node:fs");
           writeFileSync(`${process.env.SWIPE_SHOTS_DIR}/swipe-${view.name}-${s.face}-${s.move}.png`, png);
         }
-        const [rgb] = await sample(page, png, [{ x: (from.x - box.x) * scale, y: (from.y - box.y) * scale }]);
-        expect(colourName(rgb), `${label}: colour under the finger after ${s.move}`).toBe(FACE_COLOUR[s.arrives]);
       }
     });
   }

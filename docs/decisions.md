@@ -161,6 +161,10 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **The Customize button sits right-aligned just above the cards**, not in the greeting row: which cards a member can switch depends on their visitor state, which streams in with the cards, and the greeting row renders before that.
 
+## Tests
+
+**The `playground-swipe` flake was the test, not the swipe code** (2026-11-25, next batch step 5). Reproduced at 8 parallel workers: 13 of 24 projection runs failed, every sticker reading as the page background. The WebGL canvas hadn't drawn its first frame yet when the test took its screenshot: the loader going away doesn't mean a frame exists, and the fixed 400 ms / 800 ms sleeps weren't enough under load. Fixed in the spec, not quarantined: `openCube` waits until the F and R centres read green and red; `setCamera` drives `orbitCoordinatesRequest` (cubing's own drag path) and polls until the model reports the angle; the colour checks poll (10 s) instead of sleeping, so a wrong projection still fails. A second bug surfaced on the way: after an off-cube drag, setting the `cameraLatitude`/`cameraLongitude` props back to the values they already held was a no-op, so "back at the default camera" in the tap/orbit test had been 7° off all along. After the fix: 56/56 at 8 workers × 4 repeats, and 162/162 for both playground specs at 12 workers × 6.
+
 ## Product
 
 **Bots before live matchmaking.** Bot opponents work with zero other users online, which solves the cold-start problem; real-time matchmaking is worth nothing until there's a population to match against.
