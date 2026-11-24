@@ -5,6 +5,26 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Next batch step 7: command palette (app shell step 11)
+
+**Request:** If time remains, the Ctrl/⌘+K palette from `docs/app-shell-plan.md` §7.
+
+### Added
+
+- `src/lib/palette.ts` (pure): static commands (pages, Learn series, own profile, themes), word-prefix
+  matching, "OLL 33" parsing, username queries.
+- `src/components/layout/command-palette.tsx`: Base UI Dialog + listbox, arrow keys/Enter, debounced
+  case and cuber lookups; locked while a solve runs; overlay lock while open.
+- `src/stores/palette-store.ts`; search button in `app-sidebar.tsx`; mounted in `(app)/layout.tsx`.
+- Tests: `tests/unit/palette.test.ts` (6), `tests/e2e/command-palette.spec.ts` (3, read-only).
+- Docs: app shell plan step 11 ✅, `architecture.md`, `decisions.md` (switch puzzle / new session left out).
+
+### Verified
+
+`npm run validate` (689 tests), `npm run check:colors`; e2e in the batch's final run.
+
+---
+
 ## 2026-11-25 — Next batch step 6: daily scramble (home plan step 5)
 
 **Request:** `docs/home-plan.md` card 2: migration files and SQL tests only for the database; the timer's

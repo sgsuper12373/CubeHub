@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, LogIn, PanelLeftClose, PanelLeftOpen, PanelLeft } from "lucide-react";
+import { ChevronDown, LogIn, PanelLeftClose, PanelLeftOpen, PanelLeft, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -41,6 +41,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useOverlayLock } from "@/stores/overlay-store";
 import { useSidebarStore } from "@/stores/sidebar-store";
+import { usePaletteStore } from "@/stores/palette-store";
 
 const LG_QUERY = "(min-width: 1024px)";
 const PEEK_OPEN_MS = 150;
@@ -188,6 +189,17 @@ export function AppSidebar({
           <Link href="/home" aria-label="CuberHub home" className="flex min-w-0 items-center rounded-md">
             {rail && !showPeek ? <CubeMark className="size-8" /> : <Logo />}
           </Link>
+          {!(rail && !showPeek) && (
+            <button
+              type="button"
+              onClick={() => usePaletteStore.getState().setOpen(true)}
+              aria-label="Search"
+              title="Search (Ctrl+K)"
+              className="ml-auto flex size-8 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:outline-none"
+            >
+              <Search className="size-4" aria-hidden />
+            </button>
+          )}
         </div>
 
         <nav aria-label="Main" data-tour="sidebar" className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-2.5 py-2">

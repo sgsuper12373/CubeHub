@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { CommandPalette } from "@/components/layout/command-palette";
 import { UsernameOnboarding } from "@/components/auth/username-onboarding";
 import { getProfile } from "@/lib/auth/dal";
 import { getLearnNav } from "@/lib/learn/public-dal";
@@ -46,6 +47,7 @@ export default async function AppLayout({
       <main className="flex min-w-0 flex-1 flex-col pb-16 md:pb-0">{children}</main>
       <BottomNav unread={notifications.unread} username={profile?.username ?? null} />
       <UsernameOnboarding profile={profile} />
+      <CommandPalette learnNav={learnNav} username={profile?.username ?? null} />
     </div>
   );
 }

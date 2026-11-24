@@ -100,7 +100,8 @@ src/app/
   api/viewer/             GET: the signed-in user's header data, for static pages
   (auth)/                 no chrome at all
     login/ signup/                  /login  /signup  /signup/check-email
-  (app)/                  sidebar (desktop) + bottom bar with More sheet (phones); own not-found and error
+  (app)/                  sidebar (desktop) + bottom bar with More sheet (phones) + Ctrl/⌘+K command palette;
+                          own not-found and error
     home/                           /home   (signed-in landing; guests get the guest layout)
       daily/                        /home/daily?day=…   the daily scramble's leaderboard
     timer/ stats/ playground/       /timer (?daily=yyyy-mm-dd: the daily scramble)  /stats  /playground

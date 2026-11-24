@@ -1,6 +1,6 @@
 # App shell plan: domain split and sidebar
 
-> **Status:** steps 1–8 and 10 done (Nov 24–25, 2026); step 9 (go-live) is the founder's · Sumit Garad
+> **Status:** steps 1–8, 10 and 11 done (Nov 24–25, 2026); step 9 (go-live) is the founder's · Sumit Garad
 > **For:** Claude Code. Read `AGENTS.md` and `docs/architecture.md` first. This is Next.js 16: check
 > `node_modules/next/dist/docs/` before writing proxy, routing or metadata code.
 > **Related:** `docs/home-plan.md` (the `/home` page this shell hosts), `docs/landing-plan.md`
@@ -377,7 +377,7 @@ Each step is one PR with `npm run validate` and `npm run test:e2e:prod` green.
    `NEXT_PUBLIC_APP_URL`, update Supabase and Google settings, deploy, run the checks below.
 10. ✅ **Docs.** `architecture.md` (routes table, hosts, cookies), `roadmap.md` (domain decided),
     `decisions.md` (D1–D7), `timer.md` (modes), manual smoke test table.
-11. Command palette (optional).
+11. ✅ Command palette (optional). *(v1 without switch puzzle / new session; see decisions.md)*
 
 ## Tests
 
