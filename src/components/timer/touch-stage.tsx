@@ -37,14 +37,22 @@ function isEditableTarget(target: EventTarget | null): boolean {
  */
 export function TouchStage({
   disabled = false,
+  shortcuts = true,
   onShowShortcuts,
   children,
 }: {
   disabled?: boolean;
+  /**
+   * The idle/stopped shortcuts (arrows, D, 1/2, ?). They act on the normal
+   * session's solves and scrambles, so the daily scramble turns them off:
+   * there, D would delete a real solve and → would swap the daily scramble.
+   */
+  shortcuts?: boolean;
   onShowShortcuts?: () => void;
   children: React.ReactNode;
 }) {
   const disabledRef = useRef(disabled);
+  const shortcutsOnRef = useRef(shortcuts);
   // The key listener mounts once, so the callback is reached through a ref
   // rather than being closed over.
   const shortcutsRef = useRef(onShowShortcuts);
@@ -52,6 +60,10 @@ export function TouchStage({
   useEffect(() => {
     disabledRef.current = disabled;
   }, [disabled]);
+
+  useEffect(() => {
+    shortcutsOnRef.current = shortcuts;
+  }, [shortcuts]);
 
   useEffect(() => {
     shortcutsRef.current = onShowShortcuts;
@@ -83,7 +95,7 @@ export function TouchStage({
       }
 
       // Shortcuts: idle/stopped only (csTimer muscle memory)
-      if (store.phase === "idle" || store.phase === "stopped") {
+      if (shortcutsOnRef.current && (store.phase === "idle" || store.phase === "stopped")) {
         const key = e.key.toLowerCase();
 
         if (e.key === "?") {

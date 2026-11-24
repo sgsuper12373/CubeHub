@@ -33,7 +33,7 @@ shop. This is the order things were actually built, and what comes next:
 | 11f | **App shell** steps 1–8: host routing behind `NEXT_PUBLIC_APP_URL`, per-host robots/sitemaps, cross-host cookies, guest handoff, sidebar, Zen retired, phone bar with More | ✅ Merged locally; go-live (step 9) waits on DNS/Vercel | Nov 24 |
 | 11g | **Home** (`/home`) steps 1–4: cards for stats, learning, drills, streak, friends, clubs, what's new, Cubby's tip; Customize | ✅ Merged locally; `home_layout` migration not applied | Nov 24 |
 | 11h | **Landing** steps 2–9 and 11: new landing page, feature pages, `/roadmap`, `/about`, draft `/privacy` and `/terms`; product links through `appUrl()`; polish round | ✅ On `feat/landing-polish` | Nov 24 |
-| 11i | Waitlist "Notify me" form, `public_stats()`, daily scramble (next batch) | 🔄 On `feat/next-batch` | Nov 25 |
+| 11i | Waitlist "Notify me" form, `public_stats()`, press lockups, playground test flake, **daily scramble** (card, daily timer, leaderboard) | ✅ On `feat/next-batch`; three migrations not applied | Nov 25 |
 | 12 | **Beta with 10–15 real users** | Planned | |
 | 13 | Decide access tiers, using what the beta shows | After the beta | |
 | 14 | Phase 4 — Shop | Planned | |

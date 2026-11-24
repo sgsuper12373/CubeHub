@@ -100,6 +100,13 @@ both rules over the imported solves, oldest first. Database side:
   a result shows.
 - Zen mode was retired with the app shell (Nov 2026, `docs/app-shell-plan.md` D7): a hidden
   sidebar plus Focus mode covers it.
+- **Daily scramble** (`/timer?daily=yyyy-mm-dd`, Nov 2026): its own screen (`components/daily/daily-timer.tsx`),
+  not a mode of the session timer. Today's fixed 3x3 scramble, WCA 15 s inspection, one attempt. The
+  attempt is saved in `cubehub.daily.v1` the moment the timer stops, so a reload can't buy a second try;
+  a signed-in cuber picks the penalty (never below what inspection gave) and posts once. It borrows the
+  timer store's engine and restores the session's scramble, puzzle and settings on the way out; the
+  attempt is never recorded into a session. The idle shortcuts (arrows, D, 1/2, ?) are off there
+  (`TouchStage shortcuts={false}`), because they act on the session's solves. Leaderboard: `/home/daily`.
 - **Blind:** the time is hidden while running.
 - **Fullscreen.**
 - **WCA / competition:** 15s inspection.

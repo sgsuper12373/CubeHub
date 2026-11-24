@@ -4,6 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { CustomizeSheet } from "@/components/home/customize-sheet";
 
+import { DailyCard } from "@/components/daily/daily-card";
 import { HomeCardSkeleton } from "@/components/home/home-card";
 import { HomeGrid } from "@/components/home/home-grid";
 import { DrillIntroCard, LearningStartCard, PlaygroundCard } from "@/components/home/static-cards";
@@ -50,6 +51,8 @@ export function GuestHome() {
     switch (id) {
       case "welcome":
         return <WelcomeCard key={id} member={false} />;
+      case "daily":
+        return <DailyCard key={id} userId={null} />;
       case "stats":
         return <StatsCard key={id} userId={null} />;
       case "streak":

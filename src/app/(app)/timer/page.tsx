@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { DailyTimer } from "@/components/daily/daily-timer";
 import { TimerScreen } from "@/components/timer/timer-screen";
 import { getUser, getTimerSettings } from "@/lib/auth/dal";
+import { isDay } from "@/lib/daily/day";
 
 export const metadata: Metadata = {
   title: "Timer — CuberHub",
@@ -23,15 +25,24 @@ export default async function TimerPage({
 }) {
   // The timer's old "train" mode moved to the Drill Lab. Old links (a case
   // UUID or a subset slug in ?train=) land on the equivalent drill.
-  const { train, puzzle } = await searchParams;
+  const { train, puzzle, daily } = await searchParams;
   if (typeof train === "string" && train.length > 0) {
     const puzzleId = typeof puzzle === "string" && /^[a-z0-9]+$/i.test(puzzle) ? puzzle : "333";
     const query = UUID.test(train) ? `case=${train}` : `set=${encodeURIComponent(train)}`;
     redirect(`/learn/${puzzleId}/drill?${query}`);
   }
 
+  // An unreadable daily date falls back to the normal timer.
+  if (daily !== undefined && !isDay(daily)) redirect("/timer");
+
   const user = await getUser();
   const settings = await getTimerSettings();
+
+  // The daily scramble (docs/home-plan.md → card 2): its own screen, so the
+  // normal session never sees the attempt. Keyed by day so switching days remounts.
+  if (isDay(daily)) {
+    return <DailyTimer key={daily} day={daily} isAuthed={user !== null} userId={user?.id ?? null} initialSettings={settings} />;
+  }
 
   return (
     <TimerScreen

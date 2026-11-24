@@ -24,7 +24,7 @@ const GROUP = 4;
  * one label, so a screen reader reads a clean scramble instead of twenty
  * disconnected fragments.
  */
-function ScrambleTokens({ alg }: { alg: string }) {
+export function ScrambleTokens({ alg }: { alg: string }) {
   // Megaminx scrambles arrive as seven lines (WCA notation: each ends in U or
   // U'), and cubers read them line by line, so line breaks are kept.
   const lines = alg.trim().split(/\n+/).map((line) => line.trim().split(/\s+/));

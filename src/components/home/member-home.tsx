@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 
+import { DailyCard } from "@/components/daily/daily-card";
 import { HomeCardSkeleton } from "@/components/home/home-card";
 import { HomeGrid } from "@/components/home/home-grid";
 import { QuickStart } from "@/components/home/quick-start";
@@ -45,6 +46,8 @@ export async function MemberHome({ profile }: { profile: CurrentProfile }) {
     switch (id) {
       case "welcome":
         return <WelcomeCard key={id} member solveCount={summary.solveCount} pllLearned={pllLearned} />;
+      case "daily":
+        return <DailyCard key={id} userId={profile.id} />;
       case "stats":
         return <StatsCard key={id} userId={profile.id} />;
       case "streak":

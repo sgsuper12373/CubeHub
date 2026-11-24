@@ -5,6 +5,45 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Next batch step 6: daily scramble (home plan step 5)
+
+**Request:** `docs/home-plan.md` card 2: migration files and SQL tests only for the database; the timer's
+daily mode, the Home card and the leaderboard page.
+
+### Added
+
+- `supabase/migrations/20261125000100_daily_scramble.sql` (**not applied**): `ist_today()`, `daily_scrambles`,
+  `daily_results` (generated `effective_ms`, rank index), RLS select-only, `submit_daily_result()`.
+- `supabase/tests/daily_scramble_test.sql` (14 checks, rolls back).
+- `scripts/generate-daily-scrambles.mjs` → `supabase/DataSeeds/20261125000000_daily_scrambles.sql`
+  (2026-11-25 to 2027-01-23, random-state 3x3 via cubing.js in Node).
+- `src/lib/daily/{day,result,data}.ts`: IST day, countdown, result rules, local attempts, Supabase reads/RPC.
+- `src/components/daily/daily-timer.tsx` (`/timer?daily=…`), `daily-card.tsx` (Home), `daily-leaderboard.tsx`
+  + `src/app/(app)/home/daily/page.tsx`.
+- Tests: `tests/unit/daily-scramble.test.ts` (8), `tests/e2e/daily-scramble.spec.ts` (3; the guest flow skips
+  without data).
+
+### Changed
+
+- `src/app/(app)/timer/page.tsx`: `?daily=` renders `DailyTimer`; an unreadable date → `/timer`.
+- `touch-stage.tsx`: `shortcuts` prop (default on). `scramble-bar.tsx`: exports `ScrambleTokens`.
+- `src/lib/home/cards.ts` (+ `member-home.tsx`, `guest-home.tsx`): `daily` card, first for members and
+  returning guests; `tests/unit/home-cards.test.ts` updated.
+- Docs: `timer.md`, `architecture.md`, `home-plan.md` (step 5 ✅), `roadmap.md`, `decisions.md` → Home.
+
+### Needs the founder
+
+`supabase db push`; `supabase/tests/daily_scramble_test.sql`; load the DataSeeds file; next scramble batch
+before 2027-01-23.
+
+### Verified
+
+SQL test 14/14 and the seed on a local throwaway Postgres; the daily e2e (3/3, guest flow included) and
+screenshots of the card and leaderboard against `next dev` + local PostgREST; `npm run validate`
+(683 tests); `npm run check:colors`.
+
+---
+
 ## 2026-11-25 — Next batch step 5: playground-swipe flake fixed
 
 **Request:** Fix the flaky `playground-swipe` projection test, or quarantine it.

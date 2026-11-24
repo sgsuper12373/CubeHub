@@ -102,7 +102,8 @@ src/app/
     login/ signup/                  /login  /signup  /signup/check-email
   (app)/                  sidebar (desktop) + bottom bar with More sheet (phones); own not-found and error
     home/                           /home   (signed-in landing; guests get the guest layout)
-    timer/ stats/ playground/       /timer  /stats  /playground
+      daily/                        /home/daily?day=…   the daily scramble's leaderboard
+    timer/ stats/ playground/       /timer (?daily=yyyy-mm-dd: the daily scramble)  /stats  /playground
     learn/                          /learn  /learn/[puzzle]  /learn/[puzzle]/drill
       [puzzle]/[series]/            /learn/[puzzle]/[series]  (a tutorial or an algorithm set)
         [case]/                     /learn/[puzzle]/[series]/[case]  + opengraph-image
@@ -123,6 +124,7 @@ src/app/
 | `/`, `/features/**`, `/roadmap`, `/about`, `/privacy`, `/terms` | — | Marketing pages, all static (`○`). Served on the marketing host |
 | `/login`, `/signup` | must be **logged out** | `(auth)` layout redirects signed-in users to `/home` |
 | `/home` | — | Guests see the guest layout; members their cards |
+| `/home/daily`, `/timer?daily=…` | — | Guests can solve the daily (kept in the browser); posting to the board needs an account |
 | `/timer`, `/stats`, `/playground`, `/learn/**`, `/compete`, `/shop` | — | **Public by design.** Timer and stats have a localStorage fallback; tutorials and case pages are meant to be shareable and indexable (they're in the sitemap) |
 | `/clubs`, `/clubs/[slug]` | — | Browsing is public; posting and joining need an account (RLS) |
 | `/profile/[username]` | — | Public unless private (then owner and approved followers); 404 between blocked users (RLS `profile_visible`) |

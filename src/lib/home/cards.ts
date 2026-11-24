@@ -6,6 +6,7 @@
 /** Every card id Home knows. The greeting and quick start row isn't a card: it's always there. */
 export const CARD_IDS = [
   "welcome",
+  "daily",
   "stats",
   "learning",
   "drill",
@@ -42,6 +43,7 @@ export type CardMeta = {
 
 export const CARDS: Record<CardId, CardMeta> = {
   welcome: { id: "welcome", title: "Start here", column: "main", customizable: false, signedInOnly: false },
+  daily: { id: "daily", title: "Daily scramble", column: "main", customizable: true, signedInOnly: false },
   stats: { id: "stats", title: "Your stats", column: "main", customizable: true, signedInOnly: false },
   learning: { id: "learning", title: "Continue learning", column: "main", customizable: true, signedInOnly: false },
   drill: { id: "drill", title: "Drill queue", column: "main", customizable: true, signedInOnly: false },
@@ -55,14 +57,16 @@ export const CARDS: Record<CardId, CardMeta> = {
 
 /**
  * The cards each kind of visitor starts with, in order. A regular member gets
- * the plan's default set (the daily scramble isn't built yet); streak and goal
+ * the plan's default set, the daily scramble first; a returning guest gets it
+ * too (guests can solve it; it's local until they sign in). New visitors start
+ * with the welcome card instead and can switch the daily on. Streak and goal
  * is off by default and can be switched on.
  */
 export const DEFAULT_CARDS: Record<Visitor, readonly CardId[]> = {
   "guest-new": ["welcome", "learning", "playground", "tip", "whatsnew"],
-  "guest-returning": ["stats", "streak", "learning", "tip", "whatsnew"],
+  "guest-returning": ["daily", "stats", "streak", "learning", "tip", "whatsnew"],
   "member-new": ["welcome", "learning", "drill", "tip", "friends", "clubs", "whatsnew"],
-  member: ["stats", "learning", "drill", "tip", "friends", "clubs", "whatsnew"],
+  member: ["daily", "stats", "learning", "drill", "tip", "friends", "clubs", "whatsnew"],
 };
 
 /** The cards that can be switched on even if a visitor's defaults leave them off. */
