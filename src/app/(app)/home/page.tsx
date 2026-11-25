@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { GuestHome } from "@/components/home/guest-home";
+import { HomeAnalytics } from "@/components/home/home-analytics";
 import { HomeGreeting } from "@/components/home/home-greeting";
 import { HomeMobileBar } from "@/components/home/home-mobile-bar";
 import { MemberHome, MemberQuickStart } from "@/components/home/member-home";
@@ -29,6 +30,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <HomeAnalytics />
       <HomeMobileBar profile={profile} notifications={notifications} />
       <div className="mx-auto flex w-full max-w-[1212px] flex-col gap-6 px-4 py-6 md:px-6 lg:py-8">
         <header className="flex flex-col gap-4">

@@ -35,7 +35,7 @@ there. `Enter` presses its first button; `Space` belongs to the timer only. The 
 ## Customizing
 
 The Customize sheet switches cards on and off and resets to the default. A layout is
-`{ hidden, shown }`:
+`{ hidden, shown, order }`:
 - **Guests:** stored in `cubehub.home.v1`.
 - **Members:** stored in `user_settings.home_layout`.
 - **On first sign-in:** a guest's layout is copied to the account once.
@@ -48,9 +48,21 @@ The welcome card always stays first.
 
 Unknown card ids are dropped on read, so removing a card never breaks anyone's Home.
 
+## Analytics
+
+Three events through `track()` from `@vercel/analytics` (`src/lib/home/analytics.ts`); they only
+send on Vercel and carry no personal data:
+
+- `home_card_click { card, action }`: one delegated listener (`home-analytics.tsx`) finds the card by
+  its `data-tour="home-<id>"`. The action is a link's path (no query string) or a button's label.
+- `home_customize { hidden, shown }`: each change in the Customize sheet; "default" after a reset.
+- `daily_attempt { result }`: `solve`, `plus2` or `dnf` when a daily attempt ends.
+
+Read them in Vercel → Analytics → Events for the Home review after the beta.
+
 ## Tests
 
 - **Unit:** `home-cards`, `home-content`, `home-daily-goal`, `home-drill-queue`,
-  `home-snapshot`, `next-achievement`, `daily-scramble` (ordering is in `home-cards`).
+  `home-snapshot`, `next-achievement`, `home-analytics`, `daily-scramble` (ordering is in `home-cards`).
 - **E2E:** `tests/e2e/home.spec.ts` (guest first visit, Enter/Space, guest and member layouts
   surviving a reload, a guest reorder surviving a reload, signed-in `/login` → `/home`) and `daily-scramble.spec.ts`.

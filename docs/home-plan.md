@@ -234,7 +234,7 @@ queue, Cubby's tip, friends, clubs, what's new. Off by default: streak and goal,
 
 Track card use with `track()` from `@vercel/analytics` (already installed; it only runs on Vercel):
 `home_card_click { card, action }`, `home_customize { hidden, shown }`, `daily_attempt { result }`.
-These feed the Home review after the beta: cards nobody clicks get cut or moved down.
+These feed the Home review after the beta: cards nobody clicks get cut or moved down. *(built Nov 25; see `docs/home.md` → Analytics)*
 
 ## Accessibility
 

@@ -18,6 +18,7 @@ import {
   type HomeLayout,
   type Visitor,
 } from "@/lib/home/cards";
+import { trackHomeCustomize } from "@/lib/home/analytics";
 import { writeLocalHomeLayout } from "@/lib/home/layout-storage";
 import { cn } from "@/lib/utils";
 import { useOverlayLock } from "@/stores/overlay-store";
@@ -57,6 +58,7 @@ export function CustomizeSheet({
 
   function save(next: HomeLayout | null) {
     setDraft(next);
+    trackHomeCustomize(next);
     setError(null);
     if (!signedIn) {
       writeLocalHomeLayout(next);

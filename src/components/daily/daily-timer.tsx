@@ -13,6 +13,7 @@ import type { ServerTimerSettings } from "@/lib/auth/dal";
 import { dayStatus, formatDay, istDay } from "@/lib/daily/day";
 import { fetchBoard, fetchDaily, fetchMine, fetchMyDays, postDailyResult, type DailyRow, type DailyScramble } from "@/lib/daily/data";
 import { dailyShareText, dailyStreak } from "@/lib/daily/share";
+import { trackDailyAttempt } from "@/lib/home/analytics";
 import { copyWithToast } from "@/lib/timer/copy-text";
 import { appUrl } from "@/lib/site-url";
 import {
@@ -114,6 +115,7 @@ export function DailyTimer({
           initialSettings={initialSettings}
           onDone={(a) => {
             saveAttempt(day, a);
+            trackDailyAttempt(a.penalty);
             setAttempt(a);
             setFloor(a.penalty);
             setStatus("done");
