@@ -9,9 +9,10 @@ its completed history, is in git.
 
 ## Ready to do
 
-1. **Theme follow-ups:**
-   - Sticker colours in the cubing.js 3D/2D players.
-   - Remove the hardcoded colours on the stats and profile pages.
+1. **Sticker colours in the cubing.js 3D/2D players** (the last theme follow-up). Needs cubing's
+   experimental stickering API, and `playground-swipe.spec.ts` reads cubing's default colours
+   pixel by pixel, so those checks would need the themed colours too. Hardcoded colours on the
+   stats and profile pages are done (2026-11-25).
 
 ## Improvement ideas
 

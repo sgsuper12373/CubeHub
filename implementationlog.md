@@ -5,6 +5,25 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Stats colours on theme tokens
+
+**Request:** Continue with Claude's list (theme follow-ups).
+
+### Changed
+
+- `src/components/stats/solve-row.tsx`: phone swipe actions use tokens: +2 `bg-warning text-warning-foreground`
+  (10.7:1 Slate, 6.1:1 Paper), DNF `bg-destructive text-background` (6.5 / 5.8, the timer's penalty red),
+  delete `bg-foreground text-background`; desktop +2 highlight `bg-warning/20`.
+- `src/components/stats/stats-panel.tsx`: drawer backdrop `bg-background/70`.
+- Stats and profile components now have no raw palette colours. Sticker colours in the cubing.js
+  players stay a `todo.md` item (experimental API; the Playground pixel tests assume defaults).
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`; timer and stats specs 19/19.
+
+---
+
 ## 2026-11-25 — Theme picker for everyone (design tokens step 8); dev switcher removed
 
 **Request:** Continue with Claude's list.

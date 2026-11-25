@@ -50,7 +50,7 @@ export function SolveRow({
       >
         <button
           type="button"
-          className="flex w-14 items-center justify-center bg-amber-600/80 text-xs font-bold text-white"
+          className="flex w-14 items-center justify-center bg-warning text-xs font-bold text-warning-foreground"
           onClick={(e) => {
             e.stopPropagation();
             togglePenalty("plus2");
@@ -61,7 +61,7 @@ export function SolveRow({
         </button>
         <button
           type="button"
-          className="flex w-14 items-center justify-center bg-orange-600/80 text-xs font-bold text-white"
+          className="flex w-14 items-center justify-center bg-destructive text-xs font-bold text-background"
           onClick={(e) => {
             e.stopPropagation();
             togglePenalty("dnf");
@@ -72,7 +72,7 @@ export function SolveRow({
         </button>
         <button
           type="button"
-          className="flex w-14 items-center justify-center bg-destructive/80 text-white"
+          className="flex w-14 items-center justify-center bg-foreground text-background"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(solve.id);
@@ -146,7 +146,7 @@ export function SolveRow({
             className={cn(
               "rounded px-1.5 py-0.5 text-xs font-semibold transition-colors",
               solve.penalty === "plus2"
-                ? "bg-amber-600/20 text-amber-400 hover:bg-amber-600/30"
+                ? "bg-warning/20 text-foreground hover:bg-warning/30"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted",
             )}
             onClick={(e) => {

@@ -96,7 +96,7 @@ export function StatsPanel({
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden"
+            className="fixed inset-0 z-40 bg-background/70 backdrop-blur-sm md:hidden"
             onClick={() => setDrawerOpen(false)}
             aria-hidden
           />
