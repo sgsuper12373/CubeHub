@@ -5,6 +5,26 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Home: reorder cards in the Customize sheet (home plan step 6, done)
+
+**Request:** Continue with Claude's list.
+
+### Changed
+
+- `src/lib/home/cards.ts`: `homeCards()` applies the saved `order` (unlisted cards after, welcome first);
+  `moveCard()` moves a card up, down, or before another within its column and saves the whole visible order.
+- `src/components/home/customize-sheet.tsx`: on cards grouped by column with a drag handle (native drag and
+  drop) and Move up/down buttons (touch, keyboard); off cards listed under "Switched off".
+- Tests: `home-cards.test.ts` (+2), `home.spec.ts` guest reorder survives a reload.
+- Docs: `home.md`, `home-plan.md` (all steps done), `todo.md`.
+
+### Verified
+
+`npm run validate` (696 tests), `npm run check:colors`, `npm run build`; `home.spec.ts` 8/8 on the
+production build; looked at the sheet.
+
+---
+
 ## 2026-11-25 — Home step 6 (Next achievement), step 7 (docs/home.md), member layout e2e
 
 **Request:** Carry on with work that doesn't need the founder.

@@ -45,6 +45,29 @@ test.describe("guest layout", () => {
 // Member layouts persist through user_settings.home_layout
 // (20261124000000_home_layout.sql, applied 2026-11-25).
 
+test.describe("guest order", () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  test("moving a card in Customize reorders Home and survives a reload", async ({ page }) => {
+    const order = () =>
+      page.locator('[data-tour^="home-"]').evaluateAll((els) => els.map((e) => e.getAttribute("data-tour")));
+    await page.goto("/home");
+    await expect(page.getByRole("region", { name: "Playground" })).toBeVisible();
+    const before = await order();
+    expect(before.indexOf("home-tip")).toBeGreaterThan(before.indexOf("home-playground"));
+
+    await page.getByRole("button", { name: "Customize" }).click();
+    await page.getByRole("dialog", { name: "Customize Home" }).getByRole("button", { name: "Move Cubby's tip up" }).click();
+    await page.keyboard.press("Escape");
+    const moved = await order();
+    expect(moved.indexOf("home-tip")).toBeLessThan(moved.indexOf("home-playground"));
+
+    await page.reload();
+    await expect(page.getByRole("region", { name: "Playground" })).toBeVisible();
+    expect(await order()).toEqual(moved);
+  });
+});
+
 test.describe("member", () => {
   test.skip(!hasE2eUsers(), "E2E_USER_A/B credentials not set");
   test.use({ viewport: { width: 1280, height: 800 }, storageState: E2E_USERS[0].state });

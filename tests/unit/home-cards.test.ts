@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   availableCards,
+  moveCard,
   continueButtonLabel,
   detectVisitor,
   drillButtonLabel,
@@ -97,5 +98,24 @@ describe("greeting and quick-start labels", () => {
     expect(drillButtonLabel(6)).toBe("Drill 6 due cases");
     expect(continueButtonLabel("PLL")).toBe("Continue PLL");
     expect(continueButtonLabel(null)).toBe("Start learning");
+  });
+
+  it("moves a card up, down and before another, within its own column", () => {
+    const up = moveCard("member", null, "drill", "up");
+    expect(homeCards("member", up).main).toEqual(["daily", "stats", "drill", "learning", "achievement", "tip"]);
+    const down = moveCard("member", up, "daily", "down");
+    expect(homeCards("member", down).main).toEqual(["stats", "daily", "drill", "learning", "achievement", "tip"]);
+    const dropped = moveCard("member", down, "tip", { before: "stats" });
+    expect(homeCards("member", dropped).main).toEqual(["tip", "stats", "daily", "drill", "learning", "achievement"]);
+    // The rail keeps its own order, and a drop onto the other column is not a move.
+    expect(homeCards("member", dropped).rail).toEqual(["friends", "clubs", "whatsnew"]);
+    expect(moveCard("member", dropped, "clubs", { before: "stats" })).toEqual(dropped);
+  });
+
+  it("keeps a saved order through a reload, with new cards after and the welcome card first", () => {
+    const layout = parseHomeLayout({ hidden: [], shown: ["streak"], order: ["tip", "learning"] });
+    expect(homeCards("member", layout).main.slice(0, 2)).toEqual(["tip", "learning"]);
+    expect(homeCards("member", layout).main).toContain("streak");
+    expect(homeCards("member-new", parseHomeLayout({ hidden: [], shown: [], order: ["tip"] })).main[0]).toBe("welcome");
   });
 });

@@ -80,8 +80,9 @@ export function availableCards(visitor: Visitor): CardId[] {
 /**
  * The saved layout: cards switched off, and cards switched on that the
  * defaults leave off. Stored as `user_settings.home_layout` (signed in) or the
- * `cubehub.home.v1` localStorage key (guests). `order` is reserved for drag
- * reordering (v1.1).
+ * `cubehub.home.v1` localStorage key (guests). `order` is the cuber's own
+ * card order from the Customize sheet; cards it doesn't list keep their
+ * default place after the ones it does.
  */
 export type HomeLayout = { hidden: string[]; shown: string[]; order?: string[] };
 
@@ -145,6 +146,12 @@ export function homeCards(
   picked.sort(
     (a, b) => (defaultIndex.get(a) ?? 100 + order.get(a)!) - (defaultIndex.get(b) ?? 100 + order.get(b)!),
   );
+  // The cuber's own order, if any. The welcome card always stays first.
+  const own = new Map((layout?.order ?? []).map((id, i) => [id, i]));
+  if (own.size > 0) {
+    const rank = (id: CardId) => (id === "welcome" ? -1 : (own.get(id) ?? 1000 + picked.indexOf(id)));
+    picked.sort((a, b) => rank(a) - rank(b));
+  }
 
   return {
     main: picked.filter((id) => CARDS[id].column === "main"),
@@ -170,6 +177,38 @@ export function setCardOn(visitor: Visitor, layout: HomeLayout | null, id: CardI
   if (on && !DEFAULT_CARDS[visitor].includes(id)) shown.push(id);
   if (!on) hidden.push(id);
   return { ...base, hidden, shown };
+}
+
+/**
+ * A new layout with `id` moved within its own column, either one step
+ * (`"up"`/`"down"`) or to just before another card (drag and drop). The
+ * whole visible order is saved, so later default changes can't reshuffle it.
+ */
+export function moveCard(
+  visitor: Visitor,
+  layout: HomeLayout | null,
+  id: CardId,
+  to: "up" | "down" | { before: CardId | null },
+): HomeLayout {
+  const base = layout ?? EMPTY_LAYOUT;
+  const { main, rail } = homeCards(visitor, base, { welcomeDone: true });
+  const column: CardId[] = (CARDS[id].column === "rail" ? rail : main).filter((c) => c !== "welcome");
+  const from = column.indexOf(id);
+  if (from === -1) return base;
+  const next: CardId[] = column.filter((c) => c !== id);
+  let at: number;
+  if (to === "up") at = Math.max(0, from - 1);
+  else if (to === "down") at = Math.min(next.length, from + 1);
+  else if (to.before === null) at = next.length;
+  else {
+    const i = next.indexOf(to.before);
+    if (i === -1) return base; // other column: not a move
+    at = i;
+  }
+  next.splice(at, 0, id);
+  const otherColumn = (CARDS[id].column === "rail" ? main : rail).filter((c) => c !== "welcome");
+  const order = CARDS[id].column === "rail" ? [...otherColumn, ...next] : [...next, ...otherColumn];
+  return { ...base, order };
 }
 
 // ── Greeting and quick start ──

@@ -1,6 +1,6 @@
 # Home plan: `app.cuberhub.me/home`
 
-> **Status:** steps 1–5 and 7 done, step 6 half done (Nov 24–25, 2026): Next achievement shipped, drag-to-reorder not yet. What shipped is in `docs/home.md` · Sumit Garad
+> **Status:** all seven steps done (Nov 24–25, 2026). What shipped is in `docs/home.md` · Sumit Garad
 > **For:** Claude Code. Read `AGENTS.md`, `docs/architecture.md` and `docs/app-shell-plan.md` first.
 > Home is the first page of the new app shell, so the shell's steps 1–6 come before step 3 below.
 > **Related:** `docs/app-shell-plan.md` (sidebar and hosts), `docs/cubby-cubing-companion.md` (Cubby's
@@ -250,7 +250,7 @@ These feed the Home review after the beta: cards nobody clicks get cut or moved 
 3. ✅ Friends, Clubs, What's new, Cubby's tip (static).
 4. ✅ Customise sheet with show/hide, storage, sign-in copy-up. *(`home_layout` migration applied Nov 25)*
 5. ✅ Daily scramble: migration, generation, daily mode in the timer, card, leaderboard. *(scrambles pre-generated into DataSeeds; see decisions.md)*
-6. Next achievement, drag reorder. *(Next achievement ✅ Nov 25; drag reorder open)*
+6. ✅ Next achievement, drag reorder. *(reorder in the Customize sheet: handle or up/down buttons)*
 7. ✅ Docs: `architecture.md` routes, `roadmap.md`, a short `docs/home.md` describing what shipped.
 
 ## Tests

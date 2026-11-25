@@ -9,10 +9,9 @@ its completed history, is in git.
 
 ## Ready to do
 
-1. **Home: drag to reorder cards** (the rest of step 6). The layout's `order` field is reserved.
-2. **Theme settings page** (design tokens step 8). Then delete the dev theme switcher, and make
+1. **Theme settings page** (design tokens step 8). Then delete the dev theme switcher, and make
    "System" follow OS changes mid-session.
-3. **Theme follow-ups:**
+2. **Theme follow-ups:**
    - Sticker colours in the cubing.js 3D/2D players.
    - Remove the hardcoded colours on the stats and profile pages.
 

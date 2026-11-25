@@ -40,12 +40,17 @@ The Customize sheet switches cards on and off and resets to the default. A layou
 - **Members:** stored in `user_settings.home_layout`.
 - **On first sign-in:** a guest's layout is copied to the account once.
 
+The sheet also sets the order: drag a card by its handle, or use its up/down buttons (these work
+on touch and with the keyboard, where native drag doesn't). Cards move within their own column,
+and the whole visible order is saved as `order` (`moveCard()` in `cards.ts`). Cards the saved
+order doesn't list, such as a card added later, keep their default place after the ones it does.
+The welcome card always stays first.
+
 Unknown card ids are dropped on read, so removing a card never breaks anyone's Home.
-Drag-to-reorder (`order`) is reserved but not built yet.
 
 ## Tests
 
 - **Unit:** `home-cards`, `home-content`, `home-daily-goal`, `home-drill-queue`,
-  `home-snapshot`, `next-achievement`, `daily-scramble`.
+  `home-snapshot`, `next-achievement`, `daily-scramble` (ordering is in `home-cards`).
 - **E2E:** `tests/e2e/home.spec.ts` (guest first visit, Enter/Space, guest and member layouts
-  surviving a reload, signed-in `/login` → `/home`) and `daily-scramble.spec.ts`.
+  surviving a reload, a guest reorder surviving a reload, signed-in `/login` → `/home`) and `daily-scramble.spec.ts`.
