@@ -10,8 +10,12 @@ export interface Rect {
 export interface Placement {
   x: number;
   y: number;
-  /** Where the card sits relative to the target; null = centred (no target). */
-  side: "below" | "above" | "right" | "left" | null;
+  /**
+   * Where the card sits relative to the target; null = centred (no target).
+   * "inside": nothing fits around a very large target (the whole timer
+   * panel), so the card sits inside its top edge, clear of the time.
+   */
+  side: "below" | "above" | "right" | "left" | "inside" | null;
   /** Where Cubby (on the card) should point to show the target. */
   pointAt: CubbyDirection | null;
 }
@@ -21,6 +25,7 @@ const POINT: Record<NonNullable<Placement["side"]>, CubbyDirection> = {
   above: "down",
   right: "left",
   left: "right",
+  inside: "down",
 };
 
 /**
@@ -48,7 +53,7 @@ export function placeCard(target: Rect | null, card: { width: number; height: nu
   else if (above >= margin) [side, x, y] = ["above", clampX(centreX), above];
   else if (right + card.width <= viewport.width - margin) [side, x, y] = ["right", right, clampY(centreY)];
   else if (left >= margin) [side, x, y] = ["left", left, clampY(centreY)];
-  else [side, x, y] = ["below", clampX(centreX), clampY(below)];
+  else [side, x, y] = ["inside", clampX(centreX), clampY(target.y + gap)];
   return { x, y, side, pointAt: POINT[side] };
 }
 

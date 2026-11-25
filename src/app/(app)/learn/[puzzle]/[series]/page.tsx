@@ -85,7 +85,7 @@ export default async function SeriesCasesPage({ params }: Props) {
         </div>
 
         {isAlgorithms && cases.length > 0 && (
-          <div className="shrink-0 flex items-center gap-3">
+          <div className="shrink-0 flex items-center gap-3" data-tour="learn-drill-set">
             <Button
               render={
                 <Link
@@ -105,7 +105,7 @@ export default async function SeriesCasesPage({ params }: Props) {
 
       {/* Progress Section */}
       {totalItems > 0 && (
-        <div className="bg-muted/30 border border-border/50 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="bg-muted/30 border border-border/50 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-4" data-tour="learn-progress">
           <div className="flex-1 space-y-1">
             <div className="flex items-center justify-between text-sm font-medium">
               <span>Your Progress</span>

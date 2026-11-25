@@ -31,6 +31,13 @@ describe("placeCard", () => {
     expect(p.x).toBe(246);
   });
 
+  it("sits inside the top of a target too big to go around (the timer panel)", () => {
+    const p = placeCard({ x: 300, y: 60, width: 700, height: 720 }, CARD, VIEW);
+    expect(p.side).toBe("inside");
+    expect(p.y).toBe(74);
+    expect(p.pointAt).toBe("down");
+  });
+
   it("stays inside the viewport", () => {
     const p = placeCard({ x: 1200, y: 50, width: 60, height: 30 }, CARD, VIEW);
     expect(p.x + CARD.width).toBeLessThanOrEqual(VIEW.width - 12);

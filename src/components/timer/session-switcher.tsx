@@ -54,6 +54,7 @@ export function SessionSwitcher({
     <div className="flex flex-wrap items-center justify-center gap-2 px-4">
       <select
         aria-label="Event"
+        data-tour="timer-event"
         className={`${SELECT_CLASS} font-medium`}
         value={puzzle}
         onChange={(e) => {
@@ -72,6 +73,7 @@ export function SessionSwitcher({
       {draft === null ? (
         <select
           aria-label="Session"
+          data-tour="timer-sessions"
           className={`${SELECT_CLASS} max-w-40`}
           value={activeId ?? ""}
           onChange={(e) => onSelect(e.target.value)}

@@ -14,6 +14,7 @@ import { toggleAlgorithmBookmark } from "@/lib/learn/actions";
 import { announceUnlocks, toUnlocks } from "@/lib/profile/achievements";
 import { caseDiagram, mainAlgorithm } from "@/lib/learn/case-diagram";
 import { isPlaygroundPuzzle } from "@/lib/playground/puzzles";
+import { emitCompanion } from "@/lib/companion/bus";
 import Link from "next/link";
 
 export function AlgorithmCard({
@@ -21,6 +22,7 @@ export function AlgorithmCard({
   puzzle = "333",
   href,
   onOpen,
+  tourTarget,
 }: {
   algCase: AlgorithmCase;
   puzzle?: string;
@@ -28,6 +30,8 @@ export function AlgorithmCard({
   href: string;
   /** Opens the case in the list's side panel. */
   onOpen: () => void;
+  /** A `data-tour` marker for Cubby's tour (the first card only). */
+  tourTarget?: string;
 }) {
   const [isPending, startTransition] = useTransition();
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
@@ -38,8 +42,10 @@ export function AlgorithmCard({
   const handleToggleLearned = () => {
     if (!mainAlg) return;
     startTransition(async () => {
-      const unlocks = await toggleAlgorithmBookmark(mainAlg.id, !algCase.learned);
+      const nowLearned = !algCase.learned;
+      const unlocks = await toggleAlgorithmBookmark(mainAlg.id, nowLearned);
       announceUnlocks(toUnlocks(unlocks));
+      if (nowLearned) emitCompanion("drill:mastered", { name: algCase.name });
     });
   };
 
@@ -72,6 +78,7 @@ export function AlgorithmCard({
 
   return (
     <Card
+      data-tour={tourTarget}
       onClick={handleCardClick}
       className={cn(
         "cursor-pointer",

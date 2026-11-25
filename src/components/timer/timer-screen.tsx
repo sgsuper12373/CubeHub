@@ -41,6 +41,7 @@ import { confirm } from "@/stores/confirm-store";
 import { formatMs } from "@/lib/timer/format";
 import { cn } from "@/lib/utils";
 import { FOCUS_ATTR, isFocusHidden } from "@/lib/timer/focus";
+import { emitCompanion } from "@/lib/companion/bus";
 
 /**
  * Frosted pill behind the top controls when a background image is set, so
@@ -281,6 +282,13 @@ export function TimerScreen(props: {
     if (phase === "stopped") onStopped();
   }, [phase]);
 
+  // Facts for Cubby (lib/companion/bus.ts); nothing listens unless the companion is on.
+  useEffect(() => {
+    if (phase === "running") emitCompanion("timer:started", {});
+    else if (phase === "stopped") emitCompanion("timer:stopped", {});
+    else if (phase === "inspecting") emitCompanion("inspection:started", {});
+  }, [phase]);
+
   const togglePenalty = (p: Exclude<Penalty, "none">) => {
     const last = useSessionStore.getState().solves[0];
     if (!last) return;
@@ -307,6 +315,7 @@ export function TimerScreen(props: {
     saveLastEvent(p);
     useTimerStore.getState().setPuzzle(p);
     void useSessionStore.getState().setPuzzle(p);
+    emitCompanion("puzzle:changed", { puzzle: p });
   };
 
   const handlePenalty = (id: string, p: Penalty) => {
@@ -588,7 +597,7 @@ export function TimerScreen(props: {
             />
           </div>
             {phase === "idle" || phase === "stopped" ? (
-              <div className={cn("flex items-center gap-1", hasBackground && frostedChrome)}>
+              <div className={cn("flex items-center gap-1", hasBackground && frostedChrome)} data-tour="timer-settings">
                 <LayoutControls />
                 <BackgroundSettings />
                 <QuickSettings

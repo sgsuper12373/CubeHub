@@ -19,6 +19,7 @@ import {
   type OrbitCamera,
   type StickerHit,
 } from "@/lib/playground/swipe";
+import { emitCompanion } from "@/lib/companion/bus";
 
 type AddMove = TwistyPlayer["experimentalModel"]["experimentalAddMove"];
 
@@ -175,7 +176,13 @@ export function PlaygroundCube({
       // The camera, for hit-testing swipes. cubing has no sync getter for it.
       orbitRef.current = DEFAULT_ORBIT;
       const orbit = model.twistySceneModel.orbitCoordinates;
-      const onOrbit = (c: OrbitCamera) => (orbitRef.current = c);
+      // The first reading is the starting camera; later ones mean the cuber turned the view (Cubby's tour waits for that).
+      let firstOrbit = true;
+      const onOrbit = (c: OrbitCamera) => {
+        orbitRef.current = c;
+        if (firstOrbit) firstOrbit = false;
+        else emitCompanion("playground:rotated", {});
+      };
       orbit.addFreshListener(onOrbit);
       stopOrbit = () => orbit.removeFreshListener(onOrbit);
 

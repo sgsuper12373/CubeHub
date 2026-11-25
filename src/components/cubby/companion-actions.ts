@@ -1,9 +1,10 @@
 import { getCubbyRenderer } from "@/components/cubby/renderer-instance";
 import { fillLine, pickLine } from "@/lib/companion/content";
-import { decide, recordShown, type Candidate, type Decision, type TimerPhaseLike } from "@/lib/companion/director";
+import { decide, isQuietPhase, recordShown, type Candidate, type Decision, type TimerPhaseLike } from "@/lib/companion/director";
 import { loadSessionMemory, saveSessionMemory } from "@/lib/companion/memory";
 import { stepsFor, tourKindFor, type TourKind } from "@/lib/companion/tours";
 import { useCompanionStore } from "@/stores/companion-store";
+import { useDrillStore, type DrillPhase } from "@/stores/drill-store";
 import { useTimerStore } from "@/stores/timer-store";
 
 /**
@@ -11,9 +12,24 @@ import { useTimerStore } from "@/stores/timer-store";
  * nothing here renders.
  */
 
+/** A drill rep counts as a running solve: recognising or executing. */
+function drillBusy(phase: DrillPhase): boolean {
+  return phase === "running" || phase === "recognising";
+}
+
+/** The timer's state for the Director, folding in the Drill Lab's timer. */
 export function timerState(): { phase: TimerPhaseLike; inInspection: boolean } {
   const t = useTimerStore.getState();
-  return { phase: t.phase, inInspection: t.inspectionStartedAt !== null };
+  const phase: TimerPhaseLike = drillBusy(useDrillStore.getState().phase) ? "running" : t.phase;
+  return { phase, inInspection: t.inspectionStartedAt !== null };
+}
+
+/** Whether a solve (timer or drill) owns the screen right now, as a hook. */
+export function useSolveBusy(): boolean {
+  const phase = useTimerStore((s) => s.phase);
+  const inInspection = useTimerStore((s) => s.inspectionStartedAt !== null);
+  const drilling = useDrillStore((s) => drillBusy(s.phase));
+  return drilling || isQuietPhase(phase, inInspection);
 }
 
 /** Ask the Director; if it says yes, remember it for the session caps. */

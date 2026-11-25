@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
-import { timerState } from "@/components/cubby/companion-actions";
+import { timerState, useSolveBusy } from "@/components/cubby/companion-actions";
 import { getCubbyRenderer } from "@/components/cubby/renderer-instance";
 import { useCubbyReducedMotion } from "@/components/cubby/use-cubby-motion";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,6 @@ import { nextAvailableStep } from "@/lib/companion/tours";
 import { cn } from "@/lib/utils";
 import { useCompanionStore } from "@/stores/companion-store";
 import { useOverlayLock } from "@/stores/overlay-store";
-import { useTimerStore } from "@/stores/timer-store";
 
 /**
  * The tour engine's overlay (docs/cubby-cubing-companion.md → Page tours):
@@ -77,8 +76,6 @@ function parseRect(s: string): Rect | null {
 export function TourOverlay() {
   const tour = useCompanionStore((s) => s.tour);
   const name = useCompanionStore((s) => s.record.settings.name);
-  const phase = useTimerStore((s) => s.phase);
-  const inInspection = useTimerStore((s) => s.inspectionStartedAt !== null);
   const reduced = useCubbyReducedMotion();
   const [paused, setPaused] = useState(false);
   const [direction, setDirection] = useState<1 | -1>(1);
@@ -89,7 +86,7 @@ export function TourOverlay() {
   const bodyId = useId();
 
   const step = tour ? tour.steps[tour.index] : null;
-  const busy = isQuietPhase(phase, inInspection);
+  const busy = useSolveBusy();
   const interactive = step?.waitFor !== undefined;
   const rectString = useTargetRect(step?.target ?? null);
   const rect = parseRect(rectString);

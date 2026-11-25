@@ -24,7 +24,7 @@ export default async function LearnPage() {
         <HeroSection />
 
         <div className="space-y-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8" data-tour="learn-puzzles">
             {puzzles.map((puzzle, index) => (
               <PuzzleCard key={puzzle.id} puzzle={puzzle} index={index} />
             ))}

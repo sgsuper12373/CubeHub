@@ -1,0 +1,20 @@
+{
+  "page": "learn",
+  "tourVersion": 1,
+  "tour": [
+    { "id": "hello", "target": null, "title": "Welcome to Learn", "body": "Methods and algorithm sets for 3x3 and 2x2, from your first solve to full PLL.", "mood": "happy", "since": 1 },
+    { "id": "puzzles", "target": "learn-puzzles", "title": "Pick a puzzle", "body": "Each puzzle starts with a beginner method, then the sets that make you faster.", "since": 1 },
+    { "id": "nav", "target": "learn-nav", "title": "Every set, one click away", "body": "The sidebar lists every set. Your progress in each one is saved as you mark cases learned.", "since": 1 },
+    { "id": "loop", "target": "learn-features", "title": "Learn, then drill", "body": "Mark a case learned, then drill it in the Drill Lab until it's automatic.", "mood": "happy", "since": 1 }
+  ],
+  "greetings": [
+    { "when": "daysAway>=7", "line": "Been a while! Pick up where you left off, or try a new set." },
+    { "when": "always", "line": "Welcome to Learn. Start with PLL? It gives the biggest jump for most cubers.", "actions": [{ "label": "Open PLL", "href": "/learn/333/pll" }] }
+  ],
+  "reactions": {},
+  "tips": [
+    "Two-look OLL and PLL take about 16 algorithms and get most cubers under 30 seconds.",
+    "Learn a case, then drill it the same day. Recognition sticks better that way.",
+    "Inside a set, filter to Unlearned to see what's left."
+  ]
+}

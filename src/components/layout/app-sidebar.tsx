@@ -359,6 +359,7 @@ function LearnItem({
           openOnHover
           delay={100}
           aria-label={item.label}
+          data-tour="learn-nav"
           className={cn(itemClass(active), "w-full")}
         >
           <Icon className="size-4 shrink-0" />
@@ -383,7 +384,7 @@ function LearnItem({
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col" data-tour="learn-nav">
       <div className="flex items-center">
         <Link
           href={item.href}

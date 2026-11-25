@@ -40,6 +40,7 @@ import { isSolvedWith, isValidMoveWith, loadKPuzzle } from "@/lib/playground/sol
 import { generateScramble } from "@/lib/timer/scrambler";
 import { cn } from "@/lib/utils";
 import { isOverlayOpen } from "@/stores/overlay-store";
+import { emitCompanion } from "@/lib/companion/bus";
 
 /** Input types where keys are not text entry. */
 const NON_TEXT_INPUTS: ReadonlySet<string> = new Set(["checkbox", "radio", "button", "range"]);
@@ -157,13 +158,15 @@ export function PlaygroundScreen({
       // and both only produce legal ones for the current puzzle.
       if (model && !isValidMoveWith(model, move)) return;
       const t = performance.now();
+      const after = [...moves, move];
       if (practice.kind !== "idle") {
-        const after = [...moves, move];
         setPractice(practiceAfterTurn(practice, move, t, after, solvedWith(after)));
       }
       dispatch({ type: "move", move, t });
+      emitCompanion("playground:turned", {});
+      if (scramble && solvedWith(after)) emitCompanion("playground:solved", {});
     },
-    [model, moves, practice, solvedWith, revealing],
+    [model, moves, practice, solvedWith, revealing, scramble],
   );
 
   const onScramble = useCallback(async () => {
@@ -356,7 +359,7 @@ export function PlaygroundScreen({
               onChange={setVisualization}
             />
           </div>
-          <div className="ml-auto flex items-center gap-1">
+          <div className="ml-auto flex items-center gap-1" data-tour="playground-keys">
             <Button
               type="button"
               variant="ghost"
@@ -393,7 +396,7 @@ export function PlaygroundScreen({
           <PracticeTimer phase={practice} onReplay={() => setReplayToken((n) => n + 1)} />
 
           {/* The cube is the biggest square this box allows (container query units). */}
-          <div className="grid min-h-0 w-full flex-1 place-items-center [container-type:size]">
+          <div className="grid min-h-0 w-full flex-1 place-items-center [container-type:size]" data-tour="playground-cube">
             <PlaygroundCube
               puzzle={puzzle}
               visualization={visualization}
@@ -415,7 +418,7 @@ export function PlaygroundScreen({
             />
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2" data-tour="playground-actions">
             <Button type="button" onClick={onScramble} disabled={generating || revealing} title="Scramble (Enter)">
               <Shuffle /> {generating || revealing ? "Scrambling…" : "Scramble"}
             </Button>
@@ -524,7 +527,7 @@ export function PlaygroundScreen({
           </div>
         </Panel>
 
-        <Panel className="md:max-lg:order-1">
+        <Panel className="md:max-lg:order-1" data-tour="playground-alg">
           <h2 className="text-sm font-medium">Try an algorithm</h2>
           <AlgPanel
             value={algText}
@@ -715,9 +718,9 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
   );
 }
 
-function Panel({ className, children }: { className?: string; children: React.ReactNode }) {
+function Panel({ className, children, "data-tour": tour }: { className?: string; children: React.ReactNode; "data-tour"?: string }) {
   return (
-    <section className={cn("flex flex-col gap-3 rounded-xl border border-border bg-card p-4", className)}>
+    <section data-tour={tour} className={cn("flex flex-col gap-3 rounded-xl border border-border bg-card p-4", className)}>
       {children}
     </section>
   );

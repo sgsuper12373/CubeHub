@@ -1,0 +1,22 @@
+{
+  "page": "playground",
+  "tourVersion": 1,
+  "tour": [
+    { "id": "rotate", "target": "playground-cube", "title": "Look around", "body": "Drag beside the cube to turn the view and see it from any side.", "waitFor": "playground:rotated", "mood": "happy", "since": 1 },
+    { "id": "turn", "target": "playground-cube", "title": "Turn a layer", "body": "Swipe across the stickers, or press a key: every face turn has one.", "waitFor": "playground:turned", "since": 1 },
+    { "id": "notation", "target": "playground-alg", "title": "Type an algorithm", "body": "Type moves in notation to set up a case or watch an algorithm played.", "since": 1 },
+    { "id": "actions", "target": "playground-actions", "title": "Scramble and reset", "body": "Scramble gives you a random state and Reset goes back to solved. Undo and redo are here too.", "since": 1 },
+    { "id": "keys", "target": "playground-keys", "title": "Keyboard controls", "body": "See every key, or map your own. Press ? any time.", "mood": "happy", "since": 1 }
+  ],
+  "greetings": [
+    { "when": "always", "line": "Try R U R' U' six times: the cube comes back solved." }
+  ],
+  "reactions": {
+    "solved": ["Solved! Nice one.", "Back to solved. Again?"]
+  },
+  "tips": [
+    "R U R' U' six times brings the cube back to solved.",
+    "Solves here are never saved, so experiment freely.",
+    "Set up any case by typing its algorithm and pressing Set up case."
+  ]
+}

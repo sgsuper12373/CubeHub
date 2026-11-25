@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { useDrillStore, type PressOutcome } from "@/stores/drill-store";
 import { isOverlayOpen } from "@/stores/overlay-store";
 import { toast } from "@/stores/toast-store";
+import { emitCompanion } from "@/lib/companion/bus";
 
 interface SessionAttempt extends DrillAttempt {
   /** The database id once saved; null for guests and while saving. */
@@ -101,6 +102,10 @@ export function DrillLab({
   scopeInfo: { scope: "learned" | "all"; learned: number; total: number } | null;
 }) {
   const phase = useDrillStore((s) => s.phase);
+  // Cubby's Drill tour waits for a timed case (lib/companion/bus.ts).
+  useEffect(() => {
+    if (phase === "running") emitCompanion("drill:started", {});
+  }, [phase]);
   const recognitionMode = useDrillStore((s) => s.recognitionMode);
   const lastTimeMs = useDrillStore((s) => s.lastTimeMs);
 
@@ -396,6 +401,7 @@ export function DrillLab({
 
         <div
           id="drill-pane-cases"
+          data-tour="drill-cases"
           className={cn(
             "flex min-h-0 flex-col max-lg:order-last lg:col-start-2 lg:row-start-2 xl:col-start-1 xl:row-start-1",
             panelTab !== "cases" && "lg:hidden xl:flex",
@@ -408,6 +414,7 @@ export function DrillLab({
         <section
           role="button"
           aria-label={`Drill timer: ${hint}`}
+          data-tour="drill-stage"
           tabIndex={-1}
           className="flex min-h-[420px] cursor-pointer touch-none select-none flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-card p-4 max-lg:order-first lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:min-h-0 lg:overflow-y-auto xl:col-start-2 xl:row-span-1"
           onPointerDown={(e) => {

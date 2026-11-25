@@ -67,7 +67,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0], index: n
 
 export function FeatureSection() {
   return (
-    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-16 mb-24">
+    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-16 mb-24" data-tour="learn-features">
       {features.map((feature, index) => (
         <FeatureCard key={index} feature={feature} index={index} />
       ))}
