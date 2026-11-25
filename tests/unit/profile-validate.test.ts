@@ -94,7 +94,8 @@ describe("validateSetups", () => {
     expect(r.save).toEqual([{ puzzle_type: "333", cube_name: "GAN 12 Maglev" }]);
     expect(r.cleared).toContain("pyra");
     expect(r.cleared).toContain("222");
-    expect(r.cleared).toHaveLength(7);
+    // Every other event the timer offers (eight of nine).
+    expect(r.cleared).toHaveLength(7 + 1);
   });
 
   it("refuses a name over 80 characters, naming the event", () => {

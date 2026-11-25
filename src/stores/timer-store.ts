@@ -8,6 +8,7 @@ import {
   type TimerPuzzle,
   type TimerSettings,
 } from "@/lib/timer/types";
+import { isBldEvent } from "@/lib/timer/events";
 
 /** Hold this long before a press becomes "ready". Reads from settings so users can customize. */
 export function getHoldMs(): number {
@@ -66,6 +67,10 @@ interface TimerStore {
   stoppedAt: number | null;
   /** Written exactly once per solve, on stop. Survives into idle as "last result". */
   finalElapsedMs: number | null;
+  /** BLD with the memo split: when memo ended (the first press while running). */
+  memoEndedAt: number | null;
+  /** The finished solve's memo time, written on stop alongside finalElapsedMs. */
+  finalMemoMs: number | null;
   /** Accrued from inspection overrun; attached to the solve when it is recorded. */
   inspectionPenalty: Penalty;
   scramble: ScrambleSlots;
@@ -120,6 +125,8 @@ export const useTimerStore = create<TimerStore>()((set, get) => ({
   solveStartedAt: null,
   stoppedAt: null,
   finalElapsedMs: null,
+  memoEndedAt: null,
+  finalMemoMs: null,
   inspectionPenalty: "none",
   scramble: EMPTY_SCRAMBLE,
 
@@ -127,7 +134,8 @@ export const useTimerStore = create<TimerStore>()((set, get) => ({
     const s = get();
     switch (s.phase) {
       case "idle":
-        if (inspectionDurationMs(s.settings.inspectionMode) !== null) {
+        // BLD has no inspection: memo is part of the time.
+        if (inspectionDurationMs(s.settings.inspectionMode) !== null && !isBldEvent(s.puzzle)) {
           s.startInspection(now);
         } else {
           s.arm(now);
@@ -185,15 +193,28 @@ export const useTimerStore = create<TimerStore>()((set, get) => ({
       holdStartedAt: null,
       inspectionStartedAt: null,
       finalElapsedMs: null,
+      memoEndedAt: null,
+      finalMemoMs: null,
     });
   },
 
   stop: (now) => {
     const s = get();
     if (s.phase !== "running" || s.solveStartedAt === null) return;
+    // BLD with the memo split: the first press ends memo, the clock keeps going.
+    if (isBldEvent(s.puzzle) && s.settings.memoSplit) {
+      if (s.memoEndedAt === null) {
+        set({ memoEndedAt: now });
+        return;
+      }
+      // A bounce or a double tap must not end the solve right after the split.
+      if (now - s.memoEndedAt < STOP_DEBOUNCE_MS) return;
+    }
     set({
       phase: "stopped",
       finalElapsedMs: now - s.solveStartedAt,
+      finalMemoMs: s.memoEndedAt !== null ? s.memoEndedAt - s.solveStartedAt : null,
+      memoEndedAt: null,
       stoppedAt: now,
       solveStartedAt: null,
     });
@@ -232,6 +253,7 @@ export const useTimerStore = create<TimerStore>()((set, get) => ({
       holdStartedAt: null,
       inspectionStartedAt: null,
       solveStartedAt: null,
+      memoEndedAt: null,
       inspectionPenalty: "none",
     });
   },

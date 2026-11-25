@@ -10,7 +10,7 @@ import type { CompanionSettings } from "@/lib/companion/settings";
 
 export type TimerPhaseLike = "idle" | "holding" | "ready" | "running" | "stopped" | "inspecting";
 
-export type ReactionKind = "pb" | "penalty" | "mastered" | "error" | "stretch" | "misstop" | "solved";
+export type ReactionKind = "pb" | "penalty" | "mastered" | "error" | "stretch" | "misstop" | "solved" | "bldDnf";
 
 export type Candidate =
   | { kind: "greeting"; page: string }

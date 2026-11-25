@@ -39,7 +39,7 @@ export interface PageContent {
   tips: string[];
 }
 
-const REACTIONS: readonly ReactionKind[] = ["pb", "penalty", "mastered", "error", "stretch", "misstop", "solved"];
+const REACTIONS: readonly ReactionKind[] = ["pb", "penalty", "mastered", "error", "stretch", "misstop", "solved", "bldDnf"];
 
 /** Problems with a content file, empty when it's valid. */
 export function contentProblems(raw: unknown): string[] {

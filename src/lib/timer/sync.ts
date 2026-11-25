@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { hasMemoColumn, memoField } from "./memo-column";
 import { flagMisstops } from "./misfire";
 import type { Session, Solve } from "./types";
 
@@ -82,6 +83,7 @@ export async function syncLocalToCloud(userId: string): Promise<number> {
   // Flagged as the timer would, in case these were saved before mis-stop
   // flagging (a no-op for solves that already went through it).
   const liveSolves = flagMisstops(local.solves.filter((s) => !s.deletedAt));
+  const memoColumn = liveSolves.some((s) => s.memoMs !== undefined) && (await hasMemoColumn());
   let synced = 0;
   for (let i = 0; i < liveSolves.length; i += CHUNK_SIZE) {
     const chunk = liveSolves.slice(i, i + CHUNK_SIZE);
@@ -99,6 +101,7 @@ export async function syncLocalToCloud(userId: string): Promise<number> {
       excluded_reason: s.excludedReason ?? null,
       misstop_confirmed: s.misstopConfirmed ?? false,
       created_at: s.createdAt,
+      ...memoField(s.memoMs, memoColumn),
     }));
 
     const { error } = await supabase

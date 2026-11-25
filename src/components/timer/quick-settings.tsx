@@ -114,6 +114,15 @@ export function QuickSettings({
               />
             </SettingRow>
 
+            {/* BLD memo split (3x3 BLD has no inspection; memo is in the time) */}
+            <SettingRow label="BLD memo split">
+              <ToggleSwitch
+                checked={settings.memoSplit}
+                onChange={(v) => onChange({ memoSplit: v })}
+                label="BLD memo split: a key press ends memo, the next stops the time"
+              />
+            </SettingRow>
+
             {/* Hold duration */}
             <SettingRow label="Hold duration">
               <div className="flex items-center gap-2">

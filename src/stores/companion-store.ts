@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import type { PageContent, TourStep } from "@/lib/companion/content";
 import type { CompanionPage } from "@/lib/companion/pages";
+import type { BldPhase } from "@/lib/companion/renderer";
 import { saveLocalRecord, type CompanionRecord } from "@/lib/companion/record";
 import { DEFAULT_SETTINGS, type CompanionSettings } from "@/lib/companion/settings";
 import { finishTour, markOffered, type TourKind } from "@/lib/companion/tours";
@@ -37,6 +38,8 @@ interface CompanionStore {
   bubble: Bubble | null;
   tour: ActiveTour | null;
   settingsOpen: boolean;
+  /** The BLD solve on stage: Cubby in the corner while a 3x3 BLD solve runs. */
+  bldPhase: BldPhase;
   hydrate(record: CompanionRecord): void;
   updateSettings(patch: Partial<CompanionSettings>): void;
   resetTours(): void;
@@ -48,6 +51,7 @@ interface CompanionStore {
   endTour(how: "done" | "skipped"): void;
   markDockOpened(): void;
   setSettingsOpen(open: boolean): void;
+  setBldPhase(phase: BldPhase): void;
 }
 
 /** How records are saved: localStorage for guests; the provider swaps in the account for members. */
@@ -71,6 +75,7 @@ export const useCompanionStore = create<CompanionStore>()((set, get) => {
     bubble: null,
     tour: null,
     settingsOpen: false,
+    bldPhase: "off",
 
     hydrate: (record) => set({ record, hydrated: true }),
 
@@ -123,5 +128,6 @@ export const useCompanionStore = create<CompanionStore>()((set, get) => {
     },
 
     setSettingsOpen: (open) => set({ settingsOpen: open }),
+    setBldPhase: (bldPhase) => set({ bldPhase }),
   };
 });

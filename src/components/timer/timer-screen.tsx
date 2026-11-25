@@ -28,7 +28,7 @@ import type { PanelId } from "@/lib/timer/layout";
 import { useLayoutStore } from "@/stores/layout-store";
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { generateScramble } from "@/lib/timer/scrambler";
-import { loadLastEvent, saveLastEvent } from "@/lib/timer/events";
+import { isBldEvent, loadLastEvent, saveLastEvent } from "@/lib/timer/events";
 import { detectRecords, RECORD_LABEL, type RecordHit } from "@/lib/timer/pb-detect";
 import { headlineHit } from "@/lib/timer/share-card";
 import { countedSolves } from "@/lib/timer/misfire";
@@ -63,6 +63,8 @@ export function TimerScreen(props: {
   initialSettings: ServerTimerSettings | null;
 }) {
   const phase = useTimerStore((s) => s.phase);
+  const memoEndedAt = useTimerStore((s) => s.memoEndedAt);
+  const memoSplitOn = useTimerStore((s) => s.settings.memoSplit);
   const scramble = useTimerStore((s) => s.scramble);
   const puzzle = useTimerStore((s) => s.puzzle);
   const settings = useTimerStore((s) => s.settings);
@@ -212,6 +214,8 @@ export function TimerScreen(props: {
     const sessionState = useSessionStore.getState();
     // Judged on the solves before this one, like records.
     const misstop = sessionState.misstopFor(timeMs, penalty);
+    // BLD with the memo split: the memo time rides along with a timed solve.
+    const memoMs = source === "web" ? t.finalMemoMs : null;
     const solve = {
       id: crypto.randomUUID(),
       sessionId: sessionState.activeSessionId ?? "",
@@ -224,6 +228,7 @@ export function TimerScreen(props: {
       ...(source === "manual" && { source }),
       ...(t.scramble.custom && { scrambleType: "custom" as const }),
       ...(misstop && { excluded: true, excludedReason: "auto_misstop" as const }),
+      ...(memoMs !== null && memoMs > 0 && memoMs < timeMs && { memoMs: Math.round(memoMs) }),
       createdAt: new Date().toISOString(),
     };
 
@@ -299,6 +304,14 @@ export function TimerScreen(props: {
     else if (phase === "stopped") emitCompanion("timer:stopped", {});
     else if (phase === "inspecting") emitCompanion("inspection:started", {});
   }, [phase]);
+
+  // BLD: memo, then execution (at the split, if it's on), then the finish.
+  useEffect(() => {
+    if (!isBldEvent(puzzle)) return;
+    if (phase === "running") emitCompanion("bld:phase", { phase: memoEndedAt === null ? "memo" : "execute" });
+    else if (phase === "stopped") emitCompanion("bld:phase", { phase: "finish" });
+    else if (phase === "idle") emitCompanion("bld:phase", { phase: "off" });
+  }, [phase, memoEndedAt, puzzle]);
 
   const togglePenalty = (p: Exclude<Penalty, "none">) => {
     const last = useSessionStore.getState().solves[0];
@@ -399,6 +412,8 @@ export function TimerScreen(props: {
   // "Hide UI while solving" (Focus mode) is off; Zen mode, which did the same
   // for the whole page, was retired with the app shell. It leaves fast (150ms) and
   // returns gracefully (300ms ease-out) when the solve lands.
+  // BLD with the memo split: the hint says which part of the solve you're in.
+  const bldSplitRunning = phase === "running" && isBldEvent(puzzle) && memoSplitOn;
   const fadeWhileSolving = cn(
     "transition-opacity",
     solving
@@ -484,7 +499,7 @@ export function TimerScreen(props: {
                     ? "text-timer-holding opacity-100"
                     : phase === "ready"
                       ? "text-timer-running opacity-100"
-                      : phase === "idle" || phase === "stopped"
+                      : phase === "idle" || phase === "stopped" || bldSplitRunning
                         ? "text-muted-foreground opacity-100"
                         : "opacity-0",
                 )}
@@ -493,9 +508,13 @@ export function TimerScreen(props: {
                   ? "keep holding…"
                   : phase === "ready"
                     ? "release to start"
-                    : phase === "stopped"
-                      ? "tap or press space for the next scramble"
-                      : "hold, then release to start"}
+                    : bldSplitRunning
+                      ? memoEndedAt === null
+                        ? "memo · press any key when the blindfold goes on"
+                        : "solving · press any key to stop"
+                      : phase === "stopped"
+                        ? "tap or press space for the next scramble"
+                        : "hold, then release to start"}
               </p>
             </TouchStage>
 

@@ -12,6 +12,8 @@ export const TIMER_EVENTS = [
   { id: "444", label: "4x4", cubingEvent: "444", twisty: "4x4x4" },
   { id: "555", label: "5x5", cubingEvent: "555", twisty: "5x5x5" },
   { id: "333oh", label: "3x3 OH", cubingEvent: "333oh", twisty: "3x3x3" },
+  // Blindfolded: random orientation scrambles, no inspection (memo is part of the time).
+  { id: "333bf", label: "3x3 BLD", cubingEvent: "333bf", twisty: "3x3x3" },
   { id: "pyra", label: "Pyraminx", cubingEvent: "pyram", twisty: "pyraminx" },
   { id: "skewb", label: "Skewb", cubingEvent: "skewb", twisty: "skewb" },
   { id: "mega", label: "Megaminx", cubingEvent: "minx", twisty: "megaminx" },
@@ -36,6 +38,11 @@ export function timerEvent(id: string): TimerEvent {
 /** Display name, e.g. "Pyraminx". Unknown ids are shown as-is. */
 export function eventLabel(id: string): string {
   return BY_ID.get(id)?.label ?? id;
+}
+
+/** Blindfolded events: no inspection, an optional memo split, Cubby's blindfold animation. */
+export function isBldEvent(id: string): boolean {
+  return id === "333bf";
 }
 
 /** True for events whose scrambles are face-turn algs on an NxN cube. */

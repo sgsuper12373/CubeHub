@@ -44,7 +44,11 @@ export function useCompanionReactions(): void {
     let concernedTimer: number | null = null;
     const offs = [
       onCompanion("pb", ({ time, delta, label }) => react("pb", "celebrate", { time, delta, label })),
-      onCompanion("penalty", () => react("penalty", "wince")),
+      // A BLD DNF gets Cubby's shrug instead (bld-stage.tsx).
+      onCompanion("penalty", () => {
+        if (useCompanionStore.getState().bldPhase === "finish") return;
+        react("penalty", "wince");
+      }),
       onCompanion("drill:mastered", ({ name }) => react("mastered", "thumbsUp", { case: name })),
       onCompanion("misstop", () => react("misstop", null)),
       onCompanion("playground:solved", () => react("solved", "celebrate")),

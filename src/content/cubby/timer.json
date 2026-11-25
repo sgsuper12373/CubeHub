@@ -23,7 +23,8 @@
     "pb": ["New {label} PB! {time}, {delta} off your old one.", "That's a {label} PB: {time}!"],
     "misstop": ["That looked like a mis-stop, so I left it out. Press \"It was real\" if it counted."],
     "stretch": ["That's an hour of solving. Stretch your hands for a minute?"],
-    "error": ["Hmm, that didn't work. Try again in a moment."]
+    "error": ["Hmm, that didn't work. Try again in a moment."],
+    "bldDnf": ["BLD is brutal. Next one.", "Happens to everyone. Next one."]
   },
   "tips": [
     "Press ? to see every timer shortcut.",

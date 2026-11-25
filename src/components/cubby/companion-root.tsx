@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 import { ask, startPageTour, timerState } from "@/components/cubby/companion-actions";
+import { BldStage, useBldStage } from "@/components/cubby/bld-stage";
 import { CompanionSettingsSheet } from "@/components/cubby/companion-settings-sheet";
 import { CubbyDock } from "@/components/cubby/dock";
 import { getCubbyRenderer } from "@/components/cubby/renderer-instance";
@@ -11,6 +12,7 @@ import { SpeechBubble } from "@/components/cubby/speech-bubble";
 import { TourOverlay } from "@/components/cubby/tour-overlay";
 import { useCompanionReactions } from "@/components/cubby/use-reactions";
 import { contentFor } from "@/content/cubby";
+import { emitCompanion } from "@/lib/companion/bus";
 import { fillLine, pickGreeting } from "@/lib/companion/content";
 import { isQuietPhase } from "@/lib/companion/director";
 import { noteVisit } from "@/lib/companion/memory";
@@ -47,6 +49,7 @@ export default function CompanionRoot({ member, initialRecord }: { member: boole
   const router = useRouter();
   const hydrated = useCompanionStore((s) => s.hydrated);
   useCompanionReactions();
+  useBldStage();
 
   // Hydrate once: members from their account (a guest record on this device is
   // copied up the first time), guests from this browser.
@@ -89,6 +92,8 @@ export default function CompanionRoot({ member, initialRecord }: { member: boole
     if (!hydrated) return;
     const page = companionPageFor(pathname);
     useCompanionStore.getState().setPage(page, contentFor(page));
+    // A BLD solve on stage ends when the cuber leaves the timer.
+    if (page !== "timer" && useCompanionStore.getState().bldPhase !== "off") emitCompanion("bld:phase", { phase: "off" });
     if (!page) return;
     // StrictMode runs this twice in development: keep the first reading of the previous visit.
     if (visit.current?.pathname !== pathname) visit.current = { pathname, previous: noteVisit(page, Date.now()) };
@@ -134,6 +139,7 @@ export default function CompanionRoot({ member, initialRecord }: { member: boole
       <SpeechBubble />
       <TourOverlay />
       <CompanionSettingsSheet />
+      <BldStage />
     </>
   );
 }

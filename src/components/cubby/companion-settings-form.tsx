@@ -100,6 +100,13 @@ export function CompanionSettingsForm({ className }: { className?: string }) {
         onChange={(reactions) => update({ reactions })}
       />
 
+      <Toggle
+        label="BLD solving animation"
+        hint="During a 3x3 BLD solve, Cubby memorises and solves blindfolded in the corner."
+        on={settings.bldAnimation}
+        onChange={(bldAnimation) => update({ bldAnimation })}
+      />
+
       <Choice
         legend="Motion"
         hint="Reduced turns animations into still poses."

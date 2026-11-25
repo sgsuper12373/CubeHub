@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { hasMemoColumn, memoField } from "./memo-column";
 import { recentlyDeletedSince, type SolveRepository } from "./repo";
 import type {
   PbCategory,
@@ -45,10 +46,12 @@ export function createSupabaseRepo(userId: string): SolveRepository {
     },
 
     async loadSolves(sessionId, limit = 500) {
+      // BLD memo times, once the column exists (memo-column.ts).
+      const memo: string = (await hasMemoColumn()) ? ", memo_ms" : "";
       const { data, error } = await getClient()
         .from("solves")
         .select(
-          "id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at, excluded, excluded_reason, misstop_confirmed",
+          `id, session_id, puzzle_type, time_ms, penalty, effective_time_ms, scramble, notes, created_at, excluded, excluded_reason, misstop_confirmed${memo}`,
         )
         .eq("session_id", sessionId)
         .eq("user_id", userId)
@@ -57,10 +60,12 @@ export function createSupabaseRepo(userId: string): SolveRepository {
         .limit(limit);
 
       if (error) throw error;
-      return (data ?? []).map(mapSolve);
+      // The column list is built at runtime (memo_ms or not), so the row type is spelled out.
+      return ((data ?? []) as unknown as SolveRow[]).map(mapSolve);
     },
 
     async saveSolve(solve) {
+      const memo = memoField(solve.memoMs, solve.memoMs !== undefined && (await hasMemoColumn()));
       const { error } = await getClient().from("solves").upsert(
         {
           id: solve.id,
@@ -76,6 +81,7 @@ export function createSupabaseRepo(userId: string): SolveRepository {
           excluded_reason: solve.excludedReason ?? null,
           misstop_confirmed: solve.misstopConfirmed ?? false,
           created_at: solve.createdAt,
+          ...memo,
         },
         { onConflict: "id", ignoreDuplicates: true },
       );
@@ -436,6 +442,8 @@ function mapPersonalBest(row: {
   };
 }
 
+type SolveRow = Parameters<typeof mapSolve>[0];
+
 function mapSolve(row: {
   id: string;
   session_id: string;
@@ -450,6 +458,7 @@ function mapSolve(row: {
   excluded_reason: string | null;
   misstop_confirmed: boolean;
   deleted_at?: string | null;
+  memo_ms?: number | null;
 }): Solve {
   return {
     id: row.id,
@@ -465,5 +474,6 @@ function mapSolve(row: {
     ...(row.excluded_reason && { excludedReason: row.excluded_reason as Solve["excludedReason"] }),
     ...(row.misstop_confirmed && { misstopConfirmed: true }),
     ...(row.deleted_at !== undefined && { deletedAt: row.deleted_at }),
+    ...(typeof row.memo_ms === "number" && { memoMs: row.memo_ms }),
   };
 }

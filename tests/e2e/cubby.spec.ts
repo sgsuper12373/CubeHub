@@ -178,6 +178,24 @@ test.describe("Cubby, flag on", () => {
     await expect(page.getByRole("heading", { name: "Meet Cubby, your practice buddy." })).toBeVisible();
   });
 
+  test("during a 3x3 BLD solve Cubby memorises, then solves blindfolded in the corner", async ({ page }) => {
+    await returningCuber(page);
+    await page.goto("/timer");
+    await expect(page.getByLabel(/^Scramble: /).first()).toBeVisible({ timeout: 60_000 });
+    await page.getByLabel("Event").selectOption("333bf");
+    await expect(page.getByLabel(/^Scramble: /).first()).toBeVisible({ timeout: 60_000 });
+    await page.keyboard.down("Space");
+    await page.waitForTimeout(700);
+    await page.keyboard.up("Space");
+    const stage = page.locator("[data-cubby-bld]");
+    await expect(stage).toHaveAttribute("data-cubby-bld", "memo");
+    // No memo split: the blindfold goes on after a short memo pose.
+    await expect(stage).toHaveAttribute("data-cubby-bld", "execute", { timeout: 5000 });
+    await page.keyboard.press("a");
+    await expect(stage).toHaveAttribute("data-cubby-bld", "finish");
+    await expect(stage).toHaveCount(0, { timeout: 8000 });
+  });
+
   test("phones get a floating dock above the tab bar", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await returningCuber(page);
