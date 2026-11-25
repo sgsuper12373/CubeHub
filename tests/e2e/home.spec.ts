@@ -70,6 +70,8 @@ test.describe("guest order", () => {
 
 test.describe("member", () => {
   test.skip(!hasE2eUsers(), "E2E_USER_A/B credentials not set");
+  // One account, one Home layout: these must not run side by side.
+  test.describe.configure({ mode: "serial" });
   test.use({ viewport: { width: 1280, height: 800 }, storageState: E2E_USERS[0].state });
 
   test("the sidebar's account menu opens without crashing, and its links work", async ({ page }) => {
@@ -81,7 +83,8 @@ test.describe("member", () => {
     await expect(menu.getByText(/^@/)).toBeVisible();
     await expect(page.getByText("Something went wrong")).toHaveCount(0);
     await menu.getByRole("menuitem", { name: "Profile", exact: true }).click();
-    await expect(page).toHaveURL(/\/profile\//);
+    // /profile redirects on the server to your own profile; slow under a full parallel run.
+    await expect(page).toHaveURL(/\/profile\//, { timeout: 15_000 });
     expect(errors).toEqual([]);
   });
 
@@ -101,7 +104,7 @@ test.describe("member", () => {
       await page.keyboard.press("Escape");
     };
     await page.goto("/home");
-    await expect(card).toBeVisible();
+    await expect(card).toBeVisible({ timeout: 15_000 }); // the rail streams in
     await toggle(false);
     try {
       await expect(card).toHaveCount(0);

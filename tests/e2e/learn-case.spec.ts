@@ -55,7 +55,8 @@ test("a card opens its case in a side panel, and Back closes it", async ({ page 
   await expect(page).toHaveURL(/\/learn\/333\/pll\?case=1$/);
   // The panel is named by its title; its section headings are h2s too.
   const panel = page.getByRole("dialog");
-  await expect(page.getByRole("dialog", { name })).toBeVisible();
+  // The panel loads its case on the server; give it time under a full parallel run.
+  await expect(page.getByRole("dialog", { name })).toBeVisible({ timeout: 15_000 });
   await expect(panel.getByRole("link", { name: "Full page" })).toHaveAttribute("href", "/learn/333/pll/1");
 
   // → moves to the next case within the panel

@@ -5,6 +5,24 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — e2e: steadier signed-in Home and Learn side-panel tests
+
+**Request:** Full `test:e2e:prod` before handing over.
+
+### Changed
+
+- `home.spec.ts`: the member tests run serially (one account, one Home layout); the `/profile` redirect and the
+  streamed rail get 15 s.
+- `learn-case.spec.ts`: the side panel gets 15 s (it loads its case on the server).
+
+### Verified
+
+Full run: 115 passed, 1 failed. The failure is `clubs.spec` "posts…": the test account hit the live 10-posts-a-day
+limit (`rate_limited`) after today's many runs; known, resets daily. Earlier: the three timing failures pass
+alone and in the full run after this change.
+
+---
+
 ## 2026-11-25 — Daily scramble: share and streak
 
 **Request:** Build the next items (todo: daily scramble, later).
