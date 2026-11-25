@@ -1,14 +1,16 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
-import { timerState } from "@/components/cubby/companion-actions";
+import { startPageTour, timerState } from "@/components/cubby/companion-actions";
 import { CubbyDock } from "@/components/cubby/dock";
 import { getCubbyRenderer } from "@/components/cubby/renderer-instance";
+import { TourOverlay } from "@/components/cubby/tour-overlay";
 import { contentFor } from "@/content/cubby";
 import { isQuietPhase } from "@/lib/companion/director";
-import { companionPageFor } from "@/lib/companion/pages";
+import { noteVisit } from "@/lib/companion/memory";
+import { companionPageFor, type CompanionPage } from "@/lib/companion/pages";
 import { loadLocalRecord, parseRecord } from "@/lib/companion/record";
 import { useCompanionStore } from "@/stores/companion-store";
 import { isOverlayOpen } from "@/stores/overlay-store";
@@ -42,10 +44,19 @@ export default function CompanionRoot() {
     useCompanionStore.getState().hydrate(loadLocalRecord() ?? parseRecord(null));
   }, []);
 
+  // Page entry: remember the visit, then (after a second, so the page settles)
+  // start the page's tour if it's new to this cuber.
+  const visit = useRef<{ pathname: string; previous: number | null } | null>(null);
   useEffect(() => {
     if (!hydrated) return;
     const page = companionPageFor(pathname);
     useCompanionStore.getState().setPage(page, contentFor(page));
+    if (!page) return;
+    // StrictMode runs this twice in development: keep the first reading of the previous visit.
+    if (visit.current?.pathname !== pathname) visit.current = { pathname, previous: noteVisit(page, Date.now()) };
+    const previous = visit.current.previous;
+    const id = window.setTimeout(() => onPageEntry(page, previous), 1000);
+    return () => window.clearTimeout(id);
   }, [hydrated, pathname]);
 
   // The theme input (the SVG reads its colours from tokens; a Rive file would use this).
@@ -79,5 +90,17 @@ export default function CompanionRoot() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  return <CubbyDock placement="floating" />;
+  return (
+    <>
+      <CubbyDock placement="floating" />
+      <TourOverlay />
+    </>
+  );
+}
+
+/** What Cubby does on arriving at a page: a new tour first; greetings come with step 7. */
+function onPageEntry(page: CompanionPage, previousVisit: number | null): void {
+  void previousVisit;
+  if (useCompanionStore.getState().page !== page) return;
+  startPageTour(false);
 }
