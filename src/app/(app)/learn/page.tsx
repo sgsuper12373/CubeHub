@@ -3,6 +3,8 @@ import { PuzzleCard } from "@/components/learn/puzzle-card";
 import { HeroSection } from "@/components/learn/hero-section";
 import { FeatureSection } from "@/components/learn/feature-section";
 import { Metadata } from "next";
+import { Suspense } from "react";
+import { NextSetBanner } from "@/components/learn/next-set-banner";
 
 export const metadata: Metadata = {
   title: "Learn | CuberHub",
@@ -22,6 +24,10 @@ export default async function LearnPage() {
 
       <div className="container relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-24">
         <HeroSection />
+
+        <Suspense fallback={null}>
+          <NextSetBanner />
+        </Suspense>
 
         <div className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

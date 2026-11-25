@@ -24,7 +24,7 @@ there. `Enter` presses its first button; `Space` belongs to the timer only. The 
 | Daily scramble | `components/daily/daily-card.tsx` | Client card; hidden when there's no daily. See `timer.md` → Daily scramble |
 | Your stats | `stats-card.tsx` | Read in the browser through the timer's repository, like `/stats` |
 | Streak and daily goal | `streak-card.tsx` | Goal is per device (`cubehub.home.dailyGoal`) |
-| Continue learning | `learning-card.tsx` | The series with the most cases learned that isn't finished |
+| Continue learning | `learning-card.tsx` | The series in progress; when none is, the next set on the path (`lib/learn/next-set.ts`) |
 | Drill queue | `drill-card.tsx` | Due count, slowest cases, a switch suggestion |
 | Next achievement | `achievement-card.tsx` | The unearned badge you're closest to (`lib/home/next-achievement.ts`) |
 | Cubby's tip | `tip-card.tsx` | One tip a day from `src/content/cubby-tips.json`, dismissible for the day |

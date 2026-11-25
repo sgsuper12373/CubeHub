@@ -18,15 +18,13 @@ its completed history, is in git.
 
 Ordered by value for effort.
 
-1. **"What to learn next."** Suggest the next set from what's marked learned and the Drill
-   Lab's weakest cases.
-2. **Daily scramble, later:** streaks, a share card (`src/lib/timer/share-card.ts`), a Friends
+1. **Daily scramble, later:** streaks, a share card (`src/lib/timer/share-card.ts`), a Friends
    tab, 2x2 and OH dailies, and a scheduled job that loads the next scramble batch.
-3. **Smart cube and Stackmat support.** cubing.js has Bluetooth for GAN and other smart cubes.
+2. **Smart cube and Stackmat support.** cubing.js has Bluetooth for GAN and other smart cubes.
    This is bigger work, and Chrome/Android only.
-4. **Database tidy-up (later):** 16 foreign keys without indexes and 21 unused indexes, per the
+3. **Database tidy-up (later):** 16 foreign keys without indexes and 21 unused indexes, per the
    performance advisor. Revisit once there are real users, starting with
    `drill_attempts.algorithm_id`.
-5. **Challenge on the same scramble** from Compare: the first slice of Compete (founder,
+4. **Challenge on the same scramble** from Compare: the first slice of Compete (founder,
    2026-10-15: later).
-6. **WCA ID verification** (WCA OAuth). Until then, IDs show only to their owner.
+5. **WCA ID verification** (WCA OAuth). Until then, IDs show only to their owner.

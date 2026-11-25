@@ -4,6 +4,8 @@ import { HomeCard } from "@/components/home/home-card";
 import { LearningStartCard } from "@/components/home/static-cards";
 import { Progress } from "@/components/ui/progress";
 import { getHomeSummary, getNextUnlearnedCase, pickContinueSeries } from "@/lib/home/dal";
+import { nextSetLine } from "@/lib/learn/next-set";
+import { getNextSet } from "@/lib/learn/next-set-data";
 
 /**
  * Continue learning (docs/home-plan.md → card 4): the series in progress,
@@ -13,7 +15,19 @@ import { getHomeSummary, getNextUnlearnedCase, pickContinueSeries } from "@/lib/
 export async function LearningCard({ username }: { username: string }) {
   const summary = await getHomeSummary(username);
   const series = pickContinueSeries(summary.learning);
-  if (!series) return <LearningStartCard />;
+  if (!series) {
+    // Nothing in progress: suggest the next set on the path (lib/learn/next-set.ts).
+    const next = await getNextSet(username);
+    if (!next || next.kind === "start") return <LearningStartCard />;
+    return (
+      <HomeCard id="learning" title="Continue learning" seeAll={{ href: "/learn", label: "All of Learn" }}>
+        <p className="text-sm text-foreground">{nextSetLine(next)}</p>
+        <Link href={`/learn/${next.puzzle}/${next.slug}`} className="mt-3 inline-block text-sm font-medium text-primary hover:underline">
+          Open {next.name}
+        </Link>
+      </HomeCard>
+    );
+  }
 
   const next = await getNextUnlearnedCase(series.puzzle, series.slug);
   const href = `/learn/${series.puzzle}/${series.slug}`;

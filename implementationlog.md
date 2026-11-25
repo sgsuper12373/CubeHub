@@ -5,6 +5,26 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — "What to learn next" on /learn and Home
+
+**Request:** Build the next items (todo idea "What to learn next").
+
+### Added
+
+- `src/lib/learn/next-set.ts` (pure): continue the set furthest along, else the next set on the puzzle's path
+  after the last one finished (3x3 PLL → OLL; 2x2 Beginner → Ortega → CLL → EG-1 → EG-2), else start at PLL.
+- `src/lib/learn/next-set-data.ts`: the cuber's progress plus set names from the cached Learn index.
+- `src/components/learn/next-set-banner.tsx`: "Up next for you" on `/learn`, signed in only.
+- `learning-card.tsx`: with nothing in progress, Home suggests the next set instead of the generic PLL card.
+- Tests: `tests/unit/next-set.test.ts` (5), `tests/e2e/learn-next.spec.ts` (guest none; member link works).
+- Docs: `decisions.md`, `home.md`, `todo.md`.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`; learn-next and home specs 11/11; looked at the banner.
+
+---
+
 ## 2026-11-25 — Installable app and offline timer (PWA)
 
 **Request:** Build the next items (todo idea 1).
