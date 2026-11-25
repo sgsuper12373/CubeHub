@@ -115,17 +115,24 @@ describe("SvgCubbyMachine", () => {
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
-  it("destroy stops timers and listeners", () => {
+  it("destroy stops the one-shot and event listeners, and is safe to repeat", () => {
     const m = new SvgCubbyMachine();
     const onEvent = vi.fn();
     m.onEvent(onEvent);
     m.fire("celebrate");
     onEvent.mockClear();
     m.destroy();
+    m.destroy();
+    expect(m.getSnapshot().oneShot).toBeNull();
     vi.advanceTimersByTime(5000);
     m.fire("wave");
-    m.setInput("mood", "happy");
     expect(onEvent).not.toHaveBeenCalled();
-    expect(m.getSnapshot().inputs.mood).toBe("idle");
+  });
+
+  it("still works after destroy (StrictMode runs cleanups early)", () => {
+    const m = new SvgCubbyMachine();
+    m.destroy();
+    m.setInput("mood", "happy");
+    expect(m.getSnapshot().inputs.mood).toBe("happy");
   });
 });

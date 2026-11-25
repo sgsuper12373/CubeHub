@@ -66,7 +66,7 @@ export interface CubbyRenderer {
   fire(trigger: CubbyTrigger): void;
   /** Subscribe to renderer events; returns the unsubscribe. */
   onEvent(cb: (event: CubbyEvent) => void): () => void;
-  /** Stop timers and listeners. The renderer can't be used afterwards. */
+  /** Stop timers and event listeners and return to Idle. Safe to call twice (StrictMode runs cleanups early). */
   destroy(): void;
   /** The component that draws this renderer. Callers render it and never know which renderer it is. */
   readonly View: ComponentType<CubbyViewProps>;

@@ -13,7 +13,6 @@ export class SvgCubbyMachine {
   private readonly eventListeners = new Set<(event: CubbyEvent) => void>();
   private timer: ReturnType<typeof setTimeout> | null = null;
   private nextId = 1;
-  private destroyed = false;
 
   getSnapshot = (): SvgState => this.state;
 
@@ -27,7 +26,6 @@ export class SvgCubbyMachine {
   }
 
   fire(trigger: CubbyTrigger): void {
-    if (this.destroyed) return;
     const previous = this.state.oneShot;
     const id = this.nextId++;
     if (this.timer) clearTimeout(this.timer);
@@ -46,16 +44,24 @@ export class SvgCubbyMachine {
     return () => this.eventListeners.delete(cb);
   }
 
+  /**
+   * Stops the one-shot timer, drops event listeners and returns to Idle.
+   * Safe to call more than once, and the machine still works afterwards:
+   * React's StrictMode runs effect cleanups early in development, so an
+   * owner's `useEffect(() => () => r.destroy())` must not break a renderer
+   * that is about to be used again. View subscriptions unsubscribe themselves.
+   */
   destroy(): void {
-    this.destroyed = true;
     if (this.timer) clearTimeout(this.timer);
     this.timer = null;
-    this.storeListeners.clear();
     this.eventListeners.clear();
+    if (this.state.oneShot) {
+      this.state = { ...this.state, oneShot: null };
+      for (const l of this.storeListeners) l();
+    }
   }
 
   private dispatch(action: SvgAction): void {
-    if (this.destroyed) return;
     const next = reduce(this.state, action);
     if (next === this.state) return;
     this.state = next;

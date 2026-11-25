@@ -428,6 +428,35 @@ html:has(nav[aria-label="Site"]) {
 
 /* Glow only in dark themes; it smudges on light backgrounds. */
 .dark .chm--glow .chm-letters { filter: drop-shadow(0 0 5px color-mix(in oklch, var(--chm-c), transparent 50%)); }
+
+/* ── Cubby, the companion (src/components/cubby/art/) ──────────────────────
+   Like the CH mark: the front stickers take --cubby-c (default --primary),
+   the top --cubby-h (default --foreground), the side a darker --cubby-c, so
+   Cubby re-stickers itself with the theme. The plastic, ink and eye whites
+   are the cube tokens. Final art keeps these class names. */
+.cubby-art {
+  --cubby-c: var(--primary);
+  --cubby-h: var(--foreground);
+  --cubby-plastic: var(--sticker-outline);
+  --cubby-rim: color-mix(in oklch, var(--foreground) 45%, var(--background));
+}
+.cubby-plastic { fill: var(--cubby-plastic); stroke: var(--cubby-rim); stroke-width: 1.4; }
+.cubby-front path { fill: var(--cubby-c); }
+.cubby-top path { fill: color-mix(in oklch, var(--cubby-h), white 8%); }
+.cubby-side path { fill: color-mix(in oklch, var(--cubby-c), black 38%); }
+.cubby-eye-white { fill: var(--sticker-d); stroke: var(--cubby-plastic); }
+.cubby-ink { fill: var(--cubby-plastic); }
+.cubby-ink-line { fill: none; stroke: var(--cubby-plastic); stroke-linecap: round; stroke-linejoin: round; }
+.cubby-shine { fill: var(--sticker-d); }
+.cubby-tooth { fill: var(--sticker-d); }
+.cubby-limb { fill: none; stroke: var(--cubby-rim); stroke-linecap: round; }
+.cubby-hand { fill: var(--cubby-rim); }
+.cubby-blindfold { fill: var(--cubby-plastic); stroke: var(--cubby-rim); stroke-width: 1.2; }
+.cubby-blindfold-tail { fill: none; stroke: var(--cubby-plastic); stroke-linecap: round; }
+.cubby-mini-u { fill: var(--sticker-u); stroke: var(--cubby-plastic); stroke-width: 0.8; }
+.cubby-mini-f { fill: var(--sticker-f); stroke: var(--cubby-plastic); stroke-width: 0.8; }
+.cubby-mini-r { fill: var(--sticker-r); stroke: var(--cubby-plastic); stroke-width: 0.8; }
+.cubby-memo { fill: var(--muted-foreground); font-family: var(--font-mono, ui-monospace); font-weight: 600; }
 .dark .chm--glow .chm-wire,
 .dark .chm--glow .chm-nodes { filter: drop-shadow(0 0 3px var(--chm-c)); }
 
