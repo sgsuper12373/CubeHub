@@ -1,6 +1,6 @@
 # Companion plan: Cubby v1
 
-> **Status:** in progress on `feat/cubby` (from 2026-11-26) · Sumit Garad
+> **Status:** steps 1–9 done on `feat/cubby` (2026-11-26, not merged); step 10 on `feat/bld-mode` · Sumit Garad
 > **For:** Claude Code. Read `AGENTS.md`, `docs/architecture.md` (timer rules) and the spec,
 > `docs/cubby-cubing-companion.md` (repo copy of the Claude Doc), first.
 > **Related:** `docs/app-shell-plan.md` (the sidebar slot), `docs/home-plan.md` (Cubby's tip card),
@@ -48,7 +48,7 @@ app code ──emit──▶ companion bus ──▶ CompanionProvider ──▶
 Each step is one commit on `feat/cubby` with `npm run validate` and `npm run check:colors` green.
 `npm run test:e2e:prod` runs at the end of the branch, with the flag on and off.
 
-### 1. Renderer interface and the SVG renderer
+### 1. ✅ Renderer interface and the SVG renderer
 
 - `src/lib/companion/renderer.ts`: the input names from the spec (`mood`, `isTalking`, `pointAt`,
   `isThinking`, `bldPhase`, `theme`), the triggers (`wave`, `celebrate`, `wince`, `thumbsUp`), and
@@ -63,7 +63,7 @@ Each step is one commit on `feat/cubby` with `npm run validate` and `npm run che
   flaps, `bldPhase`), renderer (`onEvent` gets `triggerEnd`, `destroy` stops listeners).
 - **Done when:** a renderer can be created, driven and destroyed without React knowing which one.
 
-### 2. Cubby v0 art and the review page
+### 2. ✅ Cubby v0 art and the review page
 
 - `src/components/cubby/art/`: `body.tsx` (rounded 3x3, front face of stickers), `eyes.tsx`,
   `brows.tsx`, `mouth.tsx`, `arms.tsx`, `legs.tsx`, each exporting its variants, and `manifest.ts`
@@ -78,7 +78,7 @@ Each step is one commit on `feat/cubby` with `npm run validate` and `npm run che
   expression (no throw), `aria-hidden` on the SVG.
 - **Done when:** `/dev/cubby` shows all states and triggers, and the art recolours with the theme.
 
-### 3. Director and content model
+### 3. ✅ Director and content model
 
 - `src/lib/companion/director.ts`: `isQuietPhase(phase, inInspection)`; `decide(candidate, ctx)` with
   the hard rules: nothing while the timer isn't idle/stopped or during inspection; at most one
@@ -94,7 +94,7 @@ Each step is one commit on `feat/cubby` with `npm run validate` and `npm run che
 - **Tests:** every quiet rule and cap; every content file passes the validator; `{name}` filling;
   greeting conditions; page matching.
 
-### 4. The dock
+### 4. ✅ The dock
 
 - Desktop: the sidebar's reserved slot renders `CubbyDock` (56 px avatar; in Rail, the avatar alone).
   Phones: a floating button above the bottom nav. Both hidden while Focus mode hides chrome.
@@ -105,7 +105,7 @@ Each step is one commit on `feat/cubby` with `npm run validate` and `npm run che
   `Shift+/` only from the dock button (see decisions).
 - **Tests:** unit for the dot rule; e2e opens the menu.
 
-### 5. Tour engine
+### 5. ✅ Tour engine
 
 - `src/lib/companion/tours.ts`: progress `{ page: lastSeenVersion }` (guests: `localStorage`;
   members: `user_settings.companion`, step 8), full vs What's new steps (`since > lastSeen`),
@@ -120,7 +120,7 @@ Each step is one commit on `feat/cubby` with `npm run validate` and `npm run che
 - **Tests:** unit for step selection, skipping missing targets, progress; e2e for a full tour with
   keyboard and an interactive step.
 
-### 6. The four beta tours
+### 6. ✅ The four beta tours
 
 - `src/content/cubby/{timer,learn,learn-series,drill,playground}.json`, copy from the spec's table,
   checked against the real UI. `data-tour` markers added to the elements they point at.
@@ -129,7 +129,7 @@ Each step is one commit on `feat/cubby` with `npm run validate` and `npm run che
 - **Tests:** every step's `target` exists as a `data-tour` marker in `src/` (a unit test greps for
   them); e2e runs the Timer tour to the end.
 
-### 7. Greetings and reactions
+### 7. ✅ Greetings and reactions
 
 - Greetings on page entry, 1 s after load, auto-dismissed after ~4 s, typed at ~30 ms per character
   (instant with reduced motion; skippable by click), real DOM text in an `aria-live="polite"` card.
@@ -140,7 +140,7 @@ Each step is one commit on `feat/cubby` with `npm run validate` and `npm run che
 - **Tests:** unit for the reaction rules and the 60-minute rule; e2e: a greeting appears once per
   session and never while the timer runs.
 
-### 8. Settings
+### 8. ✅ Settings
 
 - `CompanionSettings`: mode on/quiet/off, name (default Cubby, 1–20 characters), auto tours,
   reactions all/pb/off, inspection coach (stored, off by default; the coach itself is v1.5),
@@ -151,7 +151,7 @@ Each step is one commit on `feat/cubby` with `npm run validate` and `npm run che
 - UI: a Cubby section in Settings (members) and a settings dialog from the dock (everyone).
 - **Tests:** parse/merge, name validation, migration SQL test file.
 
-### 9. Home tip card and the landing page
+### 9. ✅ Home tip card and the landing page
 
 - Home's Cubby's tip card shows the v0 Cubby (static pose) instead of the icon, behind the flag.
 - Landing step 10: Meet Cubby with three poses (waving, celebrating, focused with a blindfold) and
@@ -171,6 +171,17 @@ Each step is one commit on `feat/cubby` with `npm run validate` and `npm run che
   finish (success: celebrate; DNF: shrug and "BLD is brutal. Next one."). The one exception to the
   quiet rules, off with the BLD-animation setting.
 - **Tests:** unit for the split logic and memo storage; e2e for a BLD solve with a split.
+
+## Running it
+
+- `NEXT_PUBLIC_SHOW_CUBBY=1 npm run dev`, then any app page. Tours start on each page's first visit;
+  `/dev/cubby` (unlinked, 404 without the flag) shows every expression, trigger and input.
+- Reset what Cubby remembers: the dock → Settings… → Reset tours, or clear `cubehub.companion.*`
+  in localStorage and sessionStorage.
+- E2E: `NEXT_PUBLIC_SHOW_CUBBY=1 npm run test:e2e:prod -- tests/e2e/cubby.spec.ts`; the rest of the
+  suite runs with the flag off (fresh browsers would get first-visit tours).
+- Before turning the flag on for everyone: apply `20261126000000_companion.sql` (members' settings
+  and tour progress), then run `supabase/tests/companion_test.sql`.
 
 ## Accessibility (requirements)
 

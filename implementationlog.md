@@ -5,6 +5,47 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-26 — Cubby companion v1 (branch `feat/cubby`, unattended run)
+
+**Request:** Unattended run: Cubby v1, everything that doesn't need the final art, behind `NEXT_PUBLIC_SHOW_CUBBY`;
+plan first, one commit per step, validate and check:colors after each, e2e at the end of the branch.
+
+### Added (one commit per step, plan in `docs/companion-plan.md`)
+
+0. `docs/companion-plan.md` and a repo copy of the spec, `docs/cubby-cubing-companion.md`.
+1. `lib/companion/renderer.ts` (`CubbyRenderer`, the spec's input names), `svg-state.ts` (pure reducer and
+   `poseOf`), `svg-machine.ts`; `components/cubby/svg-renderer.tsx`, `create-renderer.ts`.
+2. v0 art in `components/cubby/art/` (body, eyes, brows, mouth, arms, legs, BLD props, `manifest.ts`), theme
+   colours in `globals.css`, `/dev/cubby` review page (404 without the flag).
+3. `lib/companion/bus.ts`, `director.ts` (quiet rules, caps, the 60-minute stretch), `content.ts`, `pages.ts`,
+   `settings.ts`, `memory.ts`.
+4. Dock (`dock.tsx`) in the sidebar slot, floating on phones and when the sidebar is hidden; menu; unseen dot;
+   `companion-store.ts`; lazy `companion-root.tsx` via `cubby-mount.tsx`.
+5. Tour engine: `tour-overlay.tsx`, `lib/companion/tours.ts`, `placement.ts`.
+6. Content: `src/content/cubby/{timer,learn,learn-series,drill,playground}.json`; `data-tour` markers on the
+   four pages; bus emits in the timer, Drill Lab, Playground and Learn.
+7. `speech-bubble.tsx`, `use-reactions.ts`, greetings on page entry; emits for PB, penalty, solve, mis-stop,
+   case learned, error toasts.
+8. Settings: `companion-settings-form.tsx`, sheet, Settings page section, Ctrl+K "Cubby settings";
+   `lib/companion/{actions,dal,record}.ts`; migration file `20261126000000_companion.sql` (not applied) and
+   `supabase/tests/companion_test.sql`.
+9. Cubby's face on Home's tip card; landing `meet-cubby.tsx`.
+- `tests/e2e/cubby.spec.ts`; fix: a tour skipped after asking isn't offered again.
+
+### Verified
+
+- `npm run validate` (779 unit tests) and `check:colors` after every step.
+- SQL test on a local Postgres (podman), 7/7 PASS. Not run on the live project.
+- E2E in a scratch worktree (a local `next start` was serving this repo's `.next` on port 3000):
+  flag on, `cubby.spec.ts` 12 passed; flag off, full suite 112 passed, 1 failed (clubs posting: the test
+  account's live limit of 10 posts a day, "You've posted 10 times today"), 10 skipped (flag-on tests).
+
+### Decided
+
+See `docs/decisions.md` → Cubby.
+
+---
+
 ## 2026-11-25 — Fix: the sidebar account menu crashed the page (Base UI error #31)
 
 **Request:** Production showed "Something went wrong" when the founder opened the profile options.

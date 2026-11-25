@@ -316,7 +316,7 @@ Settings
 
 Reserve the bottom "Cubby" item and a `data-tour="sidebar"` attribute on the `<nav>`. The companion
 spec uses the sidebar as one of its tour targets. Render nothing for the item until the companion's
-feature flag is on.
+feature flag is on. *(Cubby's dock fills it behind `NEXT_PUBLIC_SHOW_CUBBY`: `docs/companion-plan.md` step 4.)*
 
 ## 5. Timer: retiring Zen mode
 
