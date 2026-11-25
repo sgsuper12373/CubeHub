@@ -55,9 +55,14 @@ export function shouldAutoStart(content: PageContent, progress: TourProgress | u
   return tourKindFor(content, progress);
 }
 
-/** Progress after a tour ends. Finishing or skipping both mark the version seen. */
-export function finishTour(content: PageContent, progress: TourProgress | undefined, how: "done" | "skipped"): TourProgress {
-  return { seen: content.tourVersion, skipped: how === "skipped", offered: how === "skipped" ? false : (progress?.offered ?? false) };
+/**
+ * Progress after a tour ends. Finishing or skipping both mark the version
+ * seen. Skipping a tour that started by itself earns one more offer (the
+ * dock's dot); skipping one the cuber asked for doesn't: Cubby stays quiet.
+ */
+export function finishTour(content: PageContent, progress: TourProgress | undefined, how: "done" | "skipped", prompted = false): TourProgress {
+  if (how === "done") return { seen: content.tourVersion, skipped: false, offered: progress?.offered ?? false };
+  return { seen: content.tourVersion, skipped: true, offered: prompted };
 }
 
 /**

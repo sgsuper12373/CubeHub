@@ -110,7 +110,7 @@ export const useCompanionStore = create<CompanionStore>()((set, get) => {
       if (!tour) return;
       set({ tour: null });
       if (content && content.page === tour.page) {
-        save({ ...record, tours: { ...record.tours, [tour.page]: finishTour(content, record.tours[tour.page], how) } });
+        save({ ...record, tours: { ...record.tours, [tour.page]: finishTour(content, record.tours[tour.page], how, tour.prompted) } });
       }
     },
 

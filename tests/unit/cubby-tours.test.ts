@@ -44,6 +44,8 @@ describe("tour selection", () => {
     const offered = markOffered(skipped);
     expect(hasUnseen(content, offered)).toBe(false);
     expect(hasUnseen(content, finishTour(content, undefined, "done"))).toBe(false);
+    // A tour the cuber asked for and then skipped isn't offered again.
+    expect(hasUnseen(content, finishTour(content, offered, "skipped", true))).toBe(false);
   });
 
   it("the dot shows for an unseen tour, never for a page without one", () => {
