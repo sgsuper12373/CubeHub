@@ -1,0 +1,121 @@
+- generic [ref=f1e1]:
+  - region "Notifications"
+  - radiogroup "Theme (dev)" [ref=f1e348]:
+    - radio "Slate" [ref=f1e349]
+    - radio "Paper" [ref=f1e350]
+    - radio "System" [checked] [ref=f1e351]
+  - generic [ref=f1e6]:
+    - complementary [ref=f1e7]:
+      - generic [ref=f1e8]:
+        - link "CuberHub home" [ref=f1e352] [cursor=pointer]:
+          - /url: /home
+          - generic [ref=f1e10]: cuberhub
+        - button "Search" [ref=f1e353]
+      - navigation "Main" [ref=f1e354]:
+        - generic [ref=f1e57]:
+          - link "Home" [ref=f1e355] [cursor=pointer]:
+            - /url: /home
+          - link "Timer" [ref=f1e356] [cursor=pointer]:
+            - /url: /timer
+          - link "Stats" [ref=f1e357] [cursor=pointer]:
+            - /url: /stats
+        - generic [ref=f1e72]:
+          - paragraph [ref=f1e73]: Practice
+          - generic [ref=f1e75]:
+            - link "Learn" [ref=f1e358] [cursor=pointer]:
+              - /url: /learn
+            - button "Show Learn topics" [ref=f1e359]
+          - link "Drill Lab" [ref=f1e360] [cursor=pointer]:
+            - /url: /learn/333/drill
+          - link "Playground" [ref=f1e361] [cursor=pointer]:
+            - /url: /playground
+        - generic [ref=f1e95]:
+          - paragraph [ref=f1e96]: Community
+          - link "Clubs" [ref=f1e362] [cursor=pointer]:
+            - /url: /clubs
+          - link "People" [ref=f1e363] [cursor=pointer]:
+            - /url: /people
+      - generic [ref=f1e110]:
+        - link "Settings" [ref=f1e364] [cursor=pointer]:
+          - /url: /settings
+        - link "Sign in" [ref=f1e365] [cursor=pointer]:
+          - /url: /login
+        - generic [ref=f1e121]:
+          - button "Collapse sidebar to icons" [ref=f1e366]:
+            - generic [ref=f1e126]: Collapse
+          - button "Hide sidebar" [ref=f1e367]
+    - main [ref=f1e131]:
+      - generic [ref=f1e132]:
+        - generic [ref=f1e133]:
+          - heading "Welcome to CuberHub" [level=1] [ref=f1e368]
+          - generic [ref=f1e135]:
+            - link "Start 3x3 session Enter" [ref=f1e369] [cursor=pointer]:
+              - /url: /timer
+              - text: Start 3x3 session
+              - generic [ref=f1e137]: Enter
+            - link "Open Drill Lab" [ref=f1e370] [cursor=pointer]:
+              - /url: /learn/333/drill
+            - link "Start learning" [ref=f1e371] [cursor=pointer]:
+              - /url: /learn
+        - button "Customize" [active] [ref=f1e372]
+        - generic [ref=f1e154]:
+          - generic [ref=f1e155]:
+            - region "Start here" [ref=f1e373]:
+              - heading "Start here" [level=2] [ref=f1e374]
+              - generic [ref=f1e159]:
+                - list [ref=f1e160]:
+                  - listitem [ref=f1e161]:
+                    - 'link "Step 1: Time your first solve" [ref=f1e375] [cursor=pointer]':
+                      - /url: /timer
+                      - generic [ref=f1e165]:
+                        - generic [ref=f1e166]: "Step 1:"
+                        - text: Time your first solve
+                  - listitem [ref=f1e167]:
+                    - 'link "Step 2: Learn your first PLL, in 3D" [ref=f1e376] [cursor=pointer]':
+                      - /url: /learn/333/pll
+                      - generic [ref=f1e171]:
+                        - generic [ref=f1e172]: "Step 2:"
+                        - text: Learn your first PLL, in 3D
+                  - listitem [ref=f1e173]:
+                    - 'link "Step 3: Turn a cube in the Playground" [ref=f1e377] [cursor=pointer]':
+                      - /url: /playground
+                      - generic [ref=f1e177]:
+                        - generic [ref=f1e178]: "Step 3:"
+                        - text: Turn a cube in the Playground
+                - paragraph [ref=f1e179]:
+                  - text: Everything works without an account.
+                  - link "Sign up" [ref=f1e378] [cursor=pointer]:
+                    - /url: /signup
+                  - text: to sync your solves across devices and join clubs.
+            - region "Continue learning" [ref=f1e379]:
+              - generic [ref=f1e182]:
+                - heading "Continue learning" [level=2] [ref=f1e380]
+                - link "All of Learn" [ref=f1e381] [cursor=pointer]:
+                  - /url: /learn
+              - generic [ref=f1e185]:
+                - paragraph [ref=f1e186]: "Start with PLL: 21 cases, the biggest jump for most cubers."
+                - link "Open PLL" [ref=f1e382] [cursor=pointer]:
+                  - /url: /learn/333/pll
+            - region "Playground" [ref=f1e383]:
+              - heading "Playground" [level=2] [ref=f1e384]
+              - generic [ref=f1e191]:
+                - paragraph [ref=f1e192]: "No cube to hand? Turn one in the browser: drag to turn, or type moves in notation."
+                - link "Open the Playground" [ref=f1e385] [cursor=pointer]:
+                  - /url: /playground
+          - region "What's new" [ref=f1e386]:
+            - heading "What's new" [level=2] [ref=f1e387]
+            - list [ref=f1e246]:
+              - listitem [ref=f1e247]:
+                - link [ref=f1e388] [cursor=pointer]:
+                  - /url: /home
+                  - paragraph [ref=f1e249]: A new Home and a sidebar
+                  - paragraph [ref=f1e250]: Start a session, drill your slow cases and pick up where you left off in Learn, all from one page.
+                - button "Dismiss \"A new Home and a sidebar\"" [ref=f1e389]
+              - listitem [ref=f1e255]:
+                - link [ref=f1e390] [cursor=pointer]:
+                  - /url: /learn/333/drill
+                  - paragraph [ref=f1e257]: Drill Lab, redesigned
+                  - paragraph [ref=f1e258]: A full-height layout, one toolbar, and options that stay out of the way.
+                - button "Dismiss \"Drill Lab, redesigned\"" [ref=f1e391]
+  - button "Open Next.js Dev Tools" [ref=f1e148] [cursor=pointer]
+  - alert [ref=f1e263]

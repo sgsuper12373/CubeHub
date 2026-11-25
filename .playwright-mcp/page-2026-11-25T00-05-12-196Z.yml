@@ -1,0 +1,203 @@
+- generic [ref=f3e1]:
+  - region "Notifications"
+  - radiogroup [aria-hidden] [ref=f3e729]:
+    - radio [ref=f3e730]: Slate
+    - radio [ref=f3e731]: Paper
+    - radio [checked] [ref=f3e732]: System
+  - generic [aria-hidden] [ref=f3e6]:
+    - complementary [ref=f3e7]:
+      - link [ref=f3e733] [cursor=pointer]:
+        - /url: /home
+      - navigation [ref=f3e734]:
+        - generic [ref=f3e51]:
+          - link [ref=f3e735] [cursor=pointer]:
+            - /url: /home
+            - generic [ref=f3e56]: Home
+          - link [ref=f3e736] [cursor=pointer]:
+            - /url: /timer
+            - generic [ref=f3e61]: Timer
+          - link [ref=f3e737] [cursor=pointer]:
+            - /url: /stats
+            - generic [ref=f3e65]: Stats
+        - generic [ref=f3e66]:
+          - paragraph [ref=f3e67]: Practice
+          - button [ref=f3e738]:
+            - generic [ref=f3e73]: Learn
+          - link [ref=f3e739] [cursor=pointer]:
+            - /url: /learn/333/drill
+            - generic [ref=f3e79]: Drill Lab
+          - link [ref=f3e740] [cursor=pointer]:
+            - /url: /playground
+            - generic [ref=f3e84]: Playground
+        - generic [ref=f3e85]:
+          - paragraph [ref=f3e86]: Community
+          - link [ref=f3e741] [cursor=pointer]:
+            - /url: /clubs
+            - generic [ref=f3e94]: Clubs
+          - link [ref=f3e742] [cursor=pointer]:
+            - /url: /people
+            - generic [ref=f3e100]: People
+      - generic [ref=f3e101]:
+        - link [ref=f3e743] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=f3e106]: Settings
+        - link [ref=f3e744] [cursor=pointer]:
+          - /url: /login
+          - generic [ref=f3e111]: Sign in
+        - button [ref=f3e745]:
+          - generic [ref=f3e116]: Collapse
+    - main [ref=f3e117]:
+      - generic [ref=f3e118]:
+        - generic [ref=f3e120]:
+          - generic [ref=f3e122]:
+            - combobox [ref=f3e746]
+            - button [ref=f3e747]: Modes
+            - combobox [ref=f3e748]
+            - button [ref=f3e749]
+            - button [ref=f3e750]
+            - button [ref=f3e751]
+            - button [disabled]
+            - button [ref=f3e752]
+          - generic [ref=f3e415]:
+            - button [ref=f3e753]
+            - button [ref=f3e754]
+            - button [ref=f3e755]
+        - generic [ref=f3e140]:
+          - generic [ref=f3e143]:
+            - paragraph [ref=f3e211]:
+              - generic [aria-hidden] [ref=f3e563]: L
+              - generic [aria-hidden] [ref=f3e608]: F
+              - generic [aria-hidden] [ref=f3e609]:
+                - text: R
+                - generic [ref=f3e610]: "2"
+              - generic [aria-hidden] [ref=f3e567]: B
+              - generic [aria-hidden] [ref=f3e611]:
+                - text: L
+                - generic [ref=f3e612]: "'"
+              - generic [aria-hidden] [ref=f3e613]: U
+              - generic [aria-hidden] [ref=f3e614]: R
+              - generic [aria-hidden] [ref=f3e615]:
+                - text: F
+                - generic [ref=f3e616]: "'"
+              - generic [aria-hidden] [ref=f3e617]:
+                - text: R
+                - generic [ref=f3e618]: "2"
+              - generic [aria-hidden] [ref=f3e619]:
+                - text: U
+                - generic [ref=f3e620]: "2"
+              - generic [aria-hidden] [ref=f3e621]:
+                - text: D
+                - generic [ref=f3e622]: "2"
+              - generic [aria-hidden] [ref=f3e623]: B
+              - generic [aria-hidden] [ref=f3e624]:
+                - text: U
+                - generic [ref=f3e625]: "2"
+              - generic [aria-hidden] [ref=f3e626]: F
+              - generic [aria-hidden] [ref=f3e627]:
+                - text: R
+                - generic [ref=f3e628]: "2"
+              - generic [aria-hidden] [ref=f3e629]:
+                - text: U
+                - generic [ref=f3e630]: "2"
+              - generic [aria-hidden] [ref=f3e631]: F
+              - generic [aria-hidden] [ref=f3e632]:
+                - text: L
+                - generic [ref=f3e633]: "2"
+              - generic [aria-hidden] [ref=f3e634]:
+                - text: D
+                - generic [ref=f3e635]: "'"
+              - generic [aria-hidden] [ref=f3e636]:
+                - text: B
+                - generic [ref=f3e637]: "'"
+              - generic [aria-hidden] [ref=f3e638]:
+                - text: R
+                - generic [ref=f3e639]: "'"
+            - generic [ref=f3e145]:
+              - button [ref=f3e757]
+              - button [ref=f3e758]
+              - button [ref=f3e759]
+              - button [ref=f3e760]
+          - generic [ref=f3e147]: Cube preview
+          - generic [ref=f3e150]:
+            - generic [ref=f3e151]: Timer
+            - button [ref=f3e761] [cursor=pointer]:
+              - generic [ref=f3e726]: "2.10"
+              - paragraph [ref=f3e728]: hold, then release to start
+          - generic [ref=f3e155]:
+            - generic [ref=f3e156]: Session Stats
+            - generic [ref=f3e254]:
+              - generic [ref=f3e255]:
+                - generic [ref=f3e256]: Solves
+                - generic [ref=f3e257]: 3/3
+              - generic [ref=f3e258]:
+                - generic [ref=f3e259]: Mean
+                - generic [ref=f3e260]: "6.24"
+              - generic [ref=f3e261]:
+                - generic [ref=f3e262]: Best
+                - generic [ref=f3e265]: "2.10"
+              - generic [ref=f3e266]:
+                - generic [ref=f3e267]: Worst
+                - generic [ref=f3e268]: "12.34"
+              - button [ref=f3e763]:
+                - generic [ref=f3e642]: Mo3
+                - generic [ref=f3e643]: "6.25"
+              - generic [ref=f3e273]:
+                - generic [ref=f3e274]: Ao5
+                - generic [ref=f3e275]: —
+              - generic [ref=f3e276]:
+                - generic [ref=f3e277]: Ao12
+                - generic [ref=f3e278]: —
+              - generic [ref=f3e279]:
+                - generic [ref=f3e280]: Ao50
+                - generic [ref=f3e281]: —
+              - generic [ref=f3e282]:
+                - generic [ref=f3e283]: Ao100
+                - generic [ref=f3e284]: —
+          - generic [ref=f3e177]:
+            - generic [ref=f3e178]: Recent Solves
+            - generic [ref=f3e285]:
+              - generic [ref=f3e649] [cursor=pointer]:
+                - generic [ref=f3e650]: "3."
+                - generic [ref=f3e651]: "12.34"
+                - generic:
+                  - button: "+2"
+                  - button: DNF
+                  - button
+              - generic [ref=f3e462] [cursor=pointer]:
+                - generic [ref=f3e463]: "2."
+                - generic [ref=f3e464]: "2.10"
+                - generic:
+                  - button: "+2"
+                  - button: DNF
+                  - button
+              - generic [ref=f3e287] [cursor=pointer]:
+                - generic [ref=f3e288]: "1."
+                - generic [ref=f3e289]: 4.30+
+                - generic:
+                  - button: "+2"
+                  - button: DNF
+                  - button
+          - generic [ref=f3e187]:
+            - generic [ref=f3e188]: Trend
+            - generic [ref=f3e292]:
+              - heading [level=3] [ref=f3e764]: Trend
+              - generic [ref=f3e294]: Ao5 — · 2 to go
+        - generic [ref=f3e655]:
+          - generic [ref=f3e659]:
+            - link [ref=f3e766] [cursor=pointer]:
+              - /url: /login
+              - text: Sign in
+            - text: to keep these 3 solves and earn achievements
+          - button [ref=f3e767]
+  - button "Open Next.js Dev Tools" [ref=f3e197] [cursor=pointer]
+  - alert [ref=f3e309]
+  - dialog "Search CuberHub" [ref=f3e771]:
+    - heading "Search CuberHub" [level=2] [ref=f3e772]
+    - generic [ref=f3e773]:
+      - generic [ref=f3e774]:
+        - combobox "Search CuberHub" [expanded] [active] [ref=f3e778]: oll 21
+        - generic [ref=f3e779]: Esc
+      - listbox "Results" [ref=f3e780]:
+        - 'option "OLL 21 3x3 OLL #21" [selected] [ref=f3e806] [cursor=pointer]':
+          - generic [ref=f3e807]: OLL 21
+          - generic [ref=f3e808]: "3x3 OLL #21"

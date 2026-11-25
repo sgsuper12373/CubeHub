@@ -1,0 +1,89 @@
+- generic [active] [ref=f3e1]:
+  - region "Notifications"
+  - radiogroup "Theme (dev)" [ref=f3e928]:
+    - radio "Slate" [ref=f3e929]
+    - radio "Paper" [checked] [ref=f3e930]
+    - radio "System" [ref=f3e931]
+  - generic [ref=f3e6]:
+    - complementary [ref=f3e7]:
+      - generic [ref=f3e8]:
+        - link "CuberHub home" [ref=f3e932] [cursor=pointer]:
+          - /url: /home
+          - generic [ref=f3e933]: cuberhub
+        - button "Search" [ref=f3e975]
+      - navigation "Main" [ref=f3e979]:
+        - generic [ref=f3e51]:
+          - link "Home" [ref=f3e980] [cursor=pointer]:
+            - /url: /home
+          - link "Timer" [ref=f3e981] [cursor=pointer]:
+            - /url: /timer
+          - link "Stats" [ref=f3e982] [cursor=pointer]:
+            - /url: /stats
+        - generic [ref=f3e66]:
+          - paragraph [ref=f3e67]: Practice
+          - generic [ref=f3e984]:
+            - link "Learn" [ref=f3e985] [cursor=pointer]:
+              - /url: /learn
+            - button "Show Learn topics" [ref=f3e990]
+          - link "Drill Lab" [ref=f3e993] [cursor=pointer]:
+            - /url: /learn/333/drill
+          - link "Playground" [ref=f3e994] [cursor=pointer]:
+            - /url: /playground
+        - generic [ref=f3e85]:
+          - paragraph [ref=f3e86]: Community
+          - link "Clubs" [ref=f3e995] [cursor=pointer]:
+            - /url: /clubs
+          - link "People" [ref=f3e996] [cursor=pointer]:
+            - /url: /people
+      - generic [ref=f3e101]:
+        - link "Settings" [ref=f3e997] [cursor=pointer]:
+          - /url: /settings
+        - link "Sign in" [ref=f3e998] [cursor=pointer]:
+          - /url: /login
+        - generic [ref=f3e112]:
+          - button "Collapse sidebar to icons" [ref=f3e999]:
+            - generic [ref=f3e116]: Collapse
+          - button "Hide sidebar" [ref=f3e1003]
+    - main [ref=f3e117]:
+      - generic [ref=f3e1007]:
+        - generic [ref=f3e1008]:
+          - generic [ref=f3e1009]:
+            - heading "Stats" [level=1] [ref=f3e1010]
+            - paragraph [ref=f3e1011]: Every solve you have kept, not just this session.
+          - button "Import and export" [ref=f3e1012]
+        - button "Import file" [ref=f3e1013]
+        - radiogroup "Event" [ref=f3e1015]:
+          - radio "3x3, 3 solves" [checked] [ref=f3e1016]:
+            - text: 3x3
+            - generic [ref=f3e1019]: "3"
+          - radio "2x2, 0 solves" [ref=f3e1020]:
+            - text: 2x2
+            - generic [ref=f3e1023]: "0"
+          - radio "4x4, 0 solves" [ref=f3e1024]:
+            - text: 4x4
+            - generic [ref=f3e1027]: "0"
+          - radio "5x5, 0 solves" [ref=f3e1028]:
+            - text: 5x5
+            - generic [ref=f3e1031]: "0"
+          - radio "3x3 OH, 0 solves" [ref=f3e1032]:
+            - text: 3x3 OH
+            - generic [ref=f3e1036]: "0"
+          - radio "Pyraminx, 0 solves" [ref=f3e1037]:
+            - text: Pyraminx
+            - generic [ref=f3e1041]: "0"
+          - radio "Skewb, 0 solves" [ref=f3e1042]:
+            - text: Skewb
+            - generic [ref=f3e1046]: "0"
+          - radio "Megaminx, 0 solves" [ref=f3e1047]:
+            - text: Megaminx
+            - generic [ref=f3e1051]: "0"
+        - generic [ref=f3e1052]:
+          - generic [ref=f3e1056]:
+            - heading "2 more 3x3 solves to unlock your stats" [level=2] [ref=f3e1057]
+            - paragraph [ref=f3e1058]: Your trend, personal bests, distribution, consistency and practice days all appear here. Already have a history in csTimer? Bring it in.
+          - generic [ref=f3e1059]:
+            - link "Open the timer" [ref=f3e1060] [cursor=pointer]:
+              - /url: /timer
+            - button "Import from csTimer" [ref=f3e1061]
+  - button "Open Next.js Dev Tools" [ref=f3e197] [cursor=pointer]
+  - alert [ref=f3e309]: Stats

@@ -105,3 +105,12 @@ export function usernameQuery(query: string): string | null {
   const q = query.trim().replace(/^@/, "");
   return /^[A-Za-z0-9_]{2,24}$/.test(q) ? q : null;
 }
+
+/**
+ * A display-name query ("Riya S"): 2–40 letters, digits, spaces, dots or
+ * hyphens, with nothing PostgREST's filter syntax would read as an operator.
+ */
+export function nameQuery(query: string): string | null {
+  const q = query.trim().replace(/^@/, "").replace(/\s+/g, " ");
+  return /^[\p{L}\p{N}_ .'-]{2,40}$/u.test(q) && !/[,()*%]/.test(q) ? q : null;
+}

@@ -13,6 +13,9 @@ const CHIP: Record<RoadmapStatus, string> = {
  * narrow columns of details made the section the page's tallest; /roadmap
  * always shows the details.
  */
+/** Items per column a phone sees in the compact (landing page) board. */
+const PHONE_ITEMS = 3;
+
 export function RoadmapBoard({ headingLevel = 3, compact = false }: { headingLevel?: 2 | 3; compact?: boolean }) {
   const Heading = headingLevel === 2 ? "h2" : "h3";
   return (
@@ -24,8 +27,16 @@ export function RoadmapBoard({ headingLevel = 3, compact = false }: { headingLev
           </Heading>
           <p className={cn("text-xs text-muted-foreground", compact && "hidden lg:block")}>{col.lead}</p>
           <ul className={cn("mt-4 flex flex-col", compact ? "gap-2 lg:gap-3" : "gap-3")}>
-            {roadmapColumn(col.id).map((item) => (
-              <li key={item.title} className={cn("rounded-2xl bg-muted/40", compact ? "px-3 py-2.5 lg:p-3" : "p-3")}>
+            {roadmapColumn(col.id).map((item, i) => (
+              <li
+                key={item.title}
+                className={cn(
+                  "rounded-2xl bg-muted/40",
+                  compact ? "px-3 py-2.5 lg:p-3" : "p-3",
+                  // Phones: the first three per column; the full list is on /roadmap.
+                  compact && i >= PHONE_ITEMS && "hidden md:block",
+                )}
+              >
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-sm font-semibold text-foreground">{item.title}</p>
                   <span
@@ -45,6 +56,11 @@ export function RoadmapBoard({ headingLevel = 3, compact = false }: { headingLev
               </li>
             ))}
           </ul>
+          {compact && roadmapColumn(col.id).length > PHONE_ITEMS && (
+            <p className="mt-2 text-xs text-muted-foreground md:hidden">
+              +{roadmapColumn(col.id).length - PHONE_ITEMS} more on the full roadmap
+            </p>
+          )}
         </section>
       ))}
     </div>

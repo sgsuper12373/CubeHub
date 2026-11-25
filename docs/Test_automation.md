@@ -21,7 +21,7 @@ How CubeHub is tested, locally and in CI. Updated 2026-10-13.
 - **End to end (`tests/e2e/`):** auth pages, the landing hero, the timer, cubing.js loading, the Drill Lab, the playground, profiles (signed out), case pages, the sitemap and robots.txt, 404s, and analytics staying off outside Vercel.
 - **Database (`supabase/tests/*.sql`):** RLS and trigger tests, run by hand in the SQL editor after the matching migration. Every row should say PASS. `implementationlog.md` (2026-09-30, Drill Lab) has the recipe for running them on a throwaway Postgres in podman.
 
-**Not covered:** signed-in flows (profile editing, photo upload, Mark Learned, typed solves in the cloud). They're checked by hand until there's a test account; see `todo.md`, "Next session".
+**Signed-in flows** run as two e2e test accounts (`E2E_USER_A/B_*` in `.env.local` and GitHub secrets): social, clubs, drill and Home. What's still checked by hand is in `founder-checklist.md` → "Check by hand".
 
 ## Data-dependent tests
 

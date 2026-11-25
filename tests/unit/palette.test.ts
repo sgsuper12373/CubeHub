@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { matchCommands, parseCaseQuery, staticCommands, usernameQuery } from "@/lib/palette";
+import { matchCommands, nameQuery, parseCaseQuery, staticCommands, usernameQuery } from "@/lib/palette";
 
 const nav = [
   { puzzle: "333", name: "3x3", series: [{ slug: "beginner", name: "Beginner method" }, { slug: "oll", name: "OLL" }, { slug: "pll", name: "PLL" }] },
@@ -43,5 +43,12 @@ describe("command palette", () => {
     expect(usernameQuery("@riya_cubes")).toBe("riya_cubes");
     expect(usernameQuery("Gb perm")).toBeNull();
     expect(usernameQuery("x")).toBeNull();
+  });
+
+  it("looks up display names, refusing anything PostgREST would read as syntax", () => {
+    expect(nameQuery("  Riya   S ")).toBe("Riya S");
+    expect(nameQuery("J. Doe")).toBe("J. Doe");
+    expect(nameQuery("a,b")).toBeNull();
+    expect(nameQuery("x")).toBeNull();
   });
 });

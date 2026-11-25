@@ -22,7 +22,9 @@ export function WaitlistForm({ source, className }: { source: WaitlistSource; cl
   const emailId = `${id}-email`;
   const noteId = `${id}-note`;
   const statusId = `${id}-status`;
-  const invalid = state?.ok === false && state.reason === "invalid";
+  // A new submit clears the last error at once, not when the answer arrives.
+  const failure = !pending && state?.ok === false ? state : null;
+  const invalid = failure?.reason === "invalid";
 
   return (
     <div className={cn("flex w-full max-w-md flex-col gap-2", className)} data-testid="waitlist">
@@ -51,7 +53,7 @@ export function WaitlistForm({ source, className }: { source: WaitlistSource; cl
             required
             disabled={pending}
             aria-invalid={invalid || undefined}
-            aria-describedby={state?.ok === false ? `${statusId} ${noteId}` : noteId}
+            aria-describedby={failure ? `${statusId} ${noteId}` : noteId}
             className="h-11 rounded-full px-4 text-base"
           />
           <Button type="submit" size="lg" disabled={pending} className="h-11 shrink-0 rounded-full px-6 text-base font-semibold">
@@ -60,9 +62,9 @@ export function WaitlistForm({ source, className }: { source: WaitlistSource; cl
           </Button>
         </form>
       )}
-      {state?.ok === false ? (
+      {failure ? (
         <p id={statusId} role="alert" className="text-sm font-medium text-destructive">
-          {state.error}
+          {failure.error}
         </p>
       ) : null}
       <p id={noteId} className="text-xs text-muted-foreground">

@@ -61,7 +61,7 @@ function ToastItem({ toast: t }: { toast: Toast }) {
       {t.action && (
         <button
           type="button"
-          className="ml-2 rounded-md px-2.5 py-1 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
+          className="ml-2 shrink-0 whitespace-nowrap rounded-md px-2.5 py-1 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
           onClick={() => {
             t.action!.onAction();
             dismiss(t.id);

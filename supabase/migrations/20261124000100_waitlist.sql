@@ -1,8 +1,6 @@
 -- The roadmap waitlist (docs/landing-plan.md → Roadmap and sign-up).
 --
--- NOT APPLIED. Written overnight on 2026-11-24 as a file only; apply it by
--- hand (dashboard SQL editor or `supabase db push`) before any form calls
--- `joinWaitlist()` (src/lib/waitlist/actions.ts).
+-- Applied to the live project 2026-11-25 (supabase db push).
 --
 -- Nobody reads this table through the API: RLS is on with no policies, and
 -- anon/authenticated hold no table privileges. Sign-ups go through the

@@ -241,7 +241,7 @@ In rough order of value; each builds on follows.
 ## Beta
 
 Social v1 and Clubs are live (2026-10-19). What's left before inviting 10–15 real users is in
-`todo.md` → "Now": custom SMTP first (Supabase's built-in email can't handle a group signing
+`founder-checklist.md`: custom SMTP first (Supabase's built-in email can't handle a group signing
 up), then the by-hand checks. Their use decides the open product questions
 that are deliberately on hold until then: which content is free vs premium (access tiers),
 and the domain.

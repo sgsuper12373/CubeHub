@@ -19,9 +19,6 @@ const allow = createRateLimiter(5, 10 * 60_000);
  * `join_waitlist()` function (supabase/migrations/20261124000100_waitlist.sql),
  * so the anon key can add an address but never read the list.
  *
- * Until that migration is applied, every call ends in the "error" state, which
- * the form shows as "Couldn't sign you up just now".
- *
  * A duplicate says the same as a new sign-up ("You're on the list"), so the
  * form never reveals whether an address was already there.
  */

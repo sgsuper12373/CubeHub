@@ -146,4 +146,4 @@ Checked 2026-10-13:
 - **Applied (live):** the `access_tier` type, `algorithm_subsets` with each set's tier, and `can_access()` (`20260914000000_access_tiers.sql`). The route-level split in Part 2 is live too.
 - **Not applied:** the tiered content policies above. `algorithms` is still readable when `is_approved` (the baseline policy), and no policy calls `can_access()`, so a tier is only a badge in the UI.
 
-Which sets are `free` and which `premium` is an open decision (`todo.md` §3). Once it's made, the remaining step is the policies on this page.
+Which sets are `free` and which `premium` is an open decision (`founder-checklist.md` → Decisions). Once it's made, the remaining step is the policies on this page.

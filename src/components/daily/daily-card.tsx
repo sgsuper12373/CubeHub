@@ -74,7 +74,7 @@ export function DailyCard({ userId }: { userId: string | null }) {
       </p>
       <p className="mt-2 text-xs text-muted-foreground">
         {solved === 0 ? "Nobody has posted yet." : `${solved} ${solved === 1 ? "cuberhubber" : "cuberhubbers"} solved it.`}
-        {countdown && <> New scramble in {countdown}.</>}
+        {countdown && <> Next daily scramble in {countdown}.</>}
       </p>
 
       {result && (

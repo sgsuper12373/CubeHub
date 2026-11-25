@@ -42,9 +42,8 @@ test.describe("guest layout", () => {
   });
 });
 
-// Member layouts persist through user_settings.home_layout, which needs
-// supabase/migrations/20261124000000_home_layout.sql applied first; the e2e
-// for that waits until it is (docs/overnight-report.md).
+// Member layouts persist through user_settings.home_layout
+// (20261124000000_home_layout.sql, applied 2026-11-25).
 
 test.describe("member", () => {
   test.skip(!hasE2eUsers(), "E2E_USER_A/B credentials not set");

@@ -1,10 +1,6 @@
 -- Home's saved card layout (docs/home-plan.md → Customising Home).
 --
--- NOT APPLIED. Written overnight on 2026-11-24 as a file only; apply it by
--- hand (dashboard SQL editor or `supabase db push`) before shipping feat/home.
--- Until it is applied, /home works with the default layout and the Customize
--- sheet's changes for signed-in cubers don't persist (guests use localStorage
--- and are unaffected).
+-- Applied to the live project 2026-11-25 (supabase db push).
 --
 -- `{ "hidden": [...], "shown": [...], "order": [...] }`; null means "use the
 -- default". Unknown card ids are ignored by the app, so removing a card later

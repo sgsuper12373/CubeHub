@@ -1,13 +1,9 @@
 -- The daily scramble (docs/home-plan.md → card 2): one 3x3 scramble a day,
 -- the same for everyone, one attempt each, a leaderboard.
 --
--- NOT APPLIED. Written on 2026-11-25 as a file only. To go live:
---   1. supabase db push
---   2. supabase db query --linked -f supabase/tests/daily_scramble_test.sql   (every row PASS; rolls back)
---   3. load the scrambles: supabase db query --linked -f supabase/DataSeeds/20261125000000_daily_scrambles.sql
---      (60 days; `node scripts/generate-daily-scrambles.mjs` writes the next batch)
--- Until then the Home card renders nothing and /timer?daily=… says the daily
--- isn't available.
+-- Applied to the live project 2026-11-25 (supabase db push); its test passed there.
+-- Scrambles live in supabase/DataSeeds/*_daily_scrambles.sql; the next batch comes
+-- from `node scripts/generate-daily-scrambles.mjs <first-day> 60`.
 --
 -- Days are IST dates (Asia/Kolkata): a new scramble at midnight IST.
 -- Scrambles are pre-generated (random-state, cubing.js, the timer's own

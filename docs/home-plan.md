@@ -248,7 +248,7 @@ These feed the Home review after the beta: cards nobody clicks get cut or moved 
 1. ✅ Page skeleton, routing to `/home`, greeting and quick start, guest and signed-in variants.
 2. ✅ Stats, Continue learning, Drill queue, Streak and goal cards.
 3. ✅ Friends, Clubs, What's new, Cubby's tip (static).
-4. ✅ Customise sheet with show/hide, storage, sign-in copy-up. *(the `home_layout` migration is not applied yet)*
+4. ✅ Customise sheet with show/hide, storage, sign-in copy-up. *(`home_layout` migration applied Nov 25)*
 5. ✅ Daily scramble: migration, generation, daily mode in the timer, card, leaderboard. *(scrambles pre-generated into DataSeeds; see decisions.md)*
 6. Next achievement, drag reorder.
 7. Docs: `architecture.md` routes, `roadmap.md`, a short `docs/home.md` describing what shipped.

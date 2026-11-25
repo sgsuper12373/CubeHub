@@ -1,0 +1,83 @@
+- generic [active] [ref=f10e1]:
+  - region "Notifications"
+  - radiogroup "Theme (dev)" [ref=f10e2]:
+    - radio "Slate" [ref=f10e3]
+    - radio "Paper" [ref=f10e4]
+    - radio "System" [checked] [ref=f10e5]
+  - generic [ref=f10e6]:
+    - complementary [ref=f10e7]:
+      - generic [ref=f10e8]:
+        - link "CuberHub home" [ref=f10e9] [cursor=pointer]:
+          - /url: /home
+          - generic [ref=f10e10]: cuberhub
+        - button "Search" [ref=f10e52]
+      - navigation "Main" [ref=f10e56]:
+        - generic [ref=f10e57]:
+          - link "Home" [ref=f10e58] [cursor=pointer]:
+            - /url: /home
+          - link "Timer" [ref=f10e63] [cursor=pointer]:
+            - /url: /timer
+          - link "Stats" [ref=f10e68] [cursor=pointer]:
+            - /url: /stats
+        - generic [ref=f10e72]:
+          - paragraph [ref=f10e73]: Practice
+          - generic [ref=f10e75]:
+            - link "Learn" [ref=f10e76] [cursor=pointer]:
+              - /url: /learn
+            - button "Show Learn topics" [ref=f10e81]
+          - link "Drill Lab" [ref=f10e84] [cursor=pointer]:
+            - /url: /learn/333/drill
+          - link "Playground" [ref=f10e90] [cursor=pointer]:
+            - /url: /playground
+        - generic [ref=f10e95]:
+          - paragraph [ref=f10e96]: Community
+          - link "Clubs" [ref=f10e97] [cursor=pointer]:
+            - /url: /clubs
+          - link "People" [ref=f10e104] [cursor=pointer]:
+            - /url: /people
+      - generic [ref=f10e110]:
+        - button "Notifications" [ref=f10e111]
+        - link "Settings" [ref=f10e114] [cursor=pointer]:
+          - /url: /settings
+        - 'button "Account: Sumit Garad" [ref=f10e119]':
+          - generic [ref=f10e121]: Sumit Garad
+        - generic [ref=f10e122]:
+          - button "Collapse sidebar to icons" [ref=f10e123]:
+            - generic [ref=f10e127]: Collapse
+          - button "Hide sidebar" [ref=f10e128]
+    - main [ref=f10e132]:
+      - generic [ref=f10e133]:
+        - heading "People" [level=1] [ref=f10e134]
+        - navigation "People sections" [ref=f10e135]:
+          - list [ref=f10e136]:
+            - listitem [ref=f10e137]:
+              - link "Activity" [ref=f10e138] [cursor=pointer]:
+                - /url: /people?tab=feed
+            - listitem [ref=f10e139]:
+              - link "Find people" [ref=f10e140] [cursor=pointer]:
+                - /url: /people?tab=find
+            - listitem [ref=f10e141]:
+              - link "Clubs" [ref=f10e142] [cursor=pointer]:
+                - /url: /people?tab=clubs
+        - region "Your clubs" [ref=f10e143]:
+          - generic [ref=f10e144]:
+            - link "Find a club" [ref=f10e145] [cursor=pointer]:
+              - /url: /clubs
+            - link "Create a club" [ref=f10e146] [cursor=pointer]:
+              - /url: /clubs/new
+          - list [ref=f10e147]:
+            - listitem [ref=f10e148]:
+              - link "8.8.8.8 Online 3 members Owner Tags" [ref=f10e149] [cursor=pointer]:
+                - /url: /clubs/hkjh
+                - generic [aria-hidden] [ref=f10e150]: "8"
+                - generic [ref=f10e151]:
+                  - generic [ref=f10e152]: 8.8.8.8
+                  - paragraph [ref=f10e154]:
+                    - text: Online
+                    - generic [aria-hidden] [ref=f10e155]: ·
+                    - text: 3 members
+                    - generic [aria-hidden] [ref=f10e161]: ·
+                    - generic [ref=f10e162]: Owner
+                  - list "Tags" [ref=f10e163]:
+                    - listitem [ref=f10e164]: 3x3
+  - button "Open Next.js Dev Tools" [ref=f10e170] [cursor=pointer]

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { LearnNavPuzzle } from "@/lib/learn/public-dal";
-import { matchCommands, parseCaseQuery, staticCommands, usernameQuery, type PaletteCommand } from "@/lib/palette";
+import { matchCommands, nameQuery, parseCaseQuery, staticCommands, usernameQuery, type PaletteCommand } from "@/lib/palette";
 import { createClient } from "@/lib/supabase/client";
 import { setTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
@@ -43,9 +43,19 @@ async function searchDatabase(query: string, learnNav: LearnNavPuzzle[]): Promis
           .not("case_number", "is", null)
           .limit(6)
       : null;
+  // Cubers by handle prefix or by display name (a friend is often searched by name).
   const handle = usernameQuery(query);
-  const people = handle
-    ? supabase.from("profiles").select("username, display_name").ilike("username", `${handle}%`).limit(4)
+  const name = nameQuery(query);
+  const people = handle || name
+    ? supabase
+        .from("profiles")
+        .select("username, display_name")
+        .or(
+          [handle && `username.ilike.${handle}%`, name && `display_name.ilike."*${name}*"`]
+            .filter(Boolean)
+            .join(","),
+        )
+        .limit(5)
     : null;
 
   const [c, p] = await Promise.all([cases, people]);

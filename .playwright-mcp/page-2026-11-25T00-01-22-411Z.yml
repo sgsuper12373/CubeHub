@@ -1,0 +1,59 @@
+- generic [active] [ref=f2e1]:
+  - region "Notifications"
+  - radiogroup "Theme (dev)" [ref=f2e2]:
+    - radio "Slate" [ref=f2e3]
+    - radio "Paper" [ref=f2e4]
+    - radio "System" [checked] [ref=f2e5]
+  - generic [ref=f2e6]:
+    - complementary [ref=f2e7]:
+      - generic [ref=f2e8]:
+        - link "CuberHub home" [ref=f2e9] [cursor=pointer]:
+          - /url: /home
+          - generic [ref=f2e10]: cuberhub
+        - button "Search" [ref=f2e52]
+      - navigation "Main" [ref=f2e56]:
+        - generic [ref=f2e57]:
+          - link "Home" [ref=f2e58] [cursor=pointer]:
+            - /url: /home
+          - link "Timer" [ref=f2e63] [cursor=pointer]:
+            - /url: /timer
+          - link "Stats" [ref=f2e68] [cursor=pointer]:
+            - /url: /stats
+        - generic [ref=f2e72]:
+          - paragraph [ref=f2e73]: Practice
+          - generic [ref=f2e75]:
+            - link "Learn" [ref=f2e76] [cursor=pointer]:
+              - /url: /learn
+            - button "Show Learn topics" [ref=f2e81]
+          - link "Drill Lab" [ref=f2e84] [cursor=pointer]:
+            - /url: /learn/333/drill
+          - link "Playground" [ref=f2e90] [cursor=pointer]:
+            - /url: /playground
+        - generic [ref=f2e95]:
+          - paragraph [ref=f2e96]: Community
+          - link "Clubs" [ref=f2e97] [cursor=pointer]:
+            - /url: /clubs
+          - link "People" [ref=f2e104] [cursor=pointer]:
+            - /url: /people
+      - generic [ref=f2e110]:
+        - link "Settings" [ref=f2e111] [cursor=pointer]:
+          - /url: /settings
+        - link "Sign in" [ref=f2e116] [cursor=pointer]:
+          - /url: /login
+        - generic [ref=f2e121]:
+          - button "Collapse sidebar to icons" [ref=f2e122]:
+            - generic [ref=f2e126]: Collapse
+          - button "Hide sidebar" [ref=f2e127]
+    - main [ref=f2e131]:
+      - generic [ref=f2e133]:
+        - heading "Welcome to CuberHub" [level=1] [ref=f2e134]
+        - generic [ref=f2e135]:
+          - link "Start 3x3 session Enter" [ref=f2e136] [cursor=pointer]:
+            - /url: /timer
+            - text: Start 3x3 session
+            - generic [ref=f2e137]: Enter
+          - link "Open Drill Lab" [ref=f2e138] [cursor=pointer]:
+            - /url: /learn/333/drill
+          - link "Start learning" [ref=f2e139] [cursor=pointer]:
+            - /url: /learn
+  - button "Open Next.js Dev Tools" [ref=f2e148] [cursor=pointer]

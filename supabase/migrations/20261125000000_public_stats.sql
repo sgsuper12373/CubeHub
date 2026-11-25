@@ -1,9 +1,7 @@
 -- Aggregate counts for the landing page's RealStats slot
 -- (src/components/marketing/real-stats.tsx).
 --
--- NOT APPLIED. Written on 2026-11-25 as a file only; apply it with
--- `supabase db push`, then run supabase/tests/public_stats_test.sql.
--- Until it's applied, RealStats renders nothing.
+-- Applied to the live project 2026-11-25 (supabase db push); its test passed there.
 --
 -- `solves` and `drill_state` are owner-only under RLS, so a total needs a
 -- security-definer function. This one returns three numbers and nothing

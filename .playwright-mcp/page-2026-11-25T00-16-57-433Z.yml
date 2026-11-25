@@ -1,0 +1,70 @@
+- generic [ref=f9e1]:
+  - region "Notifications"
+  - radiogroup "Theme (dev)" [ref=f9e2]:
+    - radio "Slate" [ref=f9e3]
+    - radio "Paper" [checked] [ref=f9e4]
+    - radio "System" [ref=f9e5]
+  - generic [ref=f9e6]:
+    - complementary [ref=f9e7]:
+      - generic [ref=f9e8]:
+        - link "CuberHub home" [ref=f9e9] [cursor=pointer]:
+          - /url: /home
+          - generic [ref=f9e10]: cuberhub
+        - button "Search" [ref=f9e52]
+      - navigation "Main" [ref=f9e56]:
+        - generic [ref=f9e57]:
+          - link "Home" [ref=f9e58] [cursor=pointer]:
+            - /url: /home
+          - link "Timer" [ref=f9e63] [cursor=pointer]:
+            - /url: /timer
+          - link "Stats" [ref=f9e68] [cursor=pointer]:
+            - /url: /stats
+        - generic [ref=f9e72]:
+          - paragraph [ref=f9e73]: Practice
+          - generic [ref=f9e75]:
+            - link "Learn" [ref=f9e76] [cursor=pointer]:
+              - /url: /learn
+            - button "Show Learn topics" [ref=f9e81]
+          - link "Drill Lab" [ref=f9e84] [cursor=pointer]:
+            - /url: /learn/333/drill
+          - link "Playground" [ref=f9e90] [cursor=pointer]:
+            - /url: /playground
+        - generic [ref=f9e95]:
+          - paragraph [ref=f9e96]: Community
+          - link "Clubs" [ref=f9e97] [cursor=pointer]:
+            - /url: /clubs
+          - link "People" [ref=f9e104] [cursor=pointer]:
+            - /url: /people
+      - generic [ref=f9e110]:
+        - button "Notifications" [ref=f9e111]
+        - link "Settings" [ref=f9e114] [cursor=pointer]:
+          - /url: /settings
+        - 'button "Account: Sumit Garad" [ref=f9e119]':
+          - generic [ref=f9e121]: Sumit Garad
+        - generic [ref=f9e122]:
+          - button "Collapse sidebar to icons" [ref=f9e123]:
+            - generic [ref=f9e127]: Collapse
+          - button "Hide sidebar" [ref=f9e128]
+    - main [ref=f9e132]:
+      - generic [ref=f9e133]:
+        - heading "People" [level=1] [ref=f9e134]
+        - navigation "People sections" [ref=f9e135]:
+          - list [ref=f9e136]:
+            - listitem [ref=f9e137]:
+              - link "Activity" [ref=f9e138] [cursor=pointer]:
+                - /url: /people?tab=feed
+            - listitem [ref=f9e139]:
+              - link "Find people" [active] [ref=f9e140] [cursor=pointer]:
+                - /url: /people?tab=find
+            - listitem [ref=f9e141]:
+              - link "Clubs" [ref=f9e142] [cursor=pointer]:
+                - /url: /people?tab=clubs
+        - region "Find people" [ref=f9e162]:
+          - search [ref=f9e163]:
+            - searchbox "Search cubers" [ref=f9e164]
+          - heading "Suggested for you" [level=2] [ref=f9e165]
+          - generic [ref=f9e166]:
+            - paragraph [ref=f9e167]: No suggestions right now
+            - generic [ref=f9e168]: Try searching for someone you know.
+  - button "Open Next.js Dev Tools" [ref=f9e158] [cursor=pointer]
+  - alert [ref=f9e169]: People

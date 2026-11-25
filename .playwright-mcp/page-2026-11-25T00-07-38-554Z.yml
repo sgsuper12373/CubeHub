@@ -1,0 +1,57 @@
+- generic [active] [ref=f7e1]:
+  - region "Notifications"
+  - radiogroup "Theme (dev)" [ref=f7e2]:
+    - radio "Slate" [ref=f7e3]
+    - radio "Paper" [ref=f7e4]
+    - radio "System" [checked] [ref=f7e5]
+  - generic [ref=f7e6]:
+    - complementary [ref=f7e7]:
+      - generic [ref=f7e8]:
+        - link "CuberHub home" [ref=f7e9] [cursor=pointer]:
+          - /url: /home
+          - generic [ref=f7e10]: cuberhub
+        - button "Search" [ref=f7e52]
+      - navigation "Main" [ref=f7e56]:
+        - generic [ref=f7e57]:
+          - link "Home" [ref=f7e58] [cursor=pointer]:
+            - /url: /home
+          - link "Timer" [ref=f7e63] [cursor=pointer]:
+            - /url: /timer
+          - link "Stats" [ref=f7e68] [cursor=pointer]:
+            - /url: /stats
+        - generic [ref=f7e72]:
+          - paragraph [ref=f7e73]: Practice
+          - generic [ref=f7e75]:
+            - link "Learn" [ref=f7e76] [cursor=pointer]:
+              - /url: /learn
+            - button "Show Learn topics" [ref=f7e81]
+          - link "Drill Lab" [ref=f7e84] [cursor=pointer]:
+            - /url: /learn/333/drill
+          - link "Playground" [ref=f7e90] [cursor=pointer]:
+            - /url: /playground
+        - generic [ref=f7e95]:
+          - paragraph [ref=f7e96]: Community
+          - link "Clubs" [ref=f7e97] [cursor=pointer]:
+            - /url: /clubs
+          - link "People" [ref=f7e104] [cursor=pointer]:
+            - /url: /people
+      - generic [ref=f7e110]:
+        - link "Settings" [ref=f7e111] [cursor=pointer]:
+          - /url: /settings
+        - link "Sign in" [ref=f7e116] [cursor=pointer]:
+          - /url: /login
+        - generic [ref=f7e121]:
+          - button "Collapse sidebar to icons" [ref=f7e122]:
+            - generic [ref=f7e126]: Collapse
+          - button "Hide sidebar" [ref=f7e127]
+    - main [ref=f7e131]:
+      - generic [ref=f7e132]:
+        - generic [ref=f7e133]:
+          - paragraph [ref=f7e134]: Daily scramble
+          - heading "Leaderboard" [level=1] [ref=f7e135]
+          - paragraph [ref=f7e136]: One 3x3 scramble a day for everyone, new at midnight IST. One attempt with WCA inspection; +2 times are ranked with the penalty, DNFs aren't ranked.
+        - navigation "Days" [ref=f7e138]:
+          - link "Previous day" [ref=f7e139] [cursor=pointer]:
+            - /url: /home/daily?day=2026-11-24
+          - paragraph [ref=f7e140]: Wed, 25 Nov
+  - button "Open Next.js Dev Tools" [ref=f7e147] [cursor=pointer]

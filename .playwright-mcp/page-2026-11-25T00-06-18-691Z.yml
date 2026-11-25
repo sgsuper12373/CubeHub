@@ -1,0 +1,135 @@
+- generic [active] [ref=f4e1]:
+  - region "Notifications"
+  - radiogroup "Theme (dev)" [ref=f4e2]:
+    - radio "Slate" [ref=f4e3]
+    - radio "Paper" [checked] [ref=f4e4]
+    - radio "System" [ref=f4e5]
+  - generic [ref=f4e6]:
+    - complementary [ref=f4e7]:
+      - generic [ref=f4e8]:
+        - link "CuberHub home" [ref=f4e9] [cursor=pointer]:
+          - /url: /home
+          - generic [ref=f4e10]: cuberhub
+        - button "Search" [ref=f4e52]
+      - navigation "Main" [ref=f4e56]:
+        - generic [ref=f4e57]:
+          - link "Home" [ref=f4e58] [cursor=pointer]:
+            - /url: /home
+          - link "Timer" [ref=f4e63] [cursor=pointer]:
+            - /url: /timer
+          - link "Stats" [ref=f4e68] [cursor=pointer]:
+            - /url: /stats
+        - generic [ref=f4e72]:
+          - paragraph [ref=f4e73]: Practice
+          - generic [ref=f4e75]:
+            - link "Learn" [ref=f4e76] [cursor=pointer]:
+              - /url: /learn
+            - button "Show Learn topics" [ref=f4e81]
+          - link "Drill Lab" [ref=f4e84] [cursor=pointer]:
+            - /url: /learn/333/drill
+          - link "Playground" [ref=f4e90] [cursor=pointer]:
+            - /url: /playground
+        - generic [ref=f4e95]:
+          - paragraph [ref=f4e96]: Community
+          - link "Clubs" [ref=f4e97] [cursor=pointer]:
+            - /url: /clubs
+          - link "People" [ref=f4e104] [cursor=pointer]:
+            - /url: /people
+      - generic [ref=f4e110]:
+        - link "Settings" [ref=f4e111] [cursor=pointer]:
+          - /url: /settings
+        - link "Sign in" [ref=f4e116] [cursor=pointer]:
+          - /url: /login
+        - generic [ref=f4e121]:
+          - button "Collapse sidebar to icons" [ref=f4e122]:
+            - generic [ref=f4e126]: Collapse
+          - button "Hide sidebar" [ref=f4e127]
+    - main [ref=f4e131]:
+      - generic [ref=f4e132]:
+        - generic [ref=f4e133]:
+          - heading "Welcome to CuberHub" [level=1] [ref=f4e134]
+          - generic [ref=f4e135]:
+            - link "Start 3x3 session Enter" [ref=f4e136] [cursor=pointer]:
+              - /url: /timer
+              - text: Start 3x3 session
+              - generic [ref=f4e137]: Enter
+            - link "Open Drill Lab" [ref=f4e138] [cursor=pointer]:
+              - /url: /learn/333/drill
+            - link "Start learning" [ref=f4e139] [cursor=pointer]:
+              - /url: /learn
+        - button "Customize" [ref=f4e153]
+        - generic [ref=f4e154]:
+          - generic [ref=f4e155]:
+            - region "Daily scramble · Wed, 25 Nov" [ref=f4e156]:
+              - generic [ref=f4e157]:
+                - heading "Daily scramble · Wed, 25 Nov" [level=2] [ref=f4e158]
+                - link "Leaderboard" [ref=f4e159] [cursor=pointer]:
+                  - /url: /home/daily?day=2026-11-25
+              - generic [ref=f4e160]:
+                - paragraph [ref=f4e161]: R' U' D2 R' F' L F U F R' B2 D2 R F2 R F2 R' B2 R2 U2 R'
+                - paragraph [ref=f4e162]: Nobody has posted yet. New scramble in 18h 23m.
+                - generic [ref=f4e163]:
+                  - link "Solve today's scramble" [ref=f4e164] [cursor=pointer]:
+                    - /url: /timer?daily=2026-11-25
+                  - link "Sign in to get on the leaderboard" [ref=f4e165] [cursor=pointer]:
+                    - /url: /login?next=%2Fhome
+            - region "Your 3x3 stats" [ref=f4e166]:
+              - generic [ref=f4e167]:
+                - heading "Your 3x3 stats" [level=2] [ref=f4e168]
+                - link "Open Stats" [ref=f4e169] [cursor=pointer]:
+                  - /url: /stats
+              - generic [ref=f4e171]:
+                - paragraph [ref=f4e172]: Time your first 5 solves to see averages here.
+                - link "Start" [ref=f4e173] [cursor=pointer]:
+                  - /url: /timer
+            - region "Streak and daily goal" [ref=f4e174]:
+              - heading "Streak and daily goal" [level=2] [ref=f4e176]
+              - generic [ref=f4e177]:
+                - generic [ref=f4e182]:
+                  - paragraph [ref=f4e183]:
+                    - text: 3 of
+                    - 'button "Daily goal: 25 solves. Change it" [ref=f4e184]': "25"
+                    - text: solves today
+                  - paragraph [ref=f4e185]: 22 to go.
+                  - paragraph [ref=f4e186]: 1-day streak
+                - list "Practice, last 14 days" [ref=f4e189]:
+                  - 'listitem "2026-11-12: 0 solves" [ref=f4e190]'
+                  - 'listitem "2026-11-13: 0 solves" [ref=f4e192]'
+                  - 'listitem "2026-11-14: 0 solves" [ref=f4e194]'
+                  - 'listitem "2026-11-15: 0 solves" [ref=f4e196]'
+                  - 'listitem "2026-11-16: 0 solves" [ref=f4e198]'
+                  - 'listitem "2026-11-17: 0 solves" [ref=f4e200]'
+                  - 'listitem "2026-11-18: 0 solves" [ref=f4e202]'
+                  - 'listitem "2026-11-19: 0 solves" [ref=f4e204]'
+                  - 'listitem "2026-11-20: 0 solves" [ref=f4e206]'
+                  - 'listitem "2026-11-21: 0 solves" [ref=f4e208]'
+                  - 'listitem "2026-11-22: 0 solves" [ref=f4e210]'
+                  - 'listitem "2026-11-23: 0 solves" [ref=f4e212]'
+                  - 'listitem "2026-11-24: 0 solves" [ref=f4e214]'
+                  - 'listitem "2026-11-25: 3 solves" [ref=f4e216]'
+            - region "Continue learning" [ref=f4e218]:
+              - generic [ref=f4e219]:
+                - heading "Continue learning" [level=2] [ref=f4e220]
+                - link "All of Learn" [ref=f4e221] [cursor=pointer]:
+                  - /url: /learn
+              - generic [ref=f4e222]:
+                - paragraph [ref=f4e223]: "Start with PLL: 21 cases, the biggest jump for most cubers."
+                - link "Open PLL" [ref=f4e224] [cursor=pointer]:
+                  - /url: /learn/333/pll
+          - region "What's new" [ref=f4e226]:
+            - heading "What's new" [level=2] [ref=f4e228]
+            - list [ref=f4e230]:
+              - listitem [ref=f4e231]:
+                - link [ref=f4e232] [cursor=pointer]:
+                  - /url: /home
+                  - paragraph [ref=f4e233]: A new Home and a sidebar
+                  - paragraph [ref=f4e234]: Start a session, drill your slow cases and pick up where you left off in Learn, all from one page.
+                - button "Dismiss \"A new Home and a sidebar\"" [ref=f4e235]
+              - listitem [ref=f4e239]:
+                - link [ref=f4e240] [cursor=pointer]:
+                  - /url: /learn/333/drill
+                  - paragraph [ref=f4e241]: Drill Lab, redesigned
+                  - paragraph [ref=f4e242]: A full-height layout, one toolbar, and options that stay out of the way.
+                - button "Dismiss \"Drill Lab, redesigned\"" [ref=f4e243]
+  - button "Open Next.js Dev Tools" [ref=f4e148] [cursor=pointer]
+  - alert [ref=f4e247]

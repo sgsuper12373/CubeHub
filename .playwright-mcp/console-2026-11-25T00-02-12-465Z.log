@@ -1,0 +1,9 @@
+[     342ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:777
+[     383ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:777
+[    1212ms] [WARNING] random333Scramble: 243ms @ http://localhost:3000/cubing/0.56.0/chunks/inside-KAVAZETT-ZJFAPX7W.js:1
+[    1220ms] [WARNING] random333Scramble: 8ms @ http://localhost:3000/cubing/0.56.0/chunks/inside-KAVAZETT-ZJFAPX7W.js:1
+[    1254ms] [WARNING] random333Scramble: 8ms @ http://localhost:3000/cubing/0.56.0/chunks/inside-KAVAZETT-ZJFAPX7W.js:1
+[    2262ms] [WARNING] random333Scramble (prefetched): 8ms @ http://localhost:3000/cubing/0.56.0/chunks/inside-KAVAZETT-ZJFAPX7W.js:1
+[   65060ms] [WARNING] random333Scramble (prefetched): 149ms @ http://localhost:3000/cubing/0.56.0/chunks/inside-KAVAZETT-ZJFAPX7W.js:1
+[  112752ms] [WARNING] random333Scramble (prefetched): 20ms @ http://localhost:3000/cubing/0.56.0/chunks/inside-KAVAZETT-ZJFAPX7W.js:1
+[  131731ms] [WARNING] random333Scramble (prefetched): 11ms @ http://localhost:3000/cubing/0.56.0/chunks/inside-KAVAZETT-ZJFAPX7W.js:1

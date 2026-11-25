@@ -1,0 +1,207 @@
+- generic [active] [ref=f6e1]:
+  - region "Notifications"
+  - radiogroup "Theme (dev)" [ref=f6e2]:
+    - radio "Slate" [ref=f6e3]
+    - radio "Paper" [checked] [ref=f6e4]
+    - radio "System" [ref=f6e5]
+  - generic [ref=f6e6]:
+    - complementary [ref=f6e7]:
+      - link "CuberHub home" [ref=f6e9] [cursor=pointer]:
+        - /url: /home
+      - navigation "Main" [ref=f6e50]:
+        - generic [ref=f6e51]:
+          - link "Home" [ref=f6e52] [cursor=pointer]:
+            - /url: /home
+          - link "Timer" [ref=f6e57] [cursor=pointer]:
+            - /url: /timer
+          - link "Stats" [ref=f6e62] [cursor=pointer]:
+            - /url: /stats
+        - generic [ref=f6e66]:
+          - paragraph [ref=f6e67]: Practice
+          - button "Learn" [ref=f6e69]
+          - link "Drill Lab" [ref=f6e74] [cursor=pointer]:
+            - /url: /learn/333/drill
+          - link "Playground" [ref=f6e80] [cursor=pointer]:
+            - /url: /playground
+        - generic [ref=f6e85]:
+          - paragraph [ref=f6e86]: Community
+          - link "Clubs" [ref=f6e88] [cursor=pointer]:
+            - /url: /clubs
+          - link "People" [ref=f6e95] [cursor=pointer]:
+            - /url: /people
+      - generic [ref=f6e101]:
+        - link "Settings" [ref=f6e102] [cursor=pointer]:
+          - /url: /settings
+        - link "Sign in" [ref=f6e107] [cursor=pointer]:
+          - /url: /login
+        - button "Expand sidebar" [ref=f6e113]:
+          - generic [ref=f6e116]: Collapse
+    - main [ref=f6e117]:
+      - generic [ref=f6e144]:
+        - generic [ref=f6e146]:
+          - generic [ref=f6e148]:
+            - combobox "Event" [ref=f6e149]:
+              - option "3x3" [selected]
+              - option "2x2"
+              - option "4x4"
+              - option "5x5"
+              - option "3x3 OH"
+              - option "Pyraminx"
+              - option "Skewb"
+              - option "Megaminx"
+            - button "Modes" [ref=f6e150]
+            - combobox "Session" [ref=f6e154]:
+              - option "Session 1" [selected]
+            - button "Rename session" [ref=f6e155]
+            - button "New session" [ref=f6e156]
+            - button "Reset session" [ref=f6e157]
+            - button "Delete session" [disabled]
+            - button "Recently deleted" [ref=f6e158]
+          - generic [ref=f6e159]:
+            - button "Edit layout" [ref=f6e161]
+            - button "Timer background" [ref=f6e163]
+            - button "Timer settings" [ref=f6e165]
+        - generic [ref=f6e168]:
+          - generic [ref=f6e171]:
+            - 'generic "Scramble: U'' B'' R'' D2 B2 L'' D2 B'' U'' R2 F2 L2 U2 L2 U L2 F2 D2 F2 U''" [ref=f6e172]':
+              - paragraph [ref=f6e173]:
+                - generic [aria-hidden] [ref=f6e174]:
+                  - text: U
+                  - generic [ref=f6e175]: "'"
+                - generic [aria-hidden] [ref=f6e176]:
+                  - text: B
+                  - generic [ref=f6e177]: "'"
+                - generic [aria-hidden] [ref=f6e178]:
+                  - text: R
+                  - generic [ref=f6e179]: "'"
+                - generic [aria-hidden] [ref=f6e180]:
+                  - text: D
+                  - generic [ref=f6e181]: "2"
+                - generic [aria-hidden] [ref=f6e182]:
+                  - text: B
+                  - generic [ref=f6e183]: "2"
+                - generic [aria-hidden] [ref=f6e184]:
+                  - text: L
+                  - generic [ref=f6e185]: "'"
+                - generic [aria-hidden] [ref=f6e186]:
+                  - text: D
+                  - generic [ref=f6e187]: "2"
+                - generic [aria-hidden] [ref=f6e188]:
+                  - text: B
+                  - generic [ref=f6e189]: "'"
+                - generic [aria-hidden] [ref=f6e190]:
+                  - text: U
+                  - generic [ref=f6e191]: "'"
+                - generic [aria-hidden] [ref=f6e192]:
+                  - text: R
+                  - generic [ref=f6e193]: "2"
+                - generic [aria-hidden] [ref=f6e194]:
+                  - text: F
+                  - generic [ref=f6e195]: "2"
+                - generic [aria-hidden] [ref=f6e196]:
+                  - text: L
+                  - generic [ref=f6e197]: "2"
+                - generic [aria-hidden] [ref=f6e198]:
+                  - text: U
+                  - generic [ref=f6e199]: "2"
+                - generic [aria-hidden] [ref=f6e200]:
+                  - text: L
+                  - generic [ref=f6e201]: "2"
+                - generic [aria-hidden] [ref=f6e202]: U
+                - generic [aria-hidden] [ref=f6e203]:
+                  - text: L
+                  - generic [ref=f6e204]: "2"
+                - generic [aria-hidden] [ref=f6e205]:
+                  - text: F
+                  - generic [ref=f6e206]: "2"
+                - generic [aria-hidden] [ref=f6e207]:
+                  - text: D
+                  - generic [ref=f6e208]: "2"
+                - generic [aria-hidden] [ref=f6e209]:
+                  - text: F
+                  - generic [ref=f6e210]: "2"
+                - generic [aria-hidden] [ref=f6e211]:
+                  - text: U
+                  - generic [ref=f6e212]: "'"
+            - generic [ref=f6e213]:
+              - button "Previous scramble" [disabled]
+              - button "New 3x3 scramble" [ref=f6e214]
+              - button "Copy scramble" [ref=f6e215]
+              - button "Enter your own scramble" [ref=f6e216]
+          - generic [ref=f6e217]: Cube preview
+          - generic [ref=f6e222]:
+            - generic [ref=f6e223]: Timer
+            - button "Timer — hold, then release to start; tap to stop" [ref=f6e225] [cursor=pointer]:
+              - generic [ref=f6e226]: "0.00"
+              - paragraph [ref=f6e228]: hold, then release to start
+          - generic [ref=f6e229]:
+            - generic [ref=f6e230]: Session Stats
+            - generic [ref=f6e232]:
+              - generic [ref=f6e233]:
+                - generic [ref=f6e234]: Solves
+                - generic [ref=f6e235]: 3/3
+              - generic [ref=f6e236]:
+                - generic [ref=f6e237]: Mean
+                - generic [ref=f6e238]: "6.24"
+              - generic [ref=f6e239]:
+                - generic [ref=f6e240]:
+                  - img "personal best" [ref=f6e241]
+                  - text: Best
+                - generic [ref=f6e243]: "2.10"
+              - generic [ref=f6e244]:
+                - generic [ref=f6e245]: Worst
+                - generic [ref=f6e246]: "12.34"
+              - button "Copy Mo3 6.25 as text" [ref=f6e248]:
+                - generic [ref=f6e249]: Mo3
+                - generic [ref=f6e250]: "6.25"
+              - generic [ref=f6e255]:
+                - generic [ref=f6e256]: Ao5
+                - generic [ref=f6e257]: —
+              - generic [ref=f6e258]:
+                - generic [ref=f6e259]: Ao12
+                - generic [ref=f6e260]: —
+              - generic [ref=f6e261]:
+                - generic [ref=f6e262]: Ao50
+                - generic [ref=f6e263]: —
+              - generic [ref=f6e264]:
+                - generic [ref=f6e265]: Ao100
+                - generic [ref=f6e266]: —
+          - generic [ref=f6e267]:
+            - generic [ref=f6e268]: Recent Solves
+            - generic [ref=f6e271]:
+              - generic [ref=f6e273] [cursor=pointer]:
+                - generic [ref=f6e274]: "3."
+                - generic [ref=f6e275]: "12.34"
+                - generic:
+                  - button "+2"
+                  - button "DNF"
+                  - button "Delete"
+              - generic [ref=f6e278] [cursor=pointer]:
+                - generic [ref=f6e279]: "2."
+                - generic [ref=f6e280]: "2.10"
+                - generic:
+                  - button "+2"
+                  - button "DNF"
+                  - button "Delete"
+              - generic [ref=f6e283] [cursor=pointer]:
+                - generic [ref=f6e284]: "1."
+                - generic [ref=f6e285]: 4.30+
+                - generic:
+                  - button "+2"
+                  - button "DNF"
+                  - button "Delete"
+          - generic [ref=f6e287]:
+            - generic [ref=f6e288]: Trend
+            - generic [ref=f6e291]:
+              - generic [ref=f6e292]:
+                - heading "Trend" [level=3] [ref=f6e293]
+                - generic [ref=f6e294]: Ao5 — · 2 to go
+              - img "Last 3 solves, 2.10 to 12.34" [ref=f6e295]
+        - generic [ref=f6e300]:
+          - generic [ref=f6e304]:
+            - link "Sign in" [ref=f6e305] [cursor=pointer]:
+              - /url: /login
+            - text: to keep these 3 solves and earn achievements
+          - button "Dismiss" [ref=f6e306]
+  - button "Open Next.js Dev Tools" [ref=f6e132] [cursor=pointer]
+  - alert [ref=f6e143]

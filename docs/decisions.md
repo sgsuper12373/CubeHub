@@ -159,7 +159,7 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **Dismissals are per device.** "What's new" dismissals and "hide today's tip" live in localStorage (`cubehub.home.dismissedChanges`, `cubehub.home.tipDismissedOn`), not on the account. The tip has no "Cubby off" check yet because there's no Cubby setting.
 
-**`user_settings.home_layout` is a migration file, not applied** (`supabase/migrations/20261124000000_home_layout.sql`), per the overnight rules. Until it's applied, `getHomeLayout()` logs the error and returns null (the default layout), so Home works; a signed-in cuber's Customize changes show "Couldn't save your layout". Guests are unaffected (localStorage `cubehub.home.v1`). No new RLS policy: `settings_all` covers the column. A check constraint keeps the value a JSON object under 4 KB.
+**`user_settings.home_layout` was a migration file at first** (applied 2026-11-25) (`supabase/migrations/20261124000000_home_layout.sql`), per the overnight rules. Until it's applied, `getHomeLayout()` logs the error and returns null (the default layout), so Home works; a signed-in cuber's Customize changes show "Couldn't save your layout". Guests are unaffected (localStorage `cubehub.home.v1`). No new RLS policy: `settings_all` covers the column. A check constraint keeps the value a JSON object under 4 KB.
 
 **The Customize button sits right-aligned just above the cards**, not in the greeting row: which cards a member can switch depends on their visitor state, which streams in with the cards, and the greeting row renders before that.
 
@@ -173,7 +173,7 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **Card placement and content.** First in the defaults for regular members and returning guests; new visitors start with the welcome card and can switch the daily on. It renders nothing when there's no daily (or before the migration). No 2D net on the card: Home loads no cubing.js up front; the daily timer shows the preview. Leaderboard is global, 3x3 only (open questions 1 and 2, suggested answers). Names on the board come through `profiles` RLS, so a blocked cuber shows as "A cuber".
 
-**Checked locally, not against the live project.** The SQL test (14/14) and seed ran on a throwaway `supabase/postgres` container; the guest flow e2e and the card/leaderboard screenshots ran against `next dev` with a local PostgREST behind a small proxy. On the real e2e setup (live project, migration not applied) the guest-flow test skips itself.
+**Checked locally first, then on the live project.** The SQL test (14/14) and seed ran on a throwaway `supabase/postgres` container; the guest flow e2e and the card/leaderboard screenshots ran against `next dev` with a local PostgREST behind a small proxy. On the real e2e setup (live project, migration not applied) the guest-flow test skips itself.
 
 ## Tests
 

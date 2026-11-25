@@ -5,6 +5,43 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Cleanup: dead code, stale status docs, checklist fixes, founder checklist
+
+**Request:** Remove dead code and old status documents; act on the founder's verification checklist,
+then delete it; list what needs the founder.
+
+### Removed
+
+- Dead code (knip + a check that nothing references it): `layout/navbar.tsx`, `layout/user-menu.tsx`,
+  `BrandLockup` and its `.chm-lockup*`/`.chm-tagline` CSS, `refreshViewer`, `FAVICON_PATHS`, `PINS_MAX`, `rankFor`.
+- Status documents: `docs/overnight-report.md`, `docs/run-report-2026-11-25.md`, `docs/phase1_todo.md`
+  (all items resolved or covered by the checklist pass), `docs/verification-checklist-2026-11-25.md`.
+
+### Fixed (from the checklist notes)
+
+- Waitlist: the old error clears as soon as a new submit starts.
+- Toast action buttons never wrap ("It was real").
+- Daily mode: the 2D preview box is flex, so the panel gets a height and draws (it measured 0).
+- Daily card: "Next daily scramble in 19h 27m."
+- Landing roadmap on phones: three items per column, then "+N more on the full roadmap".
+- Command palette: cubers found by display name as well as username prefix (`nameQuery`, quoted
+  PostgREST filter); unit test added.
+- Kept: the loading cube's slow turn under reduced motion (deliberate; listed for the founder).
+
+### Docs
+
+- `docs/founder-checklist.md` (new): everything that needs the founder.
+- `docs/todo.md` rewritten as Claude's list (ready work + ideas).
+- "NOT APPLIED" headers on the four applied migrations, `home-plan.md`, `decisions.md`, the waitlist
+  action comment, `stats-plan.md`, `brand.md` (no navbar/BrandLockup), references in
+  `access-control.md`, `roadmap.md`, `Test_automation.md`, `home.spec.ts`.
+
+### Verified
+
+`npm run validate` (690 tests), `npm run check:colors`; the name filter run against the live project.
+
+---
+
 ## 2026-11-25 — Migrations applied to the live project; daily scrambles loaded
 
 **Request:** Apply the migrations and load the daily scrambles (founder, after the batch).

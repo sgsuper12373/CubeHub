@@ -262,7 +262,7 @@ function DailyAttemptStage({
       </TouchStage>
       {settings.showScramblePreview && (
         <div
-          className={cn("mx-auto hidden h-40 w-56 md:block", solving && "opacity-[0.1]")}
+          className={cn("mx-auto hidden h-44 w-60 md:flex", solving && "opacity-[0.1]")}
           data-focus-hide
         >
           <PreviewPanel alg={daily.scramble} puzzle="333" dimension="2D" />

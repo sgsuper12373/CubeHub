@@ -1,0 +1,83 @@
+- generic [active] [ref=f3e1]:
+  - region "Notifications"
+  - radiogroup "Theme (dev)" [ref=f3e2]:
+    - radio "Slate" [ref=f3e3]
+    - radio "Paper" [ref=f3e4]
+    - radio "System" [checked] [ref=f3e5]
+  - generic [ref=f3e6]:
+    - complementary [ref=f3e7]:
+      - link "CuberHub home" [ref=f3e9] [cursor=pointer]:
+        - /url: /home
+      - navigation "Main" [ref=f3e50]:
+        - generic [ref=f3e51]:
+          - link "Home" [ref=f3e52] [cursor=pointer]:
+            - /url: /home
+          - link "Timer" [ref=f3e57] [cursor=pointer]:
+            - /url: /timer
+          - link "Stats" [ref=f3e62] [cursor=pointer]:
+            - /url: /stats
+        - generic [ref=f3e66]:
+          - paragraph [ref=f3e67]: Practice
+          - button "Learn" [ref=f3e69]
+          - link "Drill Lab" [ref=f3e74] [cursor=pointer]:
+            - /url: /learn/333/drill
+          - link "Playground" [ref=f3e80] [cursor=pointer]:
+            - /url: /playground
+        - generic [ref=f3e85]:
+          - paragraph [ref=f3e86]: Community
+          - link "Clubs" [ref=f3e88] [cursor=pointer]:
+            - /url: /clubs
+          - link "People" [ref=f3e95] [cursor=pointer]:
+            - /url: /people
+      - generic [ref=f3e101]:
+        - link "Settings" [ref=f3e102] [cursor=pointer]:
+          - /url: /settings
+        - link "Sign in" [ref=f3e107] [cursor=pointer]:
+          - /url: /login
+        - button "Expand sidebar" [ref=f3e113]:
+          - generic [ref=f3e116]: Collapse
+    - main [ref=f3e117]:
+      - generic [ref=f3e118]:
+        - generic [ref=f3e120]:
+          - generic [ref=f3e122]:
+            - combobox "Event" [ref=f3e123]:
+              - option "3x3" [selected]
+              - option "2x2"
+              - option "4x4"
+              - option "5x5"
+              - option "3x3 OH"
+              - option "Pyraminx"
+              - option "Skewb"
+              - option "Megaminx"
+            - button "Modes" [ref=f3e124]
+            - combobox "Session" [ref=f3e128]
+            - button "Rename session" [disabled]
+            - button "New session" [ref=f3e129]
+            - button "Reset session" [disabled]
+            - button "Delete session" [disabled]
+            - button "Recently deleted" [ref=f3e130]
+          - generic [ref=f3e131]:
+            - button "Edit layout" [ref=f3e133]
+            - button "Timer background" [ref=f3e135]
+            - button "Timer settings" [ref=f3e137]
+        - generic [ref=f3e140]:
+          - generic [ref=f3e143]:
+            - status "generating scramble" [ref=f3e144]
+            - generic [ref=f3e145]:
+              - button "Previous scramble" [disabled]
+              - button "New 3x3 scramble" [disabled]
+              - button "Copy scramble" [disabled]
+              - button "Enter your own scramble" [ref=f3e146]
+          - generic [ref=f3e147]: Cube preview
+          - generic [ref=f3e150]:
+            - generic [ref=f3e151]: Timer
+            - button "Timer — hold, then release to start; tap to stop" [ref=f3e153] [cursor=pointer]:
+              - paragraph [ref=f3e154]: hold, then release to start
+          - generic [ref=f3e155]:
+            - generic [ref=f3e156]: Session Stats
+            - generic "Loading stats" [ref=f3e158]
+          - generic [ref=f3e177]:
+            - generic [ref=f3e178]: Recent Solves
+            - generic "Loading solves" [ref=f3e181]
+          - generic [ref=f3e187]: Trend
+  - button "Open Next.js Dev Tools" [ref=f3e197] [cursor=pointer]

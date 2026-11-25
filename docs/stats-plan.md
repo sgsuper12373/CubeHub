@@ -1,7 +1,6 @@
 # Stats page v2: plan
 
-**All five steps built 2026-10-19.** Not deployed yet: it ships with the mis-stop code, after
-`20261021000000_misstops.sql` is applied (`docs/todo.md`).
+**All five steps built 2026-10-19.** The mis-stop migration it depends on is applied.
 
 Written 2026-10-19 from a review of `/stats`. Five steps, one commit each, in order of value for
 effort. Tick them off here as they ship; details of what was built go in `implementationlog.md`.

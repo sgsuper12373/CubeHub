@@ -1,0 +1,406 @@
+- generic [active] [ref=e1]:
+  - region "Notifications"
+  - banner [ref=e2]:
+    - navigation "Site" [ref=e3]:
+      - link "CuberHub home" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e5]: cuberhub
+      - list [ref=e47]:
+        - listitem [ref=e48]:
+          - link "Features" [ref=e49] [cursor=pointer]:
+            - /url: /#features
+        - listitem [ref=e50]:
+          - link "Learn" [ref=e51] [cursor=pointer]:
+            - /url: /#learn
+        - listitem [ref=e52]:
+          - link "Roadmap" [ref=e53] [cursor=pointer]:
+            - /url: /#roadmap
+        - listitem [ref=e54]:
+          - link "FAQ" [ref=e55] [cursor=pointer]:
+            - /url: /#faq
+      - generic [ref=e56]:
+        - link "Sign in" [ref=e58] [cursor=pointer]:
+          - /url: /login
+        - link "Open app" [ref=e59] [cursor=pointer]:
+          - /url: /home
+  - main [ref=e60]:
+    - generic [ref=e61]:
+      - generic [aria-hidden]:
+        - generic: R
+        - generic: U'
+        - generic: F2
+        - generic: M
+      - generic [ref=e65]:
+        - heading "Every part of cubing. One hub." [level=1] [ref=e66]:
+          - generic [aria-hidden] [ref=e67]: Every
+          - generic [aria-hidden] [ref=e68]: part
+          - generic [aria-hidden] [ref=e69]: of
+          - generic [aria-hidden] [ref=e70]: cubing.
+          - generic [aria-hidden] [ref=e71]: One
+          - generic [aria-hidden] [ref=e72]: hub.
+        - paragraph [ref=e74]: A fast WCA timer, every OLL and PLL in 3D, a drill that finds your slow cases, and friends to race. Free, and built for Indian cubers.
+        - generic [ref=e75]:
+          - link "Start timing free" [ref=e76] [cursor=pointer]:
+            - /url: /timer
+          - link "Explore Learn" [ref=e77] [cursor=pointer]:
+            - /url: /learn
+        - list [ref=e79]:
+          - listitem [ref=e80]: WCA random-state scrambles
+          - listitem [ref=e84]: Works offline
+          - listitem [ref=e92]: Built for India
+      - button "Pause background" [ref=e96]
+    - generic [ref=e100]:
+      - generic [ref=e102]:
+        - generic [ref=e104]:
+          - generic [ref=e105]: Timer and stats
+          - heading "A timer that disappears when you solve." [level=2] [ref=e108]
+          - paragraph [ref=e109]: "Click the card to try it: hold Space or press and hold, release to start, press again to stop. Escape hands the page back. The real timer adds WCA inspection, sessions and every average to Ao100."
+          - list [ref=e110]:
+            - listitem [ref=e111]: Works the moment the page loads, signed in or not
+            - listitem [ref=e113]: Personal bests, with a share card when you beat one
+            - listitem [ref=e115]: Trend, distribution and practice days on the Stats page
+          - link "Open the timer" [ref=e117] [cursor=pointer]:
+            - /url: /timer
+          - paragraph [ref=e120]:
+            - text: Coming from csTimer? Bring your times with you.
+            - link "Import on the Stats page" [ref=e124] [cursor=pointer]:
+              - /url: /stats
+        - generic [ref=e128] [cursor=pointer]:
+          - generic [ref=e129]:
+            - generic [ref=e130]: Demo replay
+            - generic [ref=e132]:
+              - text: 3×3 · WCA
+              - generic [ref=e133]: Click to try
+          - paragraph [ref=e134]: R2 D' B2 U F2 D2 R2 U' L2 F2 U' B' L' D2 F' R U' F2 L' B'
+          - generic [aria-hidden] [ref=e135]:
+            - generic [ref=e136]: "0.00"
+            - generic [ref=e137]: Time-lapsed demo · click or tap the card to try it yourself
+          - generic [ref=e138]: Your last five solves appear here
+          - button "Try a solve here" [ref=e141]
+      - generic [ref=e145]:
+        - generic [ref=e147]:
+          - generic [ref=e148]: Learn
+          - heading "Every OLL and PLL, in 3D." [level=2] [ref=e152]
+          - paragraph [ref=e153]: Beginner to CFOP for 3x3, Ortega and CLL for 2x2. Each case shows on a cube you can play, with several algorithms to choose from.
+          - list [ref=e154]:
+            - listitem [ref=e155]: Mark cases learned and track each set
+            - listitem [ref=e157]: Recognition diagrams for every case
+            - listitem [ref=e159]: Free, no account needed
+          - link "Explore Learn" [ref=e161] [cursor=pointer]:
+            - /url: /learn
+        - generic [aria-hidden] [ref=e166]:
+          - generic [ref=e167]:
+            - paragraph [ref=e168]: PLL · 3x3
+            - generic [ref=e169]: 21 cases
+          - paragraph [ref=e170]: T Perm
+          - paragraph [ref=e184]: R U R' U' R' F R2 U' R' U' R U R' F'
+      - generic [ref=e186]:
+        - generic [ref=e188]:
+          - generic [ref=e189]: Drill Lab
+          - heading "Find out which alg is actually faster for your hands." [level=2] [ref=e194]
+          - paragraph [ref=e195]: Drill your cases with spaced repetition, time recognition and execution apart, and race algorithm variants against each other. The Drill Lab tells you when an alternative beats your main one.
+          - list [ref=e196]:
+            - listitem [ref=e197]: Weakest cases first
+            - listitem [ref=e199]: Recognition and execution timed separately
+            - listitem [ref=e201]: Switch suggestions from your own times
+          - link "Open the Drill Lab" [ref=e203] [cursor=pointer]:
+            - /url: /learn/333/drill
+        - generic [aria-hidden] [ref=e208]:
+          - paragraph [ref=e209]: Ua perm · 20 reps each
+          - generic [ref=e210]:
+            - generic [ref=e211]:
+              - paragraph [ref=e213]: Ua · R2 U R U R' U' R' U' R' U R'
+              - paragraph [ref=e216]: 1.84s median
+            - generic [ref=e217]:
+              - generic [ref=e218]:
+                - paragraph [ref=e219]: Ua · M2 U M U2 M' U M2
+                - generic [ref=e220]: main
+              - paragraph [ref=e223]: 1.42s median
+          - paragraph [ref=e224]: Your M-slice Ua is 0.42 s faster. Switch your main algorithm?
+      - generic [ref=e226]:
+        - generic [ref=e228]:
+          - generic [ref=e229]: Playground
+          - heading "A cube you can turn right here." [level=2] [ref=e233]
+          - paragraph [ref=e234]: Drag to turn, or type moves in notation. Try an algorithm before you learn it, or show a friend what a sexy move does.
+          - list [ref=e235]:
+            - listitem [ref=e236]: Swipe to turn on phones
+            - listitem [ref=e238]: Notation input with undo
+            - listitem [ref=e240]: No cube to hand needed
+          - link "Open the Playground" [ref=e242] [cursor=pointer]:
+            - /url: /playground
+        - generic [ref=e247]:
+          - status "Loading cube preview" [ref=e251]:
+            - generic [ref=e259]: Loading cube preview…
+          - generic [aria-hidden] [ref=e260]:
+            - generic [ref=e261]: R
+            - generic [ref=e262]: U
+            - generic [ref=e263]: R'
+            - generic [ref=e264]: F2
+            - generic [ref=e265]: M
+            - generic [ref=e266]: U'
+      - generic [ref=e268]:
+        - generic [ref=e270]:
+          - generic [ref=e271]: Profiles and clubs
+          - heading "Your PBs, your progress, your college club." [level=2] [ref=e277]
+          - paragraph [ref=e278]: A public profile with your bests, badges and what you're learning. Follow friends, compare head to head, and start or join your college's cubing club.
+          - list [ref=e279]:
+            - listitem [ref=e280]: PB timeline and achievements
+            - listitem [ref=e282]: Clubs with posts, algorithms and videos
+            - listitem [ref=e284]: Private profiles when you want them
+          - link "Find your club" [ref=e286] [cursor=pointer]:
+            - /url: /clubs
+        - generic [aria-hidden] [ref=e291]:
+          - generic [ref=e292]:
+            - generic [ref=e293]:
+              - generic [ref=e294]: Example profile
+              - generic [ref=e295]:
+                - generic [ref=e296]: AK
+                - generic [ref=e297]:
+                  - paragraph [ref=e298]: Aarav K.
+                  - paragraph [ref=e299]: "@aarav_cubes · IIT Palakkad Cubing Club"
+              - paragraph [ref=e300]: CFOP · learning full OLL · 4,812 solves
+              - paragraph [ref=e303]: OLL · 36 of 57 learned
+            - generic [ref=e304]:
+              - generic [ref=e305]: Example profile
+              - paragraph [ref=e306]: Personal bests · 3x3
+              - generic [ref=e307]:
+                - generic [ref=e308]:
+                  - paragraph [ref=e309]: Single
+                  - paragraph [ref=e310]: "8.94"
+                - generic [ref=e311]:
+                  - paragraph [ref=e312]: Ao5
+                  - paragraph [ref=e313]: "11.62"
+                - generic [ref=e314]:
+                  - paragraph [ref=e315]: Ao12
+                  - paragraph [ref=e316]: "12.08"
+              - generic [ref=e317]:
+                - generic [ref=e318]: Sub-15
+                - generic [ref=e319]: 1,000 solves
+                - generic [ref=e320]: PLL done
+          - generic [ref=e321]:
+            - paragraph [ref=e322]: Example club posts
+            - generic [ref=e323]: Meetup in the CS lab, Sunday 5 pm. Bring your cubes.
+            - generic [ref=e324]: "New Ao12 PB: 12.08! The M-slice Ua finally clicked."
+    - region "Built in India, for Indian cubers." [ref=e326]:
+      - generic [ref=e327]:
+        - generic [ref=e328]: Made here
+        - heading "Built in India, for Indian cubers." [level=2] [ref=e331]
+        - paragraph [ref=e332]: It starts from how cubing works here, beginning with your college club.
+      - generic [ref=e333]:
+        - generic [ref=e334]:
+          - generic [ref=e335]: Live
+          - heading "College clubs" [level=3] [ref=e342]
+          - paragraph [ref=e343]: "Start your college's cubing club or join one: posts, algorithms and videos, invite links, and roles for the people who run it. Tournament rooms for running your own competition are next."
+          - link "Start or join a club" [ref=e344] [cursor=pointer]:
+            - /url: /clubs
+        - generic [ref=e347]:
+          - generic [ref=e348]: Coming
+          - heading "India-first rankings" [level=3] [ref=e356]
+          - paragraph [ref=e357]: National and state leaderboards.
+          - link "More on the roadmap" [ref=e358] [cursor=pointer]:
+            - /url: /#roadmap
+      - paragraph [ref=e367]: CuberHub is built by a student at IIT Palakkad. Designers, cubers and developers welcome.
+    - region "What's live, what's next." [ref=e368]:
+      - generic [ref=e369]:
+        - generic [ref=e370]: Roadmap
+        - heading "What's live, what's next." [level=2] [ref=e373]
+        - paragraph [ref=e374]: Built in the open. What you can use today, what's being built, and what's on the list.
+      - generic [ref=e375]:
+        - region "Now" [ref=e376]:
+          - heading "Now" [level=3] [ref=e377]
+          - paragraph [ref=e378]: Live today
+          - list [ref=e379]:
+            - listitem [ref=e380]:
+              - generic [ref=e381]:
+                - paragraph [ref=e382]: Timer and stats
+                - generic [ref=e383]: Shipped
+              - paragraph [ref=e384]: WCA scrambles, inspection, sessions, every average, csTimer import.
+            - listitem [ref=e385]:
+              - generic [ref=e386]:
+                - paragraph [ref=e387]: Learn (3x3, 2x2)
+                - generic [ref=e388]: Shipped
+              - paragraph [ref=e389]: Beginner to CFOP, Ortega and CLL, each case in 3D.
+            - listitem [ref=e390]:
+              - generic [ref=e391]:
+                - paragraph [ref=e392]: Drill Lab
+                - generic [ref=e393]: Shipped
+              - paragraph [ref=e394]: Spaced repetition, recognition timing, algorithm races.
+            - listitem [ref=e395]:
+              - generic [ref=e396]:
+                - paragraph [ref=e397]: Playground
+                - generic [ref=e398]: Shipped
+              - paragraph [ref=e399]: A cube to turn in the browser, with notation.
+            - listitem [ref=e400]:
+              - generic [ref=e401]:
+                - paragraph [ref=e402]: Profiles, friends, clubs
+                - generic [ref=e403]: Shipped
+              - paragraph [ref=e404]: PBs and badges, follows, college clubs.
+        - region "Next" [ref=e405]:
+          - heading "Next" [level=3] [ref=e406]
+          - paragraph [ref=e407]: Being built or up next
+          - list [ref=e408]:
+            - listitem [ref=e409]:
+              - generic [ref=e410]:
+                - paragraph [ref=e411]: Cubby companion
+                - generic [ref=e412]: Building
+              - paragraph [ref=e413]: A practice buddy who shows you around and cheers your PBs.
+            - listitem [ref=e414]:
+              - generic [ref=e415]:
+                - paragraph [ref=e416]: BLD mode with memo split
+                - generic [ref=e417]: Planned
+              - paragraph [ref=e418]: Blindfolded solving with memo and execution timed apart.
+            - listitem [ref=e419]:
+              - generic [ref=e420]:
+                - paragraph [ref=e421]: Daily scramble
+                - generic [ref=e422]: Planned
+              - paragraph [ref=e423]: One scramble for everyone, every day, with a leaderboard.
+            - listitem [ref=e424]:
+              - generic [ref=e425]:
+                - paragraph [ref=e426]: Compete
+                - generic [ref=e427]: Planned
+              - paragraph [ref=e428]: Races on the same scramble, ratings, and bots to warm up against.
+            - listitem [ref=e429]:
+              - generic [ref=e430]:
+                - paragraph [ref=e431]: College tournament rooms
+                - generic [ref=e432]: Planned
+              - paragraph [ref=e433]: Run your club's competition online.
+        - region "Later" [ref=e434]:
+          - heading "Later" [level=3] [ref=e435]
+          - paragraph [ref=e436]: On the list
+          - list [ref=e437]:
+            - listitem [ref=e438]:
+              - generic [ref=e439]:
+                - paragraph [ref=e440]: Bluetooth smart cubes
+                - generic [ref=e441]: Planned
+              - paragraph [ref=e442]: Connect a smart cube and review every move of a solve.
+            - listitem [ref=e443]:
+              - generic [ref=e444]:
+                - paragraph [ref=e445]: AI coach
+                - generic [ref=e446]: Planned
+              - paragraph [ref=e447]: Advice from your own solves.
+            - listitem [ref=e448]:
+              - generic [ref=e449]:
+                - paragraph [ref=e450]: Cube shop in ₹
+                - generic [ref=e451]: Planned
+              - paragraph [ref=e452]: Picks for your level and budget, from sellers who ship in India.
+            - listitem [ref=e453]:
+              - generic [ref=e454]:
+                - paragraph [ref=e455]: National and state rankings
+                - generic [ref=e456]: Planned
+              - paragraph [ref=e457]: Leaderboards for India, state by state.
+            - listitem [ref=e458]:
+              - generic [ref=e459]:
+                - paragraph [ref=e460]: Competition calendar
+                - generic [ref=e461]: Planned
+              - paragraph [ref=e462]: WCA competitions and meets across India.
+      - link "The full roadmap, with details" [ref=e463] [cursor=pointer]:
+        - /url: /roadmap
+      - generic [ref=e466]:
+        - heading "Get told when the next thing ships" [level=3] [ref=e467]
+        - generic [ref=e468]:
+          - generic [ref=e469]:
+            - generic [ref=e470]: Email address
+            - textbox "Email address" [ref=e471]:
+              - /placeholder: you@example.com
+            - button "Notify me" [ref=e472]
+          - paragraph [ref=e473]:
+            - text: One email when something ships. No spam.
+            - link "Privacy" [ref=e474] [cursor=pointer]:
+              - /url: /privacy
+    - region "Questions cubers ask." [ref=e475]:
+      - generic [ref=e476]:
+        - generic [ref=e477]: FAQ
+        - heading "Questions cubers ask." [level=2] [ref=e481]
+      - generic [ref=e482]:
+        - generic [ref=e483]:
+          - group [ref=e484]:
+            - heading "Is CuberHub free?" [level=3] [ref=e486] [cursor=pointer]
+          - group [ref=e489]:
+            - heading "Do I need an account?" [level=3] [ref=e491] [cursor=pointer]
+          - group [ref=e494]:
+            - heading "Does it work offline?" [level=3] [ref=e496] [cursor=pointer]
+          - group [ref=e499]:
+            - heading "Can I import my times from csTimer?" [level=3] [ref=e501] [cursor=pointer]
+        - generic [ref=e504]:
+          - group [ref=e505]:
+            - heading "Are the scrambles WCA-legal?" [level=3] [ref=e507] [cursor=pointer]
+          - group [ref=e510]:
+            - heading "Do you support smart cubes?" [level=3] [ref=e512] [cursor=pointer]
+          - group [ref=e515]:
+            - heading "Which puzzles are supported?" [level=3] [ref=e517] [cursor=pointer]
+          - group [ref=e520]:
+            - heading "Who makes CuberHub?" [level=3] [ref=e522] [cursor=pointer]
+    - generic [ref=e525]:
+      - generic [aria-hidden]:
+        - generic: R
+        - generic: U'
+        - generic: F2
+        - generic: M
+      - generic [ref=e526]:
+        - heading "Your next PB starts here." [level=2] [ref=e527]:
+          - generic [aria-hidden] [ref=e528]: Your
+          - generic [aria-hidden] [ref=e529]: next
+          - generic [aria-hidden] [ref=e530]: PB
+          - generic [aria-hidden] [ref=e531]: starts
+          - generic [aria-hidden] [ref=e532]: here.
+        - paragraph [ref=e533]: Start timing free. No account needed.
+        - generic [ref=e534]:
+          - link "Start timing free" [ref=e535] [cursor=pointer]:
+            - /url: /timer
+          - link "Sign in to sync across devices" [ref=e536] [cursor=pointer]:
+            - /url: /login
+    - generic [ref=e537]:
+      - generic [ref=e538]:
+        - generic [ref=e539]:
+          - link "CuberHub home" [ref=e540] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e541]: cuberhub
+          - paragraph [ref=e583]: The unified cubing platform
+          - paragraph [ref=e584]: Built with pride for the Indian speedcubing community.
+        - navigation "Product" [ref=e585]:
+          - paragraph [ref=e586]: Product
+          - list [ref=e587]:
+            - listitem [ref=e588]:
+              - link "Timer" [ref=e589] [cursor=pointer]:
+                - /url: /timer
+            - listitem [ref=e590]:
+              - link "Learn" [ref=e591] [cursor=pointer]:
+                - /url: /learn
+            - listitem [ref=e592]:
+              - link "Drill Lab" [ref=e593] [cursor=pointer]:
+                - /url: /learn/333/drill
+            - listitem [ref=e594]:
+              - link "Playground" [ref=e595] [cursor=pointer]:
+                - /url: /playground
+            - listitem [ref=e596]:
+              - link "Stats" [ref=e597] [cursor=pointer]:
+                - /url: /stats
+        - navigation "Community" [ref=e598]:
+          - paragraph [ref=e599]: Community
+          - list [ref=e600]:
+            - listitem [ref=e601]:
+              - link "Clubs" [ref=e602] [cursor=pointer]:
+                - /url: /clubs
+        - navigation "Company" [ref=e603]:
+          - paragraph [ref=e604]: Company
+          - list [ref=e605]:
+            - listitem [ref=e606]:
+              - link "Roadmap" [ref=e607] [cursor=pointer]:
+                - /url: /#roadmap
+            - listitem [ref=e608]:
+              - link "About" [ref=e609] [cursor=pointer]:
+                - /url: /about
+        - navigation "Legal" [ref=e610]:
+          - paragraph [ref=e611]: Legal
+          - list [ref=e612]:
+            - listitem [ref=e613]:
+              - link "Privacy" [ref=e614] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e615]:
+              - link "Terms" [ref=e616] [cursor=pointer]:
+                - /url: /terms
+      - paragraph [ref=e618]:
+        - text: WCA scrambles powered by
+        - link "cubing.js" [ref=e619] [cursor=pointer]:
+          - /url: https://js.cubing.net/cubing/
+  - button "Open Next.js Dev Tools" [ref=e625] [cursor=pointer]
