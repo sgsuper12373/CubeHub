@@ -3,6 +3,7 @@
  * Command palette). Pure, so the matching is unit-tested; the dialog is
  * components/layout/command-palette.tsx.
  */
+import { SHOW_CUBBY } from "@/lib/companion/flag";
 import type { LearnNavPuzzle } from "@/lib/learn/public-dal";
 import { THEMES as THEME_DEFS } from "@/themes";
 import type { ThemePreference } from "@/themes/preference";
@@ -29,6 +30,8 @@ const PAGES: { label: string; href: string; keywords?: string }[] = [
   { label: "Clubs", href: "/clubs", keywords: "college community" },
   { label: "People", href: "/people", keywords: "friends follow feed" },
   { label: "Settings", href: "/settings", keywords: "preferences account" },
+  // Cubby's settings open over the current page: the way back after switching Cubby off.
+  ...(SHOW_CUBBY ? [{ label: "Cubby settings", href: "?cubby=settings", keywords: "companion mascot tour mute" }] : []),
 ];
 
 /** Every theme the app ships, then "follow the system". */

@@ -7,6 +7,7 @@ import { CommandPalette } from "@/components/layout/command-palette";
 import { UsernameOnboarding } from "@/components/auth/username-onboarding";
 import { CubbyMount } from "@/components/cubby/cubby-mount";
 import { getProfile } from "@/lib/auth/dal";
+import { getCompanionRecord } from "@/lib/companion/dal";
 import { SHOW_CUBBY } from "@/lib/companion/flag";
 import { getLearnNav } from "@/lib/learn/public-dal";
 import { getNotifications } from "@/lib/notifications/dal";
@@ -42,6 +43,7 @@ export default async function AppLayout({
     getLearnNav(),
   ]);
   const sidebarPrefs = parseSidebarCookie(cookieStore.get(SIDEBAR_COOKIE)?.value);
+  const companionRecord = SHOW_CUBBY && profile ? await getCompanionRecord(profile.id) : null;
 
   return (
     <div className="flex flex-1">
@@ -50,7 +52,7 @@ export default async function AppLayout({
       <BottomNav unread={notifications.unread} username={profile?.username ?? null} />
       <UsernameOnboarding profile={profile} />
       <CommandPalette learnNav={learnNav} username={profile?.username ?? null} />
-      {SHOW_CUBBY && <CubbyMount />}
+      {SHOW_CUBBY && <CubbyMount member={profile !== null} initialRecord={companionRecord} />}
     </div>
   );
 }

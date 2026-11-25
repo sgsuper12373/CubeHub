@@ -1,9 +1,10 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 import { ask, startPageTour, timerState } from "@/components/cubby/companion-actions";
+import { CompanionSettingsSheet } from "@/components/cubby/companion-settings-sheet";
 import { CubbyDock } from "@/components/cubby/dock";
 import { getCubbyRenderer } from "@/components/cubby/renderer-instance";
 import { SpeechBubble } from "@/components/cubby/speech-bubble";
@@ -14,8 +15,9 @@ import { fillLine, pickGreeting } from "@/lib/companion/content";
 import { isQuietPhase } from "@/lib/companion/director";
 import { noteVisit } from "@/lib/companion/memory";
 import { companionPageFor, type CompanionPage } from "@/lib/companion/pages";
-import { loadLocalRecord, parseRecord } from "@/lib/companion/record";
-import { useCompanionStore } from "@/stores/companion-store";
+import { saveCompanionRecord } from "@/lib/companion/actions";
+import { loadLocalRecord, parseRecord, saveLocalRecord, type CompanionRecord } from "@/lib/companion/record";
+import { setCompanionPersister, useCompanionStore } from "@/stores/companion-store";
 import { isOverlayOpen } from "@/stores/overlay-store";
 
 /** Pages whose own `?` opens their shortcut list; Cubby's `?` stands down there. */
@@ -39,14 +41,46 @@ function visibleDockTrigger(): HTMLElement | null {
  * paint never waits for it. Owns the store's hydration, the current page,
  * the keyboard shortcuts and the phone dock.
  */
-export default function CompanionRoot() {
+export default function CompanionRoot({ member, initialRecord }: { member: boolean; initialRecord: CompanionRecord | null }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const hydrated = useCompanionStore((s) => s.hydrated);
   useCompanionReactions();
 
+  // Hydrate once: members from their account (a guest record on this device is
+  // copied up the first time), guests from this browser.
+  const hydratedOnce = useRef(false);
   useEffect(() => {
-    useCompanionStore.getState().hydrate(loadLocalRecord() ?? parseRecord(null));
-  }, []);
+    if (hydratedOnce.current) return;
+    hydratedOnce.current = true;
+    const local = loadLocalRecord();
+    if (!member) {
+      setCompanionPersister(saveLocalRecord);
+      useCompanionStore.getState().hydrate(local ?? parseRecord(null));
+      return;
+    }
+    setCompanionPersister(memberPersister());
+    if (initialRecord) {
+      useCompanionStore.getState().hydrate(initialRecord);
+      return;
+    }
+    useCompanionStore.getState().hydrate(local ?? parseRecord(null));
+    if (local && !sessionStorage.getItem(COPIED_KEY)) {
+      sessionStorage.setItem(COPIED_KEY, "1");
+      void saveCompanionRecord(local);
+    }
+  }, [member, initialRecord]);
+
+  // `?cubby=settings` (the palette's "Cubby settings") opens the settings sheet:
+  // the way back for a guest who switched Cubby off.
+  useEffect(() => {
+    if (!hydrated || searchParams.get("cubby") !== "settings") return;
+    useCompanionStore.getState().setSettingsOpen(true);
+    const rest = new URLSearchParams(searchParams);
+    rest.delete("cubby");
+    router.replace(rest.size > 0 ? `${pathname}?${rest}` : pathname, { scroll: false });
+  }, [hydrated, searchParams, pathname, router]);
 
   // Page entry: remember the visit, then (after a second, so the page settles)
   // start the page's tour if it's new to this cuber.
@@ -99,8 +133,31 @@ export default function CompanionRoot() {
       <CubbyDock placement="floating" />
       <SpeechBubble />
       <TourOverlay />
+      <CompanionSettingsSheet />
     </>
   );
+}
+
+const COPIED_KEY = "cubehub.companion.copied";
+
+/**
+ * Members: keep a local copy (so this device is right at once) and save to the
+ * account, debounced. Until the migration is applied the save fails; after
+ * the first failure this page view stops trying.
+ */
+function memberPersister(): (record: CompanionRecord) => void {
+  let timer: number | null = null;
+  let failing = false;
+  return (record) => {
+    saveLocalRecord(record);
+    if (failing) return;
+    if (timer) window.clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      void saveCompanionRecord(record).then((r) => {
+        if (r.error) failing = true;
+      });
+    }, 800);
+  };
 }
 
 /**

@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, getTimerSettings } from "@/lib/auth/dal";
 import { SettingsForm } from "@/components/settings/settings-form";
+import { CompanionSettingsSlot } from "@/components/cubby/cubby-mount";
+import { SHOW_CUBBY } from "@/lib/companion/flag";
 import { EmptyState, PersonList, PersonRow } from "@/components/social/person-row";
 import { UnblockButton } from "@/components/social/row-actions";
 import { getMyBlocks } from "@/lib/social/dal";
@@ -31,6 +33,7 @@ export default async function SettingsPage() {
   return (
     <div className="flex flex-1 flex-col items-center p-6 md:p-12">
       <SettingsForm initialSettings={initialSettings} profile={profile} />
+      {SHOW_CUBBY && <CompanionSettingsSlot />}
 
       <section aria-labelledby="blocked-title" className="-mt-12 w-full max-w-2xl space-y-3 pb-24">
         <h2 id="blocked-title" className="text-lg font-bold tracking-tight text-foreground">

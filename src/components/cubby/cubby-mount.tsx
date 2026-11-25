@@ -11,6 +11,9 @@ import type { CubbyDock as CubbyDockType } from "@/components/cubby/dock";
  */
 export const CubbyMount = dynamic(() => import("@/components/cubby/companion-root"), { ssr: false });
 
+/** The Cubby section of /settings. */
+export const CompanionSettingsSlot = dynamic(() => import("@/components/cubby/companion-settings-section"), { ssr: false });
+
 export const CubbyDockSlot = dynamic<React.ComponentProps<typeof CubbyDockType>>(
   () => import("@/components/cubby/dock").then((m) => m.CubbyDock),
   { ssr: false },

@@ -111,6 +111,7 @@ export function CubbyDock({ placement }: { placement: Placement }) {
           <DropdownMenuItem onClick={() => useCompanionStore.getState().updateSettings({ mode: muted ? "on" : "quiet" })}>
             {muted ? `Unmute ${name}` : `Mute ${name}`}
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => useCompanionStore.getState().setSettingsOpen(true)}>Settings…</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
