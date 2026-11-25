@@ -1,6 +1,6 @@
 # Companion plan: Cubby v1
 
-> **Status:** steps 1–9 done on `feat/cubby` (2026-11-26, not merged); step 10 on `feat/bld-mode` · Sumit Garad
+> **Status:** steps 1–9 done on `feat/cubby`, step 10 on `feat/bld-mode` (2026-11-26, neither merged) · Sumit Garad
 > **For:** Claude Code. Read `AGENTS.md`, `docs/architecture.md` (timer rules) and the spec,
 > `docs/cubby-cubing-companion.md` (repo copy of the Claude Doc), first.
 > **Related:** `docs/app-shell-plan.md` (the sidebar slot), `docs/home-plan.md` (Cubby's tip card),
@@ -161,8 +161,9 @@ Each step is one commit on `feat/cubby` with `npm run validate` and `npm run che
 
 ## Branch 2: `feat/bld-mode` (from `feat/cubby`)
 
-### 10. BLD timer mode and Cubby's blindfold solve
+### 10. ✅ BLD timer mode and Cubby's blindfold solve
 
+- *(Built as the event "3x3 BLD" (`333bf`), not a mode on 3x3, so BLD times don't mix into 3x3 stats: see decisions.md → BLD mode.)*
 - Timer mode **BLD**: no inspection; optional memo split (a second keypress while running marks
   the end of memo), set in preferences. `memo_ms` stored with the solve (migration file:
   `solves.memo_ms integer null`, check `0 < memo_ms <= time_ms`), kept locally for guests, shown

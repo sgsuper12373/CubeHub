@@ -5,6 +5,37 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-26 — 3x3 BLD with a memo split, and Cubby's blindfold solve (branch `feat/bld-mode`)
+
+**Request:** Unattended run, branch 2 (step 10 of `docs/companion-plan.md`).
+
+### Added
+
+- Event "3x3 BLD" (`333bf`, already in `puzzle_type`) in `lib/timer/events.ts` (`isBldEvent`); no inspection
+  for BLD; level ladder; mis-stop limit 8 s.
+- Memo split: `memoSplit` client setting (Timer settings → "BLD memo split"); `timer-store.ts` `stop()` splits
+  first, then stops (200 ms bounce guard); `memoEndedAt`/`finalMemoMs`; `Solve.memoMs`; the hint under the
+  time; solve details show "Memo · Execution".
+- Cloud: `lib/timer/memo-column.ts` probes for `solves.memo_ms` once per page view; `repo-supabase.ts` and
+  `sync.ts` read and write it only when it exists. Migration file `20261126000100_bld_memo.sql` (not applied)
+  and `supabase/tests/bld_memo_test.sql`.
+- Cubby: `components/cubby/bld-stage.tsx` (memo → blindfold → finish in the corner; shrug and a line on a
+  DNF), the "BLD solving animation" setting, `bldDnf` lines in `timer.json`.
+- Tests: `bld-mode.test.ts`, `cubby-bld.test.tsx`, `tests/e2e/bld.spec.ts`, a BLD case in `cubby.spec.ts`.
+
+### Verified
+
+- `npm run validate` (795 unit tests), `check:colors`.
+- SQL test on a local Postgres, 6/6 PASS (not run on the live project).
+- E2E (scratch worktree): flag off, `bld.spec.ts` + `timer.spec.ts` 14 passed; flag on, `cubby.spec.ts`
+  13 passed. Full flag-off suite: see the run report.
+
+### Decided
+
+See `docs/decisions.md` → BLD mode.
+
+---
+
 ## 2026-11-26 — Cubby companion v1 (branch `feat/cubby`, unattended run)
 
 **Request:** Unattended run: Cubby v1, everything that doesn't need the final art, behind `NEXT_PUBLIC_SHOW_CUBBY`;

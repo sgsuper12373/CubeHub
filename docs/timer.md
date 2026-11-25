@@ -40,7 +40,7 @@ Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Dri
 - Scramble preview as a 2D net or a 3D cube.
 
 ### Puzzles and sessions
-- 3x3, 2x2, 4x4, 5x5, 3x3 OH, Pyraminx, Skewb and Megaminx, picked from a dropdown and
+- 3x3, 2x2, 4x4, 5x5, 3x3 OH, 3x3 BLD, Pyraminx, Skewb and Megaminx, picked from a dropdown and
   remembered on this device. Megaminx scrambles keep their WCA line breaks.
 - Named sessions per puzzle: create, rename, switch, clear and delete.
 - Clearing a session and deleting a solve are soft deletes, with an Undo toast that still
@@ -107,7 +107,18 @@ both rules over the imported solves, oldest first. Database side:
   timer store's engine and restores the session's scramble, puzzle and settings on the way out; the
   attempt is never recorded into a session. The idle shortcuts (arrows, D, 1/2, ?) are off there
   (`TouchStage shortcuts={false}`), because they act on the session's solves. Leaderboard: `/home/daily`.
-- **Blind:** the time is hidden while running.
+- **Blind:** the time is hidden while running (not the same as 3x3 BLD, below).
+- **3x3 BLD** (event `333bf`, branch `feat/bld-mode`, 2026-11-26): blindfolded solving with its own
+  sessions, stats and PBs. No inspection, even with WCA inspection on, because memo is part of the
+  time. **BLD memo split** (Timer settings, client-only `memoSplit`): the first key press or tap
+  while running ends memo and the clock keeps going; the next one stops it (a second press within
+  200 ms of the split is ignored). The hint under the time says which part you're in. The memo time
+  is kept on the solve (`Solve.memoMs`) and shown in the solve details as "Memo · Execution". In the
+  cloud it's `solves.memo_ms` (migration `20261126000100_bld_memo.sql`, not yet applied): the app
+  checks for the column once per page view (`lib/timer/memo-column.ts`) and leaves it out until it
+  exists, so BLD solves still save. The mis-stop limit for BLD is 8 s (`misfire.ts`, mirrored in that
+  migration). With Cubby on, Cubby memorises and solves blindfolded in the corner
+  (`docs/companion-plan.md` step 10).
 - **Fullscreen.**
 - **WCA / competition:** 15s inspection.
 
