@@ -5,7 +5,9 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { CommandPalette } from "@/components/layout/command-palette";
 import { UsernameOnboarding } from "@/components/auth/username-onboarding";
+import { CubbyMount } from "@/components/cubby/cubby-mount";
 import { getProfile } from "@/lib/auth/dal";
+import { SHOW_CUBBY } from "@/lib/companion/flag";
 import { getLearnNav } from "@/lib/learn/public-dal";
 import { getNotifications } from "@/lib/notifications/dal";
 import { parseSidebarCookie, SIDEBAR_COOKIE } from "@/lib/sidebar";
@@ -48,6 +50,7 @@ export default async function AppLayout({
       <BottomNav unread={notifications.unread} username={profile?.username ?? null} />
       <UsernameOnboarding profile={profile} />
       <CommandPalette learnNav={learnNav} username={profile?.username ?? null} />
+      {SHOW_CUBBY && <CubbyMount />}
     </div>
   );
 }
