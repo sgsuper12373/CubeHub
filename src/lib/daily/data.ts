@@ -121,3 +121,18 @@ export async function postDailyResult(day: string, timeMs: number, penalty: Pena
 export function rowName(row: DailyRow): string {
   return row.displayName?.trim() || (row.username ? `@${row.username}` : "A cuber");
 }
+
+/** The days this cuber posted a daily result, newest first (for the streak). */
+export async function fetchMyDays(userId: string, limit = 120): Promise<string[]> {
+  try {
+    const { data, error } = await createClient()
+      .from("daily_results")
+      .select("day")
+      .eq("user_id", userId)
+      .order("day", { ascending: false })
+      .limit(limit);
+    return error ? [] : (data ?? []).map((r) => r.day as string);
+  } catch {
+    return [];
+  }
+}

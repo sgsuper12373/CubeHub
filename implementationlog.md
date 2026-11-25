@@ -5,6 +5,27 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Daily scramble: share and streak
+
+**Request:** Build the next items (todo: daily scramble, later).
+
+### Added
+
+- `src/lib/daily/share.ts` (pure): `dailyStreak()` (consecutive days ending today or yesterday) and
+  `dailyShareText()` (day, result, place of N, streak from 2 days, link to `/timer?daily=…`).
+- `daily-timer.tsx` result view: Share (share sheet, else copy with a toast) and "N-day streak".
+- `daily-card.tsx`: the streak ("Solve today's to keep it" until today's is done).
+- `data.ts` `fetchMyDays()`; `result.ts` keeps 60 days of local attempts (was 7), `loadAttemptDays()`.
+- Tests: `tests/unit/daily-share.test.ts` (3), `daily-scramble.test.ts` updated; the guest e2e now checks a
+  two-day streak and the copied share text.
+- Docs: `timer.md`, `todo.md`.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`; daily and home specs 12/12 (guest flow on live data).
+
+---
+
 ## 2026-11-25 — "What to learn next" on /learn and Home
 
 **Request:** Build the next items (todo idea "What to learn next").

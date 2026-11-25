@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { istDay } from "../../src/lib/daily/day";
+import { addDays, istDay } from "../../src/lib/daily/day";
 
 /**
  * The daily scramble (docs/home-plan.md → card 2). The guest flow needs the
@@ -37,8 +37,14 @@ test("a long-gone day says so and offers the normal timer", async ({ page }) => 
   await expect(page.getByRole("link", { name: "Open the timer" })).toHaveAttribute("href", "/timer");
 });
 
-test("a guest gets one attempt, kept in the browser, and the normal timer is untouched", async ({ page }) => {
+test("a guest gets one attempt, kept in the browser, and the normal timer is untouched", async ({ page, context }) => {
   const today = istDay();
+  // Yesterday's attempt in this browser, so today's makes a two-day streak.
+  await page.goto("/home");
+  await page.evaluate(
+    ([key, day]) => localStorage.setItem(key, JSON.stringify({ [day]: { timeMs: 20_000, penalty: "none", posted: false } })),
+    ["cubehub.daily.v1", addDays(today, -1)],
+  );
   await openDaily(page, today);
   const unavailable = await page.getByRole("heading", { name: "No daily scramble today" }).count();
   test.skip(unavailable > 0, "no daily scramble in this database yet (migration or seed not applied)");
@@ -52,6 +58,19 @@ test("a guest gets one attempt, kept in the browser, and the normal timer is unt
   // Guests aren't posted: no post button, a sign-in link instead.
   await expect(page.getByRole("button", { name: "Post to the leaderboard" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Sign in to get on the leaderboard" })).toBeVisible();
+  await expect(page.getByTestId("daily-streak")).toHaveText("2-day streak");
+
+  // Share: copied (headless Chromium has no share sheet) with the day, the result and a link to the same scramble.
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.evaluate(() => {
+    (navigator as { share?: unknown }).share = undefined;
+  });
+  await page.getByRole("button", { name: "Share" }).click();
+  await expect(page.getByText("Result copied")).toBeVisible();
+  const shared = await page.evaluate(() => navigator.clipboard.readText());
+  expect(shared).toContain("CuberHub daily scramble");
+  expect(shared).toContain("2-day streak");
+  expect(shared).toContain(`/timer?daily=${today}`);
 
   // A reload doesn't buy a second attempt.
   const shown = await result.textContent();

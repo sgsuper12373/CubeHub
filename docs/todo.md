@@ -18,8 +18,9 @@ its completed history, is in git.
 
 Ordered by value for effort.
 
-1. **Daily scramble, later:** streaks, a share card (`src/lib/timer/share-card.ts`), a Friends
-   tab, 2x2 and OH dailies, and a scheduled job that loads the next scramble batch.
+1. **Daily scramble, later:** a share *image* (`src/lib/timer/share-card.ts`), a Friends tab, 2x2
+   and OH dailies, and a scheduled job that loads the next scramble batch (needs pg_cron or a
+   Vercel cron with a server key: the founder's call). Streaks and a text share are done.
 2. **Smart cube and Stackmat support.** cubing.js has Bluetooth for GAN and other smart cubes.
    This is bigger work, and Chrome/Android only.
 3. **Database tidy-up (later):** 16 foreign keys without indexes and 21 unused indexes, per the

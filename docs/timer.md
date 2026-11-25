@@ -107,6 +107,10 @@ both rules over the imported solves, oldest first. Database side:
   timer store's engine and restores the session's scramble, puzzle and settings on the way out; the
   attempt is never recorded into a session. The idle shortcuts (arrows, D, 1/2, ?) are off there
   (`TouchStage shortcuts={false}`), because they act on the session's solves. Leaderboard: `/home/daily`.
+  The result screen has **Share** (the share sheet, or a copied line with the result, place, streak
+  and a link to the same scramble; `lib/daily/share.ts`) and the **streak**: days in a row with an
+  attempt, from posted results plus this browser's attempts (kept 60 days), still standing until
+  today's daily closes. The Home card shows the streak too.
 - **Blind:** the time is hidden while running.
 - **Fullscreen.**
 - **WCA / competition:** 15s inspection.

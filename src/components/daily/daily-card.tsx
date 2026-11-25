@@ -6,8 +6,9 @@ import { useEffect, useState } from "react";
 import { HomeCard, HomeCardSkeleton } from "@/components/home/home-card";
 import { buttonVariants } from "@/components/ui/button";
 import { formatCountdown, formatDay, istDay, msUntilNextDay } from "@/lib/daily/day";
-import { fetchBoard, fetchDaily, fetchMine, rowName, type DailyRow, type DailyScramble } from "@/lib/daily/data";
-import { loadAttempt, type DailyAttempt } from "@/lib/daily/result";
+import { fetchBoard, fetchDaily, fetchMine, fetchMyDays, rowName, type DailyRow, type DailyScramble } from "@/lib/daily/data";
+import { loadAttempt, loadAttemptDays, type DailyAttempt } from "@/lib/daily/result";
+import { dailyStreak } from "@/lib/daily/share";
 import { formatResult } from "@/lib/timer/format";
 
 type Loaded = {
@@ -17,6 +18,7 @@ type Loaded = {
   top: DailyRow[];
   mine: { row: DailyRow; rank: number | null } | null;
   local: DailyAttempt | null;
+  streak: number;
 };
 
 /**
@@ -39,8 +41,13 @@ export function DailyCard({ userId }: { userId: string | null }) {
         if (live) setData(null);
         return;
       }
-      const [board, mine] = await Promise.all([fetchBoard(day, 3), userId ? fetchMine(day, userId) : null]);
-      if (live) setData({ day, daily, solved: board.solved, top: board.top, mine, local: loadAttempt(day) });
+      const [board, mine, days] = await Promise.all([
+        fetchBoard(day, 3),
+        userId ? fetchMine(day, userId) : null,
+        userId ? fetchMyDays(userId) : Promise.resolve([]),
+      ]);
+      const streak = dailyStreak([...days, ...loadAttemptDays()], day);
+      if (live) setData({ day, daily, solved: board.solved, top: board.top, mine, local: loadAttempt(day), streak });
     })();
     return () => {
       live = false;
@@ -57,7 +64,7 @@ export function DailyCard({ userId }: { userId: string | null }) {
   if (data === undefined) return <HomeCardSkeleton />;
   if (data === null) return null;
 
-  const { day, daily, solved, top, mine, local } = data;
+  const { day, daily, solved, top, mine, local, streak } = data;
   const attempted = mine !== null || local !== null;
   const result = mine
     ? mine.row.penalty === "dnf"
@@ -82,6 +89,11 @@ export function DailyCard({ userId }: { userId: string | null }) {
           Your result: <span className="font-mono font-semibold tabular-nums">{result}</span>
           {mine?.rank ? <span className="text-muted-foreground"> · #{mine.rank}</span> : null}
           {!mine && local && !local.posted && userId && <span className="text-muted-foreground"> · not posted yet</span>}
+        </p>
+      )}
+      {streak >= 2 && (
+        <p className="mt-1 text-xs font-medium text-primary" data-testid="daily-card-streak">
+          {streak}-day streak{attempted ? "" : ". Solve today's to keep it."}
         </p>
       )}
 

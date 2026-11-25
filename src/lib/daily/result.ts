@@ -42,8 +42,8 @@ export function allowedPenalties(fromInspection: Penalty): Penalty[] {
 // ── This browser's attempts ──
 
 export const DAILY_STORAGE_KEY = "cubehub.daily.v1";
-/** Old days are dropped on write; a week is plenty to show yesterday's result. */
-const KEEP_DAYS = 7;
+/** Old days are dropped on write. Sixty days: long enough for a guest's streak to mean something. */
+export const KEEP_DAYS = 60;
 
 type Stored = Record<string, DailyAttempt>;
 
@@ -81,6 +81,12 @@ export function withAttempt(stored: Stored, day: string, attempt: DailyAttempt):
 export function loadAttempt(day: string): DailyAttempt | null {
   if (typeof localStorage === "undefined") return null;
   return parseStoredAttempts(localStorage.getItem(DAILY_STORAGE_KEY))[day] ?? null;
+}
+
+/** The days this browser has a daily attempt for (a guest's streak). */
+export function loadAttemptDays(): string[] {
+  if (typeof localStorage === "undefined") return [];
+  return Object.keys(parseStoredAttempts(localStorage.getItem(DAILY_STORAGE_KEY)));
 }
 
 export function saveAttempt(day: string, attempt: DailyAttempt): void {

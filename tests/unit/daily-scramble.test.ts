@@ -5,6 +5,7 @@ import {
   allowedPenalties,
   dailyResultProblem,
   effectiveMs,
+  KEEP_DAYS,
   parseStoredAttempts,
   withAttempt,
 } from "@/lib/daily/result";
@@ -59,13 +60,15 @@ describe("daily scramble: results", () => {
     expect(allowedPenalties("dnf")).toEqual(["dnf"]);
   });
 
-  it("keeps a week of attempts and drops anything malformed", () => {
+  it("keeps the newest KEEP_DAYS attempts and drops anything malformed", () => {
     let stored = parseStoredAttempts(
       JSON.stringify({ "2026-12-01": { timeMs: 9000, penalty: "none" }, bad: { timeMs: 1, penalty: "none" }, "2026-12-02": { timeMs: -1 } }),
     );
     expect(stored).toEqual({ "2026-12-01": { timeMs: 9000, penalty: "none", posted: false } });
-    for (let d = 2; d <= 9; d++) stored = withAttempt(stored, `2026-12-0${d}`, { timeMs: 10_000, penalty: "plus2", posted: true });
-    expect(Object.keys(stored).sort()).toEqual(["2026-12-03", "2026-12-04", "2026-12-05", "2026-12-06", "2026-12-07", "2026-12-08", "2026-12-09"]);
+    for (let d = 2; d <= KEEP_DAYS + 2; d++) stored = withAttempt(stored, addDays("2026-12-01", d - 1), { timeMs: 10_000, penalty: "plus2", posted: true });
+    const kept = Object.keys(stored).sort();
+    expect(kept).toHaveLength(KEEP_DAYS);
+    expect(kept[0]).toBe(addDays("2026-12-01", 2));
     expect(parseStoredAttempts("not json")).toEqual({});
   });
 });

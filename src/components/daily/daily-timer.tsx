@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Check, Loader2, Trophy } from "lucide-react";
+import { CalendarDays, Check, Flame, Loader2, Share2, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -11,11 +11,15 @@ import { TouchStage } from "@/components/timer/touch-stage";
 import { Button, buttonVariants } from "@/components/ui/button";
 import type { ServerTimerSettings } from "@/lib/auth/dal";
 import { dayStatus, formatDay, istDay } from "@/lib/daily/day";
-import { fetchDaily, fetchMine, postDailyResult, type DailyRow, type DailyScramble } from "@/lib/daily/data";
+import { fetchBoard, fetchDaily, fetchMine, fetchMyDays, postDailyResult, type DailyRow, type DailyScramble } from "@/lib/daily/data";
+import { dailyShareText, dailyStreak } from "@/lib/daily/share";
+import { copyWithToast } from "@/lib/timer/copy-text";
+import { appUrl } from "@/lib/site-url";
 import {
   allowedPenalties,
   dailyResultProblem,
   loadAttempt,
+  loadAttemptDays,
   saveAttempt,
   type DailyAttempt,
 } from "@/lib/daily/result";
@@ -295,6 +299,45 @@ function DailyResult({
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
+  const [streak, setStreak] = useState(0);
+  const [solved, setSolved] = useState<number | null>(null);
+
+  // The streak (posted days, plus this browser's attempts) and how many solved today.
+  useEffect(() => {
+    let live = true;
+    void (async () => {
+      const [mine, board] = await Promise.all([userId ? fetchMyDays(userId) : Promise.resolve([]), fetchBoard(day, 1)]);
+      if (!live) return;
+      setStreak(dailyStreak([...mine, ...loadAttemptDays(), day], istDay()));
+      setSolved(board.solved || null);
+    })();
+    return () => {
+      live = false;
+    };
+  }, [day, userId, posted]);
+
+  const share = async () => {
+    const result = posted ? posted.row : attempt;
+    if (!result) return;
+    const text = dailyShareText({
+      day,
+      timeMs: result.timeMs ?? 0,
+      penalty: result.penalty,
+      rank: posted?.rank ?? null,
+      solved,
+      streak,
+      url: appUrl(`/timer?daily=${day}`),
+    });
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({ text });
+        return;
+      } catch {
+        // Cancelled, or not allowed here: fall back to copying.
+      }
+    }
+    await copyWithToast(text, "Result");
+  };
 
   const shown = posted
     ? posted.row.penalty === "dnf"
@@ -361,6 +404,13 @@ function DailyResult({
         </fieldset>
       ) : null}
 
+      {streak >= 2 && (
+        <p className="flex items-center gap-1.5 text-sm font-medium text-foreground" data-testid="daily-streak">
+          <Flame className="size-4 text-primary" aria-hidden />
+          {streak}-day streak
+        </p>
+      )}
+
       {problem && <p className="text-sm text-destructive">{problem}</p>}
       {error && (
         <p className="text-sm text-destructive" role="alert">
@@ -387,6 +437,10 @@ function DailyResult({
         <Link href={`/home/daily?day=${day}`} className={buttonVariants({ size: "lg", variant: "outline" })}>
           See the leaderboard
         </Link>
+        <Button variant="outline" size="lg" onClick={() => void share()}>
+          <Share2 className="size-4" aria-hidden />
+          Share
+        </Button>
       </div>
       <Link href="/timer" className="text-sm font-medium text-primary hover:underline">
         Back to the normal timer
