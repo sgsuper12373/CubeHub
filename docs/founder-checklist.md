@@ -107,3 +107,19 @@ Work Claude can do without you is in `todo.md`.
 - [ ] **Reduced motion:** the loading cube still turns slowly (6 s) when "reduce motion" is on.
       This is on purpose, because it signals loading (WCAG allows essential motion). Say if you
       want it stopped completely.
+
+## 7. Cubby and 3x3 BLD (branches `feat/cubby` and `feat/bld-mode`, 2026-11-26)
+
+Nothing here is merged or live. Details and the order of steps: `docs/run-report-2026-11-26.md`.
+
+- [ ] **Look at Cubby:** `git switch feat/bld-mode`, then `NEXT_PUBLIC_SHOW_CUBBY=1 npm run dev`.
+      Open `/timer`, `/learn`, a set, the Drill Lab and the Playground; `/dev/cubby` shows every pose.
+- [ ] **Decide:** is the v0 art good enough for the beta, or does Cubby wait for the final art?
+- [ ] **Before turning the flag on anywhere:** apply `20261126000000_companion.sql` (members'
+      Cubby settings and tour progress), then run `supabase/tests/companion_test.sql`.
+- [ ] **Before (or soon after) shipping 3x3 BLD:** apply `20261126000100_bld_memo.sql` (memo
+      times in the cloud, BLD mis-stop limits), then run `supabase/tests/bld_memo_test.sql`.
+      BLD works without it; memo times then stay in the browser.
+- [ ] **Merge:** both branches are off `origin/main`, not your local `main` (6 commits ahead).
+      Expect small conflicts in `docs/` and `implementationlog.md` only.
+

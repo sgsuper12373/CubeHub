@@ -43,6 +43,8 @@ import { useOverlayLock } from "@/stores/overlay-store";
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { usePaletteStore } from "@/stores/palette-store";
 import { ThemePicker } from "@/components/layout/theme-picker";
+import { CubbyDockSlot } from "@/components/cubby/cubby-mount";
+import { SHOW_CUBBY } from "@/lib/companion/flag";
 
 const LG_QUERY = "(min-width: 1024px)";
 const PEEK_OPEN_MS = 150;
@@ -173,6 +175,7 @@ export function AppSidebar({
           >
             <PanelLeftOpen className="size-4" />
           </button>
+          {SHOW_CUBBY && <CubbyDockSlot placement="floating-desktop" />}
         </>
       )}
       <aside
@@ -244,7 +247,8 @@ export function AppSidebar({
               className="h-9 w-full justify-start gap-2.5 px-2.5 font-medium text-sidebar-foreground/80 hover:text-sidebar-foreground"
             />
           )}
-          {/* Cubby's slot (docs/app-shell-plan.md → Cubby slot): renders nothing until the companion ships. */}
+          {/* Cubby's slot (docs/app-shell-plan.md → Cubby slot), behind NEXT_PUBLIC_SHOW_CUBBY. */}
+          {SHOW_CUBBY && <CubbyDockSlot placement={rail && !showPeek ? "rail" : "sidebar"} />}
           {sidebarFooterItems.map((item) => (
             <SidebarLink
               key={item.href}
@@ -355,6 +359,7 @@ function LearnItem({
           openOnHover
           delay={100}
           aria-label={item.label}
+          data-tour="learn-nav"
           className={cn(itemClass(active), "w-full")}
         >
           <Icon className="size-4 shrink-0" />
@@ -379,7 +384,7 @@ function LearnItem({
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col" data-tour="learn-nav">
       <div className="flex items-center">
         <Link
           href={item.href}

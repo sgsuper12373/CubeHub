@@ -40,7 +40,7 @@ Related: `/stats` analytics are covered in `roadmap.md` → Phase 2, and the Dri
 - Scramble preview as a 2D net or a 3D cube.
 
 ### Puzzles and sessions
-- 3x3, 2x2, 4x4, 5x5, 3x3 OH, Pyraminx, Skewb and Megaminx, picked from a dropdown and
+- 3x3, 2x2, 4x4, 5x5, 3x3 OH, 3x3 BLD, Pyraminx, Skewb and Megaminx, picked from a dropdown and
   remembered on this device. Megaminx scrambles keep their WCA line breaks.
 - Named sessions per puzzle: create, rename, switch, clear and delete.
 - Clearing a session and deleting a solve are soft deletes, with an Undo toast that still
@@ -111,7 +111,18 @@ both rules over the imported solves, oldest first. Database side:
   and a link to the same scramble; `lib/daily/share.ts`) and the **streak**: days in a row with an
   attempt, from posted results plus this browser's attempts (kept 60 days), still standing until
   today's daily closes. The Home card shows the streak too.
-- **Blind:** the time is hidden while running.
+- **Blind:** the time is hidden while running (not the same as 3x3 BLD, below).
+- **3x3 BLD** (event `333bf`, branch `feat/bld-mode`, 2026-11-26): blindfolded solving with its own
+  sessions, stats and PBs. No inspection, even with WCA inspection on, because memo is part of the
+  time. **BLD memo split** (Timer settings, client-only `memoSplit`): the first key press or tap
+  while running ends memo and the clock keeps going; the next one stops it (a second press within
+  200 ms of the split is ignored). The hint under the time says which part you're in. The memo time
+  is kept on the solve (`Solve.memoMs`) and shown in the solve details as "Memo · Execution". In the
+  cloud it's `solves.memo_ms` (migration `20261126000100_bld_memo.sql`, not yet applied): the app
+  checks for the column once per page view (`lib/timer/memo-column.ts`) and leaves it out until it
+  exists, so BLD solves still save. The mis-stop limit for BLD is 8 s (`misfire.ts`, mirrored in that
+  migration). With Cubby on, Cubby memorises and solves blindfolded in the corner
+  (`docs/companion-plan.md` step 10).
 - **Fullscreen.**
 - **WCA / competition:** 15s inspection.
 

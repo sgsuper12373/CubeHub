@@ -16,9 +16,9 @@ import { bestAverageOfN, meanOfN, windowStat } from "@/lib/timer/stats";
 import type { Penalty, SolveMetric } from "@/lib/timer/types";
 
 describe("timer events", () => {
-  it("offers the eight popular events, 3x3 first", () => {
+  it("offers the popular events and 3x3 BLD, 3x3 first", () => {
     expect(TIMER_EVENTS.map((e) => e.id)).toEqual([
-      "333", "222", "444", "555", "333oh", "pyra", "skewb", "mega",
+      "333", "222", "444", "555", "333oh", "333bf", "pyra", "skewb", "mega",
     ]);
     expect(DEFAULT_EVENT).toBe("333");
   });

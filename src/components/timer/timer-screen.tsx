@@ -28,8 +28,9 @@ import type { PanelId } from "@/lib/timer/layout";
 import { useLayoutStore } from "@/stores/layout-store";
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { generateScramble } from "@/lib/timer/scrambler";
-import { loadLastEvent, saveLastEvent } from "@/lib/timer/events";
+import { isBldEvent, loadLastEvent, saveLastEvent } from "@/lib/timer/events";
 import { detectRecords, RECORD_LABEL, type RecordHit } from "@/lib/timer/pb-detect";
+import { headlineHit } from "@/lib/timer/share-card";
 import { countedSolves } from "@/lib/timer/misfire";
 import { loadClientSettings, saveSettings } from "@/lib/timer/settings-persistence";
 import type { ServerTimerSettings } from "@/lib/auth/dal";
@@ -41,6 +42,7 @@ import { confirm } from "@/stores/confirm-store";
 import { formatMs } from "@/lib/timer/format";
 import { cn } from "@/lib/utils";
 import { FOCUS_ATTR, isFocusHidden } from "@/lib/timer/focus";
+import { emitCompanion } from "@/lib/companion/bus";
 
 /**
  * Frosted pill behind the top controls when a background image is set, so
@@ -61,6 +63,8 @@ export function TimerScreen(props: {
   initialSettings: ServerTimerSettings | null;
 }) {
   const phase = useTimerStore((s) => s.phase);
+  const memoEndedAt = useTimerStore((s) => s.memoEndedAt);
+  const memoSplitOn = useTimerStore((s) => s.settings.memoSplit);
   const scramble = useTimerStore((s) => s.scramble);
   const puzzle = useTimerStore((s) => s.puzzle);
   const settings = useTimerStore((s) => s.settings);
@@ -166,6 +170,13 @@ export function TimerScreen(props: {
     }
     if (allTime.length > 0) {
       setCelebration({ hits: allTime, puzzle: useTimerStore.getState().puzzle, solveId });
+      const head = headlineHit(allTime);
+      const gain = head.previousMs - head.timeMs;
+      emitCompanion("pb", {
+        time: formatMs(head.timeMs),
+        delta: Number.isFinite(gain) && gain > 0 ? formatMs(gain) : null,
+        label: head.category === "single" ? "single" : RECORD_LABEL[head.category],
+      });
     }
     if (hits.length > 0) {
       setCelebrating(true);
@@ -203,6 +214,8 @@ export function TimerScreen(props: {
     const sessionState = useSessionStore.getState();
     // Judged on the solves before this one, like records.
     const misstop = sessionState.misstopFor(timeMs, penalty);
+    // BLD with the memo split: the memo time rides along with a timed solve.
+    const memoMs = source === "web" ? t.finalMemoMs : null;
     const solve = {
       id: crypto.randomUUID(),
       sessionId: sessionState.activeSessionId ?? "",
@@ -215,6 +228,7 @@ export function TimerScreen(props: {
       ...(source === "manual" && { source }),
       ...(t.scramble.custom && { scrambleType: "custom" as const }),
       ...(misstop && { excluded: true, excludedReason: "auto_misstop" as const }),
+      ...(memoMs !== null && memoMs > 0 && memoMs < timeMs && { memoMs: Math.round(memoMs) }),
       createdAt: new Date().toISOString(),
     };
 
@@ -225,6 +239,9 @@ export function TimerScreen(props: {
     sessionState.setKnownBests(known);
     const saved = sessionState.addSolve(solve);
     announceRecords(hits, solve.id);
+    emitCompanion("solve", { at: Date.parse(solve.createdAt) });
+    if (penalty !== "none") emitCompanion("penalty", { penalty });
+    if (misstop) emitCompanion("misstop", {});
 
     // A suspected mis-stop is saved left out; the cuber has the last word.
     if (misstop) {
@@ -281,11 +298,27 @@ export function TimerScreen(props: {
     if (phase === "stopped") onStopped();
   }, [phase]);
 
+  // Facts for Cubby (lib/companion/bus.ts); nothing listens unless the companion is on.
+  useEffect(() => {
+    if (phase === "running") emitCompanion("timer:started", {});
+    else if (phase === "stopped") emitCompanion("timer:stopped", {});
+    else if (phase === "inspecting") emitCompanion("inspection:started", {});
+  }, [phase]);
+
+  // BLD: memo, then execution (at the split, if it's on), then the finish.
+  useEffect(() => {
+    if (!isBldEvent(puzzle)) return;
+    if (phase === "running") emitCompanion("bld:phase", { phase: memoEndedAt === null ? "memo" : "execute" });
+    else if (phase === "stopped") emitCompanion("bld:phase", { phase: "finish" });
+    else if (phase === "idle") emitCompanion("bld:phase", { phase: "off" });
+  }, [phase, memoEndedAt, puzzle]);
+
   const togglePenalty = (p: Exclude<Penalty, "none">) => {
     const last = useSessionStore.getState().solves[0];
     if (!last) return;
     const next: Penalty = last.penalty === p ? "none" : p;
     void useSessionStore.getState().setPenalty(last.id, next);
+    if (next !== "none") emitCompanion("penalty", { penalty: next });
     useTimerStore.getState().setResultPenalty(next);
   };
 
@@ -307,6 +340,7 @@ export function TimerScreen(props: {
     saveLastEvent(p);
     useTimerStore.getState().setPuzzle(p);
     void useSessionStore.getState().setPuzzle(p);
+    emitCompanion("puzzle:changed", { puzzle: p });
   };
 
   const handlePenalty = (id: string, p: Penalty) => {
@@ -378,6 +412,8 @@ export function TimerScreen(props: {
   // "Hide UI while solving" (Focus mode) is off; Zen mode, which did the same
   // for the whole page, was retired with the app shell. It leaves fast (150ms) and
   // returns gracefully (300ms ease-out) when the solve lands.
+  // BLD with the memo split: the hint says which part of the solve you're in.
+  const bldSplitRunning = phase === "running" && isBldEvent(puzzle) && memoSplitOn;
   const fadeWhileSolving = cn(
     "transition-opacity",
     solving
@@ -463,7 +499,7 @@ export function TimerScreen(props: {
                     ? "text-timer-holding opacity-100"
                     : phase === "ready"
                       ? "text-timer-running opacity-100"
-                      : phase === "idle" || phase === "stopped"
+                      : phase === "idle" || phase === "stopped" || bldSplitRunning
                         ? "text-muted-foreground opacity-100"
                         : "opacity-0",
                 )}
@@ -472,9 +508,13 @@ export function TimerScreen(props: {
                   ? "keep holding…"
                   : phase === "ready"
                     ? "release to start"
-                    : phase === "stopped"
-                      ? "tap or press space for the next scramble"
-                      : "hold, then release to start"}
+                    : bldSplitRunning
+                      ? memoEndedAt === null
+                        ? "memo · press any key when the blindfold goes on"
+                        : "solving · press any key to stop"
+                      : phase === "stopped"
+                        ? "tap or press space for the next scramble"
+                        : "hold, then release to start"}
               </p>
             </TouchStage>
 
@@ -588,7 +628,7 @@ export function TimerScreen(props: {
             />
           </div>
             {phase === "idle" || phase === "stopped" ? (
-              <div className={cn("flex items-center gap-1", hasBackground && frostedChrome)}>
+              <div className={cn("flex items-center gap-1", hasBackground && frostedChrome)} data-tour="timer-settings">
                 <LayoutControls />
                 <BackgroundSettings />
                 <QuickSettings

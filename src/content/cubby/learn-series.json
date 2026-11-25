@@ -1,0 +1,23 @@
+{
+  "page": "learn-series",
+  "tourVersion": 1,
+  "tour": [
+    {"id": "progress", "target": "learn-progress", "title": "Your progress", "body": "Mark cases learned as you go, and this bar keeps count.", "mood": "happy", "since": 1},
+    {"id": "filters", "target": "learn-filters", "title": "Find a case", "body": "Show learned or unlearned cases, search by name, or pick a category.", "since": 1},
+    {"id": "card", "target": "learn-case-card", "title": "One case, one card", "body": "The picture shows the case, with the main algorithm under it. Animate plays it on a 3D cube.", "since": 1},
+    {"id": "drill", "target": "learn-drill-set", "title": "Drill the whole set", "body": "Drill Set times you on every case in this set, weakest first.", "since": 1},
+    {"id": "open", "target": "learn-cases", "title": "Open a case", "body": "Click any card to see all its algorithms and pick your main one.", "waitFor": "learn:opened-case", "mood": "happy", "since": 1}
+  ],
+  "greetings": [
+    {"when": "firstVisit", "line": "Hi, I'm {name}! Open me any time for a tour of this page."},
+    {"when": "always", "line": "One case at a time. Mark it learned when you can do it without looking."}
+  ],
+  "reactions": {
+    "mastered": ["Learned! Drill it a few times today so it sticks.", "Another one down. Nice."]
+  },
+  "tips": [
+    "Use the category chips to learn similar cases together.",
+    "Can't decide between two algorithms? Drill both and keep the faster one.",
+    "Drill Set only queues the cases you've marked learned, unless you switch to All."
+  ]
+}

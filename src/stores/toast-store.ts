@@ -1,5 +1,7 @@
 import { create } from "zustand";
 
+import { emitCompanion } from "@/lib/companion/bus";
+
 /**
  * Non-blocking toast queue. Fires from stores (PB, undo, sync complete,
  * penalty confirmations), never from components. The <Toaster/> renderer
@@ -38,5 +40,7 @@ export const useToastStore = create<ToastStore>()((set, get) => ({
 
 /** Convenience helper so callers don't need to import the store. */
 export function toast(t: Omit<Toast, "id">): string {
+  // Cubby looks concerned beside error toasts (lib/companion/bus.ts).
+  if (t.kind === "error") emitCompanion("error", { message: t.message });
   return useToastStore.getState().toast(t);
 }

@@ -36,6 +36,7 @@ export function PenaltyBar({
 
   return (
     <div
+      data-tour="timer-penalties"
       className={cn(
         "fixed inset-x-0 bottom-16 z-30 flex justify-center gap-2 px-4 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]",
         "md:static md:z-auto md:mx-auto md:w-full md:max-w-md md:pb-8",

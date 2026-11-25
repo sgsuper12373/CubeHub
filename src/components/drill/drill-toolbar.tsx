@@ -93,7 +93,7 @@ export function DrillToolbar({
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
-        <nav className={cn(segment, "max-w-full min-w-0 overflow-x-auto")} aria-label="Drill set">
+        <nav className={cn(segment, "max-w-full min-w-0 overflow-x-auto")} aria-label="Drill set" data-tour="drill-sets">
           {subsets.map((s) => (
             <Link
               key={s.slug}
@@ -133,7 +133,7 @@ export function DrillToolbar({
           </div>
         )}
 
-        <div className={segment} role="group" aria-label="Case order">
+        <div className={segment} role="group" aria-label="Case order" data-tour="drill-order">
           {(["weakest", "random"] as const).map((o) => (
             <button
               key={o}
@@ -147,7 +147,7 @@ export function DrillToolbar({
           ))}
         </div>
 
-        <div className="ml-auto flex shrink-0 items-center gap-1">
+        <div className="ml-auto flex shrink-0 items-center gap-1" data-tour="drill-options">
           <Popover open={optionsOpen} onOpenChange={onOptionsOpenChange}>
             <PopoverTrigger
               render={

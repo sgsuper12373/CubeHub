@@ -16,6 +16,7 @@ import {
   type CaseFilter,
   type CaseStatus,
 } from "@/lib/learn/case-filter";
+import { emitCompanion } from "@/lib/companion/bus";
 import { casePath, parseCaseNumber } from "@/lib/learn/case-route";
 
 const FILTER_KEYS = ["status", "group", "q"];
@@ -98,7 +99,7 @@ export function AlgorithmCaseList({
   return (
     <div className="space-y-6">
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-muted/20 border border-border p-2 rounded-2xl">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-muted/20 border border-border p-2 rounded-2xl" data-tour="learn-filters">
         {/* Status Filter Tabs */}
         <div className="flex items-center gap-1 bg-background/50 p-1 rounded-xl border border-border">
           <button
@@ -181,14 +182,18 @@ export function AlgorithmCaseList({
 
       {/* Grid of cases */}
       {filteredCases.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredCases.map((algCase) => (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3" data-tour="learn-cases">
+          {filteredCases.map((algCase, i) => (
             <AlgorithmCard
               key={algCase.id}
               algCase={algCase}
               puzzle={puzzle}
               href={casePath(puzzle, series, algCase.case_number) + query}
-              onOpen={() => showCase(algCase.case_number)}
+              onOpen={() => {
+                showCase(algCase.case_number);
+                emitCompanion("learn:opened-case", {});
+              }}
+              tourTarget={i === 0 ? "learn-case-card" : undefined}
             />
           ))}
         </div>

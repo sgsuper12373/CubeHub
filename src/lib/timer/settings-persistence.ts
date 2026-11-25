@@ -9,7 +9,7 @@ import { DEFAULT_TIMER_SETTINGS } from "./types";
  *   → saved via server action, loaded via getTimerSettings() in dal.ts
  *
  * Client-only fields (localStorage for everyone):
- *   holdMs, precision, inspectionAlert, previewDimension, inputMode
+ *   holdMs, precision, inspectionAlert, previewDimension, inputMode, memoSplit
  *   → never synced to the cloud; these are per-device preferences
  *
  * `previewDimension` is deliberately client-only. `show_scramble_preview`
@@ -25,6 +25,7 @@ interface ClientOnlySettings {
   inspectionAlert: InspectionAlert;
   previewDimension: "2D" | "3D";
   inputMode: "timer" | "typing";
+  memoSplit: boolean;
 }
 
 export const CLIENT_DEFAULTS: ClientOnlySettings = {
@@ -33,6 +34,7 @@ export const CLIENT_DEFAULTS: ClientOnlySettings = {
   inspectionAlert: DEFAULT_TIMER_SETTINGS.inspectionAlert,
   previewDimension: DEFAULT_TIMER_SETTINGS.previewDimension,
   inputMode: DEFAULT_TIMER_SETTINGS.inputMode,
+  memoSplit: DEFAULT_TIMER_SETTINGS.memoSplit,
 };
 
 /**
@@ -73,6 +75,7 @@ export function loadClientSettings(): ClientOnlySettings {
         parsed.inputMode === "timer" || parsed.inputMode === "typing"
           ? parsed.inputMode
           : CLIENT_DEFAULTS.inputMode,
+      memoSplit: typeof parsed.memoSplit === "boolean" ? parsed.memoSplit : CLIENT_DEFAULTS.memoSplit,
     };
   } catch {
     return CLIENT_DEFAULTS;
@@ -129,6 +132,7 @@ export function saveSettings(
   if (partial.previewDimension !== undefined)
     clientFields.previewDimension = partial.previewDimension;
   if (partial.inputMode !== undefined) clientFields.inputMode = partial.inputMode;
+  if (partial.memoSplit !== undefined) clientFields.memoSplit = partial.memoSplit;
   if (Object.keys(clientFields).length > 0) saveClientSettings(clientFields);
 
   // DB-backed fields → server action (authed only)

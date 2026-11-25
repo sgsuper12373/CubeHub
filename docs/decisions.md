@@ -183,6 +183,58 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 
 **Next achievement: progress from the profile stats, time gaps counted double** (2026-11-25, home step 6). The card reads `getAchievements()` (now with each badge's condition) and the cuber's own profile stats and PBs; it never decides a badge is earned (the server's award check does, and it counts timer-only averages, so the two can differ slightly). For time badges a raw ratio made everything look nearly done (25 s against sub-20 read 80%), so the gap counts double (that reads 50%; 16.42 against sub-15 reads 81%). Hidden badges and ones that can't be measured from stats (night owl, marathon) are skipped. On by default for regular members; new members can switch it on.
 
+## Cubby (companion v1, branch `feat/cubby`, 2026-11-26)
+
+The plan is `docs/companion-plan.md`; the spec's repo copy is `docs/cubby-cubing-companion.md`.
+
+**A repo copy of the spec was made first.** The batch named `docs/cubby-cubing-companion.md`, which didn't exist (only the pointer `companion-spec.md`). It was converted from the live Claude Doc (suggestions left out, as the doc instructs) and says the Claude Doc stays the source of truth.
+
+**Branched from `origin/main`, as asked.** Local `main` has six unpushed commits (PWA, what to learn next, daily share and streak, Home usage events) that this branch doesn't have. They touch different files except `docs/` and `implementationlog.md`, so a merge should need only small doc conflict fixes.
+
+**Everything is behind `NEXT_PUBLIC_SHOW_CUBBY=1`, read at build time.** The (app) layout, the sidebar slot, the Settings section, the landing section and the tip card's face all load through `next/dynamic` only when the flag is set, so with it off no Cubby code ships. The bus emits stay in the timer, drill, playground, Learn and toast code; with nobody listening they are an empty loop.
+
+**One renderer, drawn everywhere.** `CubbyRenderer` (`setInput`, `fire`, `onEvent`, `destroy`, plus `View`, the component that draws it) is the only thing callers see; `createCubbyRenderer()` is the one config line for a later Rive renderer. `destroy()` stops timers and listeners but leaves the renderer usable, because React's StrictMode runs cleanups early in development (found when every pose on `/dev/cubby` stayed idle). A `shrug` trigger was added for the BLD DNF ending; the spec's four triggers and input names are unchanged.
+
+**v0 art is placeholder geometry behind a manifest.** Each part (body, eyes, brows, mouth, arms, legs, BLD props) is its own file; `manifest.ts` maps the eight expressions to part variants. Colours are CSS classes in `globals.css` (Cubby block) driven by `--primary`/`--foreground` like the CH mark, so Slate gives teal and white faces. The face sits on the stickers (eyes on the middle-left and middle-right, mouth bottom-middle), clear of the grid lines.
+
+**Dock sizes: 44 px in the sidebar, 40 px in the rail and floating.** The spec's 56 px doesn't fit the sidebar footer row; the tour card shows Cubby at 72 px.
+
+**`?` stands down on the Timer and Playground**, whose own `?` opens their shortcut lists. Everywhere else `?` opens the dock menu.
+
+**Learn has two content pages:** the index (`learn`) and a set's page (`learn-series`). The spec's Learn steps (algorithm card, Drill, progress) only exist on a set's page, and a tour can't cross pages.
+
+**"Drill case mastered" is "case marked learned".** The Drill Lab has no mastery state yet; marking a case learned on its Learn card is the nearest real event (thumbs up and a line).
+
+**A drill rep counts as a running solve** for the quiet rules, as well as the timer and inspection.
+
+**Interactive steps keep a "Skip step" button**, so nobody is stuck on a step they can't do (Space on a touch screen, say). Skip tour is the same size as Next on every step. A tour card that can't fit beside a very large target (the whole timer panel) sits inside its top edge, clear of the time.
+
+**A skipped tour is offered once more only if it started by itself.** Skipping a tour the cuber asked for from the dock doesn't bring the dot back (found by the e2e test).
+
+**Mute = Quiet.** The dock's Mute switches the mode to Quiet (only what you ask for). Off hides Cubby everywhere; the way back is Settings (members) or Ctrl+K → "Cubby settings" (everyone), which opens the settings sheet through `?cubby=settings`.
+
+**Inspection coach and BLD animation are stored, not shown.** The coach isn't built (v1.5 in the ideas table's practice); the BLD setting appears with BLD mode (branch 2).
+
+**Members' settings and tour progress go to `user_settings.companion`** (migration `20261126000000_companion.sql`, file only, SQL test passes on a local Postgres). Until it's applied, the read returns null (logged once), the first failed save stops further saves for that page view, and the browser's copy is what counts. A guest's record is copied up once per browser session when the account has none.
+
+**Error reactions have no line**, only a concerned look beside the toast, as the spec describes.
+
+**Landing "Meet Cubby" ships with the v0 art behind the flag.** The waving Cubby has open eyes so they can follow the pointer (the other two poses have closed or blindfolded eyes).
+
+**E2E: the Cubby spec runs in its own flag-on build; the full suite runs flag-off.** With the flag on, every fresh browser gets first-visit tours, which would block the other tests. The builds ran in a throwaway git worktree in the scratchpad, because a `next start` from this repo's `.next` was running on port 3000 (the founder's local check) and rebuilding would have broken it.
+
+## BLD mode (branch `feat/bld-mode`, 2026-11-26)
+
+**3x3 BLD is an event, not a mode toggle.** A "BLD mode" switch on the 3x3 timer would put blindfolded times into the 3x3 sessions, averages and PBs. `333bf` was already in `public.puzzle_type`, so it's a new entry in `TIMER_EVENTS` ("3x3 BLD", cubing.js `333bf` scrambles) with its own sessions and records. No enum change was needed. Its profile level ladder runs from Sub-5:00 to Sub-20 (BLD Ao12s are rare: three DNFs make it a DNF).
+
+**No inspection in BLD**, even with WCA inspection on: memo is part of the time, as in WCA BLD.
+
+**The memo split is a client-only setting** (`memoSplit` in `cubehub.settings.v1`, Timer settings → "BLD memo split"), like hold time and precision, so it needs no `user_settings` column. The split works through the timer store's `stop()`, so Space, any key and a tap all split the same way, and a bounce within 200 ms of the split doesn't end the solve.
+
+**The memo time in the cloud waits for the migration, without breaking anything first.** `solves.memo_ms` is a migration file only. Until it's applied, a one-row probe per page view (`memo-column.ts`) leaves the column out of `loadSolves`, `saveSolve` and the guest-to-account sync, so BLD solves save normally and the memo stays on the browser's copy. Once applied, memo times are written and read with no code change. The same migration adds `333bf` to `misfire_limit_ms` (10 s) and `misstop_limit_ms` (8 s), which otherwise fell to the defaults of 1 s and 0.5 s; the function bodies are otherwise identical (checked with a diff). SQL test: `supabase/tests/bld_memo_test.sql`, 6/6 PASS on a local Postgres.
+
+**Cubby's blindfold solve** is the one exception to the quiet rules (`decide({ kind: "bld" })` only checks Off and the BLD animation setting). It sits in the bottom-right corner at 140 px, decorative (`aria-hidden`, no pointer events), and isn't hidden by Focus mode. Without the memo split, Cubby holds the memo pose for 2.5 s and then puts the blindfold on. At the stop the blindfold comes off; a cheer follows after 1.8 s unless the solve is marked DNF, which gets a shrug and "BLD is brutal. Next one." instead (no wince). Leaving the timer takes Cubby off stage.
+
 ## Tests
 
 **The `playground-swipe` flake was the test, not the swipe code** (2026-11-25, next batch step 5). Reproduced at 8 parallel workers: 13 of 24 projection runs failed, every sticker reading as the page background. The WebGL canvas hadn't drawn its first frame yet when the test took its screenshot: the loader going away doesn't mean a frame exists, and the fixed 400 ms / 800 ms sleeps weren't enough under load. Fixed in the spec, not quarantined: `openCube` waits until the F and R centres read green and red; `setCamera` drives `orbitCoordinatesRequest` (cubing's own drag path) and polls until the model reports the angle; the colour checks poll (10 s) instead of sleeping, so a wrong projection still fails. A second bug surfaced on the way: after an off-cube drag, setting the `cameraLatitude`/`cameraLongitude` props back to the values they already held was a no-op, so "back at the default camera" in the tap/orbit test had been 7° off all along. After the fix: 56/56 at 8 workers × 4 repeats, and 162/162 for both playground specs at 12 workers × 6.

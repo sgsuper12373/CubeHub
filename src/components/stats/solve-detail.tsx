@@ -97,6 +97,11 @@ export function SolveDetailModal({
             <p className="mt-1 text-xs text-muted-foreground">
               {formatRelative(date)} · {date.toLocaleTimeString()}
             </p>
+            {solve.memoMs !== undefined && (
+              <p className="mt-2 font-mono text-sm text-muted-foreground" data-testid="solve-memo">
+                Memo {formatMs(solve.memoMs)} · Execution {formatMs(solve.timeMs - solve.memoMs)}
+              </p>
+            )}
           </div>
 
           {/* Penalties */}

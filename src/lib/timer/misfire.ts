@@ -17,6 +17,8 @@ export const MISSTOP_LIMIT_MS: Record<TimerPuzzle, number> = {
   "333": 2000,
   "222": 300,
   "333oh": 4000,
+  // A little under the world-record BLD single (about 12 s), memo included.
+  "333bf": 8000,
   "444": 12000,
   "555": 25000,
   pyra: 500,

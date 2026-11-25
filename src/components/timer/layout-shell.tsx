@@ -148,6 +148,7 @@ export function LayoutShell({
               <div
                 key={cell.i}
                 data-panel={cell.i}
+                data-tour={`timer-panel-${cell.i}`}
                 style={cellStyle(cell)}
                 className={cn(
                   "flex min-h-0 min-w-0 flex-col overflow-hidden",

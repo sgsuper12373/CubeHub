@@ -57,6 +57,12 @@ export interface TimerSettings {
   disableMouseClick: boolean;
   /** Time solves with the timer, or type results in. Client-only (localStorage). */
   inputMode: "timer" | "typing";
+  /**
+   * BLD events: the first key press while running ends memo (the time keeps
+   * going) and the next one stops it, so the solve keeps a memo time.
+   * Client-only (localStorage).
+   */
+  memoSplit: boolean;
 }
 
 export const DEFAULT_TIMER_SETTINGS: TimerSettings = {
@@ -71,6 +77,7 @@ export const DEFAULT_TIMER_SETTINGS: TimerSettings = {
   timerFontSize: 100,
   disableMouseClick: false,
   inputMode: "timer",
+  memoSplit: false,
 };
 
 export interface Solve {
@@ -99,6 +106,11 @@ export interface Solve {
    * scramble; "custom" marks one the user pasted in.
    */
   scrambleType?: "random_state" | "custom";
+  /**
+   * BLD with the memo split on: how long memo took, from the start (DB
+   * `solves.memo_ms`, migration 20261126000100). Absent otherwise.
+   */
+  memoMs?: number;
   /** ISO timestamp. Wall-clock is fine for metadata; never used for timing math. */
   createdAt: string;
   /**

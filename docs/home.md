@@ -27,7 +27,7 @@ there. `Enter` presses its first button; `Space` belongs to the timer only. The 
 | Continue learning | `learning-card.tsx` | The series in progress; when none is, the next set on the path (`lib/learn/next-set.ts`) |
 | Drill queue | `drill-card.tsx` | Due count, slowest cases, a switch suggestion |
 | Next achievement | `achievement-card.tsx` | The unearned badge you're closest to (`lib/home/next-achievement.ts`) |
-| Cubby's tip | `tip-card.tsx` | One tip a day from `src/content/cubby-tips.json`, dismissible for the day |
+| Cubby's tip | `tip-card.tsx` | One tip a day from `src/content/cubby-tips.json`, dismissible for the day. With `NEXT_PUBLIC_SHOW_CUBBY=1`, Cubby's v0 face instead of the CH mark |
 | Playground | `static-cards.tsx` | For first-time guests |
 | Friends activity, Your clubs | `social-cards.tsx` | Signed in only; server cards in their own Suspense |
 | What's new | `whats-new-card.tsx` | From `src/content/changelog.json`; dismissals per device |

@@ -14,6 +14,8 @@ export const LEVEL_LADDERS: Record<TimerEventId, readonly number[]> = {
   "444": [180, 120, 90, 60, 50, 40, 35, 30],
   "555": [300, 180, 150, 120, 90, 75, 60],
   "333oh": [90, 60, 40, 30, 25, 20, 15],
+  // BLD: memo is in the time, and an Ao12 with three DNFs is a DNF, so few get one.
+  "333bf": [300, 180, 120, 90, 60, 45, 30, 20],
   pyra: [20, 15, 10, 8, 6, 5, 4, 3],
   skewb: [20, 15, 10, 8, 6, 5, 4, 3],
   mega: [300, 180, 120, 90, 75, 60, 50, 40],

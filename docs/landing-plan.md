@@ -314,7 +314,7 @@ Each step is one PR with `npm run validate` and `npm run test:e2e:prod` green.
 7. ✅ **Community, roadmap with waitlist** (migration + server action), **FAQ**. *(Notify me form added Nov 25)*
 8. ✅ **Final CTA and footer.**
 9. ✅ **Feature pages and `/roadmap`.**
-10. **Meet Cubby** when the companion art is ready.
+10. **Meet Cubby** when the companion art is ready. *(built with the v0 art behind `NEXT_PUBLIC_SHOW_CUBBY` on `feat/cubby`, 2026-11-26)*
 11. ✅ **Links to the app host.** Switch every product link to `appUrl()` once `app.cuberhub.me` is live
     (app shell step 9). Until then `appUrl()` returns the same host, so this can be merged early. *(takes effect when `NEXT_PUBLIC_APP_URL` is set)*
 12. ✅ Docs: `docs/brand.md` (rename, wordmark), `docs/architecture.md` (marketing routes), `docs/roadmap.md`.

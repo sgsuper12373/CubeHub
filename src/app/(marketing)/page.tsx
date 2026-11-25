@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 
+import { SHOW_CUBBY } from "@/lib/companion/flag";
 import { SITE_URL } from "@/lib/site-url";
 
 import { CommunitySection } from "@/components/marketing/community-section";
@@ -14,6 +15,9 @@ import { RoadmapSection } from "@/components/marketing/roadmap-section";
 const FeatureChapters = dynamic(() =>
   import("@/components/marketing/feature-chapters").then((m) => m.FeatureChapters),
 );
+
+/** Landing step 10, behind NEXT_PUBLIC_SHOW_CUBBY: not even loaded when the flag is off. */
+const MeetCubby = SHOW_CUBBY ? dynamic(() => import("@/components/marketing/meet-cubby").then((m) => m.MeetCubby)) : null;
 
 /** Static, refreshed hourly so the real-stats slot (components/marketing/real-stats.tsx) stays current. */
 export const revalidate = 3600;
@@ -61,6 +65,7 @@ export default function Home() {
     <>
       <HeroSection />
       <FeatureChapters />
+      {MeetCubby && <MeetCubby />}
       <LazyCustomizeSection />
       <CommunitySection />
       <RoadmapSection />
