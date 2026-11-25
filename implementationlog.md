@@ -5,6 +5,30 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Home usage events (the last open item in home-plan.md)
+
+**Request:** Check landing, Home, app-shell and companion docs for what's left; finish the near-complete items first.
+
+### Added
+
+- `src/lib/home/analytics.ts`: `home_card_click { card, action }`, `home_customize { hidden, shown }`,
+  `daily_attempt { result }` through `track()` from `@vercel/analytics` (sends on Vercel only). Actions are link
+  paths without query strings or button labels: no personal data.
+- `src/components/home/home-analytics.tsx`: one delegated click listener on `/home`, finding cards by
+  `data-tour="home-<id>"`. Hooks in the Customize sheet's `save()` and the daily timer's `onDone`.
+- `tests/unit/home-analytics.test.ts` (9 tests).
+
+### Docs
+
+`docs/home.md` → Analytics (and the layout shape now lists `order`); `docs/home-plan.md` → Analytics marked built.
+
+### Verified
+
+`npm run validate` (713 tests), `check:colors` OK, `test:e2e:prod` on `home.spec.ts` and `daily-scramble.spec.ts`:
+12 passed.
+
+---
+
 ## 2026-11-25 — e2e: steadier signed-in Home and Learn side-panel tests
 
 **Request:** Full `test:e2e:prod` before handing over.
