@@ -118,7 +118,7 @@ both rules over the imported solves, oldest first. Database side:
   while running ends memo and the clock keeps going; the next one stops it (a second press within
   200 ms of the split is ignored). The hint under the time says which part you're in. The memo time
   is kept on the solve (`Solve.memoMs`) and shown in the solve details as "Memo · Execution". In the
-  cloud it's `solves.memo_ms` (migration `20261126000100_bld_memo.sql`, not yet applied): the app
+  cloud it's `solves.memo_ms` (migration `20261126000100_bld_memo.sql`, applied 2026-11-26): the app
   checks for the column once per page view (`lib/timer/memo-column.ts`) and leaves it out until it
   exists, so BLD solves still save. The mis-stop limit for BLD is 8 s (`misfire.ts`, mirrored in that
   migration). With Cubby on, Cubby memorises and solves blindfolded in the corner

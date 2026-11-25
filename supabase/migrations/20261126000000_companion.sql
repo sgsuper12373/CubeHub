@@ -1,9 +1,7 @@
 -- Cubby, the companion: settings and tour progress per cuber
 -- (docs/companion-plan.md step 8, docs/cubby-cubing-companion.md → Settings).
 --
--- NOT APPLIED. A file only, written on the unattended run of 2026-11-26.
--- Apply with `supabase db push` once the founder approves; until then the app
--- keeps signed-in cubers' Cubby settings in the browser, like a guest's.
+-- Applied to the live project 2026-11-26 (supabase db push); companion_test.sql 7/7 PASS.
 --
 -- `{ "settings": {...}, "tours": { "<page>": { "seen", "skipped", "offered" } } }`;
 -- null means "defaults, no tours seen". The app parses field by field and

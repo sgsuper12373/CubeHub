@@ -110,16 +110,13 @@ Work Claude can do without you is in `todo.md`.
 
 ## 7. Cubby and 3x3 BLD (branches `feat/cubby` and `feat/bld-mode`, 2026-11-26)
 
-Nothing here is merged or live. Details and the order of steps: `docs/run-report-2026-11-26.md`.
+Merged and pushed; 3x3 BLD is live, Cubby is behind the flag. Details: `docs/run-report-2026-11-26.md`.
 
-- [ ] **Look at Cubby:** `git switch feat/bld-mode`, then `NEXT_PUBLIC_SHOW_CUBBY=1 npm run dev`.
-      Open `/timer`, `/learn`, a set, the Drill Lab and the Playground; `/dev/cubby` shows every pose.
+- [ ] **Look at Cubby:** `NEXT_PUBLIC_SHOW_CUBBY=1 npm run dev` (checklist:
+      `docs/verification-checklist.md` → C).
 - [ ] **Decide:** is the v0 art good enough for the beta, or does Cubby wait for the final art?
-- [ ] **Before turning the flag on anywhere:** apply `20261126000000_companion.sql` (members'
-      Cubby settings and tour progress), then run `supabase/tests/companion_test.sql`.
-- [ ] **Before (or soon after) shipping 3x3 BLD:** apply `20261126000100_bld_memo.sql` (memo
-      times in the cloud, BLD mis-stop limits), then run `supabase/tests/bld_memo_test.sql`.
-      BLD works without it; memo times then stay in the browser.
-- [ ] **Merge:** both branches are off `origin/main`, not your local `main` (6 commits ahead).
-      Expect small conflicts in `docs/` and `implementationlog.md` only.
+- [x] Applied `20261126000000_companion.sql` (2026-11-26; SQL test 7/7 on live).
+- [x] Applied `20261126000100_bld_memo.sql` (2026-11-26; SQL test 6/6 on live).
+- [x] Merged into `main` (2026-11-26).
+- [ ] **Turn Cubby on:** Vercel → `NEXT_PUBLIC_SHOW_CUBBY=1`, redeploy (after checking it in `docs/verification-checklist.md` → C).
 

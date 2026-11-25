@@ -1,123 +1,120 @@
-# Verification checklist: changes since the 2026-11-25 pass
+# Verification checklist: what shipped on 2026-11-26
 
-Everything built since your last checklist. Tick what works and write anything to change under
-**Notes**. When you're done, tell Claude to read it. Things that are always yours (Vercel,
-Supabase, decisions) stay in `founder-checklist.md`.
+Tick what works and write anything to change under **Notes**, then tell Claude to read it. The
+previous pass (2026-11-25), as you filled it in, is in git (`c022eba`). Things that are always
+yours (Vercel, Supabase, decisions) stay in `founder-checklist.md`.
 
 **Where to check**
 
-- **Part A is already live** on https://www.cuberhub.me (pushed earlier today).
-- **Part B is only on local `main`.** It's 6 commits ahead of GitHub and not pushed. Check it with
-  `npm run build && npx next start`, then open http://localhost:3000. The offline timer only works
-  in a production build, so `npm run dev` won't do for B1.
-
-**Browser check legend:** ✅ verified in browser · ⚠️ partly verified (see note) · ⬜ not verified (see note)
+- **A and B are live** on https://www.cuberhub.me after the push on 2026-11-26.
+- **C (Cubby) is off on the live site.** Check it locally: `NEXT_PUBLIC_SHOW_CUBBY=1 npm run dev`,
+  started with the flag (restart the dev server if it was already running without it). Use a
+  private window so every tour starts fresh.
 
 ---
 
-## Part A — live now
+## A. Left over from the last pass
 
-### A1. Fixes from your last checklist
-
-- [x] ✅ **Waitlist form:** a bad address showed "Enter a valid email address." A valid address
-      then showed "Adding you…" with the red error already gone.
-- [x] ✅ **Mis-stop pop-up:** a 1.00 s solve showed "1.00 looks like a mis-stop…". The "It was real"
-      button is one line (`nowrap`).
-- [x] ✅**Daily mode at laptop width:** `/timer?daily=2026-11-25` shows the posted result, not the
-      timer, because today's daily is already solved. Cube preview not visible.
-      *Notes:*
-- [x] ✅ **Home daily card** reads "Next daily scramble in 5h 6m."
-- [x] ✅ **Landing roadmap on a phone:** each column shows 3 items, then "+2 more on the full roadmap" (checked at 390 px).
-- [x] ✅ **Command palette (Ctrl/⌘+K):** "Sumit" finds the account by display name, and "sgsueper"
-      finds it by username. Not tested with a friend such as "Riya".
-
-### A2. Account menu crash (fixed)
-
-- [x] ✅ Account menu opens with @sgsueper12373, Profile, Edit profile and Sign out. No crash.
-- [x] ✅ Profile opens `/profile` and Edit profile opens `/profile/edit`.
-
-### A3. Home
-
-- [x] ✅ **Reorder:** the Customize "Move … up" arrow changed the order straight away.
-- [x] ✅**Drag:** not tested. Dragging by the ⋮⋮ handle needs real pointer drag events.
-      *Notes:*
-- [x] ✅ **Order survives a reload (signed in):** after reload the order was still saved.
-      Guest mode not tested.
-- [x] ✅ **"Reset to default":** pressed; it changed the layout. Whether the result matches the
-      intended default needs your confirmation. *Notes:* the Streak and Playground cards left the
-      main column, and Cubby's tip appeared.
-- [x] ⚠️ **Next achievement:** the card shows "Grinder · 789 of 1,000 solves" with a progress bar.
-      The "Best 16.42, 1.43 to go" style text wasn't seen, since this badge is solve-count based.
-      *Notes:*
-
-### A4. Theme
-
-- [x] ✅ **Sidebar switch:** Paper changed the theme at once and persisted after reload. Restored to Slate.
-- [x] ✅ **Phone:** More → theme switch. 
-      *Notes:*
-- [x] ✅ **Developer theme pill gone:
-- [x] ✅**Stats on a phone (swipe):** 
-      *Notes:*
+- [ ] **Offline, other pages:** open `/timer` once, then DevTools → Network → **Offline** (not
+      Wi-Fi off: `localhost` still answers then). Open `/stats`: a "You're offline" page with
+      "Open the timer".
+- [ ] **Home usage events:** Vercel → your project → Analytics → **Events** (switch Web Analytics
+      on if it's off). Click a few Home cards, change something in Customize, and finish a
+      daily. Within a few minutes you see `home_card_click`, `home_customize` and `daily_attempt`.
 
 **Notes:**
 
 ---
 
-## Part B — local `main` only (not pushed)
+## B. 3x3 BLD (live)
 
-### B1. Install the app and use the timer offline
+- [ ] **The event:** the event menu on `/timer` has **3x3 BLD**. It has its own sessions, and its
+      times don't appear in your 3x3 stats.
+- [ ] **No inspection:** with WCA inspection on, holding Space in 3x3 BLD goes straight to
+      "release to start" (no 15-second countdown). 3x3 still has inspection.
+- [ ] **Without the memo split:** one key press stops the solve.
+- [ ] **With the memo split:** Timer settings (gear) → **BLD memo split** on. Start a solve:
+  - [ ] The hint under the time says "memo · press any key when the blindfold goes on".
+  - [ ] Press a key: the clock keeps going and the hint says "solving · press any key to stop".
+  - [ ] Press again: the solve stops.
+  - [ ] Click the solve in the list: the details show "Memo 23.41 · Execution 41.12" style times.
+- [ ] **Saved to your account:** signed in, do a split solve, then reload (or open it on another
+      device): the memo time is still in the solve details.
+- [ ] **On a phone:** taps work like key presses (tap to end memo, tap to stop).
+- [ ] **Profile:** "my cube for each event" in Edit profile includes 3x3 BLD.
 
-- [x] ✅ **Install:** the manifest is valid (`standalone`, start `/timer`, 192 and 512 icons).
-- [x] ✅**Offline timer:** requires toggling the network, which I can't do from here.
-  - [x] Open `/timer` once online and wait for a scramble.
-  - [x] Go offline: DevTools → Network → "Offline", or turn off Wi-Fi.
-  - [x] Reload `/timer`: it still loads and shows a new scramble.
-  - [x] Time a solve offline: it appears in the solve list.
-  *Notes:*
-- [ ] ⬜ **Offline, other pages:** `/stats` offline shows "You're offline". *Notes (Claude):* test
-      this with **DevTools → Network → "Offline"**, not by turning off Wi-Fi. With Wi-Fi off,
-      `localhost` still answers (the server runs on your machine), so the browser never falls back
-      to the offline page. You get the real page instead, and the server logs `EAI_AGAIN` because
-      it can't reach Supabase (see "Known and not a bug").
-- [x] ✅ **Back online, signed in:** solves timed offline sync. *Notes:*
-- [x] ✅ **Daily scramble offline:** *Notes:*
+**Notes:**
 
-### B2. What to learn next
+---
 
-- [x] ✅ **`/learn`, signed in:** the "Up next for you" banner shows "11 cases left in Ortega."
-      The other banner messages (nothing learned, all of PLL learned) weren't seen because the
-      account state doesn't match them.
-- [x] ✅ **Banner link:** opens `/learn/222/ortega`, which loads.
-- [x] ✅ **Signed out:** no banner on `/learn`. *Notes (Claude):* your screenshots are scrolled
-      below the hero, where the banner would be, so they can't show it either way. The e2e test
-      "guests don't get the banner" (`learn-next.spec.ts`) checks this and passes. To see it
-      yourself, scroll to the top of `/learn` signed out: the hero is followed directly by the
-      2x2 and 3x3 cards.
-- [x] ✅ **Home, "Continue learning":** shows "OLL · 2 of 57 learned" and "Next up: OLL 3".
-      The "nothing in progress" state wasn't tested.
+## C. Cubby (local, with the flag)
 
-### B3. Daily scramble: share and streak
+### C1. The dock
 
-- [x] ✅ **Share:** the button sits next to "See the leaderboard". Pressing it copied:
-      ```
-      CuberHub daily scramble · Wed, 25 Nov
-      11.53 · #1 of 1
-      https://cuberhub.me/timer?daily=2026-11-25
-      ```
-      The "#3 of 41" and "2-day streak" lines weren't present because there's only a 1-day streak.
-      The link points to cuberhub.me, not localhost. *Notes (Claude):* expected. Links use the
-      site address, which defaults to cuberhub.me when `.env.local` doesn't set one. On the live
-      site it's the right link.
-- [x]  ✅**The copied link opens the same daily scramble:** not opened. The link uses the live
-      domain, which may not have Part B. *Notes:*
-- [x] ✅ **Streak:** needs solves on two days in a row. The Home card shows "1-day streak" and
-      "13 of 25 solves today". *Notes:*
+- [ ] **Desktop:** Cubby sits at the bottom of the sidebar, with its name. In the collapsed rail,
+      just the avatar. With the sidebar hidden, a floating Cubby bottom-left.
+- [ ] **Phone:** a floating Cubby above the tab bar, bottom-right.
+- [ ] **Menu:** Tour this page, Give me a tip, Mute Cubby, Settings…. `?` opens it too, except on
+      the Timer and Playground (their `?` lists shortcuts).
+- [ ] **Hidden while solving** when "Hide UI while solving" is on.
 
-### B4. Home usage events (only visible after the push)
+### C2. Tours (first visit to each page)
 
-- [ ] After the deploy, click a few Home cards, change something in Customize, and finish a daily.
-      Within a few minutes, Vercel → Analytics → Events lists `home_card_click`,
-      `home_customize` and `daily_attempt`. These need Vercel Web Analytics switched on for the project.
+- [ ] **Timer** (8 steps), starting about a second after the page loads:
+  - [ ] "Pick your puzzle" waits until you change the event.
+  - [ ] "Time a solve" waits for a real solve, and the card hides while the clock runs.
+  - [ ] The next step points at +2 / DNF / delete.
+- [ ] **Learn** `/learn` (4 steps) and **a set** `/learn/333/pll` (5 steps; the last waits for
+      you to open a case).
+- [ ] **Drill Lab** `/learn/333/drill` (6 steps; "Time a case" waits for a rep).
+- [ ] **Playground** (5 steps; the first two wait for you to turn the view and turn a layer).
+- [ ] **Keyboard:** → and Enter go forward, ← back, Esc skips. Space does nothing behind a normal
+      step.
+- [ ] **Skip:** after Esc, the dock shows a small dot once. Opening the menu clears it, and the
+      tour doesn't start again by itself. "Tour this page" replays it.
+- [ ] **Placement:** the card never covers the time or the scramble.
+- [ ] **Wording:** read every step. Anything wrong, unclear, or not how the page works? (Notes.)
+
+### C3. Greetings and reactions
+
+- [ ] **Greeting:** back on a page whose tour you've had (more than 10 minutes later), a one-line
+      bubble beside the dock, typed out, gone after about 4 seconds. At most one per page per tab
+      session, and never while the timer runs.
+- [ ] **PB:** a new all-time PB → Cubby celebrates and says "New single PB! 12.84, 0.60 off your
+      old one."
+- [ ] **+2 / DNF:** a small wince, no words.
+- [ ] **Mis-stop:** a very fast stop → Cubby explains "It was real".
+- [ ] **Mark a case learned** on a Learn card → thumbs up and a line.
+- [ ] **Playground:** solve a scrambled cube → a cheer.
+
+### C4. 3x3 BLD with Cubby
+
+- [ ] During a 3x3 BLD solve, Cubby appears in the bottom-right corner holding a small cube
+      (memo, with letter pairs drifting by), then puts a blindfold on (at the memo split, or after
+      about 2.5 s without it) and turns the cube.
+- [ ] At the stop the blindfold comes off and Cubby cheers. Mark the solve DNF straight away and
+      you get a shrug and "BLD is brutal. Next one." instead.
+- [ ] Settings → "BLD solving animation" off: no Cubby during BLD.
+
+### C5. Settings
+
+- [ ] **Dock → Settings…** opens a panel: Companion (On / Quiet / Off), Name, Tours on first visit,
+      Reactions, BLD solving animation, Motion, Reset tours.
+- [ ] **Rename** to anything: the tours, greetings and the dock use the new name.
+- [ ] **Quiet:** no tours or greetings by themselves; "Tour this page" still works.
+- [ ] **Off:** Cubby disappears everywhere. **Ctrl+K → "Cubby settings"** brings the panel back.
+- [ ] **Signed in:** `/settings` has a Cubby section. Change something, then sign in on another
+      browser: the same settings, and the tours you've already seen don't start again.
+- [ ] **Reduced motion** (Motion → Reduced, or your system setting): Cubby holds still poses and
+      lines appear without typing.
+
+### C6. Elsewhere
+
+- [ ] **Home:** Cubby's face on the tip card instead of the CH mark.
+- [ ] **Landing page:** "Meet Cubby, your practice buddy." after the feature chapters, with three
+      Cubbys; the waving one's eyes follow your pointer.
+- [ ] **`/dev/cubby`:** every expression and pose, in Slate and in Paper. **Is the v0 art good
+      enough for the beta?** (Notes.)
 
 **Notes:**
 
@@ -125,11 +122,10 @@ Supabase, decisions) stay in `founder-checklist.md`.
 
 ## Known and not a bug
 
-- **The e2e clubs posting test** fails after about 5 runs in a day: the test account hits the
-  live limit of 10 posts a day. It resets daily.
-- **"The destination stream closed early"** in server logs during tests is harmless: a page
-  closed mid-load.
-- **`TypeError: fetch failed … getaddrinfo EAI_AGAIN …supabase.co`** in the local server's log:
-  the server couldn't look up Supabase's address, because the machine was offline (Wi-Fi off).
-  Pages still render, as signed out. Live on Vercel the server is always online, and an offline
-  visitor gets the cached timer from the service worker instead.
+- **The e2e clubs posting test** fails after a few runs in a day: the test account hits the live
+  limit of 10 posts a day. It resets daily.
+- **"The destination stream closed early"** in server logs: a page closed mid-load. Harmless.
+- **"Encountered a script tag"** in the dev console: the theme script in the root layout, which
+  runs from the server HTML before React loads. Dev-only and harmless.
+- **A hydration error in the sidebar** right after turning the Cubby flag on in a running dev
+  server: restart `next dev` with the flag set from the start.

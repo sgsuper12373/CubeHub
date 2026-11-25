@@ -1,10 +1,10 @@
 -- 3x3 BLD in the timer: a memo time on the solve, and BLD limits for the
 -- misfire and mis-stop checks (docs/companion-plan.md step 10, docs/timer.md → BLD).
 --
--- NOT APPLIED. A file only, written on the unattended run of 2026-11-26.
--- Until it is applied the app keeps memo times in the browser only: it checks
--- for the column once per page view (src/lib/timer/memo-column.ts) and leaves
--- it out of reads and writes, so 3x3 BLD solves still save without it.
+-- Applied to the live project 2026-11-26 (supabase db push); bld_memo_test.sql 6/6 PASS.
+-- Before it was, the app kept memo times in the browser only: it checks for the
+-- column once per page view (src/lib/timer/memo-column.ts) and leaves it out of
+-- reads and writes when missing.
 --
 -- '333bf' is already in public.puzzle_type (baseline), so no enum change.
 
