@@ -2,16 +2,17 @@
   "page": "drill",
   "tourVersion": 1,
   "tour": [
-    { "id": "hello", "target": null, "title": "The Drill Lab", "body": "Drill one set's cases on repeat: recognise, execute, stop. Every case keeps its own times.", "mood": "happy", "since": 1 },
-    { "id": "sets", "target": "drill-sets", "title": "Pick a set", "body": "Switch sets here. Learned or All decides which cases come up.", "since": 1 },
-    { "id": "order", "target": "drill-order", "title": "Weakest first", "body": "Your slowest cases come up most often. Random mixes them evenly.", "since": 1 },
-    { "id": "options", "target": "drill-options", "title": "Options", "body": "Hide the algorithm until you're done, time recognition separately, add a random AUF or switch to a 2D view.", "since": 1 },
-    { "id": "rep", "target": "drill-stage", "title": "Time a case", "body": "Press Space or tap this panel to start, and again to stop.", "waitFor": "drill:started", "mood": "happy", "since": 1 },
-    { "id": "cases", "target": "drill-cases", "title": "Cases, weakest first", "body": "Your slowest cases rise to the top. Custom set drills only the ones you pick.", "since": 1 }
+    {"id": "hello", "target": null, "title": "The Drill Lab", "body": "Drill one set's cases on repeat: recognise, execute, stop. Every case keeps its own times.", "mood": "happy", "since": 1},
+    {"id": "sets", "target": "drill-sets", "title": "Pick a set", "body": "Switch sets here. Learned or All decides which cases come up.", "since": 1},
+    {"id": "order", "target": "drill-order", "title": "Weakest first", "body": "Your slowest cases come up most often. Random mixes them evenly.", "since": 1},
+    {"id": "options", "target": "drill-options", "title": "Options", "body": "Hide the algorithm until you're done, time recognition separately, add a random AUF or switch to a 2D view.", "since": 1},
+    {"id": "rep", "target": "drill-stage", "title": "Time a case", "body": "Press Space or tap this panel to start, and again to stop.", "waitFor": "drill:started", "mood": "happy", "since": 1},
+    {"id": "cases", "target": "drill-cases", "title": "Cases, weakest first", "body": "Your slowest cases rise to the top. Custom set drills only the ones you pick.", "since": 1}
   ],
   "greetings": [
-    { "when": "daysAway>=7", "line": "Welcome back! A short drill now beats a long one next week." },
-    { "when": "always", "line": "Your slowest cases are at the top. Drill them first?" }
+    {"when": "firstVisit", "line": "Hi, I'm {name}! Open me any time for a tour of this page."},
+    {"when": "daysAway>=7", "line": "Welcome back! A short drill now beats a long one next week."},
+    {"when": "always", "line": "Your slowest cases are at the top. Drill them first?"}
   ],
   "reactions": {
     "stretch": ["That's an hour of drilling. Rest your hands for a minute?"]

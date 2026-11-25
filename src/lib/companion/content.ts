@@ -144,3 +144,12 @@ export function pickLine(lines: string[] | undefined, random: () => number = Mat
   if (!lines || lines.length === 0) return null;
   return lines[Math.min(lines.length - 1, Math.floor(random() * lines.length))];
 }
+
+/**
+ * A line with every {key} filled: lines that would show a raw placeholder
+ * (a PB with no previous time has no {delta}) are left out. Null if none fit.
+ */
+export function pickFilledLine(lines: string[] | undefined, values: Record<string, string | null | undefined>, random: () => number = Math.random): string | null {
+  const filled = (lines ?? []).map((l) => fillLine(l, values)).filter((l) => !/\{\w+\}/.test(l));
+  return pickLine(filled, random);
+}

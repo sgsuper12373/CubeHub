@@ -2,24 +2,25 @@
   "page": "timer",
   "tourVersion": 1,
   "tour": [
-    { "id": "hello", "target": null, "title": "Hi, I'm {name}!", "body": "Let me show you around the timer. It takes about a minute, and you can skip at any step.", "mood": "happy", "since": 1 },
-    { "id": "event", "target": "timer-event", "title": "Pick your puzzle", "body": "3x3, 2x2, OH, Pyraminx and more, each with its own scrambles and stats. Try picking one.", "waitFor": "puzzle:changed", "since": 1 },
-    { "id": "sessions", "target": "timer-sessions", "title": "Sessions keep practice apart", "body": "Make one per goal, like warm-ups or OH. The buttons beside it create, rename, clear or delete a session.", "since": 1 },
-    { "id": "scramble", "target": "timer-panel-scramble", "title": "Your scramble", "body": "Scramble with white on top and green in front. The arrows go back or forward, and you can copy it or type your own.", "since": 1 },
-    { "id": "solve", "target": "timer-panel-timer", "title": "Time a solve", "body": "Hold Space (or touch and hold), then let go to start. With inspection on, that starts your 15 seconds first. Space stops it.", "waitFor": "timer:stopped", "mood": "happy", "since": 1 },
-    { "id": "penalties", "target": "timer-penalties", "title": "+2, DNF or delete", "body": "Right after a solve you can add +2, mark it DNF, or delete it.", "since": 1 },
-    { "id": "stats", "target": "timer-panel-stats", "title": "Your averages", "body": "Ao5 and Ao12 update after every solve. The Stats page has the full history and graphs.", "since": 1 },
-    { "id": "settings", "target": "timer-settings", "title": "Make it yours", "body": "Inspection, hold time, font size, the panel layout and a background image all live up here.", "mood": "happy", "since": 1 }
+    {"id": "hello", "target": null, "title": "Hi, I'm {name}!", "body": "Let me show you around the timer. It takes about a minute, and you can skip at any step.", "mood": "happy", "since": 1},
+    {"id": "event", "target": "timer-event", "title": "Pick your puzzle", "body": "3x3, 2x2, OH, Pyraminx and more, each with its own scrambles and stats. Try picking one.", "waitFor": "puzzle:changed", "since": 1},
+    {"id": "sessions", "target": "timer-sessions", "title": "Sessions keep practice apart", "body": "Make one per goal, like warm-ups or OH. The buttons beside it create, rename, clear or delete a session.", "since": 1},
+    {"id": "scramble", "target": "timer-panel-scramble", "title": "Your scramble", "body": "Scramble with white on top and green in front. The arrows go back or forward, and you can copy it or type your own.", "since": 1},
+    {"id": "solve", "target": "timer-panel-timer", "title": "Time a solve", "body": "Hold Space (or touch and hold), then let go to start. With inspection on, that starts your 15 seconds first. Space stops it.", "waitFor": "timer:stopped", "mood": "happy", "since": 1},
+    {"id": "penalties", "target": "timer-penalties", "title": "+2, DNF or delete", "body": "Right after a solve you can add +2, mark it DNF, or delete it.", "since": 1},
+    {"id": "stats", "target": "timer-panel-stats", "title": "Your averages", "body": "Ao5 and Ao12 update after every solve. The Stats page has the full history and graphs.", "since": 1},
+    {"id": "settings", "target": "timer-settings", "title": "Make it yours", "body": "Inspection, hold time, font size, the panel layout and a background image all live up here.", "mood": "happy", "since": 1}
   ],
   "greetings": [
-    { "when": "daysAway>=7", "line": "Back after a week! Warm up with 5 easy solves?" },
-    { "when": "morning", "line": "Morning! A few warm-up solves before the real session?" },
-    { "when": "evening", "line": "Evening session? Let's beat your Ao12." },
-    { "when": "night", "line": "A late one. Keep it short and sharp." },
-    { "when": "always", "line": "Ready when you are. Hold Space to start." }
+    {"when": "firstVisit", "line": "Hi, I'm {name}! Open me any time for a tour of this page."},
+    {"when": "daysAway>=7", "line": "Back after a week! Warm up with 5 easy solves?"},
+    {"when": "morning", "line": "Morning! A few warm-up solves before the real session?"},
+    {"when": "evening", "line": "Evening session? Let's beat your Ao12."},
+    {"when": "night", "line": "A late one. Keep it short and sharp."},
+    {"when": "always", "line": "Ready when you are. Hold Space to start."}
   ],
   "reactions": {
-    "pb": ["New PB! {time}, {delta} off your old one.", "That's a PB: {time}!"],
+    "pb": ["New {label} PB! {time}, {delta} off your old one.", "That's a {label} PB: {time}!"],
     "misstop": ["That looked like a mis-stop, so I left it out. Press \"It was real\" if it counted."],
     "stretch": ["That's an hour of solving. Stretch your hands for a minute?"],
     "error": ["Hmm, that didn't work. Try again in a moment."]

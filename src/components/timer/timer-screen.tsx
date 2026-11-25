@@ -30,6 +30,7 @@ import { useSidebarStore } from "@/stores/sidebar-store";
 import { generateScramble } from "@/lib/timer/scrambler";
 import { loadLastEvent, saveLastEvent } from "@/lib/timer/events";
 import { detectRecords, RECORD_LABEL, type RecordHit } from "@/lib/timer/pb-detect";
+import { headlineHit } from "@/lib/timer/share-card";
 import { countedSolves } from "@/lib/timer/misfire";
 import { loadClientSettings, saveSettings } from "@/lib/timer/settings-persistence";
 import type { ServerTimerSettings } from "@/lib/auth/dal";
@@ -167,6 +168,13 @@ export function TimerScreen(props: {
     }
     if (allTime.length > 0) {
       setCelebration({ hits: allTime, puzzle: useTimerStore.getState().puzzle, solveId });
+      const head = headlineHit(allTime);
+      const gain = head.previousMs - head.timeMs;
+      emitCompanion("pb", {
+        time: formatMs(head.timeMs),
+        delta: Number.isFinite(gain) && gain > 0 ? formatMs(gain) : null,
+        label: head.category === "single" ? "single" : RECORD_LABEL[head.category],
+      });
     }
     if (hits.length > 0) {
       setCelebrating(true);
@@ -226,6 +234,9 @@ export function TimerScreen(props: {
     sessionState.setKnownBests(known);
     const saved = sessionState.addSolve(solve);
     announceRecords(hits, solve.id);
+    emitCompanion("solve", { at: Date.parse(solve.createdAt) });
+    if (penalty !== "none") emitCompanion("penalty", { penalty });
+    if (misstop) emitCompanion("misstop", {});
 
     // A suspected mis-stop is saved left out; the cuber has the last word.
     if (misstop) {
@@ -294,6 +305,7 @@ export function TimerScreen(props: {
     if (!last) return;
     const next: Penalty = last.penalty === p ? "none" : p;
     void useSessionStore.getState().setPenalty(last.id, next);
+    if (next !== "none") emitCompanion("penalty", { penalty: next });
     useTimerStore.getState().setResultPenalty(next);
   };
 

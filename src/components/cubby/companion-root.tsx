@@ -3,11 +3,14 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-import { startPageTour, timerState } from "@/components/cubby/companion-actions";
+import { ask, startPageTour, timerState } from "@/components/cubby/companion-actions";
 import { CubbyDock } from "@/components/cubby/dock";
 import { getCubbyRenderer } from "@/components/cubby/renderer-instance";
+import { SpeechBubble } from "@/components/cubby/speech-bubble";
 import { TourOverlay } from "@/components/cubby/tour-overlay";
+import { useCompanionReactions } from "@/components/cubby/use-reactions";
 import { contentFor } from "@/content/cubby";
+import { fillLine, pickGreeting } from "@/lib/companion/content";
 import { isQuietPhase } from "@/lib/companion/director";
 import { noteVisit } from "@/lib/companion/memory";
 import { companionPageFor, type CompanionPage } from "@/lib/companion/pages";
@@ -39,6 +42,7 @@ function visibleDockTrigger(): HTMLElement | null {
 export default function CompanionRoot() {
   const pathname = usePathname();
   const hydrated = useCompanionStore((s) => s.hydrated);
+  useCompanionReactions();
 
   useEffect(() => {
     useCompanionStore.getState().hydrate(loadLocalRecord() ?? parseRecord(null));
@@ -93,14 +97,28 @@ export default function CompanionRoot() {
   return (
     <>
       <CubbyDock placement="floating" />
+      <SpeechBubble />
       <TourOverlay />
     </>
   );
 }
 
-/** What Cubby does on arriving at a page: a new tour first; greetings come with step 7. */
+/**
+ * What Cubby does on arriving at a page: a tour the cuber hasn't had yet,
+ * otherwise (at most) one greeting, picked by the visit's conditions.
+ */
 function onPageEntry(page: CompanionPage, previousVisit: number | null): void {
-  void previousVisit;
-  if (useCompanionStore.getState().page !== page) return;
-  startPageTour(false);
+  const { page: current, content, record, say } = useCompanionStore.getState();
+  if (current !== page || !content) return;
+  if (startPageTour(false)) return;
+  const now = Date.now();
+  const greeting = pickGreeting(content.greetings, {
+    firstVisit: previousVisit === null,
+    daysAway: previousVisit === null ? null : Math.floor((now - previousVisit) / 86_400_000),
+    hour: new Date(now).getHours(),
+  });
+  if (!greeting) return;
+  if (!ask({ kind: "greeting", page }, previousVisit).show) return;
+  getCubbyRenderer().fire("wave");
+  say({ text: fillLine(greeting.line, { name: record.settings.name }), actions: greeting.actions ?? [], ttlMs: 4000 });
 }
