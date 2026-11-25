@@ -5,6 +5,27 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Installable app and offline timer (PWA)
+
+**Request:** Build the next items (todo idea 1).
+
+### Added
+
+- `src/app/manifest.ts` (`/manifest.webmanifest`, start `/timer`, standalone, shortcuts); `public/icons/`
+  (192, 512, maskable 512, from the CH mark on Slate).
+- `public/sw.js`: guest `/timer` cached at install (no cookies) plus its build files; build files cache-first;
+  offline navigations get the guest timer (`/timer` without `?daily=`) or a small offline page; nothing else cached.
+- `src/components/layout/service-worker.tsx` (production only; daily shell refresh); root layout mounts it;
+  `next.config.ts` serves `/sw.js` uncached.
+- `tests/e2e/pwa.spec.ts`: manifest and icons; offline reload scrambles and saves a solve; offline page.
+- Docs: `docs/pwa.md` (new), `architecture.md`, `decisions.md`, `todo.md`.
+
+### Verified
+
+`npm run validate`, `npm run check:colors`, `npm run build`; `pwa.spec.ts` 8/8 over 4 repeats at 4 workers.
+
+---
+
 ## 2026-11-25 — Fix: the sidebar account menu crashed the page (Base UI error #31)
 
 **Request:** Production showed "Something went wrong" when the founder opened the profile options.

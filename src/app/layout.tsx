@@ -7,6 +7,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { AuthListener } from "@/components/auth/auth-listener";
 import { ThemeFavicon } from "@/components/brand/theme-favicon";
+import { ServiceWorker } from "@/components/layout/service-worker";
 import { SystemThemeSync } from "@/components/layout/system-theme-sync";
 import { ConfirmHost } from "@/components/ui/confirm-dialog";
 import { Toaster } from "@/components/ui/toast";
@@ -137,6 +138,7 @@ export default function RootLayout({
         {/* Both render nothing. They run after hydration, so THEME_INIT_SCRIPT
             has already applied the theme the favicon reads. */}
         <SystemThemeSync />
+        <ServiceWorker />
         <ThemeFavicon />
         <Toaster />
         <ConfirmHost />

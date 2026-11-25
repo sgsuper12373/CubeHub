@@ -89,6 +89,7 @@ src/app/
                           plus Vercel Analytics + Speed Insights on Vercel only.
                           Reads no cookies, so routes can be static.
   not-found.tsx error.tsx unknown URLs and errors outside (app)
+  manifest.ts             /manifest.webmanifest (installable app; offline timer via public/sw.js, see pwa.md)
   sitemap.ts robots.ts    /sitemap.xml /robots.txt (marketing host; whole site in single-host mode)
   app-sitemap.xml/ app-robots.txt/   the app host's own, rewritten to by proxy.ts
   (marketing)/            marketing header + footer; static (user state filled in client-side)

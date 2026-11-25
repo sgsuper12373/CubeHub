@@ -25,6 +25,20 @@ const { version: cubingVersion } = JSON.parse(
  * copy can never mix with a new one.
  */
 const nextConfig: NextConfig = {
+  // The service worker (docs/pwa.md) must never be cached, or a fix to it
+  // could take days to reach anyone.
+  async headers() {
+    return [
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
+    ];
+  },
   env: {
     NEXT_PUBLIC_CUBING_VERSION: cubingVersion,
   },
