@@ -5,6 +5,30 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Fix: the sidebar account menu crashed the page (Base UI error #31)
+
+**Request:** Production showed "Something went wrong" when the founder opened the profile options.
+
+### Cause
+
+`AccountMenu` in `app-sidebar.tsx` rendered `DropdownMenuLabel` (Base UI `Menu.GroupLabel`) directly in the
+menu. Base UI requires it inside `Menu.Group` and throws "MenuGroupContext is missing" (production error #31),
+so opening the menu took the page to the error boundary; a reload worked because the menu was closed.
+In since the sidebar (2026-11-24); no test opened that menu.
+
+### Changed
+
+- `app-sidebar.tsx`: the label and the Profile/Edit profile items are wrapped in `DropdownMenuGroup`. It was the
+  only label outside a group.
+- `tests/e2e/home.spec.ts`: signed in, open the account menu, see `@username`, no error page, Profile navigates.
+  Confirmed it fails on the old build (menu never renders) and passes with the fix.
+
+### Verified
+
+`npm run validate`, `npm run build`; home and command-palette specs 13/13.
+
+---
+
 ## 2026-11-25 — Stats colours on theme tokens
 
 **Request:** Continue with Claude's list (theme follow-ups).

@@ -72,6 +72,19 @@ test.describe("member", () => {
   test.skip(!hasE2eUsers(), "E2E_USER_A/B credentials not set");
   test.use({ viewport: { width: 1280, height: 800 }, storageState: E2E_USERS[0].state });
 
+  test("the sidebar's account menu opens without crashing, and its links work", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    await page.goto("/timer");
+    await page.getByRole("button", { name: /^Account: / }).click();
+    const menu = page.getByRole("menu");
+    await expect(menu.getByText(/^@/)).toBeVisible();
+    await expect(page.getByText("Something went wrong")).toHaveCount(0);
+    await menu.getByRole("menuitem", { name: "Profile", exact: true }).click();
+    await expect(page).toHaveURL(/\/profile\//);
+    expect(errors).toEqual([]);
+  });
+
   test("a signed-in visit to /login lands on /home", async ({ page }) => {
     await page.goto("/login");
     await expect(page).toHaveURL(/\/home$/);

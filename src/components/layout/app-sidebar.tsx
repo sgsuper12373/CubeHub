@@ -454,9 +454,12 @@ function AccountMenu({ profile, rail }: { profile: CurrentProfile; rail: boolean
           <span className="sidebar-label min-w-0 flex-1 truncate text-left">{name}</span>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="right" align="end" className="w-48">
-          <DropdownMenuLabel className="truncate">@{profile.username}</DropdownMenuLabel>
-          <DropdownMenuItem render={<Link href="/profile" />}>Profile</DropdownMenuItem>
-          <DropdownMenuItem render={<Link href="/profile/edit" />}>Edit profile</DropdownMenuItem>
+          {/* Base UI requires a menu label inside a group (error #31 otherwise, which crashed the page). */}
+          <DropdownMenuGroup>
+            <DropdownMenuLabel className="truncate">@{profile.username}</DropdownMenuLabel>
+            <DropdownMenuItem render={<Link href="/profile" />}>Profile</DropdownMenuItem>
+            <DropdownMenuItem render={<Link href="/profile/edit" />}>Edit profile</DropdownMenuItem>
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => formRef.current?.requestSubmit()}>Sign out</DropdownMenuItem>
         </DropdownMenuContent>
