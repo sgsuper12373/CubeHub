@@ -298,6 +298,8 @@ export type Achievement = {
   hidden: boolean;
   /** When this cuber unlocked it, or null. */
   unlockedAt: string | null;
+  /** How it's earned (`achievements.condition_type` / `condition_value`), for progress. */
+  condition: { type: string; value: Record<string, unknown> };
 };
 
 /**
@@ -308,7 +310,7 @@ export type Achievement = {
 export const getAchievements = cache(async (profileId: string): Promise<Achievement[]> => {
   const supabase = await createClient();
   const [{ data: catalogue }, { data: mine }] = await Promise.all([
-    supabase.from("achievements").select("id, slug, title, description, is_hidden"),
+    supabase.from("achievements").select("id, slug, title, description, is_hidden, condition_type, condition_value"),
     supabase.from("user_achievements").select("achievement_id, unlocked_at").eq("user_id", profileId),
   ]);
   const unlocked = new Map((mine ?? []).map((u) => [u.achievement_id, u.unlocked_at as string]));
@@ -323,6 +325,7 @@ export const getAchievements = cache(async (profileId: string): Promise<Achievem
       description: a.description,
       hidden: a.is_hidden,
       unlockedAt: unlocked.get(a.id) ?? null,
+      condition: { type: a.condition_type as string, value: (a.condition_value ?? {}) as Record<string, unknown> },
     }))
     .sort((a, b) => order(a.slug) - order(b.slug) || a.slug.localeCompare(b.slug));
 });

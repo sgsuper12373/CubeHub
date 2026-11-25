@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
 import { DailyCard } from "@/components/daily/daily-card";
+import { AchievementCard } from "@/components/home/achievement-card";
 import { HomeCardSkeleton } from "@/components/home/home-card";
 import { HomeGrid } from "@/components/home/home-grid";
 import { QuickStart } from "@/components/home/quick-start";
@@ -56,6 +57,8 @@ export async function MemberHome({ profile }: { profile: CurrentProfile }) {
         return <LearningCard key={id} username={profile.username} />;
       case "drill":
         return visitor === "member-new" && summary.solveCount === 0 ? <DrillIntroCard key={id} /> : <DrillCard key={id} />;
+      case "achievement":
+        return <AchievementCard key={id} profileId={profile.id} username={profile.username} />;
       case "tip":
         return <TipCard key={id} />;
       case "playground":

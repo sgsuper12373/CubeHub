@@ -9,13 +9,10 @@ its completed history, is in git.
 
 ## Ready to do
 
-1. **Home step 6:** a "Next achievement" card, and drag to reorder cards (`docs/home-plan.md`).
-2. **Home step 7:** a short `docs/home.md` describing what shipped.
-3. **e2e for member Home layouts.** `home_layout` is live now, so a signed-in "hide a card,
-   reload" test can run. It must restore the card afterwards.
-4. **Theme settings page** (design tokens step 8). Then delete the dev theme switcher, and make
+1. **Home: drag to reorder cards** (the rest of step 6). The layout's `order` field is reserved.
+2. **Theme settings page** (design tokens step 8). Then delete the dev theme switcher, and make
    "System" follow OS changes mid-session.
-5. **Theme follow-ups:**
+3. **Theme follow-ups:**
    - Sticker colours in the cubing.js 3D/2D players.
    - Remove the hardcoded colours on the stats and profile pages.
 

@@ -31,7 +31,7 @@ describe("home cards", () => {
 
   it("a regular member gets the default set, daily first, streak off", () => {
     const { main, rail } = homeCards("member", null);
-    expect(main).toEqual(["daily", "stats", "learning", "drill", "tip"]);
+    expect(main).toEqual(["daily", "stats", "learning", "drill", "achievement", "tip"]);
     expect(rail).toEqual(["friends", "clubs", "whatsnew"]);
   });
 
@@ -43,7 +43,7 @@ describe("home cards", () => {
     const layout = parseHomeLayout({ hidden: ["drill", "compete", 7], shown: ["streak", "nope"] });
     expect(layout).toEqual({ hidden: ["drill"], shown: ["streak"] });
     const { main } = homeCards("member", layout);
-    expect(main).toEqual(["daily", "stats", "learning", "tip", "streak"]);
+    expect(main).toEqual(["daily", "stats", "learning", "achievement", "tip", "streak"]);
   });
 
   it("the daily card is on for returning guests and can be switched on by new visitors", () => {

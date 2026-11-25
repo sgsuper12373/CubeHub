@@ -5,6 +5,28 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Home step 6 (Next achievement), step 7 (docs/home.md), member layout e2e
+
+**Request:** Carry on with work that doesn't need the founder.
+
+### Changed
+
+- `src/lib/home/next-achievement.ts` (new, pure): progress per badge condition (solve count, events,
+  streak, single/average under, set learned), closest unearned visible badge; time gaps count double.
+- `src/components/home/achievement-card.tsx` (new): "Next achievement" with a progress bar; `achievement`
+  card id, default for regular members (`cards.ts`, `member-home.tsx`).
+- `src/lib/profile/dal.ts`: `getAchievements()` also returns each badge's condition.
+- `docs/home.md` (new); `home-plan.md` (steps 6–7), `todo.md`, `decisions.md` → Home.
+- Tests: `tests/unit/next-achievement.test.ts` (4), `home-cards.test.ts` updated; `home.spec.ts` member
+  test: a hidden card survives a reload from the account, then is switched back on.
+
+### Verified
+
+`npm run validate` (694 tests), `npm run check:colors`, `npm run build`; `home.spec.ts` on the
+production build, 7/7 including the signed-in layout test.
+
+---
+
 ## 2026-11-25 — Cleanup: dead code, stale status docs, checklist fixes, founder checklist
 
 **Request:** Remove dead code and old status documents; act on the founder's verification checklist,

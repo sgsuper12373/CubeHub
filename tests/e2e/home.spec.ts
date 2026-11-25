@@ -54,4 +54,32 @@ test.describe("member", () => {
     await expect(page).toHaveURL(/\/home$/);
     await expect(page.getByRole("heading", { level: 1 })).not.toHaveText("Welcome to CuberHub");
   });
+
+  test("a hidden card stays hidden after a reload (saved to the account), and comes back", async ({ page }) => {
+    const card = page.getByRole("region", { name: "What's new" });
+    const toggle = async (on: boolean) => {
+      await page.getByRole("button", { name: "Customize" }).click();
+      const sw = page.getByRole("dialog", { name: "Customize Home" }).getByRole("switch", { name: "What's new" });
+      if (on) await sw.check();
+      else await sw.uncheck();
+      await page.keyboard.press("Escape");
+    };
+    await page.goto("/home");
+    await expect(card).toBeVisible();
+    await toggle(false);
+    try {
+      await expect(card).toHaveCount(0);
+      // No local layout either: what comes back is the account's.
+      await page.evaluate(() => localStorage.removeItem("cubehub.home.v1"));
+      await page.reload();
+      await expect(page.getByRole("button", { name: "Customize" })).toBeVisible();
+      await expect(card).toHaveCount(0);
+    } finally {
+      // Leave the test account as it was.
+      await toggle(true);
+      await expect(card).toBeVisible();
+      await page.reload();
+      await expect(card).toBeVisible();
+    }
+  });
 });

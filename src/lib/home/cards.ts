@@ -10,6 +10,7 @@ export const CARD_IDS = [
   "stats",
   "learning",
   "drill",
+  "achievement",
   "streak",
   "tip",
   "playground",
@@ -47,6 +48,7 @@ export const CARDS: Record<CardId, CardMeta> = {
   stats: { id: "stats", title: "Your stats", column: "main", customizable: true, signedInOnly: false },
   learning: { id: "learning", title: "Continue learning", column: "main", customizable: true, signedInOnly: false },
   drill: { id: "drill", title: "Drill queue", column: "main", customizable: true, signedInOnly: false },
+  achievement: { id: "achievement", title: "Next achievement", column: "main", customizable: true, signedInOnly: true },
   streak: { id: "streak", title: "Streak and daily goal", column: "main", customizable: true, signedInOnly: false },
   tip: { id: "tip", title: "Cubby's tip", column: "main", customizable: true, signedInOnly: false },
   playground: { id: "playground", title: "Playground", column: "main", customizable: true, signedInOnly: false },
@@ -66,7 +68,7 @@ export const DEFAULT_CARDS: Record<Visitor, readonly CardId[]> = {
   "guest-new": ["welcome", "learning", "playground", "tip", "whatsnew"],
   "guest-returning": ["daily", "stats", "streak", "learning", "tip", "whatsnew"],
   "member-new": ["welcome", "learning", "drill", "tip", "friends", "clubs", "whatsnew"],
-  member: ["daily", "stats", "learning", "drill", "tip", "friends", "clubs", "whatsnew"],
+  member: ["daily", "stats", "learning", "drill", "achievement", "tip", "friends", "clubs", "whatsnew"],
 };
 
 /** The cards that can be switched on even if a visitor's defaults leave them off. */
