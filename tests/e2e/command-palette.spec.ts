@@ -42,3 +42,19 @@ test.describe("command palette", () => {
     await page.keyboard.press("Escape"); // cancel inspection
   });
 });
+
+test.describe("theme picker", () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  test("the sidebar's picker switches the theme for guests, and it sticks", async ({ page }) => {
+    await page.goto("/stats");
+    const picker = page.getByRole("complementary").getByRole("radiogroup", { name: "Theme" });
+    await picker.getByRole("radio", { name: "Paper" }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "paper");
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "paper");
+    await expect(picker.getByRole("radio", { name: "Paper" })).toHaveAttribute("aria-checked", "true");
+    await picker.getByRole("radio", { name: "Slate" }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "slate");
+  });
+});

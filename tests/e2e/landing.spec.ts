@@ -139,9 +139,7 @@ test("header links are all on-page anchors, and the section in view is marked", 
   await expect(page.locator("footer").getByRole("link", { name: "Roadmap" })).toHaveAttribute("href", "/#roadmap");
 });
 
-test("no theme pill on the landing page, and /favicon.ico answers", async ({ page, request }) => {
-  await page.goto("/");
-  await expect(page.getByRole("radiogroup", { name: "Theme (dev)" })).toHaveCount(0);
+test("/favicon.ico answers", async ({ request }) => {
   const res = await request.get("/favicon.ico");
   expect(res.status()).toBe(200);
 });

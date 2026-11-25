@@ -7,7 +7,6 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { AuthListener } from "@/components/auth/auth-listener";
 import { ThemeFavicon } from "@/components/brand/theme-favicon";
-import { ThemeSwitcher } from "@/components/dev/theme-switcher";
 import { SystemThemeSync } from "@/components/layout/system-theme-sync";
 import { ConfirmHost } from "@/components/ui/confirm-dialog";
 import { Toaster } from "@/components/ui/toast";
@@ -142,7 +141,6 @@ export default function RootLayout({
         <Toaster />
         <ConfirmHost />
         {/* TEMP(step 8): renders nothing unless enabled; see the component. */}
-        <ThemeSwitcher />
         {children}
         {ON_VERCEL && <Analytics />}
         {ON_VERCEL && <SpeedInsights />}

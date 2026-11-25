@@ -216,7 +216,12 @@ Only three existing token names change; everything else is additive.
 - [x] No-FOUC head script (resolves `system`; the cookie is the source of truth)
 - [x] CI guard for new hardcoded colours (`npm run check:colors`, scripts/check-colors.mjs)
 - [x] `learn-*` tokens and sticker hex migrated (shared map in `src/lib/stickers.ts`)
-- [x] Timer page renders correctly in both themes (`npm run build && npx next start`; dev switcher via `NEXT_PUBLIC_THEME_SWITCHER=1`)
+- [x] Timer page renders correctly in both themes (`npm run build && npx next start`)
+- [x] Step 8 (2026-11-25): a Slate / Paper / System picker for everyone in the expanded sidebar
+  footer and the phone More sheet (`components/layout/theme-picker.tsx`), plus Settings for
+  members. The dev theme switcher and `NEXT_PUBLIC_THEME_SWITCHER` are gone. "System" already
+  followed the OS mid-session (`SystemThemeSync`). Saving the choice to the account is open
+  (`founder-checklist.md` → Decisions).
 
 ## Review decisions (1 Oct 2026)
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+import { ThemePicker } from "@/components/layout/theme-picker";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { signOut } from "@/lib/auth/actions";
 import { activeNavHref, mobileMoreItems, mobileNavItems } from "@/lib/navigation";
@@ -109,7 +110,8 @@ export function BottomNav({
                 );
               })}
             </ul>
-            <div className="px-4">
+            <div className="flex flex-col gap-3 px-4">
+              <ThemePicker className="text-sm" />
               {signedIn ? (
                 <form action={signOut}>
                   <button

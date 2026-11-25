@@ -42,6 +42,7 @@ import { cn } from "@/lib/utils";
 import { useOverlayLock } from "@/stores/overlay-store";
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { usePaletteStore } from "@/stores/palette-store";
+import { ThemePicker } from "@/components/layout/theme-picker";
 
 const LG_QUERY = "(min-width: 1024px)";
 const PEEK_OPEN_MS = 150;
@@ -261,6 +262,7 @@ export function AppSidebar({
               rail={rail && !showPeek}
             />
           )}
+          {!(rail && !showPeek) && <ThemePicker className="mt-1" />}
           <div className="mt-1 flex items-center gap-0.5">
             <button
               type="button"

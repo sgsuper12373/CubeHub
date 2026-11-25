@@ -5,6 +5,28 @@ Newest entries at the top.
 
 ---
 
+## 2026-11-25 — Theme picker for everyone (design tokens step 8); dev switcher removed
+
+**Request:** Continue with Claude's list.
+
+### Changed
+
+- `src/components/layout/theme-picker.tsx` (new): Slate / Paper / System radiogroup on the theme cookie.
+- In the expanded sidebar footer (`app-sidebar.tsx`) and the phone More sheet (`bottom-nav.tsx`).
+- Removed `src/components/dev/theme-switcher.tsx`, its root-layout mount, `NEXT_PUBLIC_THEME_SWITCHER`
+  (`next.config.ts`, `.env.example`).
+- Tests: `command-palette.spec.ts` + a theme picker test (guest, survives a reload); `landing.spec.ts`
+  drops the dev-pill check.
+- Docs: `design-tokens.md` (step 8), `decisions.md`, `todo.md`, `founder-checklist.md` (account sync needs a
+  migration: founder's call).
+
+### Verified
+
+`npm run validate` (696), `npm run check:colors`, `npm run build`; command-palette, landing, home and timer
+specs 33/33 on the production build; looked at the sidebar footer.
+
+---
+
 ## 2026-11-25 — Home: reorder cards in the Customize sheet (home plan step 6, done)
 
 **Request:** Continue with Claude's list.

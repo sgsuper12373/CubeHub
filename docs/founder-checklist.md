@@ -100,6 +100,10 @@ Work Claude can do without you is in `todo.md`.
       `cuberhub-lockup-*` set.
 - [ ] **Discord:** create a server, or leave the link out.
 - [ ] **Meet Cubby** (landing step 10): needs the companion art.
+- [ ] **Theme across devices:** the theme is a cookie, shared by `cuberhub.me` and
+      `app.cuberhub.me` but not across devices. Saving it to the account needs a new
+      `user_settings.theme` column, so a migration. Want it? Claude can write it, and you
+      approve applying it.
 - [ ] **Reduced motion:** the loading cube still turns slowly (6 s) when "reduce motion" is on.
       This is on purpose, because it signals loading (WCAG allows essential motion). Say if you
       want it stopped completely.
