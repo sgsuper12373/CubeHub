@@ -16,8 +16,6 @@ const TILE = "M7 0H25A7 7 0 0 1 32 7V25A7 7 0 0 1 25 32H7A7 7 0 0 1 0 25V7A7 7 0
 const C_PATH = "M4 7H15V11H8.5V21H15V25H4Z";
 const H_PATH = "M17 7H21V14H24V7H28V25H24V18H21V25H17Z";
 
-export const FAVICON_PATHS = { tile: TILE, c: C_PATH, h: H_PATH } as const;
-
 /** Resolve a CSS custom property to a concrete colour string the canvas accepts. */
 function resolveColor(token: string, fallback: string): string {
   const probe = document.createElement("span");

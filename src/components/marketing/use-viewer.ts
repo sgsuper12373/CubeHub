@@ -69,11 +69,6 @@ function subscribe(onChange: () => void): () => void {
   };
 }
 
-/** Re-read the viewer, e.g. after notifications were marked read. */
-export function refreshViewer(): void {
-  void load();
-}
-
 /**
  * `viewer` is undefined until GET /api/viewer answers. Until then,
  * `likelySignedIn` guesses from the auth cookie, and is null while rendering

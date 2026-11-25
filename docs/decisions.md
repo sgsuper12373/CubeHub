@@ -131,7 +131,7 @@ Choices already made and why. Append as new ones land; don't silently reverse an
 - *Learn's sub-items come from a cached, cookie-free read* (`getLearnNav()`, `unstable_cache`, 1 hour) so the app layout doesn't add a database round trip to every page. Next 16 recommends `"use cache"` instead, but that needs Cache Components switched on project-wide, which is a bigger change than this step.
 - *The shadcn CLI added an npm package called `cn`* and pointed the new primitives' imports at it. Reverted: the primitives import `cn` from `@/lib/utils` like the rest of `components/ui`, and `package.json` is unchanged.
 
-**`navbar.tsx` stays.** The plan says delete it once nothing imports it; the marketing header (`components/marketing/marketing-header.tsx`) still renders it on the landing page, so it remains, used by `(marketing)` only.
+**`navbar.tsx` is gone.** It stayed while the old landing header used it; the new marketing header doesn't, so it and `user-menu.tsx` were deleted with nothing importing them (2026-11-25 cleanup). The large hero `BrandLockup` went too: unused since the hero dropped it; the press lockups in `public/brand/` cover print use.
 
 **Phones: the slim top bar with the bell and avatar is part of the Home page** (`feat/home`), since `/home` is a placeholder on `feat/app-shell`. Until then, unread notifications show as a dot on the More tab and a count on Profile inside the More sheet (before, the dot sat on the Profile tab).
 

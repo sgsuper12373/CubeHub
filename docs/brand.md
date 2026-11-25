@@ -24,8 +24,7 @@ recolours with the theme. Styles are the "CuberHub brand mark + wordmark" sectio
 | Component | Use |
 |---|---|
 | `<CubeMark />` | The mark alone. Pass `title="CuberHub"` when it stands without the wordmark, so it gets an accessible name; otherwise it's `aria-hidden`. `glow={false}` turns off the glow, which only shows in dark themes anyway. |
-| `<Logo />` | The everyday lockup: a 32px mark plus the "cuber**hub**" wordmark. Used by the expanded sidebar, the marketing header and footer (and the old navbar). The sidebar's Rail state shows `<CubeMark />` alone. |
-| `<BrandLockup />` | A large mark, the wordmark, and the "The unified cubing platform" tagline. `stacked` puts the mark above the text. `as="h1"` makes it the page heading. `tagline={null}` hides the tagline. Unused since the landing hero dropped it (Nov 2026); kept for press pages. |
+| `<Logo />` | The everyday lockup: a 32px mark plus the "cuber**hub**" wordmark. Used by the expanded sidebar and the marketing header and footer. The sidebar's Rail state shows `<CubeMark />` alone. |
 
 The wordmark and tagline use **Outfit** (`--font-brand`, loaded in `src/app/layout.tsx`).
 Nothing else does; body text stays Geist. Outfit is a variable font, so it's loaded without

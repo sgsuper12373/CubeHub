@@ -440,29 +440,6 @@ html:has(nav[aria-label="Site"]) {
   color: var(--foreground);
 }
 .chm-wordmark-hub { color: var(--logo-c, var(--primary)); }
-.dark .chm-lockup .chm-wordmark-hub {
-  text-shadow: 0 0 18px color-mix(in oklch, var(--logo-c, var(--primary)), transparent 55%);
-}
-
-/* Hero lockup */
-.chm-lockup {
-  display: inline-flex;
-  align-items: center;
-  gap: clamp(1rem, 3vw, 2rem);
-}
-.chm-lockup--stacked { flex-direction: column; text-align: center; }
-.chm-lockup-mark { width: clamp(6rem, 18vw, 11rem); height: auto; flex: none; }
-.chm-lockup-text { display: flex; flex-direction: column; gap: clamp(0.4rem, 1vw, 0.75rem); }
-.chm-lockup-word { font-size: clamp(2.75rem, 8vw, 5.25rem); }
-.chm-tagline {
-  font-family: var(--font-brand, var(--font-sans));
-  font-weight: 500;
-  font-size: clamp(0.7rem, 1.6vw, 1rem);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--muted-foreground);
-}
-
 @media (forced-colors: active) {
   .chm { --chm-c: CanvasText; --chm-h: CanvasText; --chm-wire: CanvasText; }
 }

@@ -39,11 +39,6 @@ export function allowedPenalties(fromInspection: Penalty): Penalty[] {
   return ["none", "plus2", "dnf"];
 }
 
-/** 1-based rank with ties sharing a place: one more than the number strictly faster. */
-export function rankFor(fasterCount: number): number {
-  return fasterCount + 1;
-}
-
 // ── This browser's attempts ──
 
 export const DAILY_STORAGE_KEY = "cubehub.daily.v1";

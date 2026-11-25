@@ -10,7 +10,6 @@ export const CAPTION_MAX = 500;
 export const ALG_MAX = 200;
 export const SETUP_MAX = 200;
 export const VIDEO_URL_MAX = 300;
-export const PINS_MAX = 3;
 /** The author can edit for this long after posting. */
 export const EDIT_WINDOW_MS = 15 * 60 * 1000;
 
